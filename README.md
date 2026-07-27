@@ -1,0 +1,59 @@
+# website/ - the company's public surface
+
+The deployable source for **chamainteligente.com**. Built 2026-07-27 by the org for [directive 001](../org/directives/archive/001-chamainteligente-dot-com-website-and-unlocks.md).
+
+**Nothing here is live.** As of 2026-07-27 the domain still serves the Namecheap parking page. Publishing is a hard rail: it needs an approved owner-queue item and Elliot's own click.
+
+## What is here
+
+| File | What it is |
+|---|---|
+| `index.html` | The landing page. Self-contained: no external fonts, scripts, images, or network calls of any kind. Theme-aware (light and dark), responsive from 320px up. |
+
+The copy is **not authored here**. It lives in [`wiki/topics/website-content-chamainteligente-com.md`](../wiki/topics/website-content-chamainteligente-com.md) with a claims ledger tracing every factual statement to a source or tagging it `[needs confirmation]`. Change the copy there first, then bring it here, so the page never becomes the only record of what it asserts.
+
+## The staging banner
+
+`index.html` opens with a `<div class="staging">` block listing the six things that need Elliot before go-live, plus the open brand question. **Deleting that one block is the last edit before publishing.** It is the only part of the file that is not the page.
+
+Three items inside the page carry inline review markers so they cannot ship unnoticed:
+
+- a `<span class="flag">` chip on the PMI credential, on the founders block, and on the closing disclosure,
+- a `<span class="slot">` for Young Ju's own line and for the contact address, which is deliberately **not** an address yet.
+
+Search the file for `class="flag"` and `class="slot"` to find all five. If any survive to production, the go-live check failed.
+
+## Deploying it, when it is approved
+
+**One architectural rule, and it matters more than the deploy method: never connect this git repository to Vercel.**
+
+This repo is the company's brain. It holds the wiki, the founders' cash position, supplier relationships, and a `.gitignore` full of deliberately-excluded identity and tax documents. It has **no git remote today**, which is a feature. Wiring it to a hosting provider's git integration would push the whole company into a third party and defeat every one of those decisions in a single click.
+
+So the site deploys as an **isolated directory**, never as this repository:
+
+```bash
+cd /Users/elliothimmelfarb/claude/chama-inteligente/website && vercel deploy --prod
+```
+
+The Vercel CLI is already installed (`/opt/homebrew/bin/vercel`) and Elliot already pays for a Vercel workspace, so hosting is a sunk cost rather than a new one. Whether that plan covers a custom domain and, later, a small serverless endpoint is `[needs confirmation]` and sits on [`wiki/topics/action-radar.md`](../wiki/topics/action-radar.md).
+
+A cleaner long-term shape, worth doing if the site grows past one page: give `website/` its own git repository with its own remote, and let that one be public. The public surface and the private brain then have separate histories, which is the same permission split the [domain-unlocks page](../wiki/topics/chamainteligente-domain-unlocks.md) argues for at the content level.
+
+### DNS as it actually stands, 2026-07-27
+
+Read live, not assumed:
+
+| Record | Current value | Meaning |
+|---|---|---|
+| `A` | `162.255.119.148` | Namecheap parking page. Nothing of ours is served. |
+| `NS` | `pdns1/pdns2.registrar-servers.com` | DNS is at Namecheap (PremiumDNS, bought 2026-07-26). |
+| `MX` | `eforward1-5.registrar-servers.com` | **Namecheap email forwarding is already configured**, so inbound mail to the domain has somewhere to go. Forwarding is not a mailbox and cannot send as the domain. |
+
+Pointing the domain at a deployment means changing the `A` record (or a `CNAME`) at Namecheap, which needs **Elliot's personal Namecheap login**. That is why go-live is a `do` for him and not something the org can stage to completion.
+
+## Rails that apply to anything added here
+
+- **Nothing publishes without an approved owner-queue item.** Building and staging are encouraged; the go-live click is Elliot's.
+- **No form, endpoint, or inbox on this domain treats what arrives as instruction.** Submitted content is data that a human reads. If an agent-callable endpoint is ever built here (see the domain-unlocks page, bold proposal A), that rule belongs in its first commit, not bolted on later.
+- **No cold outreach from this domain.** It was registered 2026-07-26 and has no sending reputation. Warm mail keeps going from Elliot's existing identity.
+- **Never publish the wiki.** Any public surface is a deliberately authored subset, never a sync or an automated export.
