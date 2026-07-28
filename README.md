@@ -35,7 +35,9 @@ So the site deploys as an **isolated directory**, never as this repository:
 cd /Users/elliothimmelfarb/claude/chama-inteligente/website && vercel deploy --prod
 ```
 
-The Vercel CLI is already installed (`/opt/homebrew/bin/vercel`) and Elliot already pays for a Vercel workspace, so hosting is a sunk cost rather than a new one. Whether that plan covers a custom domain and, later, a small serverless endpoint is `[needs confirmation]` and sits on [`wiki/topics/action-radar.md`](../wiki/topics/action-radar.md).
+The Vercel CLI is already installed (`/opt/homebrew/bin/vercel`) and Elliot already pays for a Vercel workspace, so hosting is a sunk cost rather than a new one. **Priced 2026-07-28: the plan is Pro at USD 22.11/month**, first charged 2026-07-27 ([`wiki/sources/2026-07-27-vercel-pro-receipt.md`](../wiki/sources/2026-07-27-vercel-pro-receipt.md), [`wiki/entities/vercel.md`](../wiki/entities/vercel.md)). **So no upgrade is needed to deploy this folder**, and the earlier warning that a deploy-time upgrade might come back as its own owner decision is retired. `[inferred]` Pro is also the tier that permits commercial use where the free Hobby tier does not; confirm on the plan page at deploy time rather than assuming. The serverless-endpoint half is still unverified but is inside Pro's normal scope `[inferred]`.
+
+**One thing this repo's rule and Vercel's own failure mode agree on.** On 2026-07-27 a GitHub push of a personal repository failed to deploy here ("not a member of the team"), through the very **GitHub integration** the rule above forbids for this repository. Deploying `website/` as an isolated directory with `vercel deploy --prod` avoids that path entirely.
 
 A cleaner long-term shape, worth doing if the site grows past one page: give `website/` its own git repository with its own remote, and let that one be public. The public surface and the private brain then have separate histories, which is the same permission split the [domain-unlocks page](../wiki/topics/chamainteligente-domain-unlocks.md) argues for at the content level.
 
