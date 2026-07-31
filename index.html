@@ -52,9 +52,7 @@
     .skip-link:focus { transform: translateY(0); }
 
     .staging {
-      display: flex;
-      justify-content: center;
-      gap: 0.8rem;
+      display: block;
       padding: 0.58rem var(--edge);
       background: var(--ink);
       color: var(--lime);
@@ -63,7 +61,7 @@
       text-align: center;
       text-transform: uppercase;
     }
-    .staging span { color: var(--white); opacity: 0.7; }
+    .stage-small { display: none; }
 
     .site-header {
       display: grid;
@@ -556,8 +554,9 @@
 
     @media (max-width: 700px) {
       :root { --edge: 1.05rem; }
-      .staging { justify-content: flex-start; overflow: hidden; white-space: nowrap; }
-      .staging span { display: none; }
+      .staging { padding: 0.48rem 0.5rem; font-size: 0.6rem; }
+      .stage-wide { display: none; }
+      .stage-small { display: inline; }
       .site-header { grid-template-columns: 1fr auto; min-height: 4.3rem; }
       .pronunciation { justify-self: end; font-size: 0.58rem; }
       .place { display: none; }
@@ -584,7 +583,7 @@
       .chapter h2 { font-size: clamp(3.2rem, 14vw, 5.5rem); }
       .judgment-line { grid-template-columns: 1fr; gap: 0.65rem; }
       .ways-chapter > h2 { margin-bottom: 3.5rem; }
-      .offer-line { grid-template-columns: 3.2rem 1fr; gap: 0.85rem 1rem; }
+      .offer-line { grid-template-columns: 4.2rem 1fr; gap: 0.85rem 1rem; }
       .offer-line p { grid-column: 2; }
       .agency { min-height: 88svh; }
       .agency h2 { font-size: clamp(4.6rem, 20vw, 7.8rem); }
@@ -604,7 +603,7 @@
 </head>
 <body data-focus="open">
   <a class="skip-link" href="#main-content">Skip to the working brief</a>
-  <div class="staging" role="status">Staged concept <span>·</span> Booking is not open <span>·</span> Nothing here is live</div>
+  <div class="staging" role="status"><span class="stage-wide">Staged concept · Booking is not open · Nothing here is live</span><span class="stage-small">Staged preview · Booking closed</span></div>
 
   <header class="site-header">
     <div class="wordmark">Chama Inteligente</div>
