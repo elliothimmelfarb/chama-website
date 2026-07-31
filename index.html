@@ -1,821 +1,378 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chama Inteligente | AI and technology coaching</title>
-  <meta name="description" content="Practical AI and technology coaching for curious people, leaders, and small teams.">
+  <meta name="description" content="A small AI and technology coaching practice in Lisbon. Three questions before anything is offered.">
   <meta name="robots" content="noindex, nofollow">
   <style>
     :root {
-      --paper: #f2efe6;
-      --paper-deep: #e6e0d2;
-      --ink: #151711;
-      --quiet: #65675f;
-      --line: rgba(21, 23, 17, 0.2);
-      --blue: #2746d8;
-      --blue-dark: #182a82;
-      --orange: #ff593b;
-      --lime: #dffc55;
-      --white: #fffdf6;
-      --serif: Iowan Old Style, Baskerville, "Times New Roman", Times, serif;
-      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      --edge: clamp(1rem, 4.5vw, 5rem);
+      --night: #14100e;
+      --night-high: #1d1712;
+      --text: #ece3d3;
+      --quiet: #9d9077;
+      --faint: #6b6250;
+      --flame: #ffb45e;
+      --flame-deep: #ff7a3d;
+      --flame-core: #ffe9b0;
+      --line: rgba(236, 227, 211, 0.16);
+      --serif: "Iowan Old Style", Baskerville, "Palatino Linotype", Georgia, serif;
+      --mono: "SFMono-Regular", Menlo, Consolas, monospace;
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    [hidden] { display: none !important; }
     body {
       margin: 0;
-      overflow-x: hidden;
-      background: var(--paper);
-      color: var(--ink);
-      font-family: var(--sans);
+      background:
+        radial-gradient(60rem 34rem at 50% -6rem, rgba(255, 158, 74, 0.09), transparent 62%),
+        linear-gradient(var(--night-high), var(--night) 34rem);
+      background-color: var(--night);
+      color: var(--text);
+      font-family: var(--serif);
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
-    button, input { font: inherit; }
-    button { color: inherit; }
-    a { color: inherit; }
-    ::selection { background: var(--lime); color: var(--ink); }
+    ::selection { background: var(--flame-deep); color: var(--night); }
+    button { font: inherit; color: inherit; background: none; border: 0; padding: 0; }
     .skip-link {
       position: fixed;
       z-index: 20;
-      top: 0.75rem;
-      left: 0.75rem;
-      padding: 0.65rem 0.8rem;
+      top: 0.65rem;
+      left: 0.65rem;
+      padding: 0.55rem 0.7rem;
       transform: translateY(-160%);
-      background: var(--white);
-      color: var(--ink);
-      border: 2px solid var(--ink);
+      background: var(--flame-core);
+      color: var(--night);
+      font: 700 0.68rem/1.3 var(--mono);
     }
     .skip-link:focus { transform: translateY(0); }
 
     .staging {
-      display: block;
-      padding: 0.58rem var(--edge);
-      background: var(--ink);
-      color: var(--lime);
-      font: 700 0.67rem/1.3 var(--mono);
-      letter-spacing: 0.12em;
+      padding: 0.62rem 1rem;
       text-align: center;
-      text-transform: uppercase;
-    }
-    .stage-small { display: none; }
-
-    .site-header {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      min-height: 5.25rem;
-      padding: 0 var(--edge);
-      border-bottom: 1px solid var(--line);
-    }
-    .wordmark {
-      font: 700 clamp(1rem, 1.5vw, 1.28rem)/1 var(--serif);
-      letter-spacing: -0.035em;
-    }
-    .pronunciation, .place {
-      font: 600 0.66rem/1.4 var(--mono);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .pronunciation { color: var(--quiet); }
-    .place { justify-self: end; }
-
-    main { width: 100%; }
-    .opening { border-bottom: 1px solid var(--line); }
-    .hero {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
-      gap: clamp(2rem, 8vw, 9rem);
-      align-items: end;
-      min-height: min(760px, calc(100svh - 8rem));
-      padding: clamp(5rem, 10vw, 10rem) var(--edge) clamp(3rem, 6vw, 6rem);
-    }
-    .hero:before {
-      content: "";
-      position: absolute;
-      top: clamp(3rem, 8vw, 7rem);
-      right: var(--edge);
-      width: clamp(5rem, 10vw, 9rem);
-      height: clamp(5rem, 10vw, 9rem);
-      background: var(--lime);
-      border-radius: 50%;
-      mix-blend-mode: multiply;
-    }
-    .kicker, .chapter-number, .section-tag, .studio-label, .thread-label, .route {
-      margin: 0;
-      font: 700 0.68rem/1.4 var(--mono);
+      background: #000;
+      color: var(--flame);
+      font: 700 0.62rem/1.4 var(--mono);
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
-    .kicker { margin-bottom: 1.4rem; color: var(--blue); }
-    h1, h2, h3, p { margin-top: 0; }
-    h1 {
-      position: relative;
-      z-index: 1;
-      max-width: 11.5ch;
-      margin-bottom: 0;
-      font: 500 clamp(3.45rem, 7.8vw, 8.7rem)/0.88 var(--serif);
-      letter-spacing: -0.075em;
-      text-wrap: balance;
-    }
-    h1 .second-line {
-      display: block;
-      max-width: 10ch;
-      margin-top: 0.16em;
-      margin-left: clamp(1rem, 6vw, 7rem);
-      color: var(--blue);
-      font-style: italic;
-    }
-    .hero-side {
-      position: relative;
-      z-index: 1;
-      padding-bottom: 0.5rem;
-    }
-    .hero-deck {
-      margin-bottom: 2.3rem;
-      font-size: clamp(1.05rem, 1.45vw, 1.3rem);
-      line-height: 1.58;
-      text-wrap: pretty;
-    }
-    .start-note {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 0.8rem;
-      align-items: start;
-      padding-top: 1rem;
-      border-top: 1px solid var(--line);
-      color: var(--quiet);
-      font-size: 0.78rem;
-      line-height: 1.5;
-    }
-    .start-note b { color: var(--orange); font: 700 0.7rem/1.5 var(--mono); }
 
-    .focus-studio {
-      display: grid;
-      grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
-      background: var(--ink);
-      color: var(--white);
-      border-top: 1px solid var(--ink);
+    main {
+      max-width: 34rem;
+      margin: 0 auto;
+      padding: clamp(3.5rem, 9vh, 6.5rem) 1.35rem 4rem;
     }
-    .studio-intro {
-      padding: clamp(2rem, 5vw, 5rem) var(--edge);
-      border-right: 1px solid rgba(255, 253, 246, 0.18);
+
+    .wordmark {
+      margin: 0 0 clamp(2.6rem, 6vh, 4rem);
+      text-align: center;
+      font-size: 1.02rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
     }
-    .studio-label { margin-bottom: 1.25rem; color: var(--lime); }
-    .studio-intro h2 {
-      max-width: 8ch;
-      margin-bottom: 1.4rem;
-      font: 500 clamp(2.4rem, 4vw, 4.8rem)/0.95 var(--serif);
-      letter-spacing: -0.055em;
-    }
-    .studio-intro p:last-child {
-      max-width: 28rem;
-      margin-bottom: 0;
-      color: rgba(255, 253, 246, 0.62);
-      font-size: 0.9rem;
-      line-height: 1.55;
-    }
-    .studio-work { padding: clamp(2rem, 5vw, 5rem) var(--edge); }
-    .focus-sentence {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.65rem 1rem;
-      align-items: baseline;
-      margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
-      font: 500 clamp(1.7rem, 3.2vw, 3.8rem)/1.14 var(--serif);
-      letter-spacing: -0.04em;
-    }
-    .focus-sentence > span { color: rgba(255, 253, 246, 0.48); }
-    .focus-choice {
+
+    .door {
       position: relative;
-      padding: 0 0 0.08em;
-      background: transparent;
-      border: 0;
-      border-bottom: 1px solid rgba(255, 253, 246, 0.42);
-      cursor: pointer;
+      display: grid;
+      justify-items: center;
+      margin-bottom: clamp(2.6rem, 6vh, 4rem);
     }
-    .focus-choice:after {
-      content: "";
+    .glow {
       position: absolute;
-      right: 0;
-      bottom: -0.18rem;
-      left: 0;
-      height: 0.16rem;
-      transform: scaleX(0);
-      transform-origin: left;
-      background: var(--lime);
-      opacity: 0.9;
-      transition: transform 180ms ease;
-    }
-    .focus-choice:hover:after, .focus-choice[aria-pressed="true"]:after { transform: scaleX(1); }
-    .focus-choice[aria-pressed="true"] { color: var(--lime); }
-    .focus-choice:focus-visible { outline: 2px solid var(--lime); outline-offset: 0.35rem; }
-    .first-response {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 1rem;
-      min-height: 5.5rem;
-      padding: 1rem 0 1.2rem;
-      border-top: 1px solid rgba(255, 253, 246, 0.2);
-      border-bottom: 1px solid rgba(255, 253, 246, 0.2);
-    }
-    .response-mark {
-      padding-top: 0.25rem;
-      color: var(--orange);
-      font: 700 0.68rem/1 var(--mono);
-    }
-    #context-note {
-      max-width: 37rem;
-      margin-bottom: 0;
-      font: 500 clamp(1.05rem, 1.5vw, 1.3rem)/1.5 var(--sans);
-    }
-    .work-line { margin-top: 2.5rem; }
-    .work-line label {
-      display: block;
-      margin-bottom: 0.7rem;
-      color: rgba(255, 253, 246, 0.64);
-      font: 700 0.68rem/1.4 var(--mono);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .work-line input {
-      width: 100%;
-      padding: 0.3rem 0 0.75rem;
-      background: transparent;
-      color: var(--white);
-      border: 0;
-      border-bottom: 2px solid rgba(255, 253, 246, 0.68);
-      border-radius: 0;
-      font: 500 clamp(1.2rem, 2vw, 1.8rem)/1.35 var(--serif);
-    }
-    .work-line input::placeholder { color: rgba(255, 253, 246, 0.3); }
-    .work-line input:focus { outline: 0; border-color: var(--lime); }
-    .work-line small {
-      display: block;
-      margin-top: 0.65rem;
-      color: rgba(255, 253, 246, 0.46);
-      font-size: 0.72rem;
-    }
-    noscript {
-      display: block;
-      margin-top: 1rem;
-      color: var(--lime);
-      font-size: 0.75rem;
-      line-height: 1.5;
-    }
-
-    .body-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) clamp(14rem, 20vw, 20rem);
-      align-items: start;
-    }
-    .brief { min-width: 0; border-right: 1px solid var(--line); }
-    .thread {
-      position: sticky;
-      top: 0;
-      min-height: 100svh;
-      padding: 2.1rem clamp(1.2rem, 2.3vw, 2.6rem);
-      background: var(--paper-deep);
-    }
-    .thread-label { margin-bottom: 2rem; color: var(--quiet); }
-    .thread-track {
-      position: relative;
-      display: grid;
-      gap: 2.8rem;
-      padding-left: 1.55rem;
-    }
-    .thread-track:before {
-      content: "";
-      position: absolute;
-      top: 0.3rem;
-      bottom: 0.3rem;
-      left: 0.25rem;
-      width: 2px;
-      background: var(--blue);
-    }
-    .thread-item { position: relative; }
-    .thread-item:before {
-      content: "";
-      position: absolute;
-      top: 0.32rem;
-      left: -1.67rem;
-      width: 0.62rem;
-      height: 0.62rem;
-      background: var(--paper-deep);
-      border: 2px solid var(--blue);
-      border-radius: 50%;
-    }
-    .thread-item.is-live:before { background: var(--blue); }
-    .thread-key {
-      display: block;
-      margin-bottom: 0.55rem;
-      color: var(--quiet);
-      font: 700 0.62rem/1.4 var(--mono);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    #thread-focus {
-      margin-bottom: 0;
-      font: 500 clamp(1.4rem, 2.1vw, 2rem)/1.05 var(--serif);
-      letter-spacing: -0.04em;
-    }
-    #thread-work, #thread-question {
-      margin-bottom: 0;
-      overflow-wrap: anywhere;
-      color: var(--quiet);
-      font-size: 0.82rem;
-      line-height: 1.5;
-    }
-    #thread-question { color: var(--ink); }
-
-    .chapter {
-      position: relative;
-      min-height: 76svh;
-      padding: clamp(5rem, 10vw, 10rem) var(--edge);
-      border-bottom: 1px solid var(--line);
-    }
-    .chapter-number { margin-bottom: clamp(2rem, 6vw, 5rem); color: var(--blue); }
-    .chapter-head {
-      display: grid;
-      grid-template-columns: minmax(0, 0.75fr) minmax(18rem, 1.25fr);
-      gap: 2rem clamp(3rem, 8vw, 9rem);
-      align-items: start;
-    }
-    .chapter h2 {
-      margin-bottom: 0;
-      font: 500 clamp(3.1rem, 6vw, 7rem)/0.9 var(--serif);
-      letter-spacing: -0.065em;
-      text-wrap: balance;
-    }
-    .chapter-copy {
-      max-width: 41rem;
-      padding-top: 0.5rem;
-      font-size: clamp(1.05rem, 1.5vw, 1.3rem);
-      line-height: 1.62;
-    }
-    .chapter-copy p:last-child { margin-bottom: 0; }
-    .chapter-copy .quiet { margin-top: 2.5rem; color: var(--quiet); font-size: 0.94rem; }
-    .judgment-line {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: clamp(4rem, 9vw, 9rem);
-      padding-top: 1.2rem;
-      border-top: 1px solid var(--line);
-      color: var(--quiet);
-      font: 700 0.68rem/1.5 var(--mono);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .judgment-line strong { color: var(--ink); }
-
-    .ways-chapter { padding-right: 0; padding-left: 0; }
-    .ways-chapter > .chapter-number, .ways-chapter > h2 { margin-right: var(--edge); margin-left: var(--edge); }
-    .ways-chapter > h2 { max-width: 10ch; margin-bottom: clamp(4rem, 8vw, 8rem); }
-    .offer-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
-    .offer-line {
-      display: grid;
-      grid-template-columns: minmax(7rem, 0.38fr) minmax(12rem, 0.75fr) minmax(18rem, 1.5fr);
-      gap: 1.4rem 3rem;
-      align-items: start;
-      padding: clamp(1.5rem, 3vw, 2.5rem) var(--edge);
-      border-bottom: 1px solid var(--line);
-      transition: background-color 180ms ease;
-    }
-    .route { padding-top: 0.34rem; color: var(--blue); }
-    .offer-line h3 {
-      margin-bottom: 0;
-      font: 500 clamp(1.7rem, 2.7vw, 3rem)/1 var(--serif);
-      letter-spacing: -0.045em;
-    }
-    .offer-line p {
-      max-width: 39rem;
-      margin-bottom: 0;
-      color: var(--quiet);
-      line-height: 1.62;
-    }
-    body[data-focus="noise"] #offer-coaching,
-    body[data-focus="time"] #offer-coaching,
-    body[data-focus="lead"] #offer-teams,
-    body[data-focus="build"] #offer-small { background: var(--lime); }
-    body[data-focus="noise"] #offer-coaching p,
-    body[data-focus="time"] #offer-coaching p,
-    body[data-focus="lead"] #offer-teams p,
-    body[data-focus="build"] #offer-small p { color: var(--ink); }
-
-    .agency {
-      overflow: hidden;
-      min-height: 95svh;
-      background: var(--blue);
-      color: var(--white);
-      border-bottom-color: var(--blue);
-    }
-    .agency:after {
-      content: "YOURS";
-      position: absolute;
-      right: -0.05em;
-      bottom: -0.18em;
-      color: rgba(255, 253, 246, 0.09);
-      font: 700 clamp(8rem, 24vw, 29rem)/0.72 var(--sans);
-      letter-spacing: -0.1em;
+      top: -2.6rem;
+      width: 15rem;
+      height: 15rem;
+      background: radial-gradient(closest-side, rgba(255, 158, 74, 0.22), rgba(255, 122, 61, 0.07) 55%, transparent 72%);
       pointer-events: none;
     }
-    .agency .chapter-number { color: var(--lime); }
-    .agency .chapter-head { position: relative; z-index: 1; }
-    .agency h2 { max-width: 6ch; font-size: clamp(4.2rem, 10vw, 11rem); }
-    .agency .chapter-copy { color: rgba(255, 253, 246, 0.82); }
-    .agency .chapter-copy strong { color: var(--lime); font-weight: 600; }
+    .flame {
+      position: relative;
+      width: 2.35rem;
+      height: 3.25rem;
+      transform-origin: 50% 100%;
+      animation: sway 5.2s ease-in-out infinite alternate;
+    }
+    .flame:before, .flame:after {
+      content: "";
+      position: absolute;
+      transform-origin: 50% 100%;
+    }
+    .flame:before {
+      inset: 0;
+      background: linear-gradient(var(--flame), var(--flame-deep));
+      clip-path: polygon(50% 0, 62% 18%, 78% 35%, 91% 55%, 94% 73%, 82% 91%, 63% 100%, 38% 100%, 18% 91%, 6% 73%, 9% 55%, 23% 34%, 40% 17%);
+    }
+    .flame:after {
+      right: 29%;
+      bottom: 6%;
+      left: 29%;
+      height: 45%;
+      background: linear-gradient(var(--flame-core), var(--flame));
+      clip-path: polygon(50% 0, 75% 34%, 100% 65%, 79% 91%, 51% 100%, 22% 91%, 0 65%, 25% 33%);
+      animation: breathe 3.4s ease-in-out infinite alternate;
+    }
+    .sill {
+      width: 5.2rem;
+      height: 1px;
+      margin-top: 0.55rem;
+      background: linear-gradient(90deg, transparent, rgba(255, 180, 94, 0.75), transparent);
+    }
+    @keyframes sway {
+      from { transform: rotate(-1.6deg) scaleY(0.985); }
+      to { transform: rotate(1.8deg) scaleY(1.015); }
+    }
+    @keyframes breathe {
+      from { transform: scale(0.94); }
+      to { transform: scale(1.05); }
+    }
 
-    .attention { min-height: auto; background: var(--lime); }
-    .attention .chapter-number { color: var(--ink); }
-    .attention blockquote {
-      max-width: 16ch;
-      margin: 0;
-      font: italic 500 clamp(2.6rem, 5.5vw, 6.5rem)/0.98 var(--serif);
-      letter-spacing: -0.055em;
+    .name-line {
+      margin: 0 0 clamp(3rem, 7vh, 4.5rem);
+      text-align: center;
+      color: var(--quiet);
+      font: 500 0.78rem/1.6 var(--mono);
+      letter-spacing: 0.04em;
+    }
+
+    .opening p {
+      margin: 0 0 1.5rem;
+      font-size: 1.22rem;
+      line-height: 1.66;
+      text-wrap: pretty;
+    }
+    .opening p:last-child { margin-bottom: 0; }
+
+    .before-questions {
+      margin: clamp(3rem, 7vh, 4.5rem) 0 clamp(3rem, 7vh, 4.2rem);
+      padding-top: 1.6rem;
+      border-top: 1px solid var(--line);
+      color: var(--quiet);
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    .question { margin: 0 0 clamp(3.2rem, 7vh, 4.2rem); }
+    .question h2 {
+      margin: 0 0 1.35rem;
+      font-size: 1.38rem;
+      font-weight: 500;
+      line-height: 1.45;
+      letter-spacing: -0.01em;
       text-wrap: balance;
     }
-    .attention .care-note {
-      max-width: 30rem;
-      margin: clamp(3rem, 6vw, 6rem) 0 0 auto;
-      padding-top: 1rem;
-      border-top: 2px solid var(--ink);
-      font-size: 0.9rem;
-      line-height: 1.6;
+    .answer {
+      display: grid;
+      grid-template-columns: 1.55rem 1fr;
+      align-items: baseline;
+      width: 100%;
+      padding: 0.52rem 0;
+      text-align: left;
+      font-size: 1.08rem;
+      line-height: 1.55;
+      color: var(--text);
+      transition: opacity 220ms ease, color 220ms ease;
     }
+    .js .answer { cursor: pointer; }
+    .answer .mark {
+      position: relative;
+      top: 0.13em;
+      width: 0.52rem;
+      height: 0.52rem;
+      border: 1px solid var(--faint);
+      border-radius: 50%;
+      transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    }
+    .js .answer:hover .mark { border-color: var(--flame); }
+    .answer[aria-pressed="true"] .mark {
+      background: var(--flame);
+      border-color: var(--flame);
+      box-shadow: 0 0 0.6rem rgba(255, 180, 94, 0.55);
+    }
+    .question[data-answered] .answer[aria-pressed="false"] { opacity: 0.38; }
+    .js .answer[aria-pressed="false"]:hover { opacity: 1; }
+    .answer:focus-visible { outline: 2px solid var(--flame); outline-offset: 4px; border-radius: 2px; }
 
-    .conversation { min-height: 100svh; }
-    .conversation h2 { max-width: 8ch; }
-    .conversation-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 0.85fr) minmax(20rem, 1.15fr);
-      gap: 3rem clamp(3rem, 8vw, 9rem);
-      margin-top: clamp(4rem, 9vw, 9rem);
-      align-items: start;
-    }
-    .bring-card {
-      padding: 1.4rem 0;
-      border-top: 2px solid var(--ink);
-      border-bottom: 1px solid var(--line);
-    }
-    .bring-card .section-tag { margin-bottom: 1rem; color: var(--blue); }
-    #bring-work {
-      margin-bottom: 0;
-      overflow-wrap: anywhere;
-      font: 500 clamp(1.8rem, 3vw, 3.3rem)/1.05 var(--serif);
-      letter-spacing: -0.045em;
-    }
-    .question-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
-    .question-list li {
-      display: grid;
-      grid-template-columns: 2rem 1fr;
-      gap: 1rem;
-      padding: 1rem 0;
-      border-bottom: 1px solid var(--line);
-      line-height: 1.5;
-    }
-    .question-list span { color: var(--orange); font: 700 0.68rem/1.6 var(--mono); }
-    #opening-question { font-weight: 650; }
-    .booking-wrap {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 1.5rem;
-      align-items: end;
-      margin-top: clamp(4rem, 8vw, 8rem);
-      padding-top: 1.5rem;
+    .threshold-response { min-height: 2rem; }
+    .response {
+      margin: 0;
+      padding-top: 1.8rem;
       border-top: 1px solid var(--line);
+      animation: arrive 700ms ease both;
     }
-    .booking-wrap p { max-width: 37rem; margin-bottom: 0; font-size: 1rem; line-height: 1.6; }
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(0.4rem); }
+      to { opacity: 1; transform: none; }
+    }
+    .response > p {
+      margin: 0 0 1.3rem;
+      font-size: 1.16rem;
+      line-height: 1.68;
+      text-wrap: pretty;
+    }
+    .response > p:last-child { margin-bottom: 0; }
+    .response .lead {
+      font-size: 1.5rem;
+      line-height: 1.3;
+    }
+    #r-fit .lead { color: var(--flame-core); }
+    .booking { margin-top: 2.2rem; }
     .booking-stub {
-      min-width: 15rem;
-      padding: 1rem 1.2rem;
-      background: var(--ink);
-      color: var(--white);
-      border: 2px solid var(--ink);
-      cursor: not-allowed;
-      font: 700 0.7rem/1.3 var(--mono);
-      letter-spacing: 0.08em;
+      display: block;
+      width: 100%;
+      padding: 0.95rem 1.1rem;
+      border: 1px solid var(--line);
+      color: var(--quiet);
+      font: 700 0.68rem/1.4 var(--mono);
+      letter-spacing: 0.1em;
       text-transform: uppercase;
+      cursor: not-allowed;
     }
-    .booking-stub:before { content: "●"; margin-right: 0.65rem; color: var(--orange); }
-    .booking-status { margin-top: 0.55rem; color: var(--quiet); font-size: 0.7rem; text-align: right; }
+    .booking-stub:before { content: "\25CF"; margin-right: 0.6rem; color: var(--flame-deep); }
+    .booking-status {
+      margin: 0.6rem 0 0;
+      color: var(--faint);
+      font: 500 0.68rem/1.5 var(--mono);
+    }
 
-    .site-footer {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 1rem;
-      padding: 1.5rem var(--edge) 2rem;
-      background: var(--ink);
-      color: rgba(255, 253, 246, 0.68);
-      font: 600 0.67rem/1.5 var(--mono);
+    noscript p {
+      margin: 0;
+      padding-top: 1.8rem;
+      border-top: 1px solid var(--line);
+      color: var(--quiet);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    footer {
+      max-width: 34rem;
+      margin: 0 auto;
+      padding: 0 1.35rem 2.6rem;
+      color: var(--faint);
+      font: 500 0.66rem/1.9 var(--mono);
       letter-spacing: 0.06em;
       text-transform: uppercase;
+      text-align: center;
     }
-    .site-footer strong { color: var(--white); }
-
-    @media (max-width: 980px) {
-      .hero { grid-template-columns: 1fr; min-height: auto; }
-      .hero-side { max-width: 39rem; }
-      .focus-studio { grid-template-columns: 1fr; }
-      .studio-intro { border-right: 0; border-bottom: 1px solid rgba(255, 253, 246, 0.18); }
-      .studio-intro h2 { max-width: 13ch; }
-      .body-grid { grid-template-columns: 1fr; }
-      .brief { border-right: 0; }
-      .thread {
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        min-height: 0;
-        padding: 0.75rem var(--edge);
-        border-bottom: 1px solid var(--line);
-      }
-      .thread-label { display: none; }
-      .thread-track {
-        display: flex;
-        gap: 1.5rem;
-        align-items: center;
-        padding-left: 0;
-      }
-      .thread-track:before, .thread-item:before { display: none; }
-      .thread-item { min-width: 0; }
-      .thread-item:first-child { flex: 0 0 auto; }
-      .thread-item:nth-child(2) { flex: 1; }
-      .thread-item:last-child { display: none; }
-      .thread-key { margin-bottom: 0.15rem; font-size: 0.55rem; }
-      #thread-focus { font-size: 1.1rem; }
-      #thread-work { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .chapter-head, .conversation-grid { grid-template-columns: 1fr; }
-      .chapter-copy { padding-top: 0; }
-    }
-
-    @media (max-width: 700px) {
-      :root { --edge: 1.05rem; }
-      .staging { padding: 0.48rem 0.5rem; font-size: 0.6rem; }
-      .stage-wide { display: none; }
-      .stage-small { display: inline; }
-      .site-header { grid-template-columns: 1fr auto; min-height: 4.3rem; }
-      .pronunciation { justify-self: end; font-size: 0.58rem; }
-      .place { display: none; }
-      .hero {
-        gap: 2.8rem;
-        min-height: calc(100svh - 7rem);
-        padding-top: clamp(3.5rem, 10vh, 7rem);
-        padding-bottom: 2rem;
-      }
-      .hero:before { top: 2.4rem; width: 4.5rem; height: 4.5rem; }
-      h1 { max-width: 9ch; font-size: clamp(3.2rem, 15vw, 5.8rem); }
-      h1 .second-line { max-width: 9ch; margin-left: 0.55em; }
-      .hero-deck { margin-bottom: 1.4rem; font-size: 1rem; }
-      .studio-intro, .studio-work { padding-top: 2.5rem; padding-bottom: 2.5rem; }
-      .studio-intro h2 { font-size: 2.8rem; }
-      .focus-sentence { display: grid; grid-template-columns: 1fr; gap: 0.55rem; font-size: 2.15rem; }
-      .focus-sentence > span { font-size: 1.2rem; }
-      .focus-choice { width: max-content; max-width: 100%; text-align: left; }
-      .first-response { grid-template-columns: 1.5rem 1fr; }
-      .thread-track { gap: 0.8rem; }
-      .thread-item:nth-child(2) { display: none; }
-      .chapter { min-height: auto; padding-top: 5.5rem; padding-bottom: 5.5rem; }
-      .chapter-number { margin-bottom: 2.5rem; }
-      .chapter h2 { font-size: clamp(3.2rem, 14vw, 5.5rem); }
-      .judgment-line { grid-template-columns: 1fr; gap: 0.65rem; }
-      .ways-chapter > h2 { margin-bottom: 3.5rem; }
-      .offer-line { grid-template-columns: 4.2rem 1fr; gap: 0.85rem 1rem; }
-      .offer-line p { grid-column: 2; }
-      .agency { min-height: 88svh; }
-      .agency h2 { font-size: clamp(4.6rem, 20vw, 7.8rem); }
-      .attention blockquote { font-size: clamp(3rem, 13vw, 5.2rem); }
-      .conversation-grid { margin-top: 3.5rem; }
-      .booking-wrap { grid-template-columns: 1fr; }
-      .booking-stub { width: 100%; }
-      .booking-status { text-align: left; }
-      .site-footer { grid-template-columns: 1fr; }
-    }
+    footer p { margin: 0; }
 
     @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *:before, *:after { transition: none !important; animation: none !important; }
+      *, *:before, *:after { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
-<body data-focus="open">
-  <a class="skip-link" href="#main-content">Skip to the working brief</a>
-  <div class="staging" role="status"><span class="stage-wide">Staged concept · Booking is not open · Nothing here is live</span><span class="stage-small">Staged preview · Booking closed</span></div>
-
-  <header class="site-header">
-    <div class="wordmark">Chama Inteligente</div>
-    <div class="pronunciation">Pronounced “Shama”</div>
-    <div class="place">Lisbon · working anywhere</div>
-  </header>
+<body>
+  <a class="skip-link" href="#main-content">Skip to the introduction</a>
+  <div class="staging" role="status">Staged concept &middot; Booking is not open &middot; Nothing here is live</div>
 
   <main id="main-content">
-    <section class="opening" aria-labelledby="hero-title">
-      <div class="hero">
-        <div>
-          <p class="kicker">AI and technology coaching for curious people, leaders, and small teams</p>
-          <h1 id="hero-title">The tools will change.<span class="second-line">What you can do with them should keep growing.</span></h1>
-        </div>
-        <div class="hero-side">
-          <p class="hero-deck">Chama Inteligente helps curious people and small teams use AI and technology with confidence. We start with your real work, focus on what matters now, and build practical skills that save time, open new possibilities, and keep getting stronger.</p>
-          <p class="start-note"><b>01</b><span>This page can hold one live thread while you read. Choosing one is optional. The whole brief is here either way.</span></p>
-        </div>
-      </div>
+    <h1 class="wordmark">Chama Inteligente</h1>
 
-      <div class="focus-studio" aria-labelledby="focus-title">
-        <div class="studio-intro">
-          <p class="studio-label">Make this page answer to you</p>
-          <h2 id="focus-title">What needs your attention right now?</h2>
-          <p>This is not a quiz and there is no funnel behind it. Choose a thread if one feels true. The page will keep it visible.</p>
-        </div>
-        <div class="studio-work">
-          <div class="focus-sentence" role="group" aria-label="Choose what needs attention">
-            <span>I need to</span>
-            <button class="focus-choice" type="button" data-focus="noise" aria-pressed="false">see clearly</button>
-            <button class="focus-choice" type="button" data-focus="lead" aria-pressed="false">lead change</button>
-            <button class="focus-choice" type="button" data-focus="build" aria-pressed="false">make something</button>
-            <button class="focus-choice" type="button" data-focus="time" aria-pressed="false">win back time</button>
-          </div>
-          <div class="first-response" aria-live="polite">
-            <span class="response-mark">↳</span>
-            <p id="context-note">Start with the work in front of you. The right next move depends on what you are trying to make possible.</p>
-          </div>
-          <div class="work-line">
-            <label for="real-work">Optional: name the real thing, in a few words</label>
-            <input id="real-work" type="text" maxlength="90" autocomplete="off" placeholder="The decision, task, or idea on your desk">
-            <small>This stays in your browser. Nothing is sent.</small>
-          </div>
-          <noscript>The complete brief works without JavaScript. The optional context thread is simply unavailable.</noscript>
-        </div>
-      </div>
+    <div class="door" aria-hidden="true">
+      <div class="glow"></div>
+      <div class="flame"></div>
+      <div class="sill"></div>
+    </div>
+
+    <p class="name-line">Chama is Portuguese for flame. It is pronounced &ldquo;Shama.&rdquo;</p>
+
+    <div class="opening">
+      <p>A small AI and technology coaching practice, based in Lisbon, working anywhere. I help curious people, leaders, and small teams use AI and technology with confidence. We start from your real work and build judgment and capability that stay with you as the tools change.</p>
+      <p>I will never take on more clients than I can give the full time and attention they are paying for. So this page will not try to persuade you. It will ask you three questions.</p>
+    </div>
+
+    <p class="before-questions">Answer them honestly. Nothing is recorded and nothing is sent. The questions are for you as much as for me.</p>
+
+    <section class="question" data-q="curiosity" aria-labelledby="q-curiosity">
+      <h2 id="q-curiosity">When something new appears in this field, what do you feel?</h2>
+      <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Curious. I want to see it for myself.</span></button>
+      <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>Tired. I mostly wish it would slow down.</span></button>
     </section>
 
-    <div class="body-grid">
-      <article class="brief" aria-label="Chama Inteligente working brief">
-        <section class="chapter" aria-labelledby="judgment-title">
-          <p class="chapter-number">01 / Judgment</p>
-          <div class="chapter-head">
-            <h2 id="judgment-title">This is not a tool problem.</h2>
-            <div class="chapter-copy">
-              <p>AI changes too quickly for a fixed list of answers. The useful question is what matters for your situation now, what can wait, and how to turn one good idea into capability you keep.</p>
-              <p class="quiet">The goal is not to make you dependent on a tool, a system, or a consultant. It is to help you combine your own experience, ideas, and strengths with new capabilities, so you can build, improve, and lead with them.</p>
-            </div>
-          </div>
-          <div class="judgment-line" aria-hidden="true">
-            <span>Fixed answers expire</span>
-            <strong>Judgment compounds</strong>
-          </div>
-        </section>
+    <section class="question" data-q="desire" aria-labelledby="q-desire">
+      <h2 id="q-desire">Do you want to improve yourself and the situation you are in?</h2>
+      <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Yes. I want things to be better, and I am willing to work on it.</span></button>
+      <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>Not right now. I am mostly watching what happens.</span></button>
+    </section>
 
-        <section class="chapter ways-chapter" aria-labelledby="ways-title">
-          <p class="chapter-number">02 / The work</p>
-          <h2 id="ways-title">One direction. Three ways to start.</h2>
-          <ol class="offer-list">
-            <li class="offer-line" id="offer-coaching">
-              <span class="route">01 / One to one</span>
-              <h3>Private coaching</h3>
-              <p>Regular one-to-one work for a leader or professional who wants clearer judgment, practical capability, and a trusted guide through a fast-moving field. Sessions begin with your real work and build skills that compound over time.</p>
-            </li>
-            <li class="offer-line" id="offer-teams">
-              <span class="route">02 / Together</span>
-              <h3>Leaders and teams</h3>
-              <p>Practical capability-building for leaders and small teams who want AI use to last. People combine their domain knowledge with new tools, then learn to evaluate opportunities, build useful ways of working, and improve them independently.</p>
-            </li>
-            <li class="offer-line" id="offer-small">
-              <span class="route">03 / Selective</span>
-              <h3>Very small companies</h3>
-              <p>Selective hands-on automation support for very small companies. This is a close extension of the coaching work, not a black-box system handed over without understanding.</p>
-            </li>
-          </ol>
-        </section>
+    <section class="question" data-q="participation" aria-labelledby="q-participation">
+      <h2 id="q-participation">If we worked together, whose hands would be on the work?</h2>
+      <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Mine. I want to be able to do this myself.</span></button>
+      <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>Someone else&rsquo;s. I would rather hand it over.</span></button>
+    </section>
 
-        <section class="chapter agency" aria-labelledby="agency-title">
-          <p class="chapter-number">03 / Agency</p>
-          <div class="chapter-head">
-            <h2 id="agency-title">Built to disappear.</h2>
-            <div class="chapter-copy">
-              <p>You know your customers, your work, and your constraints in ways I never will. My job is to help you add new fluency to that knowledge, use it in ways that matter, and then step back.</p>
-              <p><strong>The best outcome is that you can lead this without me.</strong></p>
-            </div>
-          </div>
-        </section>
-
-        <section class="chapter attention" aria-labelledby="attention-title">
-          <p class="chapter-number">04 / Attention</p>
-          <blockquote id="attention-title">“I will never take on more clients than I can give the full time and attention they are paying for.”</blockquote>
-          <p class="care-note">Small on purpose. You get a person who remembers what you are working on and picks up where we left off.</p>
-        </section>
-
-        <section class="chapter conversation" aria-labelledby="conversation-title">
-          <p class="chapter-number">05 / A conversation, first</p>
-          <h2 id="conversation-title">Bring the real thing.</h2>
-          <div class="conversation-grid">
-            <div class="bring-card">
-              <p class="section-tag">Your side of the table</p>
-              <p id="bring-work">The real thing on your desk.</p>
-            </div>
-            <ol class="question-list">
-              <li><span>01</span><strong id="opening-question">What are you trying to make possible?</strong></li>
-              <li><span>02</span>What do you already know that a generic tool cannot?</li>
-              <li><span>03</span>What would you like to be able to do without me?</li>
-            </ol>
-          </div>
-          <div class="booking-wrap">
-            <p>A conversation first. Tell me what you are working on. I will tell you honestly whether I think I can help and what that could look like.</p>
-            <div>
-              <button class="booking-stub" type="button" disabled aria-describedby="booking-status">Booking is not open yet</button>
-              <div class="booking-status" id="booking-status">Staged placeholder. No calendar or contact route is connected.</div>
-            </div>
-          </div>
-        </section>
-      </article>
-
-      <aside class="thread" aria-label="Your working thread">
-        <p class="thread-label">Your working thread</p>
-        <div class="thread-track">
-          <div class="thread-item is-live">
-            <span class="thread-key">Attention</span>
-            <p id="thread-focus">Open brief</p>
-          </div>
-          <div class="thread-item">
-            <span class="thread-key">The real thing</span>
-            <p id="thread-work">Nothing named yet</p>
-          </div>
-          <div class="thread-item">
-            <span class="thread-key">A useful question</span>
-            <p id="thread-question">What are you trying to make possible?</p>
-          </div>
+    <div class="threshold-response" aria-live="polite">
+      <div class="response" id="r-fit" hidden>
+        <p class="lead">Then we should talk.</p>
+        <p>Bring the real thing. Tell me what you are working on, and I will tell you honestly whether I think I can help and what that could look like.</p>
+        <div class="booking">
+          <button class="booking-stub" type="button" disabled aria-describedby="booking-status">Booking is not open yet</button>
+          <p class="booking-status" id="booking-status">Staged placeholder. No calendar or contact route is connected.</p>
         </div>
-      </aside>
+      </div>
+      <div class="response" id="r-curiosity" hidden>
+        <p class="lead">That is a fair way to feel.</p>
+        <p>The field is loud, and you should not have to fake curiosity; this work runs on it. This is probably not the right moment, and I would rather tell you that than persuade you. If the pull returns, the door will still be here.</p>
+      </div>
+      <div class="response" id="r-desire" hidden>
+        <p class="lead">Then there is no hurry.</p>
+        <p>This work starts with wanting something to be different and being willing to work on it. If that changes, come back.</p>
+      </div>
+      <div class="response" id="r-participation" hidden>
+        <p class="lead">Then what you are looking for is a vendor, not a coach.</p>
+        <p>That is a reasonable thing to want. It is just not what I do. This work only holds if your own hands are on it. If that changes, come back.</p>
+      </div>
+      <div class="response" id="r-general" hidden>
+        <p class="lead">Honestly, this is probably not for you right now.</p>
+        <p>It would be wrong to pretend otherwise. The work needs curiosity, a desire to improve, and your own hands on it. Nothing here will chase you. If that changes, the door will still be here.</p>
+      </div>
     </div>
+
+    <noscript>
+      <p>These questions answer live when JavaScript is available. The honest version without it: if you are curious, want to improve yourself and your situation, and want your own hands on the work, we should talk. Booking is not open yet.</p>
+    </noscript>
   </main>
 
-  <footer class="site-footer">
-    <span><strong>Chama Inteligente</strong> · AI and technology coaching · Lisbon, Portugal</span>
-    <span>Written “Chama”. Pronounced “Shama”.</span>
+  <footer>
+    <p>Chama Inteligente &middot; AI and technology coaching &middot; Lisbon, Portugal</p>
+    <p>Written &ldquo;Chama.&rdquo; Pronounced &ldquo;Shama.&rdquo;</p>
   </footer>
 
   <script>
     (() => {
-      const focusMap = {
-        open: {
-          label: "Open brief",
-          note: "Start with the work in front of you. The right next move depends on what you are trying to make possible.",
-          question: "What are you trying to make possible?"
-        },
-        noise: {
-          label: "See clearly",
-          note: "Start with the decision, not the tool. What matters now, what can wait, and what does not deserve more attention?",
-          question: "Which decision keeps returning because the field will not sit still?"
-        },
-        lead: {
-          label: "Lead change",
-          note: "Start with what people need to see from you. Which useful behavior should become normal next?",
-          question: "What would your team need to see you do differently next week?"
-        },
-        build: {
-          label: "Make something",
-          note: "Start close to the work. What useful thing is small enough to make, test, and own?",
-          question: "What could you make in days that would teach you what to do next?"
-        },
-        time: {
-          label: "Win back time",
-          note: "Start with repetition. Which task deserves a small experiment before it becomes a big system?",
-          question: "Which repeated task is taking more of you than it deserves?"
-        }
+      document.documentElement.classList.replace("no-js", "js");
+
+      const answers = { curiosity: null, desire: null, participation: null };
+      const responses = {
+        fit: document.querySelector("#r-fit"),
+        curiosity: document.querySelector("#r-curiosity"),
+        desire: document.querySelector("#r-desire"),
+        participation: document.querySelector("#r-participation"),
+        general: document.querySelector("#r-general")
       };
 
-      const buttons = [...document.querySelectorAll(".focus-choice")];
-      const contextNote = document.querySelector("#context-note");
-      const threadFocus = document.querySelector("#thread-focus");
-      const threadQuestion = document.querySelector("#thread-question");
-      const openingQuestion = document.querySelector("#opening-question");
-      const workInput = document.querySelector("#real-work");
-      const threadWork = document.querySelector("#thread-work");
-      const bringWork = document.querySelector("#bring-work");
-
-      function setFocus(key) {
-        const focus = focusMap[key] || focusMap.open;
-        document.body.dataset.focus = key;
-        buttons.forEach((button) => {
-          button.setAttribute("aria-pressed", String(button.dataset.focus === key));
-        });
-        contextNote.textContent = focus.note;
-        threadFocus.textContent = focus.label;
-        threadQuestion.textContent = focus.question;
-        openingQuestion.textContent = focus.question;
+      function respond() {
+        const values = Object.values(answers);
+        Object.values(responses).forEach((el) => { el.hidden = true; });
+        if (values.some((v) => v === null)) return;
+        const misses = Object.keys(answers).filter((k) => answers[k] === "no");
+        if (misses.length === 0) responses.fit.hidden = false;
+        else if (misses.length === 1) responses[misses[0]].hidden = false;
+        else responses.general.hidden = false;
       }
 
-      buttons.forEach((button) => {
-        button.addEventListener("click", () => setFocus(button.dataset.focus));
-      });
-
-      workInput.addEventListener("input", () => {
-        const value = workInput.value.trim();
-        threadWork.textContent = value || "Nothing named yet";
-        bringWork.textContent = value || "The real thing on your desk.";
+      document.querySelectorAll(".question").forEach((section) => {
+        const key = section.dataset.q;
+        const options = [...section.querySelectorAll(".answer")];
+        options.forEach((option) => {
+          option.addEventListener("click", () => {
+            answers[key] = option.dataset.fit;
+            section.setAttribute("data-answered", "");
+            options.forEach((o) => o.setAttribute("aria-pressed", String(o === option)));
+            respond();
+          });
+        });
       });
     })();
   </script>

@@ -8,13 +8,13 @@ The deployable source for **chamainteligente.com**. Built 2026-07-27 by the org 
 
 | File | What it is |
 |---|---|
-| `index.html` | The staged adaptive working brief. Self-contained: no external fonts, scripts, images, or network calls of any kind. Responsive from 320px up. The optional context thread runs only in the visitor's browser and sends or stores nothing. |
+| `index.html` | The staged threshold experience. Self-contained: no external fonts, scripts, images, or network calls of any kind. Responsive from 320px up. Three optional fit questions respond in the visitor's browser and send or store nothing. |
 
 The copy is **not authored here**. It lives in [`wiki/topics/website-content-chamainteligente-com.md`](../wiki/topics/website-content-chamainteligente-com.md) with a claims ledger tracing every factual statement to a source or tagging it `[needs confirmation]`. Change the copy there first, then bring it here, so the page never becomes the only record of what it asserts.
 
 ## The staging markers
 
-`index.html` opens with a `<div class="staging">` block that says the concept is staged, booking is not open, and nothing is live. The closing booking control is also disabled and explicitly says that no calendar or contact route is connected. Both markers stay until Elliot has approved publishing and chosen the contact route.
+`index.html` opens with a `<div class="staging">` block that says the concept is staged, booking is not open, and nothing is live. When all three answers indicate a fit, the revealed booking control is disabled and explicitly says that no calendar or contact route is connected. Both markers stay until Elliot has approved publishing and chosen the contact route.
 
 No unconfirmed credential, founder biography, email address, calendar link, testimonial, client, pricing, or measured result appears in the staged page. The full pre-publication decision list and claims ledger remain in the canonical website-content page.
 
