@@ -8,7 +8,7 @@ The deployable source for **chamainteligente.com**. Built 2026-07-27 by the org 
 
 | File | What it is |
 |---|---|
-| `index.html` | The staged threshold experience. Self-contained: no external fonts, scripts, images, or network calls of any kind. Responsive from 320px up. Three optional fit questions respond in the visitor's browser and send or store nothing. |
+| `index.html` | The staged threshold experience with undersides. Self-contained: no external fonts, scripts, images, or network calls of any kind. Responsive from 320px up. Three optional fit questions respond in the visitor's browser and send or store nothing. Every underlined sentence can be "turned over" to reveal its provenance note from the claims ledger, and the footer colophon turns the whole page over (the drafted-by-AI-staff disclosure, ledger item 6, staged for Elliot's go-live decision). **The privacy underside invites readers to verify in devtools that the page makes zero network requests; any future asset, font, or endpoint added here breaks that public sentence and must not ship without rewriting it.** |
 
 The copy is **not authored here**. It lives in [`wiki/topics/website-content-chamainteligente-com.md`](../wiki/topics/website-content-chamainteligente-com.md) with a claims ledger tracing every factual statement to a source or tagging it `[needs confirmation]`. Change the copy there first, then bring it here, so the page never becomes the only record of what it asserts.
 

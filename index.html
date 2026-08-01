@@ -1,4 +1,14 @@
 <!doctype html>
+<!--
+  You are reading the source. Good instinct.
+
+  This page was drafted by the AI staff of Chama Inteligente and approved by a human.
+  It makes no network requests: no analytics, no cookies, no fonts, no pixels.
+  Watch the network panel if you would like to check. What you tap here stays here.
+
+  Every underlined sentence on the page can be turned over to see where it comes from.
+  The interaction logic is at the bottom of this file, in plain JavaScript, unminified on purpose.
+-->
 <html lang="en" class="no-js">
 <head>
   <meta charset="utf-8">
@@ -17,6 +27,9 @@
       --flame-deep: #ff7a3d;
       --flame-core: #ffe9b0;
       --line: rgba(236, 227, 211, 0.16);
+      --paper: #f0e7d4;
+      --paper-ink: #262016;
+      --paper-quiet: #8a7a5c;
       --serif: "Iowan Old Style", Baskerville, "Palatino Linotype", Georgia, serif;
       --mono: "SFMono-Regular", Menlo, Consolas, monospace;
     }
@@ -36,6 +49,7 @@
     }
     ::selection { background: var(--flame-deep); color: var(--night); }
     button { font: inherit; color: inherit; background: none; border: 0; padding: 0; }
+
     .skip-link {
       position: fixed;
       z-index: 20;
@@ -49,7 +63,34 @@
     }
     .skip-link:focus { transform: translateY(0); }
 
+    /* The room. The reading light sits at the reader's eye line; the warmth
+       arrives only when the threshold answers with the invitation. */
+    .reading-light {
+      position: fixed;
+      top: 44%;
+      left: 50%;
+      width: 56rem;
+      height: 56rem;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(closest-side, rgba(255, 158, 74, 0.07), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .room {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(120% 90% at 50% 0%, rgba(255, 170, 90, 0.15), rgba(255, 122, 61, 0.05) 55%, transparent 80%);
+      opacity: 0;
+      transition: opacity 2.6s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body[data-outcome="fit"] .room { opacity: 1; }
+    main, footer { position: relative; z-index: 1; }
+
     .staging {
+      position: relative;
+      z-index: 1;
       padding: 0.62rem 1rem;
       text-align: center;
       background: #000;
@@ -144,14 +185,67 @@
     }
     .opening p:last-child { margin-bottom: 0; }
 
+    .turn-note {
+      margin: 2.1rem 0 0;
+      color: var(--faint);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    html.no-js .turn-note { display: none; }
+
     .before-questions {
-      margin: clamp(3rem, 7vh, 4.5rem) 0 clamp(3rem, 7vh, 4.2rem);
+      margin: clamp(2.6rem, 6vh, 4rem) 0 clamp(3rem, 7vh, 4.2rem);
       padding-top: 1.6rem;
       border-top: 1px solid var(--line);
       color: var(--quiet);
       font-size: 0.98rem;
       line-height: 1.7;
     }
+
+    /* Sentences that can be turned over. */
+    .flip { display: inline; text-align: inherit; }
+    .js .flip {
+      cursor: pointer;
+      text-decoration: underline dotted rgba(255, 180, 94, 0.55);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.24em;
+    }
+    .js .flip:hover { text-decoration-color: var(--flame); }
+    .js .flip[aria-expanded="true"] {
+      color: var(--flame-core);
+      text-decoration-style: solid;
+      text-decoration-color: var(--flame);
+    }
+    .flip:focus-visible { outline: 2px solid var(--flame); outline-offset: 3px; }
+
+    .underside {
+      margin: 0.95rem 0 1.5rem;
+      padding: 1.05rem 1.15rem 1.2rem;
+      background: var(--paper);
+      color: var(--paper-ink);
+      text-align: left;
+      box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.35);
+      transform-origin: 50% 0;
+      animation: turn 420ms ease both;
+    }
+    @keyframes turn {
+      from { opacity: 0; transform: perspective(40rem) rotateX(-26deg); }
+      to { opacity: 1; transform: none; }
+    }
+    .underside .u-label {
+      display: block;
+      margin-bottom: 0.55rem;
+      color: var(--paper-quiet);
+      font: 700 0.6rem/1.3 var(--mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .underside p {
+      margin: 0 0 0.8rem;
+      font-size: 0.98rem;
+      line-height: 1.62;
+    }
+    .underside p:last-child { margin-bottom: 0; }
 
     .question { margin: 0 0 clamp(3.2rem, 7vh, 4.2rem); }
     .question h2 {
@@ -252,10 +346,23 @@
       color: var(--faint);
       font: 500 0.66rem/1.9 var(--mono);
       letter-spacing: 0.06em;
-      text-transform: uppercase;
       text-align: center;
     }
     footer p { margin: 0; }
+    .colophon-line {
+      margin-bottom: 1.4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+      text-transform: uppercase;
+    }
+    .identity { text-transform: uppercase; }
+    #u-colophon {
+      margin: 0 0 1.6rem;
+      text-transform: none;
+      letter-spacing: normal;
+      font-family: var(--serif);
+    }
+    #u-colophon p { font-size: 0.98rem; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *:before, *:after { animation: none !important; transition: none !important; }
@@ -265,9 +372,11 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to the introduction</a>
   <div class="staging" role="status">Staged concept &middot; Booking is not open &middot; Nothing here is live</div>
+  <div class="reading-light" aria-hidden="true"></div>
+  <div class="room" aria-hidden="true"></div>
 
   <main id="main-content">
-    <h1 class="wordmark">Chama Inteligente</h1>
+    <p class="wordmark">Chama Inteligente</p>
 
     <div class="door" aria-hidden="true">
       <div class="glow"></div>
@@ -275,40 +384,78 @@
       <div class="sill"></div>
     </div>
 
-    <p class="name-line">Chama is Portuguese for flame. It is pronounced &ldquo;Shama.&rdquo;</p>
-
-    <div class="opening">
-      <p>A small AI and technology coaching practice, based in Lisbon, working anywhere. I help curious people, leaders, and small teams use AI and technology with confidence. We start from your real work and build judgment and capability that stay with you as the tools change.</p>
-      <p>I will never take on more clients than I can give the full time and attention they are paying for. So this page will not try to persuade you. It will ask you three questions.</p>
+    <p class="name-line"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-name">Chama is Portuguese for flame. It is pronounced &ldquo;Shama.&rdquo;</span></p>
+    <div class="underside" id="u-name" hidden>
+      <span class="u-label">The underside</span>
+      <p>Chama Inteligente, Lda. is a Portuguese private limited company, registered in Lisbon in 2026, company number 519425235. The name is literal. Chama is flame; the intelligent flame is the one that stays small on purpose and gives steady light.</p>
     </div>
 
-    <p class="before-questions">Answer them honestly. Nothing is recorded and nothing is sent. The questions are for you as much as for me.</p>
+    <div class="opening">
+      <p><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-practice">A small AI and technology coaching practice</span>, based in Lisbon, working anywhere. I help curious people, leaders, and small teams use AI and technology with confidence. We start from your real work and build judgment and capability that stay with you as the tools change.</p>
+      <div class="underside" id="u-practice" hidden>
+        <span class="u-label">The underside</span>
+        <p>The company is new. The work behind it is not. Chama Inteligente is registered in Portugal for exactly this work: IT consulting, business and management consulting, and professional training. This sentence, like every sentence here, was written into the company&rsquo;s claims ledger before it was allowed onto the page.</p>
+      </div>
+      <p>I will <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-capacity">never take on more clients</span> than I can give the full time and attention they are paying for. So this page will not try to persuade you. It will ask you three questions.</p>
+      <div class="underside" id="u-capacity" hidden>
+        <span class="u-label">The underside</span>
+        <p>A standing rule set by the founder, and the reason this page asks questions instead of selling. The practice stays deliberately small; when it is full, it is full. Attention is the product; overbooking would break it.</p>
+      </div>
+    </div>
+
+    <p class="turn-note">Some sentences on this page are underlined. Turn one over to see where it comes from and why it is here.</p>
+
+    <p class="before-questions">Answer them honestly. <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-privacy">Nothing is recorded and nothing is sent.</span> The questions are for you as much as for me.</p>
+    <div class="underside" id="u-privacy" hidden>
+      <span class="u-label">The underside</span>
+      <p>Check this instead of trusting it. Open your browser&rsquo;s developer tools and watch the network panel while you answer: this page makes no requests at all. No analytics, no cookies, no pixels, no fonts fetched from anyone. Your answers exist only in this tab and vanish with it.</p>
+    </div>
 
     <section class="question" data-q="curiosity" aria-labelledby="q-curiosity">
-      <h2 id="q-curiosity">When something new appears in this field, what do you feel?</h2>
+      <h2 id="q-curiosity"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-curiosity">When something new appears in this field, what do you feel?</span></h2>
       <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Curious. I want to see it for myself.</span></button>
       <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>Tired. I mostly wish it would slow down.</span></button>
+      <div class="underside" id="u-curiosity" hidden>
+        <span class="u-label">The underside</span>
+        <p>Why this question is here: the work runs on curiosity and fails without it. Nobody can supply yours for you, least of all a coach. Both answers are respectable; only one of them is a reason to start.</p>
+      </div>
     </section>
 
     <section class="question" data-q="desire" aria-labelledby="q-desire">
-      <h2 id="q-desire">Do you want to improve yourself and the situation you are in?</h2>
+      <h2 id="q-desire"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-desire">Do you want to improve yourself and the situation you are in?</span></h2>
       <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Yes. I want things to be better, and I am willing to work on it.</span></button>
       <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>Not right now. I am mostly watching what happens.</span></button>
+      <div class="underside" id="u-desire" hidden>
+        <span class="u-label">The underside</span>
+        <p>Why this question is here: coaching begins with wanting something to be different. Watching from the side is a legitimate place to stand. It is just not a place a coach can meet you.</p>
+      </div>
     </section>
 
     <section class="question" data-q="participation" aria-labelledby="q-participation">
-      <h2 id="q-participation">If we worked together, whose hands would be on the work?</h2>
+      <h2 id="q-participation"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-participation">If we worked together, whose hands would be on the work?</span></h2>
       <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Mine. I want to be able to do this myself.</span></button>
       <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>Someone else&rsquo;s. I would rather hand it over.</span></button>
+      <div class="underside" id="u-participation" hidden>
+        <span class="u-label">The underside</span>
+        <p>Why this question is here: the promise of this practice is agency, meaning your own hands get stronger. If you want the work taken off your plate entirely, a vendor will serve you better, and it would be dishonest to pretend otherwise.</p>
+      </div>
     </section>
 
     <div class="threshold-response" aria-live="polite">
       <div class="response" id="r-fit" hidden>
-        <p class="lead">Then we should talk.</p>
+        <p class="lead"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-fit">Then we should talk.</span></p>
+        <div class="underside" id="u-fit" hidden>
+          <span class="u-label">The underside</span>
+          <p>What just happened: your three answers are the three the work needs, so the page opened the door. Nothing was scored, stored, or sent. The logic is a dozen plain lines of JavaScript in this page&rsquo;s source, and you are welcome to read them.</p>
+        </div>
         <p>Bring the real thing. Tell me what you are working on, and I will tell you honestly whether I think I can help and what that could look like.</p>
         <div class="booking">
           <button class="booking-stub" type="button" disabled aria-describedby="booking-status">Booking is not open yet</button>
-          <p class="booking-status" id="booking-status">Staged placeholder. No calendar or contact route is connected.</p>
+          <p class="booking-status" id="booking-status"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-booking">Staged placeholder. No calendar or contact route is connected.</span></p>
+          <div class="underside" id="u-booking" hidden>
+            <span class="u-label">The underside</span>
+            <p>Booking is not connected because this page is a staged concept and says so at the top. The control stays visibly disabled until the founder opens the route personally. No hidden form, no waitlist, no list you were quietly added to.</p>
+          </div>
         </div>
       </div>
       <div class="response" id="r-curiosity" hidden>
@@ -335,14 +482,21 @@
   </main>
 
   <footer>
-    <p>Chama Inteligente &middot; AI and technology coaching &middot; Lisbon, Portugal</p>
-    <p>Written &ldquo;Chama.&rdquo; Pronounced &ldquo;Shama.&rdquo;</p>
+    <p class="colophon-line">Made by the company&rsquo;s AI staff. Approved by a human. <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-colophon">Turn this page over.</span></p>
+    <div class="underside" id="u-colophon" hidden>
+      <span class="u-label">The colophon</span>
+      <p>This page was drafted by the company&rsquo;s own AI staff and approved by a human before it reached you. That is how the whole company runs. Chama Inteligente operates as an autonomous organization: a staff of software agents does the daily work and keeps the records, and a human approves anything that leaves the building. It is the third such system the founder has built.</p>
+      <p>The page you are reading is the practice demonstrating itself: judgment about what matters, honesty about what is claimed, and new capability used with a steady hand. Every underlined sentence traces to the company&rsquo;s internal claims ledger, where each public statement is tied to a source before it is allowed to appear here.</p>
+    </div>
+    <p class="identity">Chama Inteligente &middot; AI and technology coaching &middot; Lisbon, Portugal</p>
+    <p class="identity">Written &ldquo;Chama.&rdquo; Pronounced &ldquo;Shama.&rdquo;</p>
   </footer>
 
   <script>
     (() => {
       document.documentElement.classList.replace("no-js", "js");
 
+      /* The threshold. Three questions, one honest answer. Nothing leaves this page. */
       const answers = { curiosity: null, desire: null, participation: null };
       const responses = {
         fit: document.querySelector("#r-fit"),
@@ -355,11 +509,15 @@
       function respond() {
         const values = Object.values(answers);
         Object.values(responses).forEach((el) => { el.hidden = true; });
-        if (values.some((v) => v === null)) return;
+        if (values.some((v) => v === null)) {
+          document.body.removeAttribute("data-outcome");
+          return;
+        }
         const misses = Object.keys(answers).filter((k) => answers[k] === "no");
         if (misses.length === 0) responses.fit.hidden = false;
         else if (misses.length === 1) responses[misses[0]].hidden = false;
         else responses.general.hidden = false;
+        document.body.dataset.outcome = misses.length === 0 ? "fit" : "other";
       }
 
       document.querySelectorAll(".question").forEach((section) => {
@@ -372,6 +530,27 @@
             options.forEach((o) => o.setAttribute("aria-pressed", String(o === option)));
             respond();
           });
+        });
+      });
+
+      /* The undersides. Turn a sentence over; one at a time. */
+      const flips = [...document.querySelectorAll(".flip")];
+      flips.forEach((flip) => {
+        const underside = document.getElementById(flip.getAttribute("aria-controls"));
+        flip.addEventListener("click", () => {
+          const wasOpen = flip.getAttribute("aria-expanded") === "true";
+          flips.forEach((f) => f.setAttribute("aria-expanded", "false"));
+          document.querySelectorAll(".underside").forEach((u) => { u.hidden = true; });
+          if (!wasOpen) {
+            flip.setAttribute("aria-expanded", "true");
+            underside.hidden = false;
+          }
+        });
+        flip.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            flip.click();
+          }
         });
       });
     })();
