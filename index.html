@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chama Inteligente | AI and technology coaching</title>
   <meta name="description" content="AI and technology coaching for people and small teams who want to learn what they can do now, and keep going as the tools change.">
-  <meta name="robots" content="noindex, nofollow">
   <style>
     :root {
       --paper: #f3f0e8;
@@ -57,18 +56,6 @@
 
     .skip-link:focus {
       transform: translateY(0);
-    }
-
-    .staging {
-      padding: 0.58rem var(--pad);
-      background: var(--ink);
-      color: var(--paper);
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      line-height: 1.4;
-      text-align: center;
-      text-transform: uppercase;
     }
 
     .frame {
@@ -263,9 +250,9 @@
 
     .invitation-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+      grid-template-columns: minmax(0, 0.9fr) minmax(22rem, 1.1fr);
       gap: clamp(3rem, 10vw, 12rem);
-      align-items: end;
+      align-items: start;
     }
 
     .invitation h2 {
@@ -285,27 +272,123 @@
       text-wrap: pretty;
     }
 
-    .contact-stub {
+    .intake-form {
+      display: grid;
+      gap: 1.2rem;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .field span {
+      color: var(--quiet);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 0.9rem 0;
+      border: 1px solid var(--ink);
+      border-width: 0 0 1px;
+      background: transparent;
+      color: var(--ink);
+      font: 400 1.05rem/1.4 var(--sans);
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 7rem;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--ember);
+      box-shadow: 0 1px 0 var(--ember);
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: #8a867d;
+      opacity: 1;
+    }
+
+    .submit-button {
       width: 100%;
       padding: 1rem 1.15rem;
       border: 1px solid var(--ink);
       border-radius: 0;
-      background: transparent;
-      color: var(--ink);
-      font: 600 0.82rem/1.2 var(--sans);
-      letter-spacing: 0.04em;
+      background: var(--ink);
+      color: var(--paper);
+      font: 700 0.8rem/1.2 var(--sans);
+      letter-spacing: 0.07em;
       text-align: left;
       text-transform: uppercase;
-      opacity: 1;
-      cursor: not-allowed;
+      cursor: pointer;
+      transition: background-color 140ms ease, color 140ms ease;
     }
 
-    .contact-status {
-      margin: 0.7rem 0 0 !important;
+    .submit-button:hover,
+    .submit-button:focus-visible {
+      background: var(--ember);
+      border-color: var(--ember);
+      color: #fff;
+    }
+
+    .submit-button:disabled {
+      cursor: wait;
+      opacity: 0.58;
+    }
+
+    .intake-note {
+      margin: -0.35rem 0 0 !important;
       color: var(--quiet);
       font-size: 0.75rem !important;
       letter-spacing: 0 !important;
       line-height: 1.4 !important;
+    }
+
+    .form-response {
+      display: none;
+      margin: 0 !important;
+      padding: 0.9rem 1rem;
+      border-left: 3px solid var(--ember);
+      background: rgba(239, 77, 47, 0.08);
+      font-size: 0.95rem !important;
+      line-height: 1.4 !important;
+    }
+
+    .form-response.is-visible,
+    .form-response:target {
+      display: block;
+    }
+
+    .form-response.is-error {
+      border-left-color: var(--ink);
+      background: rgba(20, 20, 18, 0.08);
+    }
+
+    .honeypot {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
 
     footer {
@@ -384,6 +467,10 @@
         align-items: start;
       }
 
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+
       .footer-inner {
         display: grid;
         gap: 0.3rem;
@@ -404,7 +491,6 @@
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to the introduction</a>
-  <div class="staging" role="status">Staged page &middot; Contact is not open &middot; Nothing here is live</div>
 
   <header class="frame masthead">
     <p class="wordmark">Chama Inteligente</p>
@@ -461,8 +547,33 @@
         <h2 id="invitation-title">Want to work together?</h2>
         <div class="invitation-copy">
           <p>Tell me what you are trying to do and what you have tried so far. I will tell you whether I think I can help, and why.</p>
-          <button class="contact-stub" type="button" disabled aria-describedby="contact-status">Contact route not open yet</button>
-          <p class="contact-status" id="contact-status">This page is staged. Nothing is sent.</p>
+          <form class="intake-form" id="intake-form" action="/api/intake" method="post" accept-charset="UTF-8" aria-describedby="intake-note">
+            <div class="field-row">
+              <label class="field">
+                <span>Your name</span>
+                <input type="text" name="name" autocomplete="name" maxlength="120" required>
+              </label>
+              <label class="field">
+                <span>Email</span>
+                <input type="email" name="email" autocomplete="email" inputmode="email" maxlength="254" required>
+              </label>
+            </div>
+            <label class="field">
+              <span>What are you trying to do?</span>
+              <textarea name="goal" maxlength="4000" required></textarea>
+            </label>
+            <label class="field">
+              <span>What have you tried so far? <span aria-hidden="true">(optional)</span></span>
+              <textarea name="tried" maxlength="4000"></textarea>
+            </label>
+            <div class="honeypot" aria-hidden="true">
+              <label>Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label>
+            </div>
+            <input type="hidden" name="startedAt" id="started-at" value="">
+            <button class="submit-button" type="submit">Send this to Elliot</button>
+            <p class="intake-note" id="intake-note">Submissions are stored privately for Elliot to review. They are not used for marketing or treated as instructions to an automated system.</p>
+            <p class="form-response" id="thanks" role="status" aria-live="polite" tabindex="-1">Thanks. Elliot has your note and will reply by email if it looks like a useful conversation.</p>
+          </form>
         </div>
       </div>
     </section>
@@ -474,5 +585,48 @@
       <p>AI and technology coaching</p>
     </div>
   </footer>
+  <script>
+    (() => {
+      const form = document.querySelector("#intake-form");
+      const response = document.querySelector("#thanks");
+      const submit = form.querySelector("button[type='submit']");
+      const startedAt = document.querySelector("#started-at");
+
+      startedAt.value = String(Date.now());
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        response.classList.remove("is-visible", "is-error");
+        submit.disabled = true;
+        submit.textContent = "Sending...";
+
+        try {
+          const result = await fetch(form.action, {
+            method: "POST",
+            headers: { Accept: "application/json" },
+            body: new FormData(form)
+          });
+
+          const payload = await result.json().catch(() => ({}));
+          if (!result.ok) {
+            throw new Error(payload.error || "Something went wrong and your note was not saved. Please try again.");
+          }
+
+          form.reset();
+          startedAt.value = String(Date.now());
+          response.textContent = "Thanks. Elliot has your note and will reply by email if it looks like a useful conversation.";
+          response.classList.add("is-visible");
+          response.focus({ preventScroll: true });
+        } catch (error) {
+          response.textContent = error.message || "Something went wrong and your note was not saved. Please try again.";
+          response.classList.add("is-visible", "is-error");
+          response.focus({ preventScroll: true });
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "Send this to Elliot";
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

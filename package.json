@@ -1,0 +1,12 @@
+{
+  "name": "chama-inteligente-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check api/intake.js"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.3.0"
+  }
+}
