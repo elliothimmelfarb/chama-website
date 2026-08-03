@@ -13,7 +13,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chama Inteligente | AI and technology coaching</title>
-  <meta name="description" content="A small AI and technology coaching practice in Lisbon, helping people use AI and technology to accomplish previously impossible things. Two questions before anything is offered.">
+  <meta name="description" content="A small AI and technology coaching practice in Lisbon, helping people use AI and technology to accomplish previously impossible things.">
   <meta name="robots" content="noindex, nofollow">
   <style>
     :root {
@@ -78,8 +78,7 @@
     }
     .skip-link:focus { transform: translateY(0); }
 
-    /* The room. The reading light sits at the reader's eye line; the warmth
-       arrives only when the threshold answers with the invitation. */
+    /* The reading light sits at the reader's eye line. */
     .reading-light {
       position: fixed;
       top: 44%;
@@ -91,16 +90,6 @@
       pointer-events: none;
       z-index: 0;
     }
-    .room {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(120% 90% at 50% 0%, rgba(255, 170, 90, 0.16), rgba(255, 122, 61, 0.05) 55%, transparent 80%);
-      opacity: 0;
-      transition: opacity 2.6s ease;
-      pointer-events: none;
-      z-index: 0;
-    }
-    body[data-outcome="fit"] .room { opacity: 1; }
     main, footer { position: relative; z-index: 1; }
 
     .staging {
@@ -318,219 +307,58 @@
     .underside p:last-child { margin-bottom: 0; }
 
     /* ---------------------------------------------------------------- */
-    /* The threshold: two questions as a slideshow.                      */
+    /* What makes a good fit                                             */
     /* ---------------------------------------------------------------- */
-    .threshold {
-      margin: clamp(3rem, 7vh, 4.5rem) 0 clamp(3rem, 7vh, 4.2rem);
+    .fit {
+      margin: clamp(3rem, 7vh, 4.5rem) 0 0;
       padding-top: 1.9rem;
       border-top: 1px solid var(--line);
     }
-
-    .fuse-wrap { margin-bottom: 2.1rem; }
-    html.no-js .fuse-wrap { display: none; }
-    .fuse-label {
-      margin: 0 0 0.7rem;
-      color: var(--faint);
-      font: 700 0.62rem/1.4 var(--mono);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-    .fuse {
-      position: relative;
-      height: 2px;
-      background: rgba(236, 227, 211, 0.12);
-      border-radius: 2px;
-    }
-    .fuse-burn {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, rgba(255, 122, 61, 0.35), var(--flame));
-      border-radius: 2px;
-      transition: width 0.7s var(--ease-out);
-    }
-    .fuse-tip {
-      position: absolute;
-      top: 50%;
-      right: -0.22rem;
-      width: 0.44rem;
-      height: 0.44rem;
-      transform: translateY(-50%);
-      border-radius: 50%;
-      background: var(--flame-core);
-      box-shadow: 0 0 0.6rem 0.15rem rgba(255, 180, 94, 0.6);
-      animation: tip-flicker 1.3s ease-in-out infinite alternate;
-    }
-    @keyframes tip-flicker {
-      from { box-shadow: 0 0 0.45rem 0.1rem rgba(255, 180, 94, 0.45); }
-      to { box-shadow: 0 0 0.85rem 0.25rem rgba(255, 180, 94, 0.75); }
-    }
-
-    /* The deck. Slides share one grid cell; only one is lit at a time.
-       Without JavaScript they simply stack and read top to bottom. */
-    .js .deck {
-      display: grid;
-      position: relative;
-      overflow: hidden;
-      transition: height 0.6s var(--ease-out);
-    }
-    .js .slide {
-      grid-area: 1 / 1;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateX(2.6rem);
-      transition:
-        opacity 0.5s var(--ease-out),
-        transform 0.5s var(--ease-out),
-        visibility 0s linear 0.5s;
-    }
-    .js .slide.is-prev { transform: translateX(-2.6rem); }
-    .js .slide.active {
-      opacity: 1;
-      visibility: visible;
-      transform: none;
-      transition-delay: 0.12s, 0.12s, 0.12s;
-    }
-    .slide { outline: none; }
-    html.no-js .slide { margin-bottom: 2.6rem; }
-    html.no-js .slide[data-kind="result"] { display: none; }
-
-    .slide-intro p {
-      margin: 0 0 1.6rem;
-      color: var(--quiet);
-      font-size: 1.05rem;
-      line-height: 1.7;
-    }
-
-    .begin {
-      display: inline-grid;
-      grid-auto-flow: column;
-      align-items: center;
-      gap: 0.7rem;
-      padding: 0.85rem 1.5rem;
-      border: 1px solid rgba(255, 180, 94, 0.45);
-      border-radius: 999px;
-      color: var(--flame-core);
-      font: 700 0.7rem/1.3 var(--mono);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
-    }
-    .begin:hover, .begin:focus-visible {
-      border-color: var(--flame);
-      background: rgba(255, 158, 74, 0.07);
-      box-shadow: 0 0 1.4rem rgba(255, 140, 60, 0.22);
-    }
-    .begin:focus-visible { outline: 2px solid var(--flame); outline-offset: 3px; }
-    .begin .spark {
-      width: 0.4rem;
-      height: 0.4rem;
-      border-radius: 50%;
-      background: var(--flame);
-      box-shadow: 0 0 0.5rem rgba(255, 180, 94, 0.8);
-      animation: tip-flicker 1.3s ease-in-out infinite alternate;
-    }
-    html.no-js .begin { display: none; }
-
-    .question h2 {
-      margin: 0 0 1.6rem;
+    .fit h2 {
+      margin: 0 0 1.7rem;
       font-size: clamp(1.32rem, 4.4vw, 1.55rem);
       font-weight: 500;
       line-height: 1.42;
       letter-spacing: -0.01em;
-      text-wrap: balance;
     }
-    .answers { display: grid; gap: 0.7rem; }
-    .answer {
+    .fit-list {
+      display: grid;
+      gap: 1.05rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .fit-list li {
       display: grid;
       grid-template-columns: 1.55rem 1fr;
       align-items: baseline;
-      width: 100%;
-      padding: 0.95rem 1.05rem;
-      border: 1px solid var(--line);
-      border-radius: 3px;
-      text-align: left;
-      font-size: 1.08rem;
-      line-height: 1.55;
-      color: var(--text);
-      transition: opacity 220ms ease, border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+      font-size: 1.16rem;
+      line-height: 1.62;
     }
-    .js .answer { cursor: pointer; }
-    .js .answer:hover {
-      border-color: rgba(255, 180, 94, 0.5);
-      background: rgba(255, 158, 74, 0.05);
-    }
-    .answer .mark {
+    .fit-list .mark {
       position: relative;
       top: 0.13em;
       width: 0.52rem;
       height: 0.52rem;
-      border: 1px solid var(--faint);
       border-radius: 50%;
-      transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
-    }
-    .js .answer:hover .mark { border-color: var(--flame); }
-    .answer[aria-pressed="true"] {
-      border-color: var(--flame);
-      background: rgba(255, 158, 74, 0.08);
-      box-shadow: 0 0 1.2rem rgba(255, 140, 60, 0.14);
-    }
-    .answer[aria-pressed="true"] .mark {
       background: var(--flame);
-      border-color: var(--flame);
       box-shadow: 0 0 0.6rem rgba(255, 180, 94, 0.55);
     }
-    .question[data-answered] .answer[aria-pressed="false"] { opacity: 0.42; }
-    .js .answer[aria-pressed="false"]:hover { opacity: 1; }
-    .answer:focus-visible { outline: 2px solid var(--flame); outline-offset: 4px; }
-    .question .underside { margin-top: 1.4rem; }
 
-    .deck-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      min-height: 2.2rem;
-      margin-top: 2rem;
+    /* The invitation. */
+    .invite { margin: clamp(2.6rem, 6vh, 3.6rem) 0 0; }
+    .invite-lead {
+      margin: 0 0 1.3rem;
+      font-size: 1.5rem;
+      line-height: 1.3;
+      color: var(--flame-core);
     }
-    html.no-js .deck-nav { display: none; }
-    .deck-back {
-      color: var(--faint);
-      font: 700 0.66rem/1.4 var(--mono);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: color 200ms ease;
-    }
-    .deck-back:hover, .deck-back:focus-visible { color: var(--flame); }
-    .deck-back:focus-visible { outline: 2px solid var(--flame); outline-offset: 3px; }
-    .deck-hint {
-      color: var(--faint);
-      font: 500 0.62rem/1.5 var(--mono);
-      letter-spacing: 0.06em;
-    }
-
-    /* The verdicts. */
-    .threshold-response { min-height: 2rem; }
-    .response { margin: 0; animation: arrive 700ms ease both; }
-    @keyframes arrive {
-      from { opacity: 0; transform: translateY(0.4rem); }
-      to { opacity: 1; transform: none; }
-    }
-    .response > p {
+    .invite > p {
       margin: 0 0 1.3rem;
       font-size: 1.16rem;
       line-height: 1.68;
       text-wrap: pretty;
     }
-    .response > p:last-child { margin-bottom: 0; }
-    .response .lead {
-      font-size: 1.5rem;
-      line-height: 1.3;
-    }
-    #r-fit .lead { color: var(--flame-core); }
     .booking { margin-top: 2.2rem; }
     .booking-stub {
       display: block;
@@ -549,15 +377,6 @@
       margin: 0.6rem 0 0;
       color: var(--faint);
       font: 500 0.68rem/1.5 var(--mono);
-    }
-
-    noscript p {
-      margin: 0;
-      padding-top: 1.8rem;
-      border-top: 1px solid var(--line);
-      color: var(--quiet);
-      font-size: 1rem;
-      line-height: 1.7;
     }
 
     footer {
@@ -597,7 +416,6 @@
   <a class="skip-link" href="#main-content">Skip to the introduction</a>
   <div class="staging" role="status">Staged concept &middot; Booking is not open &middot; Nothing here is live</div>
   <div class="reading-light" aria-hidden="true"></div>
-  <div class="room" aria-hidden="true"></div>
 
   <main id="main-content">
     <header class="brand">
@@ -664,100 +482,63 @@
         <span class="u-label">The underside</span>
         <p>Chama Inteligente was formed in 2026 to hold work that already existed, and it is registered in Portugal for exactly this work: IT consulting, business and management consulting, and professional training. Every factual sentence on this page was written into the company&rsquo;s claims ledger, tied to a source, before it appeared here.</p>
       </div>
-      <p class="reveal">I will <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-capacity">never take on more clients</span> than I can give the full time and attention they are paying for. So all this page does is ask you two questions.</p>
+      <p class="reveal">I will <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-capacity">never take on more clients</span> than I can give the full time and attention they are paying for. So all this page does is tell you what a good fit looks like.</p>
       <div class="underside" id="u-capacity" hidden>
         <span class="u-label">The underside</span>
-        <p>A standing rule set by the founder, and the reason this page asks questions instead of selling. The practice stays small so each client gets the attention they are paying for. When it is full, new clients wait.</p>
+        <p>A standing rule set by the founder, and the reason this page describes a fit instead of selling one. The practice stays small so each client gets the attention they are paying for. When it is full, new clients wait.</p>
       </div>
     </div>
 
     <p class="turn-note reveal">Some sentences on this page are underlined. Turn one over to see where it comes from and why it is here.</p>
 
-    <section class="threshold" aria-label="Two questions">
-      <div class="fuse-wrap" aria-hidden="true">
-        <p class="fuse-label" id="fuse-label">The threshold</p>
-        <div class="fuse">
-          <div class="fuse-burn"><span class="fuse-tip"></span></div>
-        </div>
-      </div>
-
-      <div class="deck">
-        <section class="slide slide-intro active" data-kind="intro" data-label="The threshold" tabindex="-1">
-          <p>Answer them honestly. <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-privacy">Nothing is recorded and nothing is sent.</span></p>
-          <div class="underside" id="u-privacy" hidden>
-            <span class="u-label">The underside</span>
-            <p>You can check this yourself. Open your browser&rsquo;s developer tools and watch the network panel while you answer: this page makes no requests at all. No analytics, no cookies, no fonts. Your answers exist only in this tab and disappear when you close it.</p>
-          </div>
-          <button class="begin" type="button"><span class="spark" aria-hidden="true"></span>Ask me the two questions</button>
-        </section>
-
-        <section class="slide question" data-kind="question" data-q="appetite" data-label="Question 1 of 2" aria-labelledby="q-appetite" tabindex="-1">
-          <h2 id="q-appetite"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-appetite">New things keep arriving in AI. Do you still want to see what they make possible?</span></h2>
-          <div class="answers">
-            <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Yes. Even on the days the pace wears me out, I want to see for myself.</span></button>
-            <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>No. I would rather sit this wave out.</span></button>
-          </div>
-          <div class="underside" id="u-appetite" hidden>
-            <span class="u-label">The underside</span>
-            <p>Why this question is here: coaching only works if you still want to see for yourself, and no coach can supply that want for you. Being tired does not disqualify you. The pace wears everyone out some days, including people doing this well. The only real mismatch is not caring anymore.</p>
-          </div>
-        </section>
-
-        <section class="slide question" data-kind="question" data-q="signal" data-label="Question 2 of 2" aria-labelledby="q-signal" tabindex="-1">
-          <h2 id="q-signal"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-signal">There is more noise in AI than anyone can follow. Do you want to learn to spot the signal yourself?</span></h2>
-          <div class="answers">
-            <button class="answer" type="button" data-fit="yes" aria-pressed="false"><span class="mark"></span><span>Yes. I want to know what matters for my work and my life, without waiting to be told.</span></button>
-            <button class="answer" type="button" data-fit="no" aria-pressed="false"><span class="mark"></span><span>Not really. I would rather someone just handed me the answers.</span></button>
-          </div>
-          <div class="underside" id="u-signal" hidden>
-            <span class="u-label">The underside</span>
-            <p>Why this question is here: any list of answers I hand you will be stale within months, because the tools keep changing. What lasts is knowing how to tell what matters for your own situation, and that is the skill this work builds. We build real things together along the way, which is the fastest way to learn it.</p>
-          </div>
-        </section>
-
-        <section class="slide" data-kind="result" data-label="Your answer" tabindex="-1">
-          <div class="threshold-response" aria-live="polite">
-            <div class="response" id="r-fit" hidden>
-              <p class="lead"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-fit">Then we should talk.</span></p>
-              <div class="underside" id="u-fit" hidden>
-                <span class="u-label">The underside</span>
-                <p>Your two answers are the ones this work needs. Nothing was recorded or sent. The logic is plain, unminified JavaScript at the bottom of this page&rsquo;s source.</p>
-              </div>
-              <p>Bring the real thing. Tell me what you are working on, and I will tell you honestly whether I think I can help and what that could look like.</p>
-              <div class="booking">
-                <button class="booking-stub" type="button" disabled aria-describedby="booking-status">Booking is not open yet</button>
-                <p class="booking-status" id="booking-status"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-booking">Staged placeholder. No calendar or contact route is connected.</span></p>
-                <div class="underside" id="u-booking" hidden>
-                  <span class="u-label">The underside</span>
-                  <p>This page is a staged concept and says so at the top. The control stays disabled until the founder connects a real booking route. There is no form or waitlist behind it.</p>
-                </div>
-              </div>
-            </div>
-            <div class="response" id="r-appetite" hidden>
-              <p class="lead">Fair enough.</p>
-              <p>This kind of coaching only pays off if you want to see what the tools can do, and nothing here will argue you into that. If that changes, come back.</p>
-            </div>
-            <div class="response" id="r-signal" hidden>
-              <p class="lead">It sounds like you want someone to do it for you.</p>
-              <p>That is a job for a vendor, and good vendors exist. What I do is different: I teach you to judge these tools for yourself, a skill that keeps working after we are done. If you decide you want that, come back.</p>
-            </div>
-            <div class="response" id="r-general" hidden>
-              <p class="lead">This is probably not for you right now.</p>
-              <p>The work asks for two things you said you do not want at the moment: seeing for yourself, and judging for yourself. If that changes, come back.</p>
+    <section class="fit" aria-label="What makes a good fit">
+      <h2 class="reveal">What makes a good fit</h2>
+      <ul class="fit-list">
+        <li class="reveal">
+          <span class="mark" aria-hidden="true"></span>
+          <div>
+            <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-believe">You believe AI changes what is possible.</span>
+            <div class="underside" id="u-believe" hidden>
+              <span class="u-label">The underside</span>
+              <p>Coaching only works for someone who already believes there is something here worth going after. No coach can supply that belief. Being worn out by the pace does not rule you out; the pace wears everyone out some days.</p>
             </div>
           </div>
-        </section>
-      </div>
-
-      <div class="deck-nav">
-        <button class="deck-back" type="button" hidden>&larr; Previous</button>
-        <span class="deck-hint" aria-hidden="true"></span>
-      </div>
+        </li>
+        <li class="reveal">
+          <span class="mark" aria-hidden="true"></span>
+          <div>
+            <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-power">You want to learn how to use that power.</span>
+            <div class="underside" id="u-power" hidden>
+              <span class="u-label">The underside</span>
+              <p>Learning is the point of the work. If you would rather hand a problem to someone and get an answer back, you want a vendor, and good vendors exist. What I teach is how to do it yourself: we build real things together, and what you learn keeps working after we are done.</p>
+            </div>
+          </div>
+        </li>
+        <li class="reveal">
+          <span class="mark" aria-hidden="true"></span>
+          <div>
+            <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-signal">You want to find the signal in the noise of AI news and headlines.</span>
+            <div class="underside" id="u-signal" hidden>
+              <span class="u-label">The underside</span>
+              <p>Any list of answers I hand you would be stale within months, because the tools keep changing. What lasts is knowing how to tell what matters for your own situation, and that is the skill this work builds.</p>
+            </div>
+          </div>
+        </li>
+      </ul>
     </section>
 
-    <noscript>
-      <p>These questions answer live when JavaScript is available. The short version without it: if you still want to see what these tools make possible, and you want to learn to spot the signal yourself, we should talk. Booking is not open yet.</p>
-    </noscript>
+    <section class="invite" aria-label="The invitation">
+      <p class="invite-lead reveal">If that sounds like you, we should talk.</p>
+      <p class="reveal">Bring the real thing. Tell me what you are working on, and I will tell you honestly whether I think I can help and what that could look like.</p>
+      <div class="booking reveal">
+        <button class="booking-stub" type="button" disabled aria-describedby="booking-status">Booking is not open yet</button>
+        <p class="booking-status" id="booking-status"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-booking">Staged placeholder. No calendar or contact route is connected.</span></p>
+        <div class="underside" id="u-booking" hidden>
+          <span class="u-label">The underside</span>
+          <p>This page is a staged concept and says so at the top. The control stays disabled until the founder connects a real booking route. There is no form or waitlist behind it.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
@@ -765,7 +546,7 @@
     <div class="underside" id="u-colophon" hidden>
       <span class="u-label">The colophon</span>
       <p>This page was drafted by the company&rsquo;s own AI staff and approved by a human before it reached you. That is how the whole company runs. Chama Inteligente operates as an autonomous organization: a staff of software agents does the daily work and keeps the records, and a human approves anything that leaves the building. It is the third such system the founder has built.</p>
-      <p>Every underlined sentence traces to the company&rsquo;s internal claims ledger, where each public statement is tied to a source before it appears here.</p>
+      <p>Every underlined sentence traces to the company&rsquo;s internal claims ledger, where each public statement is tied to a source before it appears here. The page also makes no network requests: no analytics, no cookies, no fonts. Open your browser&rsquo;s network panel if you would like to check.</p>
     </div>
     <p class="identity">Chama Inteligente &middot; AI and technology coaching &middot; Lisbon, Portugal</p>
     <p class="identity">Written &ldquo;Chama.&rdquo; Pronounced &ldquo;Shama.&rdquo;</p>
@@ -775,97 +556,6 @@
     (() => {
       document.documentElement.classList.replace("no-js", "js");
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      /* The threshold. Two questions. Nothing leaves this page.
-         The deck shows one slide at a time; every slide stays in the document,
-         so reading the source shows you everything the page could ever say. */
-      const deck = document.querySelector(".deck");
-      const slides = [...deck.querySelectorAll(".slide")];
-      const fuseLabel = document.querySelector("#fuse-label");
-      const fuseBurn = document.querySelector(".fuse-burn");
-      const backBtn = document.querySelector(".deck-back");
-      const hint = document.querySelector(".deck-hint");
-
-      const answers = { appetite: null, signal: null };
-      const responses = {
-        fit: document.querySelector("#r-fit"),
-        appetite: document.querySelector("#r-appetite"),
-        signal: document.querySelector("#r-signal"),
-        general: document.querySelector("#r-general")
-      };
-
-      function respond() {
-        const values = Object.values(answers);
-        Object.values(responses).forEach((el) => { el.hidden = true; });
-        if (values.some((v) => v === null)) {
-          document.body.removeAttribute("data-outcome");
-          return;
-        }
-        const misses = Object.keys(answers).filter((k) => answers[k] === "no");
-        if (misses.length === 0) responses.fit.hidden = false;
-        else if (misses.length === 1) responses[misses[0]].hidden = false;
-        else responses.general.hidden = false;
-        document.body.dataset.outcome = misses.length === 0 ? "fit" : "other";
-      }
-
-      let current = 0;
-      function show(index, focus) {
-        current = Math.max(0, Math.min(index, slides.length - 1));
-        slides.forEach((slide, i) => {
-          slide.classList.toggle("active", i === current);
-          slide.classList.toggle("is-prev", i < current);
-          if (i === current) slide.removeAttribute("inert");
-          else slide.setAttribute("inert", "");
-        });
-        const active = slides[current];
-        fuseLabel.textContent = active.dataset.label;
-        fuseBurn.style.width = (current / (slides.length - 1)) * 100 + "%";
-        backBtn.hidden = current === 0;
-        hint.textContent = active.dataset.kind === "question" ? "Pick the honest one" : "";
-        if (active.dataset.kind === "result") respond();
-        deck.style.height = active.offsetHeight + "px";
-        if (focus) active.focus({ preventScroll: true });
-      }
-      show(0, false);
-
-      /* The deck hugs whichever slide is lit, so the page never holds
-         empty room for slides you are not looking at. */
-      if ("ResizeObserver" in window) {
-        const sizer = new ResizeObserver(() => {
-          deck.style.height = slides[current].offsetHeight + "px";
-        });
-        slides.forEach((slide) => sizer.observe(slide));
-      } else {
-        window.addEventListener("resize", () => {
-          deck.style.height = slides[current].offsetHeight + "px";
-        });
-      }
-
-      deck.querySelector(".begin").addEventListener("click", () => show(1, true));
-      backBtn.addEventListener("click", () => show(current - 1, true));
-
-      document.querySelectorAll(".question").forEach((section) => {
-        const key = section.dataset.q;
-        const options = [...section.querySelectorAll(".answer")];
-        options.forEach((option) => {
-          option.addEventListener("click", () => {
-            answers[key] = option.dataset.fit;
-            section.setAttribute("data-answered", "");
-            options.forEach((o) => o.setAttribute("aria-pressed", String(o === option)));
-            const next = slides.indexOf(section) + 1;
-            window.setTimeout(() => show(next, true), reduceMotion ? 0 : 480);
-          });
-        });
-      });
-
-      deck.addEventListener("keydown", (event) => {
-        if (event.key === "ArrowLeft" && current > 0) { event.preventDefault(); show(current - 1, true); }
-        if (event.key === "ArrowRight") {
-          const active = slides[current];
-          const answered = active.dataset.kind === "intro" || active.hasAttribute("data-answered");
-          if (answered && current < slides.length - 1) { event.preventDefault(); show(current + 1, true); }
-        }
-      });
 
       /* Sentences arrive as you reach them. Purely cosmetic. */
       if (!reduceMotion && "IntersectionObserver" in window) {
