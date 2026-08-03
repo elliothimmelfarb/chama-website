@@ -2,6 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "regions": ["cdg1"],
+  "crons": [
+    {
+      "path": "/api/intake-cleanup",
+      "schedule": "15 3 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

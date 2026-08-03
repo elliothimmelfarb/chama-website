@@ -2,7 +2,7 @@
 
 The deployable source for **chamainteligente.com**. Built 2026-07-27 by the org for [directive 001](../org/directives/archive/001-chamainteligente-dot-com-website-and-unlocks.md).
 
-Elliot approved this page for publication and requested a working intake on 2026-08-03. The production build is intentionally isolated from the company's private repository and is deployed from this directory with the Vercel CLI.
+Elliot approved this page for publication and requested a working intake on 2026-08-03. It is live at **https://chamainteligente.com** and **https://www.chamainteligente.com**. The production build is intentionally isolated from the company's private repository and is deployed from this directory with the Vercel CLI.
 
 ## What is here
 
@@ -10,6 +10,8 @@ Elliot approved this page for publication and requested a working intake on 2026
 |---|---|
 | `index.html` | The public editorial page, including the progressively enhanced intake form. It has no external fonts, images, scripts, analytics, or trackers. |
 | `api/intake.js` | A same-origin Vercel Function that validates submissions and writes them to private Vercel Blob storage. It never treats submitted text as an instruction. |
+| `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
+| `privacy.html` | The public privacy notice linked beside the form and from the footer. |
 | `vercel.json` | Production security headers for the page and endpoint. |
 | `package.json` | The single runtime dependency, Vercel's Blob client. |
 
@@ -19,7 +21,9 @@ The copy is **not authored here**. It lives in [`wiki/topics/website-content-cha
 
 The form asks for a name, email, the thing the visitor is trying to do, and what they have tried so far. JavaScript enhances the interaction but is not required: a native form submission receives the same validation and storage path.
 
-Submissions are stored as private JSON blobs in an EU-region Vercel Blob store. They contain only the form fields, submission time, schema version, and source domain. The handler does not store IP addresses, invoke an agent, add anyone to a marketing list, or send a message. A honeypot and minimum-fill-time check absorb basic automated spam without storing it.
+Submissions are stored as private JSON blobs in an EU-region Vercel Blob store. They contain only the form fields, submission time, schema version, and source domain. The handler does not store IP addresses, invoke an agent, add anyone to a marketing list, or send a message. A honeypot and minimum-fill-time check absorb basic automated spam without storing it. The function and storage both run in Paris.
+
+An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 
 Elliot reviews submissions in the Vercel dashboard under Storage. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
 
@@ -35,23 +39,25 @@ The site deploys as an **isolated directory**, never as this repository:
 cd /Users/elliothimmelfarb/claude/chama-inteligente/website && vercel deploy --prod
 ```
 
-The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project uses a private Blob store connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`; that value belongs in Vercel, never in this repository.
+The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`; that value belongs in Vercel, never in this repository.
 
 **One thing this repo's rule and Vercel's own failure mode agree on.** On 2026-07-27 a GitHub push of a personal repository failed to deploy here ("not a member of the team"), through the very **GitHub integration** the rule above forbids for this repository. Deploying `website/` as an isolated directory with `vercel deploy --prod` avoids that path entirely.
 
 A cleaner long-term shape, worth doing if the site grows past one page: give `website/` its own git repository with its own remote, and let that one be public. The public surface and the private brain then have separate histories, which is the same permission split the [domain-unlocks page](../wiki/topics/chamainteligente-domain-unlocks.md) argues for at the content level.
 
-### DNS before the 2026-08-03 cutover
+### Production DNS, verified 2026-08-03
 
-Read live, not assumed:
+Namecheap remains authoritative so its email forwarding stays in place. Only the two web records were replaced:
 
 | Record | Current value | Meaning |
 |---|---|---|
-| `A` | `162.255.119.148` | Namecheap parking page. Nothing of ours is served. |
+| `A @` | `76.76.21.21` | Vercel production deployment at the apex domain. |
+| `A www` | `76.76.21.21` | The same Vercel production deployment at `www`. |
 | `NS` | `pdns1/pdns2.registrar-servers.com` | DNS is at Namecheap (PremiumDNS, bought 2026-07-26). |
-| `MX` | `eforward1-5.registrar-servers.com` | **Namecheap email forwarding is already configured**, so inbound mail to the domain has somewhere to go. Forwarding is not a mailbox and cannot send as the domain. |
+| `MX` | `eforward1-5.registrar-servers.com` | Namecheap email forwarding remains configured. Forwarding is not a mailbox and cannot send as the domain. |
+| `TXT @` | `v=spf1 include:spf.efwd.registrar-servers.com ~all` | The Namecheap forwarding SPF record remains in place. |
 
-The deployment keeps Namecheap authoritative for DNS so the existing MX records and email forwarding stay in place. Only the web records for the apex and `www` are changed to the exact values Vercel assigns to the project.
+Vercel issued auto-renewing HTTPS certificates for both hostnames. Both names serve the production page. The enhanced JSON form path and the native form-encoded fallback were each tested through the custom domain, verified in private Blob storage, and removed afterward so no synthetic submission remains.
 
 ## Rails that apply to anything added here
 
