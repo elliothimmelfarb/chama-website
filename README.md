@@ -8,7 +8,7 @@ The deployable source for **chamainteligente.com**. Built 2026-07-27 by the org 
 
 | File | What it is |
 |---|---|
-| `index.html` | The staged 2026-08-03 replacement. A static, editorial page centered on what the client learns and keeps. Self-contained: no external fonts, scripts, images, or network calls. It uses no JavaScript and preserves its reading order at every viewport. An ember-colored rule and two restrained text accents are its only flame references. |
+| `index.html` | The staged 2026-08-03 replacement. A static, editorial page centered on what the client learns and keeps, with one founder section explaining the depth behind Elliot's judgment. Self-contained: no external fonts, scripts, images, or network calls. It uses no JavaScript and preserves its reading order at every viewport. An ember-colored rule and two restrained text accents are its only flame references. |
 
 The copy is **not authored here**. It lives in [`wiki/topics/website-content-chamainteligente-com.md`](../wiki/topics/website-content-chamainteligente-com.md) with a claims ledger tracing every factual statement to a source or tagging it `[needs confirmation]`. Change the copy there first, then bring it here, so the page never becomes the only record of what it asserts.
 
