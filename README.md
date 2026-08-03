@@ -8,13 +8,13 @@ The deployable source for **chamainteligente.com**. Built 2026-07-27 by the org 
 
 | File | What it is |
 |---|---|
-| `index.html` | The staged threshold experience with undersides. Self-contained: no external fonts, scripts, images, or network calls of any kind (the flame logomark and film grain are inline SVG; the grain is a data: URI, not a fetch). Responsive from 320px up. The three fit questions run as a one-at-a-time slideshow (progress fuse, back navigation, arrow keys, focus management); every slide stays in the DOM so view-source shows everything the page could ever say, and without JavaScript the questions stack and read top to bottom. Answers respond in the visitor's browser and send or store nothing. Every underlined sentence can be "turned over" to reveal its provenance note from the claims ledger, and the footer colophon turns the whole page over (the drafted-by-AI-staff disclosure, ledger item 6, staged for Elliot's go-live decision). All animation honors `prefers-reduced-motion`. **The privacy underside invites readers to verify in devtools that the page makes zero network requests; any future asset, font, or endpoint added here breaks that public sentence and must not ship without rewriting it.** |
+| `index.html` | The staged 2026-08-03 replacement. A static, editorial page centered on what the client learns and keeps. Self-contained: no external fonts, scripts, images, or network calls. It uses no JavaScript and preserves its reading order at every viewport. An ember-colored rule and two restrained text accents are its only flame references. |
 
 The copy is **not authored here**. It lives in [`wiki/topics/website-content-chamainteligente-com.md`](../wiki/topics/website-content-chamainteligente-com.md) with a claims ledger tracing every factual statement to a source or tagging it `[needs confirmation]`. Change the copy there first, then bring it here, so the page never becomes the only record of what it asserts.
 
 ## The staging markers
 
-`index.html` opens with a `<div class="staging">` block that says the concept is staged, booking is not open, and nothing is live. When all three answers indicate a fit, the revealed booking control is disabled and explicitly says that no calendar or contact route is connected. Both markers stay until Elliot has approved publishing and chosen the contact route.
+`index.html` opens with a `<div class="staging">` block that says the page is staged, contact is not open, and nothing is live. The invitation ends with a disabled contact control and states that nothing is sent. Both markers stay until Elliot has approved publishing and chosen the contact route.
 
 No unconfirmed credential, founder biography, email address, calendar link, testimonial, client, pricing, or measured result appears in the staged page. The full pre-publication decision list and claims ledger remain in the canonical website-content page.
 

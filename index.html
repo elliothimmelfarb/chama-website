@@ -1,595 +1,471 @@
-<!doctype html>
-<!--
-  This page was drafted by the AI staff of Chama Inteligente and approved by a human.
-  It makes no network requests: no analytics, no cookies, no fonts, no pixels.
-  Watch the network panel if you would like to check.
-  (The grain and the flame are inline SVG and CSS, so even the texture stays in this file.)
-
-  Every underlined sentence on the page can be turned over to see where it comes from.
-  The interaction logic is at the bottom of this file, in plain JavaScript, unminified on purpose.
--->
-<html lang="en" class="no-js">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chama Inteligente | AI and technology coaching</title>
-  <meta name="description" content="A small AI and technology coaching practice in Lisbon, helping people use AI and technology to accomplish previously impossible things.">
+  <meta name="description" content="AI and technology coaching for people and small teams who want to learn what they can do now, and keep going as the tools change.">
   <meta name="robots" content="noindex, nofollow">
   <style>
     :root {
-      --night: #120e0b;
-      --night-high: #1e1712;
-      --text: #ece3d3;
-      --quiet: #a3957b;
-      --faint: #6b6250;
-      --flame: #ffb45e;
-      --flame-deep: #ff7a3d;
-      --flame-ember: #ff5a26;
-      --flame-core: #ffe9b0;
-      --flame-white: #fffbe9;
-      --line: rgba(236, 227, 211, 0.16);
-      --paper: #f0e7d4;
-      --paper-ink: #262016;
-      --paper-quiet: #8a7a5c;
-      --serif: "Iowan Old Style", Baskerville, "Palatino Linotype", Georgia, serif;
-      --mono: "SFMono-Regular", Menlo, Consolas, monospace;
-      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --paper: #f3f0e8;
+      --ink: #141412;
+      --quiet: #66635c;
+      --ember: #ef4d2f;
+      --line: rgba(20, 20, 18, 0.24);
+      --pad: clamp(1.25rem, 4vw, 4.5rem);
+      --frame: 92rem;
+      --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
     }
 
-    * { box-sizing: border-box; }
-    [hidden] { display: none !important; }
-    html { scroll-behavior: smooth; }
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
     body {
       margin: 0;
-      background:
-        radial-gradient(70rem 40rem at 50% -8rem, rgba(255, 158, 74, 0.1), transparent 62%),
-        linear-gradient(var(--night-high), var(--night) 38rem);
-      background-color: var(--night);
-      color: var(--text);
-      font-family: var(--serif);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      background: var(--paper);
     }
-    ::selection { background: var(--flame-deep); color: var(--night); }
-    button { font: inherit; color: inherit; background: none; border: 0; padding: 0; }
 
-    /* Film grain, drawn by an inline SVG. No file is fetched for this. */
-    body:after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: 6;
-      pointer-events: none;
-      opacity: 0.05;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+    ::selection {
+      background: var(--ember);
+      color: #fff;
     }
 
     .skip-link {
       position: fixed;
       z-index: 20;
-      top: 0.65rem;
-      left: 0.65rem;
-      padding: 0.55rem 0.7rem;
-      transform: translateY(-160%);
-      background: var(--flame-core);
-      color: var(--night);
-      font: 700 0.68rem/1.3 var(--mono);
+      top: 0.75rem;
+      left: 0.75rem;
+      padding: 0.65rem 0.8rem;
+      transform: translateY(-180%);
+      background: var(--ink);
+      color: #fff;
+      font-size: 0.8rem;
+      text-decoration: none;
     }
-    .skip-link:focus { transform: translateY(0); }
 
-    /* The reading light sits at the reader's eye line. */
-    .reading-light {
-      position: fixed;
-      top: 44%;
-      left: 50%;
-      width: 60rem;
-      height: 60rem;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(closest-side, rgba(255, 158, 74, 0.07), transparent 70%);
-      pointer-events: none;
-      z-index: 0;
+    .skip-link:focus {
+      transform: translateY(0);
     }
-    main, footer { position: relative; z-index: 1; }
 
     .staging {
-      position: relative;
-      z-index: 7;
-      padding: 0.62rem 1rem;
+      padding: 0.58rem var(--pad);
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      line-height: 1.4;
       text-align: center;
-      background: #000;
-      color: var(--flame);
-      font: 700 0.62rem/1.4 var(--mono);
-      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
-    main {
-      max-width: 36rem;
+    .frame {
+      width: min(100%, var(--frame));
       margin: 0 auto;
-      padding: clamp(3.5rem, 8vh, 6rem) 1.35rem 4rem;
+      padding-inline: var(--pad);
     }
 
-    /* ---------------------------------------------------------------- */
-    /* The mark. A flame in three layers of inline SVG, lit on arrival.  */
-    /* ---------------------------------------------------------------- */
-    .brand {
+    .masthead {
       display: grid;
-      justify-items: center;
-      margin-bottom: clamp(2.4rem, 6vh, 3.6rem);
-    }
-    .logo {
-      position: relative;
-      display: grid;
-      justify-items: center;
-      margin-bottom: 1.9rem;
-    }
-    .logo-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 22rem;
-      height: 22rem;
-      transform: translate(-50%, -54%);
-      background: radial-gradient(closest-side, rgba(255, 158, 74, 0.26), rgba(255, 122, 61, 0.08) 52%, transparent 72%);
-      pointer-events: none;
-      animation: glow-breathe 4.6s ease-in-out infinite alternate;
-    }
-    @keyframes glow-breathe {
-      from { opacity: 0.82; transform: translate(-50%, -54%) scale(0.96); }
-      to { opacity: 1; transform: translate(-50%, -54%) scale(1.04); }
-    }
-    .flame-svg {
-      position: relative;
-      width: clamp(4.6rem, 13vw, 5.6rem);
-      height: auto;
-      overflow: visible;
-      filter: drop-shadow(0 0 1.4rem rgba(255, 140, 60, 0.35));
-    }
-    .js .flame-svg { animation: light-up 1.4s var(--ease-out) both; }
-    @keyframes light-up {
-      from { opacity: 0; transform: translateY(0.6rem) scale(0.55); }
-      60% { opacity: 1; }
-      to { opacity: 1; transform: none; }
-    }
-    .flame-svg g, .flame-svg path, .flame-svg ellipse {
-      transform-box: fill-box;
-      transform-origin: 50% 100%;
-    }
-    .l-outer { animation: sway 4.8s ease-in-out infinite alternate; }
-    .l-mid { animation: sway-counter 3.7s ease-in-out infinite alternate; }
-    .l-core { animation: core-flicker 1.5s ease-in-out infinite alternate; }
-    @keyframes sway {
-      from { transform: rotate(-2deg) scaleY(0.985); }
-      to { transform: rotate(2.2deg) scaleY(1.02); }
-    }
-    @keyframes sway-counter {
-      from { transform: rotate(1.6deg) scaleY(1.015); }
-      to { transform: rotate(-1.8deg) scaleY(0.98); }
-    }
-    @keyframes core-flicker {
-      from { transform: scaleY(0.92) scaleX(1.04); opacity: 0.92; }
-      45% { transform: scaleY(1.05) scaleX(0.97); opacity: 1; }
-      to { transform: scaleY(0.97) scaleX(1.01); opacity: 0.96; }
-    }
-    .embers {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-    .embers i {
-      position: absolute;
-      bottom: 34%;
-      left: 50%;
-      width: 0.22rem;
-      height: 0.22rem;
-      border-radius: 50%;
-      background: var(--flame);
-      opacity: 0;
-      animation: ember-rise var(--t, 4.2s) linear infinite;
-      animation-delay: var(--d, 0s);
-    }
-    .embers i:nth-child(1) { --dx: -1.7rem; --t: 4.4s; --d: 0.2s; }
-    .embers i:nth-child(2) { --dx: 1.3rem; --t: 3.6s; --d: 1.4s; background: var(--flame-core); }
-    .embers i:nth-child(3) { --dx: -0.6rem; --t: 5.1s; --d: 2.6s; }
-    .embers i:nth-child(4) { --dx: 2rem; --t: 4.8s; --d: 3.4s; background: var(--flame-ember); }
-    .embers i:nth-child(5) { --dx: 0.4rem; --t: 3.2s; --d: 0.9s; background: var(--flame-core); }
-    .embers i:nth-child(6) { --dx: -2.2rem; --t: 5.6s; --d: 4.2s; }
-    @keyframes ember-rise {
-      0% { opacity: 0; transform: translate(0, 0) scale(1); }
-      12% { opacity: 0.9; }
-      70% { opacity: 0.5; }
-      100% { opacity: 0; transform: translate(var(--dx, 1rem), -7.5rem) scale(0.35); }
-    }
-    .sill {
-      width: 6.4rem;
-      height: 1px;
-      margin-top: 0.7rem;
-      background: linear-gradient(90deg, transparent, rgba(255, 180, 94, 0.8), transparent);
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 2rem;
+      align-items: start;
+      padding-top: clamp(1.2rem, 2.4vw, 2.3rem);
+      padding-bottom: 1.1rem;
+      border-bottom: 1px solid var(--ink);
     }
 
     .wordmark {
-      margin: 0 0 0.45rem;
-      text-align: center;
-      font-size: clamp(1.5rem, 5.5vw, 2.1rem);
-      font-weight: 500;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      text-indent: 0.2em; /* balances the tracking on the last letter */
-    }
-    .wordmark .wm-chama {
-      background: linear-gradient(var(--flame-white), var(--flame));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .js .wordmark, .js .name-line { animation: rise-in 1.1s var(--ease-out) 0.35s both; }
-    @keyframes rise-in {
-      from { opacity: 0; transform: translateY(0.7rem); }
-      to { opacity: 1; transform: none; }
-    }
-
-    .name-line {
-      margin: 0.9rem 0 0;
-      text-align: center;
-      color: var(--quiet);
-      font: 500 0.78rem/1.6 var(--mono);
-      letter-spacing: 0.04em;
-    }
-
-    /* ---------------------------------------------------------------- */
-    /* Prose                                                             */
-    /* ---------------------------------------------------------------- */
-    .opening { margin-top: clamp(2.8rem, 7vh, 4.2rem); }
-    .opening p {
-      margin: 0 0 1.5rem;
-      font-size: 1.22rem;
-      line-height: 1.66;
-      text-wrap: pretty;
-    }
-    .opening p:last-child { margin-bottom: 0; }
-
-    .js .reveal { opacity: 0; transform: translateY(0.9rem); }
-    .js .reveal.in { opacity: 1; transform: none; transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out); }
-
-    .turn-note {
-      margin: 2.1rem 0 0;
-      color: var(--faint);
-      font-size: 0.85rem;
-      line-height: 1.6;
-    }
-    html.no-js .turn-note { display: none; }
-
-    /* Sentences that can be turned over. */
-    .flip { display: inline; text-align: inherit; }
-    .js .flip {
-      cursor: pointer;
-      text-decoration: underline dotted rgba(255, 180, 94, 0.55);
-      text-decoration-thickness: 1px;
-      text-underline-offset: 0.24em;
-    }
-    .js .flip:hover { text-decoration-color: var(--flame); }
-    .js .flip[aria-expanded="true"] {
-      color: var(--flame-core);
-      text-decoration-style: solid;
-      text-decoration-color: var(--flame);
-    }
-    .flip:focus-visible { outline: 2px solid var(--flame); outline-offset: 3px; }
-
-    .underside {
-      margin: 0.95rem 0 1.5rem;
-      padding: 1.05rem 1.15rem 1.2rem;
-      background: var(--paper);
-      color: var(--paper-ink);
-      text-align: left;
-      border-radius: 2px;
-      box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.35);
-      transform-origin: 50% 0;
-      animation: turn 420ms ease both;
-    }
-    @keyframes turn {
-      from { opacity: 0; transform: perspective(40rem) rotateX(-26deg); }
-      to { opacity: 1; transform: none; }
-    }
-    .underside .u-label {
-      display: block;
-      margin-bottom: 0.55rem;
-      color: var(--paper-quiet);
-      font: 700 0.6rem/1.3 var(--mono);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-    .underside p {
-      margin: 0 0 0.8rem;
-      font-size: 0.98rem;
-      line-height: 1.62;
-    }
-    .underside p:last-child { margin-bottom: 0; }
-
-    /* ---------------------------------------------------------------- */
-    /* What makes a good fit                                             */
-    /* ---------------------------------------------------------------- */
-    .fit {
-      margin: clamp(3rem, 7vh, 4.5rem) 0 0;
-      padding-top: 1.9rem;
-      border-top: 1px solid var(--line);
-    }
-    .fit h2 {
-      margin: 0 0 1.7rem;
-      font-size: clamp(1.32rem, 4.4vw, 1.55rem);
-      font-weight: 500;
-      line-height: 1.42;
-      letter-spacing: -0.01em;
-    }
-    .fit-list {
-      display: grid;
-      gap: 1.05rem;
       margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .fit-list li {
-      display: grid;
-      grid-template-columns: 1.55rem 1fr;
-      align-items: baseline;
-      font-size: 1.16rem;
-      line-height: 1.62;
-    }
-    .fit-list .mark {
-      position: relative;
-      top: 0.13em;
-      width: 0.52rem;
-      height: 0.52rem;
-      border-radius: 50%;
-      background: var(--flame);
-      box-shadow: 0 0 0.6rem rgba(255, 180, 94, 0.55);
+      font-size: clamp(1.35rem, 2.2vw, 2.05rem);
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1;
     }
 
-    /* The invitation. */
-    .invite { margin: clamp(2.6rem, 6vh, 3.6rem) 0 0; }
-    .invite-lead {
-      margin: 0 0 1.3rem;
-      font-size: 1.5rem;
-      line-height: 1.3;
-      color: var(--flame-core);
+    .masthead-notes {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      gap: clamp(1.3rem, 3vw, 3.4rem);
+      color: var(--quiet);
+      font-size: 0.75rem;
+      line-height: 1.35;
     }
-    .invite > p {
-      margin: 0 0 1.3rem;
-      font-size: 1.16rem;
-      line-height: 1.68;
+
+    .masthead-notes p {
+      margin: 0;
+    }
+
+    .masthead-notes strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .hero {
+      min-height: min(54rem, calc(100svh - 7.8rem));
+      display: grid;
+      grid-template-rows: 1fr auto;
+      padding-top: clamp(3.3rem, 8vh, 7.2rem);
+      padding-bottom: clamp(2.5rem, 5vw, 5rem);
+    }
+
+    .hero h1 {
+      margin: 0;
+      max-width: 12ch;
+      font-size: clamp(3.55rem, 9.2vw, 8.8rem);
+      font-weight: 500;
+      letter-spacing: -0.075em;
+      line-height: 0.86;
+      text-wrap: balance;
+    }
+
+    .hero h1 span {
+      display: block;
+    }
+
+    .hero h1 .line-two {
+      margin-left: clamp(0.8rem, 7vw, 7rem);
+    }
+
+    .hero h1 .line-three {
+      margin-left: clamp(2.6rem, 20vw, 20rem);
+      color: var(--ember);
+    }
+
+    .hero-bottom {
+      display: grid;
+      grid-template-columns: minmax(8rem, 1fr) minmax(17rem, 36rem);
+      gap: clamp(2rem, 8vw, 9rem);
+      align-items: start;
+      margin-top: clamp(4rem, 10vh, 8rem);
+    }
+
+    .ember-line {
+      position: relative;
+      height: 1px;
+      margin-top: 0.85rem;
+      background: var(--line);
+    }
+
+    .ember-line::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: min(38%, 9rem);
+      background: var(--ember);
+    }
+
+    .hero-deck {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.4vw, 2.15rem);
+      font-weight: 400;
+      letter-spacing: -0.035em;
+      line-height: 1.15;
       text-wrap: pretty;
     }
-    .booking { margin-top: 2.2rem; }
-    .booking-stub {
-      display: block;
-      width: 100%;
-      padding: 0.95rem 1.1rem;
-      border: 1px solid var(--line);
-      border-radius: 3px;
+
+    .content-section {
+      display: grid;
+      grid-template-columns: minmax(9rem, 0.8fr) minmax(0, 2.6fr);
+      gap: clamp(2rem, 8vw, 10rem);
+      padding-top: clamp(2rem, 4vw, 4rem);
+      padding-bottom: clamp(4.5rem, 9vw, 9rem);
+      border-top: 1px solid var(--ink);
+    }
+
+    .section-label {
+      margin: 0;
+      padding-top: 0.42rem;
       color: var(--quiet);
-      font: 700 0.68rem/1.4 var(--mono);
-      letter-spacing: 0.1em;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1.3;
       text-transform: uppercase;
+    }
+
+    .section-copy {
+      max-width: 65rem;
+    }
+
+    .section-copy h2 {
+      margin: 0 0 clamp(2.2rem, 4vw, 4rem);
+      font-size: clamp(2.8rem, 6.4vw, 6.2rem);
+      font-weight: 500;
+      letter-spacing: -0.065em;
+      line-height: 0.94;
+    }
+
+    .section-copy p {
+      max-width: 38ch;
+      margin: 0 0 1.4rem;
+      font-size: clamp(1.35rem, 2.25vw, 2rem);
+      letter-spacing: -0.03em;
+      line-height: 1.22;
+      text-wrap: pretty;
+    }
+
+    .section-copy p:last-child {
+      margin-bottom: 0;
+    }
+
+    .shape .section-copy p {
+      max-width: 30ch;
+      font-size: clamp(1.8rem, 3.8vw, 3.8rem);
+      line-height: 1.06;
+    }
+
+    .outcome {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .outcome-inner {
+      min-height: min(44rem, 76svh);
+      display: grid;
+      align-content: center;
+      padding-top: clamp(5rem, 11vw, 11rem);
+      padding-bottom: clamp(5rem, 11vw, 11rem);
+    }
+
+    .outcome p {
+      margin: 0;
+      max-width: 18ch;
+      font-size: clamp(3.15rem, 7.6vw, 7.5rem);
+      font-weight: 500;
+      letter-spacing: -0.07em;
+      line-height: 0.93;
+      text-wrap: balance;
+    }
+
+    .outcome em {
+      color: var(--ember);
+      font-style: normal;
+    }
+
+    .invitation {
+      padding-top: clamp(4.5rem, 9vw, 9rem);
+      padding-bottom: clamp(4.5rem, 9vw, 9rem);
+    }
+
+    .invitation-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+      gap: clamp(3rem, 10vw, 12rem);
+      align-items: end;
+    }
+
+    .invitation h2 {
+      margin: 0;
+      max-width: 9ch;
+      font-size: clamp(3.2rem, 7vw, 7rem);
+      font-weight: 500;
+      letter-spacing: -0.07em;
+      line-height: 0.92;
+    }
+
+    .invitation-copy p {
+      margin: 0 0 2.2rem;
+      font-size: clamp(1.25rem, 2vw, 1.75rem);
+      letter-spacing: -0.025em;
+      line-height: 1.3;
+      text-wrap: pretty;
+    }
+
+    .contact-stub {
+      width: 100%;
+      padding: 1rem 1.15rem;
+      border: 1px solid var(--ink);
+      border-radius: 0;
+      background: transparent;
+      color: var(--ink);
+      font: 600 0.82rem/1.2 var(--sans);
+      letter-spacing: 0.04em;
+      text-align: left;
+      text-transform: uppercase;
+      opacity: 1;
       cursor: not-allowed;
     }
-    .booking-stub:before { content: "\25CF"; margin-right: 0.6rem; color: var(--flame-deep); }
-    .booking-status {
-      margin: 0.6rem 0 0;
-      color: var(--faint);
-      font: 500 0.68rem/1.5 var(--mono);
+
+    .contact-status {
+      margin: 0.7rem 0 0 !important;
+      color: var(--quiet);
+      font-size: 0.75rem !important;
+      letter-spacing: 0 !important;
+      line-height: 1.4 !important;
     }
 
     footer {
-      max-width: 36rem;
-      margin: 0 auto;
-      padding: 0 1.35rem 2.6rem;
-      color: var(--faint);
-      font: 500 0.66rem/1.9 var(--mono);
-      letter-spacing: 0.06em;
-      text-align: center;
+      padding-bottom: 2rem;
     }
-    footer p { margin: 0; }
-    .colophon-line {
-      margin-bottom: 1.4rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--line);
-      text-transform: uppercase;
-    }
-    .identity { text-transform: uppercase; }
-    #u-colophon {
-      margin: 0 0 1.6rem;
-      text-transform: none;
-      letter-spacing: normal;
-      font-family: var(--serif);
-    }
-    #u-colophon p { font-size: 0.98rem; }
 
-    @media (prefers-reduced-motion: reduce) {
-      *, *:before, *:after { animation: none !important; transition: none !important; }
-      html { scroll-behavior: auto; }
-      .js .reveal { opacity: 1; transform: none; }
-      .embers { display: none; }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      padding-top: 1.15rem;
+      border-top: 1px solid var(--ink);
+      color: var(--quiet);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .footer-inner p {
+      margin: 0;
+    }
+
+    @media (max-width: 760px) {
+      .masthead {
+        grid-template-columns: 1fr;
+        gap: 1.15rem;
+      }
+
+      .masthead-notes {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero {
+        min-height: calc(100svh - 10.5rem);
+        padding-top: clamp(3rem, 9vh, 5.2rem);
+      }
+
+      .hero h1 {
+        font-size: clamp(3.4rem, 18vw, 6.4rem);
+      }
+
+      .hero h1 .line-two {
+        margin-left: 0.55rem;
+      }
+
+      .hero h1 .line-three {
+        margin-left: 2rem;
+      }
+
+      .hero-bottom,
+      .content-section,
+      .invitation-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-bottom {
+        gap: 1.8rem;
+      }
+
+      .content-section {
+        gap: 2.4rem;
+      }
+
+      .section-copy p {
+        max-width: none;
+      }
+
+      .shape .section-copy p {
+        max-width: none;
+      }
+
+      .outcome-inner {
+        min-height: 70svh;
+      }
+
+      .invitation-grid {
+        align-items: start;
+      }
+
+      .footer-inner {
+        display: grid;
+        gap: 0.3rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .masthead-notes {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+      }
+
+      .hero {
+        min-height: auto;
+      }
     }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to the introduction</a>
-  <div class="staging" role="status">Staged concept &middot; Booking is not open &middot; Nothing here is live</div>
-  <div class="reading-light" aria-hidden="true"></div>
+  <div class="staging" role="status">Staged page &middot; Contact is not open &middot; Nothing here is live</div>
+
+  <header class="frame masthead">
+    <p class="wordmark">Chama Inteligente</p>
+    <div class="masthead-notes">
+      <p><strong>AI and technology coaching</strong>Lisbon</p>
+      <p><strong>Written &ldquo;Chama.&rdquo;</strong>Pronounced &ldquo;Shama.&rdquo;</p>
+    </div>
+  </header>
 
   <main id="main-content">
-    <header class="brand">
-      <div class="logo" aria-hidden="true">
-        <div class="logo-glow"></div>
-        <svg class="flame-svg" viewBox="0 0 140 190" role="img" aria-hidden="true" focusable="false">
-          <defs>
-            <linearGradient id="g-outer" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffd694"/>
-              <stop offset="0.45" stop-color="#ffb45e"/>
-              <stop offset="1" stop-color="#ff6a2e"/>
-            </linearGradient>
-            <linearGradient id="g-mid" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffe9b0"/>
-              <stop offset="1" stop-color="#ffb45e"/>
-            </linearGradient>
-            <linearGradient id="g-core" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#fffbe9"/>
-              <stop offset="1" stop-color="#ffe9b0"/>
-            </linearGradient>
-            <radialGradient id="g-notch" cx="0.5" cy="0.35" r="0.65">
-              <stop offset="0" stop-color="#1e1712"/>
-              <stop offset="1" stop-color="#1e1712" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-          <g class="l-outer">
-            <path fill="url(#g-outer)" d="M70 12
-              C 80 44, 106 64, 106 102
-              C 106 136, 90 160, 70 166
-              C 50 160, 34 136, 34 102
-              C 34 64, 60 44, 70 12 Z"/>
-          </g>
-          <g class="l-mid">
-            <path fill="url(#g-mid)" d="M70 40
-              C 77 60, 95 76, 95 107
-              C 95 132, 83 152, 70 157
-              C 57 152, 45 132, 45 107
-              C 45 76, 63 60, 70 40 Z"/>
-          </g>
-          <g class="l-core">
-            <path fill="url(#g-core)" d="M70 80
-              C 74 94, 85 102, 85 120
-              C 85 137, 77 149, 70 153
-              C 63 149, 55 137, 55 120
-              C 55 102, 66 94, 70 80 Z"/>
-          </g>
-          <ellipse fill="url(#g-notch)" cx="70" cy="164" rx="12" ry="9"/>
-        </svg>
-        <div class="embers"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="sill"></div>
+    <section class="frame hero" aria-labelledby="opening-title">
+      <h1 id="opening-title">
+        <span>AI is changing</span>
+        <span class="line-two">what one person</span>
+        <span class="line-three">can do.</span>
+      </h1>
+      <div class="hero-bottom">
+        <div class="ember-line" aria-hidden="true"></div>
+        <p class="hero-deck">I work with people who want to find out what that means for their own work and life, and get good at using it.</p>
       </div>
-
-      <h1 class="wordmark"><span class="wm-chama">Chama</span> Inteligente</h1>
-      <p class="name-line"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-name">Chama is Portuguese for flame. It is pronounced &ldquo;Shama.&rdquo;</span></p>
-      <div class="underside" id="u-name" hidden>
-        <span class="u-label">The underside</span>
-        <p>Chama Inteligente, Lda. is a Portuguese private limited company, registered in Lisbon in 2026, company number 519425235. The name means intelligent flame.</p>
-      </div>
-    </header>
-
-    <div class="opening">
-      <p class="reveal"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-practice">A small AI and technology coaching practice</span>, based in Lisbon, working in English, remote or in person. I help curious people, leaders, and small teams use AI and technology to accomplish previously impossible things. We start from what you are actually working on. The skills compound, and what you build is yours to keep.</p>
-      <div class="underside" id="u-practice" hidden>
-        <span class="u-label">The underside</span>
-        <p>Chama Inteligente was formed in 2026 to hold work that already existed, and it is registered in Portugal for exactly this work: IT consulting, business and management consulting, and professional training. Every factual sentence on this page was written into the company&rsquo;s claims ledger, tied to a source, before it appeared here.</p>
-      </div>
-      <p class="reveal">I will <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-capacity">never take on more clients</span> than I can give the full time and attention they are paying for. So all this page does is tell you what a good fit looks like.</p>
-      <div class="underside" id="u-capacity" hidden>
-        <span class="u-label">The underside</span>
-        <p>A standing rule set by the founder, and the reason this page describes a fit instead of selling one. The practice stays small so each client gets the attention they are paying for. When it is full, new clients wait.</p>
-      </div>
-    </div>
-
-    <p class="turn-note reveal">Some sentences on this page are underlined. Turn one over to see where it comes from and why it is here.</p>
-
-    <section class="fit" aria-label="What makes a good fit">
-      <h2 class="reveal">What makes a good fit</h2>
-      <ul class="fit-list">
-        <li class="reveal">
-          <span class="mark" aria-hidden="true"></span>
-          <div>
-            <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-believe">You believe AI changes what is possible.</span>
-            <div class="underside" id="u-believe" hidden>
-              <span class="u-label">The underside</span>
-              <p>Coaching only works for someone who already believes there is something here worth going after. No coach can supply that belief. Being worn out by the pace does not rule you out; the pace wears everyone out some days.</p>
-            </div>
-          </div>
-        </li>
-        <li class="reveal">
-          <span class="mark" aria-hidden="true"></span>
-          <div>
-            <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-possible">You want to find out what is now possible that was not before.</span>
-            <div class="underside" id="u-possible" hidden>
-              <span class="u-label">The underside</span>
-              <p>Finding out for yourself is the point of the work. If you would rather hand a problem to someone and get an answer back, you want a vendor, and good vendors exist. What I teach is how to do it yourself: we build real things together, and what you learn keeps working after we are done.</p>
-            </div>
-          </div>
-        </li>
-        <li class="reveal">
-          <span class="mark" aria-hidden="true"></span>
-          <div>
-            <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-signal">You want to find the signal in the noise of AI news and headlines.</span>
-            <div class="underside" id="u-signal" hidden>
-              <span class="u-label">The underside</span>
-              <p>Any list of answers I hand you would be stale within months, because the tools keep changing. What lasts is knowing how to tell what matters for your own situation, and that is the skill this work builds.</p>
-            </div>
-          </div>
-        </li>
-      </ul>
     </section>
 
-    <section class="invite" aria-label="The invitation">
-      <p class="invite-lead reveal">If that sounds like you, we should talk.</p>
-      <p class="reveal">Tell me what you are working on, and I will tell you honestly whether I think I can help and what that could look like.</p>
-      <div class="booking reveal">
-        <button class="booking-stub" type="button" disabled aria-describedby="booking-status">Booking is not open yet</button>
-        <p class="booking-status" id="booking-status"><span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-booking">Staged placeholder. No calendar or contact route is connected.</span></p>
-        <div class="underside" id="u-booking" hidden>
-          <span class="u-label">The underside</span>
-          <p>This page is a staged concept and says so at the top. The control stays disabled until the founder connects a real booking route. There is no form or waitlist behind it.</p>
+    <section class="frame content-section" aria-labelledby="work-title">
+      <p class="section-label">How we work</p>
+      <div class="section-copy">
+        <h2 id="work-title">We learn by doing.</h2>
+        <p>We start with something you already want to accomplish. I help you find the shortest path up the learning curve, we build together, and what we learn from doing it tells us where to go next.</p>
+        <p>The point is not one perfect system or a list of answers. Those go stale. The useful part is the judgment and practical ability you keep as the tools change.</p>
+      </div>
+    </section>
+
+    <section class="frame content-section shape" aria-labelledby="shape-title">
+      <p class="section-label" id="shape-title">The shape of the work</p>
+      <div class="section-copy">
+        <p>I work one to one with people and with small teams. The work is ongoing and built around your questions, your projects, and what you already know.</p>
+      </div>
+    </section>
+
+    <section class="outcome" aria-label="The outcome">
+      <div class="frame outcome-inner">
+        <p>You should leave able to do more <em>without me</em> than you could before we started.</p>
+      </div>
+    </section>
+
+    <section class="frame invitation" aria-labelledby="invitation-title">
+      <div class="invitation-grid">
+        <h2 id="invitation-title">Want to work together?</h2>
+        <div class="invitation-copy">
+          <p>Tell me what you are trying to do and what you have tried so far. I will tell you whether I think I can help, and why.</p>
+          <button class="contact-stub" type="button" disabled aria-describedby="contact-status">Contact route not open yet</button>
+          <p class="contact-status" id="contact-status">This page is staged. Nothing is sent.</p>
         </div>
       </div>
     </section>
   </main>
 
-  <footer>
-    <p class="colophon-line">Made by the company&rsquo;s AI staff. Approved by a human. <span class="flip" role="button" tabindex="0" aria-expanded="false" aria-controls="u-colophon">Turn this page over.</span></p>
-    <div class="underside" id="u-colophon" hidden>
-      <span class="u-label">The colophon</span>
-      <p>This page was drafted by the company&rsquo;s own AI staff and approved by a human before it reached you. That is how the whole company runs. Chama Inteligente operates as an autonomous organization: a staff of software agents does the daily work and keeps the records, and a human approves anything that leaves the building. It is the third such system the founder has built.</p>
-      <p>Every underlined sentence traces to the company&rsquo;s internal claims ledger, where each public statement is tied to a source before it appears here. The page also makes no network requests: no analytics, no cookies, no fonts. Open your browser&rsquo;s network panel if you would like to check.</p>
+  <footer class="frame">
+    <div class="footer-inner">
+      <p>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
+      <p>AI and technology coaching</p>
     </div>
-    <p class="identity">Chama Inteligente &middot; AI and technology coaching &middot; Lisbon, Portugal</p>
-    <p class="identity">Written &ldquo;Chama.&rdquo; Pronounced &ldquo;Shama.&rdquo;</p>
   </footer>
-
-  <script>
-    (() => {
-      document.documentElement.classList.replace("no-js", "js");
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      /* Sentences arrive as you reach them. Purely cosmetic. */
-      if (!reduceMotion && "IntersectionObserver" in window) {
-        const seen = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) { entry.target.classList.add("in"); seen.unobserve(entry.target); }
-          });
-        }, { threshold: 0.25 });
-        document.querySelectorAll(".reveal").forEach((el) => seen.observe(el));
-      } else {
-        document.querySelectorAll(".reveal").forEach((el) => el.classList.add("in"));
-      }
-
-      /* The undersides. Turn a sentence over; one at a time. */
-      const flips = [...document.querySelectorAll(".flip")];
-      flips.forEach((flip) => {
-        const underside = document.getElementById(flip.getAttribute("aria-controls"));
-        flip.addEventListener("click", () => {
-          const wasOpen = flip.getAttribute("aria-expanded") === "true";
-          flips.forEach((f) => f.setAttribute("aria-expanded", "false"));
-          document.querySelectorAll(".underside").forEach((u) => { u.hidden = true; });
-          if (!wasOpen) {
-            flip.setAttribute("aria-expanded", "true");
-            underside.hidden = false;
-          }
-        });
-        flip.addEventListener("keydown", (event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            flip.click();
-          }
-        });
-      });
-    })();
-  </script>
 </body>
 </html>
