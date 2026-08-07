@@ -75,6 +75,15 @@
       border-bottom: 1px solid var(--ink);
     }
 
+    .masthead-name {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: baseline;
+      gap: clamp(0.45rem, 1.2vw, 0.85rem);
+      min-width: 0;
+      white-space: nowrap;
+    }
+
     .wordmark {
       margin: 0;
       font-size: clamp(1.35rem, 2.2vw, 2.05rem);
@@ -84,9 +93,9 @@
     }
 
     .wordmark-translation {
-      margin: 0.38rem 0 0;
+      margin: 0;
       color: var(--quiet);
-      font-size: 0.72rem;
+      font-size: clamp(0.62rem, 1vw, 0.72rem);
       letter-spacing: 0.015em;
       line-height: 1.25;
     }
@@ -203,6 +212,10 @@
       font-weight: 500;
       letter-spacing: -0.065em;
       line-height: 0.94;
+    }
+
+    .ember-accent {
+      color: var(--ember);
     }
 
     .section-copy p {
@@ -547,6 +560,10 @@
     }
 
     @media (max-width: 380px) {
+      .wordmark {
+        font-size: clamp(1.12rem, 6.3vw, 1.35rem);
+      }
+
       .masthead-notes {
         grid-template-columns: 1fr;
         gap: 0.7rem;
@@ -588,7 +605,7 @@
     <section class="frame content-section" aria-labelledby="work-title">
       <p class="section-label">The shortest path up the learning curve</p>
       <div class="section-copy">
-        <h2 id="work-title">AI changes more than the tools we use.</h2>
+        <h2 id="work-title">AI <span class="ember-accent">changes</span> more than the tools we use.</h2>
         <p>It changes how we think, work, organize, and lead.</p>
         <p>Most AI courses teach you how to use today&rsquo;s tools and capabilities for a handful of tasks. I teach what lasts: the ideas and habits that help you explore your environment for new capabilities that may not have been available yesterday.</p>
         <p>So you can stay ahead of what most people know how to do.</p>
@@ -598,7 +615,7 @@
     <section class="frame content-section shape" aria-labelledby="shape-title">
       <p class="section-label" id="shape-title">The shape of the work</p>
       <div class="section-copy">
-        <p class="shape-lead">I work one to one with people and with small teams.</p>
+        <p class="shape-lead">I work one to one with <span class="ember-accent">people</span> and with small teams.</p>
         <div class="shape-details">
           <p>We meet regularly, so I can get to know how you work, keep track of what you are trying to do, and make each conversation build on the last.</p>
           <p>Bring me the questions, decisions, and ideas in front of you. I help you see more of what is possible and make better use of the tools available now.</p>
@@ -624,7 +641,7 @@
 
     <section class="frame invitation" aria-labelledby="invitation-title">
       <div class="invitation-grid">
-        <h2 id="invitation-title">Want to work together?</h2>
+        <h2 id="invitation-title">Want to work <span class="ember-accent">together</span>?</h2>
         <div class="invitation-copy">
           <p>You do not need to arrive with a finished plan. Tell me what you would like to understand, decide, or make. I&rsquo;ll read it and let you know how I could help.</p>
           <form class="intake-form" id="intake-form" action="/api/intake" method="post" accept-charset="UTF-8" aria-describedby="intake-note">
