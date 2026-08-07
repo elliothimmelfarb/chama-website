@@ -83,6 +83,14 @@
       line-height: 1;
     }
 
+    .wordmark-translation {
+      margin: 0.38rem 0 0;
+      color: var(--quiet);
+      font-size: 0.72rem;
+      letter-spacing: 0.015em;
+      line-height: 1.25;
+    }
+
     .masthead-notes {
       display: grid;
       grid-template-columns: repeat(2, auto);
@@ -210,10 +218,32 @@
       margin-bottom: 0;
     }
 
-    .shape .section-copy p {
-      max-width: 30ch;
-      font-size: clamp(1.8rem, 3.8vw, 3.8rem);
-      line-height: 1.06;
+    .shape .section-copy {
+      max-width: 68rem;
+    }
+
+    .shape .shape-lead {
+      max-width: 22ch;
+      margin: 0;
+      font-size: clamp(2.7rem, 5.2vw, 5.2rem);
+      font-weight: 500;
+      letter-spacing: -0.06em;
+      line-height: 0.98;
+      text-wrap: balance;
+    }
+
+    .shape-details {
+      width: min(100%, 38rem);
+      margin-top: clamp(2.8rem, 5vw, 5.4rem);
+      margin-left: clamp(0rem, 7vw, 7rem);
+    }
+
+    .shape .shape-details p {
+      max-width: 40ch;
+      margin-bottom: 1.55rem;
+      font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+      letter-spacing: -0.02em;
+      line-height: 1.34;
     }
 
     .founder-role {
@@ -480,8 +510,22 @@
         max-width: none;
       }
 
-      .shape .section-copy p {
-        max-width: none;
+      .shape .shape-lead {
+        max-width: 16ch;
+        font-size: clamp(2.55rem, 12vw, 3.25rem);
+        line-height: 0.98;
+      }
+
+      .shape-details {
+        width: auto;
+        margin-top: 2.6rem;
+        margin-left: clamp(0rem, 6vw, 1.5rem);
+      }
+
+      .shape .shape-details p {
+        max-width: 30ch;
+        font-size: clamp(1.2rem, 5.2vw, 1.38rem);
+        line-height: 1.4;
       }
 
       .outcome-inner {
@@ -518,7 +562,10 @@
   <a class="skip-link" href="#main-content">Skip to the introduction</a>
 
   <header class="frame masthead">
-    <p class="wordmark">Chama Inteligente</p>
+    <div class="masthead-name">
+      <p class="wordmark">Chama Inteligente</p>
+      <p class="wordmark-translation">Intelligent Flame</p>
+    </div>
     <div class="masthead-notes">
       <p><strong>AI and technology coaching</strong>Lisbon</p>
       <p><strong>Written &ldquo;Chama.&rdquo;</strong>Pronounced &ldquo;Shama.&rdquo;</p>
@@ -551,9 +598,11 @@
     <section class="frame content-section shape" aria-labelledby="shape-title">
       <p class="section-label" id="shape-title">The shape of the work</p>
       <div class="section-copy">
-        <p>I work one to one with people and with small teams.</p>
-        <p>We meet regularly, so I can get to know how you work, keep track of what you are trying to do, and make each conversation build on the last.</p>
-        <p>Bring me the questions, decisions, and ideas in front of you. I help you see more of what is possible and make better use of the tools available now.</p>
+        <p class="shape-lead">I work one to one with people and with small teams.</p>
+        <div class="shape-details">
+          <p>We meet regularly, so I can get to know how you work, keep track of what you are trying to do, and make each conversation build on the last.</p>
+          <p>Bring me the questions, decisions, and ideas in front of you. I help you see more of what is possible and make better use of the tools available now.</p>
+        </div>
       </div>
     </section>
 
