@@ -3,8 +3,8 @@ import { put } from "@vercel/blob";
 const LIMITS = {
   name: 120,
   email: 254,
-  goal: 4000,
-  tried: 4000
+  whatsappNumber: 50,
+  request: 4000
 };
 
 function clean(value) {
@@ -54,16 +54,16 @@ async function readFields(request) {
   return Object.fromEntries(form.entries());
 }
 
-function validate(fields) {
+export function validate(fields) {
   const submission = {
     name: clean(fields.name),
     email: clean(fields.email).toLowerCase(),
-    goal: clean(fields.goal),
-    tried: clean(fields.tried)
+    whatsappNumber: clean(fields.whatsappNumber),
+    request: clean(fields.request)
   };
 
-  if (!submission.name || !submission.email || !submission.goal) {
-    return { error: "Please include your name, email, and what you are trying to do." };
+  if (!submission.name || !submission.email || !submission.request) {
+    return { error: "Please include your name, email, and what you would like to understand, decide, or make." };
   }
 
   for (const [field, limit] of Object.entries(LIMITS)) {
@@ -77,6 +77,15 @@ function validate(fields) {
   }
 
   return { submission };
+}
+
+export function buildRecord(submission, submittedAt) {
+  return {
+    schemaVersion: 2,
+    submittedAt,
+    source: "chamainteligente.com",
+    ...submission
+  };
 }
 
 function looksAutomated(fields) {
@@ -117,12 +126,7 @@ export default {
 
     const submittedAt = new Date().toISOString();
     const day = submittedAt.slice(0, 10);
-    const record = {
-      schemaVersion: 1,
-      submittedAt,
-      source: "chamainteligente.com",
-      ...result.submission
-    };
+    const record = buildRecord(result.submission, submittedAt);
 
     try {
       await put(

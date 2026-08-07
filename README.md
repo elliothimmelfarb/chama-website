@@ -19,13 +19,13 @@ The copy is **not authored here**. It lives in [`wiki/topics/website-content-cha
 
 ## Intake behavior
 
-The form asks for a name, email, the thing the visitor is trying to do, and what they have tried so far. JavaScript enhances the interaction but is not required: a native form submission receives the same validation and storage path.
+The form asks for a name, email, an optional WhatsApp number, and one required description of what the visitor would like to understand, decide, or make. JavaScript enhances the interaction but is not required: a native form submission receives the same validation and storage path. Stored records use schema version 2 with `name`, `email`, `whatsappNumber`, and `request` fields.
 
 Submissions are stored as private JSON blobs in an EU-region Vercel Blob store. They contain only the form fields, submission time, schema version, and source domain. The handler does not store IP addresses, invoke an agent, add anyone to a marketing list, or send a message. A honeypot and minimum-fill-time check absorb basic automated spam without storing it. The function and storage both run in Paris.
 
 An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 
-Elliot reviews submissions in the Vercel dashboard under Storage. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
+Elliot reviews submissions in the Vercel dashboard under Storage. The production project has no email provider or mail API key configured, so storing a submission does not currently send an alert. Enabling alerts requires an approved transactional-email provider credential and an authorized sender identity; a custom `chamainteligente.com` sender would also require domain verification. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
 
 ## Deploying it
 

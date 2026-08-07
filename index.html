@@ -577,11 +577,11 @@
       <div class="invitation-grid">
         <h2 id="invitation-title">Want to work together?</h2>
         <div class="invitation-copy">
-          <p>Tell me what you are trying to do and what you have tried so far. I will tell you whether I think I can help, and why.</p>
+          <p>You do not need to arrive with a finished plan. Tell me what you would like to understand, decide, or make. I&rsquo;ll read it and let you know how I could help.</p>
           <form class="intake-form" id="intake-form" action="/api/intake" method="post" accept-charset="UTF-8" aria-describedby="intake-note">
             <div class="field-row">
               <label class="field">
-                <span>Your name</span>
+                <span>Name</span>
                 <input type="text" name="name" autocomplete="name" maxlength="120" required>
               </label>
               <label class="field">
@@ -590,12 +590,12 @@
               </label>
             </div>
             <label class="field">
-              <span>What are you trying to do?</span>
-              <textarea name="goal" maxlength="4000" required></textarea>
+              <span>WhatsApp number <span>(optional)</span></span>
+              <input type="tel" name="whatsappNumber" autocomplete="tel" inputmode="tel" maxlength="50">
             </label>
             <label class="field">
-              <span>What have you tried so far? <span aria-hidden="true">(optional)</span></span>
-              <textarea name="tried" maxlength="4000"></textarea>
+              <span>What would you like to understand, decide, or make?</span>
+              <textarea name="request" maxlength="4000" required></textarea>
             </label>
             <div class="honeypot" aria-hidden="true">
               <label>Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label>
@@ -603,7 +603,7 @@
             <input type="hidden" name="startedAt" id="started-at" value="">
             <button class="submit-button" type="submit">Send this to Elliot</button>
             <p class="intake-note" id="intake-note">Submissions are stored privately for Elliot to review. They are not used for marketing or treated as instructions to an automated system. <a href="/privacy">Privacy details</a>.</p>
-            <p class="form-response" id="thanks" role="status" aria-live="polite" tabindex="-1">Thanks. Elliot has your note and will reply by email if it looks like a useful conversation.</p>
+            <p class="form-response" id="thanks" role="status" aria-live="polite" tabindex="-1">Thanks. Your note was saved privately for Elliot to review.</p>
           </form>
         </div>
       </div>
@@ -645,7 +645,7 @@
 
           form.reset();
           startedAt.value = String(Date.now());
-          response.textContent = "Thanks. Elliot has your note and will reply by email if it looks like a useful conversation.";
+          response.textContent = "Thanks. Your note was saved privately for Elliot to review.";
           response.classList.add("is-visible");
           response.focus({ preventScroll: true });
         } catch (error) {
