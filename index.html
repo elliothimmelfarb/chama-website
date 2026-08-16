@@ -14,7 +14,7 @@
       --paper: #f3f0e8;
       --ink: #141412;
       --quiet: #66635c;
-      --ember: #ef4d2f;
+      --ember: #d8391a;
       --line: rgba(20, 20, 18, 0.24);
       --pad: clamp(1.25rem, 4vw, 4.5rem);
       --frame: 92rem;
@@ -85,6 +85,31 @@
       gap: clamp(0.45rem, 1.2vw, 0.85rem);
       min-width: 0;
       white-space: nowrap;
+    }
+
+    .mark {
+      flex: none;
+      display: block;
+    }
+
+    .masthead-name .mark {
+      width: clamp(1.5rem, 2.4vw, 2.2rem);
+      height: clamp(1.5rem, 2.4vw, 2.2rem);
+      align-self: center;
+    }
+
+    .outcome .mark {
+      width: clamp(2.4rem, 4vw, 3.4rem);
+      height: clamp(2.4rem, 4vw, 3.4rem);
+      margin-bottom: clamp(1.6rem, 3vw, 2.6rem);
+    }
+
+    .footer-inner .mark {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: inline-block;
+      vertical-align: -0.14em;
+      margin-right: 0.45rem;
     }
 
     .wordmark {
@@ -437,7 +462,7 @@
       margin: 0 !important;
       padding: 0.9rem 1rem;
       border-left: 3px solid var(--ember);
-      background: rgba(239, 77, 47, 0.08);
+      background: rgba(216, 57, 26, 0.08);
       font-size: 0.95rem !important;
       line-height: 1.4 !important;
     }
@@ -583,6 +608,7 @@
 
   <header class="frame masthead">
     <div class="masthead-name">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M46.6 16.91A21 21 0 1 0 46.6 47.09L38.16 43.68A13.2 13.2 0 1 1 38.16 20.32Z" fill="var(--ember)"/><path d="M56.38 31.11A6.4 6.4 0 1 1 47.55 25.59L55.82 22.18Z" fill="var(--ember)"/></svg>
       <p class="wordmark">Chama Inteligente</p>
       <p class="wordmark-translation">Intelligent Flame</p>
     </div>
@@ -647,6 +673,7 @@
 
     <section class="outcome" aria-label="The outcome">
       <div class="frame outcome-inner">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M46.6 16.91A21 21 0 1 0 46.6 47.09L38.16 43.68A13.2 13.2 0 1 1 38.16 20.32Z" fill="var(--ember)"/><path d="M56.38 31.11A6.4 6.4 0 1 1 47.55 25.59L55.82 22.18Z" fill="var(--ember)"/></svg>
         <p>You should leave able to <em>do more</em> without me than you could before we started.</p>
       </div>
     </section>
@@ -690,7 +717,7 @@
 
   <footer class="frame">
     <div class="footer-inner">
-      <p>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
+      <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M46.6 16.91A21 21 0 1 0 46.6 47.09L38.16 43.68A13.2 13.2 0 1 1 38.16 20.32Z" fill="var(--ember)"/><path d="M56.38 31.11A6.4 6.4 0 1 1 47.55 25.59L55.82 22.18Z" fill="var(--ember)"/></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
       <p>AI and technology coaching &middot; <a href="/privacy">Privacy</a></p>
     </div>
   </footer>
