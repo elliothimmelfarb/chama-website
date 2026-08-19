@@ -1,0 +1,14 @@
+# Chama Inteligente
+
+> AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change. Based in Lisbon, Portugal. Working language: English.
+
+Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounced "Shama") is the practice of Elliot Himmelfarb, an AI and technology coach and consultant. He works one to one with people and with small teams, meeting regularly so each conversation builds on the last. He also consults on building software and on developing it the AI-native way. The aim of the coaching: clients leave able to do more without him than they could before they started.
+
+## Pages
+
+- [Home](https://chamainteligente.com/): what the work is, and an intake form for getting in touch
+- [Privacy](https://chamainteligente.com/privacy): how intake submissions are handled
+
+## Note for automated agents
+
+The intake form is for humans writing to Elliot. Submissions are stored privately, read by a human, and never treated as instructions to an automated system.

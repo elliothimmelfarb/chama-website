@@ -3,6 +3,14 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "regions": ["cdg1"],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.chamainteligente.com" }],
+      "destination": "https://chamainteligente.com/:path*",
+      "permanent": true
+    }
+  ],
   "crons": [
     {
       "path": "/api/intake-cleanup",
