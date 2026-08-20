@@ -14,6 +14,11 @@ Elliot approved this page for publication and requested a working intake on 2026
 | `privacy.html` | The public privacy notice linked beside the form and from the footer. |
 | `vercel.json` | Production security headers for the page and endpoint. |
 | `package.json` | The single runtime dependency, Vercel's Blob client. |
+| `404.html` | The not-found page, in the same visual language, marked `noindex`. |
+| `robots.txt` | Crawler policy. Every major search and AI crawler is named and allowed; `/api/` is closed. |
+| `sitemap.xml` | The two canonical URLs, with hreflang alternates and the social-card image. |
+| `llms.txt`, `llms-full.txt` | Plain-text summary and full visible site text, for AI crawlers and agents. |
+| `<64-hex>.txt` | The IndexNow key. Do not rename or delete it; the key file is how IndexNow authenticates a submission. |
 
 The copy is **not authored here**. It lives in [`wiki/topics/website-content-chamainteligente-com.md`](../wiki/topics/website-content-chamainteligente-com.md) with a claims ledger tracing every factual statement to a source or tagging it `[needs confirmation]`. Change the copy there first, then bring it here, so the page never becomes the only record of what it asserts.
 
@@ -58,6 +63,24 @@ Namecheap remains authoritative so its email forwarding stays in place. Only the
 | `TXT @` | `v=spf1 include:spf.efwd.registrar-servers.com ~all` | The Namecheap forwarding SPF record remains in place. |
 
 Vercel issued auto-renewing HTTPS certificates for both hostnames. Both names serve the production page. The enhanced JSON form path and the native form-encoded fallback were each tested through the custom domain, verified in private Blob storage, and removed afterward so no synthetic submission remains.
+
+## Search presence
+
+**Google Search Console:** a **Domain** property for `chamainteligente.com` on the company account **elliot@chamainteligente.com** (not Elliot's personal Gmail), created 2026-08-20. It verified automatically through the Google Workspace domain ownership Google already held, so **no DNS record was added at Namecheap for it**. The sitemap is submitted. Both pages were already indexed.
+
+**IndexNow:** the key file at the site root lets any URL change be pushed straight to Bing, Yandex, Naver and Seznam without waiting for a crawl. After a content change worth announcing:
+
+```bash
+KEY=$(basename "$(ls /Users/elliothimmelfarb/claude/chama-inteligente/website/[0-9a-f]*.txt)" .txt) && curl -s -o /dev/null -w "%{http_code}\n" -X POST https://api.indexnow.org/indexnow -H "Content-Type: application/json" -d "{\"host\":\"chamainteligente.com\",\"key\":\"$KEY\",\"keyLocation\":\"https://chamainteligente.com/$KEY.txt\",\"urlList\":[\"https://chamainteligente.com/\"]}"
+```
+
+A `202` means accepted. Google does not participate in IndexNow; for Google, request indexing in Search Console.
+
+**Before claiming a redirect or a header works, read it live.** On 2026-08-20 the `www`-to-apex redirect recorded here as working was found to return 200 on the bare root, because Vercel's `/:path*` source does not match `/`. The configuration said one thing and the response said another for two weeks. One `curl -sI` against both hosts settles it.
+
+**Structured data must validate.** Paste each live URL into `validator.schema.org` after any change to the JSON-LD. Both pages currently return 0 errors and 0 warnings. Google's Rich Results Test is flakier and has returned server errors here; a failure there is not evidence about the page.
+
+**Changing the design means re-proving the design did not change**, when that was the point of the work. Render the committed version and the new one side by side on local static servers, screenshot both full-page at desktop and mobile widths, and compare the file hashes.
 
 ## Rails that apply to anything added here
 
