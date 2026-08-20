@@ -7,8 +7,16 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <meta name="description" content="AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change.">
+  <meta name="description" content="AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change. Elliot Himmelfarb, Lisbon, Portugal.">
+  <meta name="author" content="Elliot Himmelfarb">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="theme-color" content="#f3f0e8">
+  <meta name="color-scheme" content="light">
   <link rel="canonical" href="https://chamainteligente.com/">
+  <link rel="alternate" hreflang="en" href="https://chamainteligente.com/">
+  <link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/">
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <meta property="og:title" content="Chama Inteligente">
   <meta property="og:description" content="AI and technology coaching and consulting for people and small teams.">
   <meta property="og:url" content="https://chamainteligente.com/">
@@ -19,6 +27,8 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Chama Inteligente. AI and technology coaching and consulting. Lisbon.">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:secure_url" content="https://chamainteligente.com/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Chama Inteligente">
   <meta name="twitter:description" content="AI and technology coaching and consulting for people and small teams.">
@@ -32,47 +42,161 @@
         "@type": "ProfessionalService",
         "@id": "https://chamainteligente.com/#organization",
         "name": "Chama Inteligente",
+        "alternateName": "Chama",
         "legalName": "Chama Inteligente, Lda.",
         "url": "https://chamainteligente.com/",
-        "logo": "https://chamainteligente.com/apple-touch-icon.png",
-        "image": "https://chamainteligente.com/og.png",
+        "logo": {
+          "@type": "ImageObject",
+          "@id": "https://chamainteligente.com/#logo",
+          "url": "https://chamainteligente.com/apple-touch-icon.png",
+          "contentUrl": "https://chamainteligente.com/apple-touch-icon.png",
+          "width": 180,
+          "height": 180,
+          "caption": "Chama Inteligente"
+        },
+        "image": { "@id": "https://chamainteligente.com/#primaryimage" },
         "description": "AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change.",
+        "slogan": "AI is changing what one person can do.",
         "taxID": "519425235",
+        "vatID": "PT519425235",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Lisbon",
           "addressCountry": "PT"
         },
         "founder": { "@id": "https://chamainteligente.com/#founder" },
+        "employee": { "@id": "https://chamainteligente.com/#founder" },
+        "knowsLanguage": {
+          "@type": "Language",
+          "name": "English",
+          "alternateName": "en"
+        },
+        "knowsAbout": [
+          "Artificial intelligence",
+          "AI coaching",
+          "AI tools and assistants",
+          "AI-native software development",
+          "Software engineering"
+        ],
         "serviceType": [
           "AI and technology coaching",
           "AI and technology consulting",
           "Software development consulting"
-        ]
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "enquiries",
+          "url": "https://chamainteligente.com/#intake-form",
+          "availableLanguage": ["English"]
+        },
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "AI and technology coaching and consulting",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "One-to-one AI coaching",
+                "serviceType": "AI and technology coaching",
+                "description": "Regular one-to-one sessions, so each conversation builds on the last and the client leaves able to do more without help than before they started.",
+                "provider": { "@id": "https://chamainteligente.com/#organization" },
+                "availableLanguage": ["English"]
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "AI coaching for small teams",
+                "serviceType": "AI and technology coaching",
+                "description": "Regular sessions with a small team, working from the questions, decisions, and ideas actually in front of them.",
+                "provider": { "@id": "https://chamainteligente.com/#organization" },
+                "availableLanguage": ["English"]
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Software and AI-native development consulting",
+                "serviceType": "Software development consulting",
+                "description": "Building software with individuals and small teams, or teaching them to develop it the AI-native way.",
+                "provider": { "@id": "https://chamainteligente.com/#organization" },
+                "availableLanguage": ["English"]
+              }
+            }
+          ]
+        }
       },
       {
         "@type": "Person",
         "@id": "https://chamainteligente.com/#founder",
         "name": "Elliot Himmelfarb",
+        "givenName": "Elliot",
+        "familyName": "Himmelfarb",
         "jobTitle": "AI and technology coach and consultant",
+        "description": "Software engineer of a decade. For the past four years nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, and keeping pace as those capabilities change.",
+        "url": "https://chamainteligente.com/",
+        "knowsLanguage": {
+          "@type": "Language",
+          "name": "English",
+          "alternateName": "en"
+        },
+        "knowsAbout": [
+          "Artificial intelligence",
+          "AI coaching",
+          "AI-native software development",
+          "Software engineering"
+        ],
         "worksFor": { "@id": "https://chamainteligente.com/#organization" }
+      },
+      {
+        "@type": "ImageObject",
+        "@id": "https://chamainteligente.com/#primaryimage",
+        "url": "https://chamainteligente.com/og.png",
+        "contentUrl": "https://chamainteligente.com/og.png",
+        "width": 1200,
+        "height": 630,
+        "caption": "Chama Inteligente. AI and technology coaching and consulting. Lisbon."
       },
       {
         "@type": "WebSite",
         "@id": "https://chamainteligente.com/#website",
         "url": "https://chamainteligente.com/",
         "name": "Chama Inteligente",
+        "description": "AI and technology coaching and consulting for people and small teams.",
         "inLanguage": "en",
         "publisher": { "@id": "https://chamainteligente.com/#organization" }
       },
       {
-        "@type": "WebPage",
+        "@type": ["WebPage", "AboutPage"],
         "@id": "https://chamainteligente.com/#webpage",
         "url": "https://chamainteligente.com/",
         "name": "Chama Inteligente | AI and technology coaching and consulting",
+        "description": "AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change.",
         "isPartOf": { "@id": "https://chamainteligente.com/#website" },
         "about": { "@id": "https://chamainteligente.com/#organization" },
-        "inLanguage": "en"
+        "mainEntity": { "@id": "https://chamainteligente.com/#organization" },
+        "primaryImageOfPage": { "@id": "https://chamainteligente.com/#primaryimage" },
+        "breadcrumb": { "@id": "https://chamainteligente.com/#breadcrumb" },
+        "inLanguage": "en",
+        "speakable": {
+          "@type": "SpeakableSpecification",
+          "cssSelector": ["#opening-title", ".hero-deck"]
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://chamainteligente.com/#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://chamainteligente.com/"
+          }
+        ]
       }
     ]
   }
@@ -831,6 +955,13 @@
         }
       });
     })();
+  </script>
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "source": "document", "where": { "href_matches": "/*" }, "eagerness": "moderate" }
+    ]
+  }
   </script>
 </body>
 </html>

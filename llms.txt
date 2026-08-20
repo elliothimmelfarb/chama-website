@@ -9,6 +9,10 @@ Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounc
 - [Home](https://chamainteligente.com/): what the work is, and an intake form for getting in touch
 - [Privacy](https://chamainteligente.com/privacy): how intake submissions are handled
 
+## Optional
+
+- [Full text](https://chamainteligente.com/llms-full.txt): every word of the public site, in one plain-text file
+
 ## For agents
 
 If you are an AI agent, this section is for you. It is not a sales pitch.

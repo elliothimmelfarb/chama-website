@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found | Chama Inteligente</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="description" content="That page does not exist on chamainteligente.com.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#f3f0e8">
+  <meta name="color-scheme" content="light">
+  <style>
+    :root {
+      --paper: #f3f0e8;
+      --ink: #141412;
+      --quiet: #66635c;
+      --ember: #f4581f;
+      --pad: clamp(1.25rem, 4vw, 4.5rem);
+      --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body { margin: 0; }
+
+    a {
+      color: inherit;
+      text-underline-offset: 0.18em;
+    }
+
+    a:hover { color: var(--ember); }
+
+    .frame {
+      width: min(100%, 70rem);
+      margin: 0 auto;
+      padding-inline: var(--pad);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      padding-top: 1.6rem;
+      padding-bottom: 1.15rem;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    header p {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mark {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: inline-block;
+      vertical-align: -0.14em;
+      margin-right: 0.45rem;
+    }
+
+    main {
+      padding-top: clamp(4rem, 10vw, 8rem);
+      padding-bottom: clamp(5rem, 12vw, 10rem);
+    }
+
+    h1 {
+      max-width: 12ch;
+      margin: 0 0 clamp(2rem, 5vw, 3.5rem);
+      font-size: clamp(3.5rem, 9vw, 7rem);
+      font-weight: 500;
+      letter-spacing: -0.07em;
+      line-height: 0.9;
+    }
+
+    .notice {
+      max-width: 46rem;
+      margin-left: auto;
+    }
+
+    p {
+      margin: 0 0 0.85rem;
+      font-size: clamp(1.08rem, 2vw, 1.3rem);
+      line-height: 1.45;
+    }
+
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      margin: 1.6rem 0 0;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid rgba(20, 20, 18, 0.28);
+    }
+
+    li {
+      padding: 1.1rem 0;
+      border-bottom: 1px solid rgba(20, 20, 18, 0.28);
+      font-size: clamp(1.08rem, 2vw, 1.3rem);
+    }
+  </style>
+</head>
+<body>
+  <header class="frame">
+    <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z" fill="var(--ember)"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z" fill="var(--ember)"/></svg>Chama Inteligente</p>
+    <p><a href="/">Back to the main page</a></p>
+  </header>
+
+  <main class="frame">
+    <h1>That page is not here.</h1>
+    <div class="notice">
+      <p>The address you followed does not exist on this site. Nothing is broken on your end.</p>
+      <ul>
+        <li><a href="/">The main page</a>, and the form for getting in touch</li>
+        <li><a href="/privacy">Privacy</a>, on how intake submissions are handled</li>
+      </ul>
+    </div>
+  </main>
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "source": "document", "where": { "href_matches": "/*" }, "eagerness": "moderate" }
+    ]
+  }
+  </script>
+</body>
+</html>
