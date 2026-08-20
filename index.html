@@ -332,7 +332,9 @@
     }
 
     .hero {
-      min-height: min(54rem, calc(100svh - 7.8rem));
+      /* Height is capped by width too: the headline scales with vw, so a
+         rem/svh-only floor opens a dead band on tall narrow viewports. */
+      min-height: min(54rem, calc(100svh - 7.8rem), calc(32vw + 22rem));
       display: grid;
       grid-template-rows: 1fr auto;
       padding-top: clamp(3.3rem, 8vh, 7.2rem);
@@ -340,6 +342,7 @@
     }
 
     .hero h1 {
+      align-self: center;
       margin: 0;
       max-width: 12ch;
       font-size: clamp(3.55rem, 9.2vw, 8.8rem);
@@ -701,7 +704,7 @@
       }
 
       .hero {
-        min-height: calc(100svh - 10.5rem);
+        min-height: min(calc(100svh - 10.5rem), calc(62vw + 30rem));
         padding-top: clamp(3rem, 9vh, 5.2rem);
       }
 
