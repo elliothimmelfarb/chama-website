@@ -356,6 +356,28 @@
       display: block;
     }
 
+    .hero h1 .hero-cycle {
+      display: inline-grid;
+      text-align: inherit;
+    }
+
+    .hero h1 .hero-cycle-item {
+      grid-area: 1 / 1;
+      opacity: 0;
+      transition: opacity 1.6s ease-in-out;
+      white-space: nowrap;
+    }
+
+    .hero h1 .hero-cycle-item.is-active {
+      opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero h1 .hero-cycle-item {
+        transition: none;
+      }
+    }
+
     .hero h1 .line-two {
       margin-left: clamp(0.8rem, 7vw, 7rem);
     }
@@ -709,7 +731,7 @@
       }
 
       .hero h1 {
-        font-size: clamp(3.4rem, 18vw, 6.4rem);
+        font-size: clamp(2.5rem, 14vw, 6.4rem);
       }
 
       .hero h1 .line-two {
@@ -807,8 +829,8 @@
 
   <main id="main-content">
     <section class="frame hero" aria-labelledby="opening-title">
-      <h1 id="opening-title">
-        <span>AI changes</span>
+      <h1 id="opening-title" aria-label="AI changes what one person can do.">
+        <span class="line-one"><span class="hero-cycle" aria-hidden="true"><span class="hero-cycle-item is-active">AI changes</span><span class="hero-cycle-item">AI has changed</span><span class="hero-cycle-item">AI is changing</span></span></span>
         <span class="line-two">what one person</span>
         <span class="line-three">can do.</span>
       </h1>
@@ -908,6 +930,39 @@
       <p>AI and technology coaching and consulting &middot; <a href="/privacy">Privacy</a></p>
     </div>
   </footer>
+  <script>
+    (() => {
+      const cycle = document.querySelector(".hero-cycle");
+      if (!cycle) return;
+
+      const items = Array.from(cycle.querySelectorAll(".hero-cycle-item"));
+      if (items.length < 2) return;
+
+      const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let index = 0;
+      let timer = null;
+
+      const advance = () => {
+        items[index].classList.remove("is-active");
+        index = (index + 1) % items.length;
+        items[index].classList.add("is-active");
+      };
+
+      const stop = () => {
+        window.clearInterval(timer);
+        timer = null;
+      };
+
+      const start = () => {
+        if (timer || calm.matches || document.hidden) return;
+        timer = window.setInterval(advance, 5200);
+      };
+
+      document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+      calm.addEventListener("change", () => (calm.matches ? stop() : start()));
+      start();
+    })();
+  </script>
   <script>
     (() => {
       const form = document.querySelector("#intake-form");
