@@ -22,7 +22,8 @@ Written "Chama." Pronounced "Shama."
 
 ### AI changes what one person can do.
 
-I help people learn to use AI to accomplish things that were previously impossible.
+Every leap in AI is a leap available to you. I help people learn to use it to
+accomplish things that were previously impossible.
 
 ### The shortest path up the learning curve
 
@@ -34,7 +35,7 @@ Most AI courses teach you how to use today's tools and capabilities for a handfu
 tasks. I teach what lasts: the ideas and habits that help you explore your
 environment for new capabilities that may not have been available yesterday.
 
-So you can stay ahead of what most people know how to do.
+So you grow with AI instead of chasing it.
 
 ### The shape of the work
 
@@ -65,6 +66,8 @@ I am open to consulting with individuals and small teams: building software with
 or teaching you to develop it the AI-native way.
 
 ### The outcome
+
+Be AI-native.
 
 You should leave able to do more without me than you could before we started.
 
