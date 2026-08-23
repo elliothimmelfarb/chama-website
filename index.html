@@ -555,6 +555,28 @@
       line-height: 1.35;
     }
 
+    .founder-photo {
+      display: block;
+      width: min(100%, 15rem);
+      height: auto;
+      margin-top: 1.7rem;
+      border-radius: 10px;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(13rem, 21rem);
+      gap: clamp(2.4rem, 5vw, 5rem);
+      align-items: start;
+    }
+
+    .about-photo {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+
     .outcome {
       background: var(--ink);
       color: var(--paper);
@@ -862,6 +884,14 @@
         align-items: start;
       }
 
+      .about-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .about-photo {
+        max-width: 24rem;
+      }
+
       .field-row {
         grid-template-columns: 1fr;
       }
@@ -941,6 +971,7 @@
       <div class="founder-identity">
         <h2 class="section-label" id="founder-title">Elliot Himmelfarb</h2>
         <p class="founder-role">AI and technology coach and consultant</p>
+        <img class="founder-photo" src="/elliot-rozalie.jpg" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
       </div>
       <div class="section-copy">
         <p>For the past four years, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, and keeping pace as those capabilities change. Before that, he was a software engineer for a decade. You get the benefit of that accumulated judgment and experience when you spend time with him.</p>
@@ -1000,6 +1031,19 @@
             <p class="intake-note" id="intake-note">Submissions are stored privately for Elliot to review. They are not used for marketing or treated as instructions to an automated system. <a href="/privacy">Privacy details</a>.</p>
             <p class="form-response" id="thanks" role="status" aria-live="polite" tabindex="-1">Thanks. Your note was saved privately for Elliot to review.</p>
           </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="frame content-section about" aria-labelledby="about-title">
+      <h2 class="section-label" id="about-title">About us</h2>
+      <div class="section-copy">
+        <div class="about-grid">
+          <div class="about-copy">
+            <p>We are Elliot and Annie. We moved to Portugal in the fall of 2023, sight unseen, to explore more of the world, enjoy more of what life has to offer, and have our baby. Our daughter, Rozalie, was born in November 2025.</p>
+            <p>We are growing our business together, and we want to help people become <span class="ember-accent">AI-native</span>, so they can adapt and take advantage of the incredible potential of this rapidly changing world.</p>
+          </div>
+          <img class="about-photo" src="/about-family.jpg" alt="Elliot and Annie with their daughter Rozalie, outdoors in Lisbon." width="900" height="1200" loading="lazy" decoding="async">
         </div>
       </div>
     </section>
