@@ -577,6 +577,12 @@
       border-radius: 10px;
     }
 
+    .about-copy p {
+      max-width: 44ch;
+      font-size: clamp(1.2rem, 1.55vw, 1.5rem);
+      line-height: 1.4;
+    }
+
     .outcome {
       background: var(--ink);
       color: var(--paper);
@@ -951,7 +957,8 @@
       <div class="section-copy">
         <h2 id="work-title">AI <span class="ember-accent">changes</span> more than the tools we use.</h2>
         <p>It changes how we think, work, organize, and lead.</p>
-        <p>Most AI courses teach you how to use today&rsquo;s tools and capabilities for a handful of tasks. We teach what lasts: the ideas and habits that help you explore your environment for new capabilities that may not have been available yesterday.</p>
+        <p>Most AI courses teach you how to use today&rsquo;s tools and capabilities for a handful of tasks.</p>
+        <p>We teach what lasts: the ideas and habits that help you explore your environment for new capabilities that may not have been available yesterday.</p>
         <p>So you grow with AI instead of chasing it.</p>
       </div>
     </section>
@@ -974,7 +981,8 @@
         <img class="founder-photo" src="/elliot-rozalie.webp" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
       </div>
       <div class="section-copy">
-        <p>For the past four years, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, and keeping pace as those capabilities change. Before that, he was a software engineer for a decade. You get the benefit of that accumulated judgment and experience when you spend time with him.</p>
+        <p>For the past four years, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, and keeping pace as those capabilities change. Before that, he was a software engineer for a decade.</p>
+        <p>You get the benefit of that accumulated judgment and experience when you spend time with him.</p>
       </div>
     </section>
 
@@ -1003,7 +1011,7 @@
       <div class="invitation-grid">
         <h2 id="invitation-title">Want to work <span class="ember-accent">together</span>?</h2>
         <div class="invitation-copy">
-          <p>You do not need to arrive with a finished plan. Tell us what you would like to understand, decide, or make. Elliot reads every note and will let you know how we can help.</p>
+          <p>You do not need to arrive with a finished plan, or even a question. Tell us what you would like to be able to do. Elliot reads every note and will let you know how we can help.</p>
           <form class="intake-form" id="intake-form" action="/api/intake" method="post" accept-charset="UTF-8" aria-describedby="intake-note">
             <div class="field-row">
               <label class="field">
@@ -1020,7 +1028,7 @@
               <input type="tel" name="whatsappNumber" autocomplete="tel" inputmode="tel" maxlength="50">
             </label>
             <label class="field">
-              <span>What would you like to understand, decide, or make?</span>
+              <span>What would you like to be able to do?</span>
               <textarea name="request" maxlength="4000" required></textarea>
             </label>
             <div class="honeypot" aria-hidden="true">
