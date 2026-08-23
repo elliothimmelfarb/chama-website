@@ -364,17 +364,69 @@
     .hero h1 .hero-cycle-item {
       grid-area: 1 / 1;
       opacity: 0;
-      transition: opacity 0.9s ease-in-out;
+      pointer-events: none;
       white-space: nowrap;
     }
 
-    .hero h1 .hero-cycle-item.is-active {
+    /* The inline-grid takes its baseline from its first grid item; while an
+       incoming item's tokens are all display:none (the pre-stream delay),
+       an empty item would drop its baseline and nudge the whole line. A
+       permanent zero-width space keeps a baseline in every item. */
+    .hero h1 .hero-cycle-item::before {
+      content: "\200B";
+    }
+
+    .hero h1 .hero-cycle-item .tok {
+      display: inline;
+      white-space: pre;
+    }
+
+    .hero h1 .hero-cycle-item.in {
       opacity: 1;
     }
 
+    .hero h1 .hero-cycle-item.in .tok {
+      opacity: 0;
+      animation: hero-tok-in 60ms ease-out both;
+      animation-delay: var(--d);
+    }
+
+    .hero h1 .hero-cycle-item.out {
+      opacity: 1;
+      animation: hero-cycle-out 150ms ease-out both;
+    }
+
+    .hero h1 .hero-cycle-item.out .tok {
+      opacity: 1;
+    }
+
+    /* display animates discretely: a token occupies no space until its delay
+       elapses, so the line grows the way a streamed completion does.
+       Browsers without discrete display animation show each token popping in
+       at the line's final layout instead. */
+    @keyframes hero-tok-in {
+      from { opacity: 0; display: none; }
+      to   { opacity: 1; display: inline; }
+    }
+
+    @keyframes hero-cycle-out {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .hero h1 .hero-cycle-item {
-        transition: none;
+      .hero h1 .hero-cycle-item,
+      .hero h1 .hero-cycle-item.in .tok {
+        animation: none;
+      }
+
+      .hero h1 .hero-cycle-item.in .tok {
+        opacity: 1;
+      }
+
+      .hero h1 .hero-cycle-item.out {
+        animation: none;
+        opacity: 0;
       }
     }
 
@@ -841,7 +893,7 @@
   <main id="main-content">
     <section class="frame hero" aria-labelledby="opening-title">
       <h1 id="opening-title" aria-label="AI changes what one person can do.">
-        <span class="line-one"><span class="hero-cycle" aria-hidden="true"><span class="hero-cycle-item is-active">AI changes</span><span class="hero-cycle-item">AI has changed</span><span class="hero-cycle-item">AI is changing</span></span></span>
+        <span class="line-one">AI <span class="hero-cycle" aria-hidden="true"><span class="hero-cycle-item in"><span class="tok" style="--d:60ms">chan</span><span class="tok" style="--d:280ms">ges</span></span><span class="hero-cycle-item"><span class="tok" style="--d:60ms">has</span><span class="tok" style="--d:200ms"> chan</span><span class="tok" style="--d:420ms">ged</span></span><span class="hero-cycle-item"><span class="tok" style="--d:60ms">is</span><span class="tok" style="--d:300ms"> ch</span><span class="tok" style="--d:400ms">anging</span></span></span></span>
         <span class="line-two">what one person</span>
         <span class="line-three">can do.</span>
       </h1>
@@ -955,9 +1007,17 @@
       let timer = null;
 
       const advance = () => {
-        items[index].classList.remove("is-active");
+        const prev = items[index];
         index = (index + 1) % items.length;
-        items[index].classList.add("is-active");
+        const next = items[index];
+
+        prev.classList.remove("in", "out");
+        void prev.offsetWidth;
+        prev.classList.add("out");
+
+        next.classList.remove("out", "in");
+        void next.offsetWidth;
+        next.classList.add("in");
       };
 
       const stop = () => {
