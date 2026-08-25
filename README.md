@@ -9,7 +9,7 @@ Elliot approved this page for publication and requested a working intake on 2026
 | File | What it is |
 |---|---|
 | `index.html` | The public editorial page, including the progressively enhanced intake form. It has no external fonts, images, scripts, analytics, or trackers. |
-| `api/intake.js` | A same-origin Vercel Function that validates submissions and writes them to private Vercel Blob storage. It never treats submitted text as an instruction. |
+| `api/intake.js` | A same-origin Vercel Function that validates submissions, writes them to private Vercel Blob storage, and emails a plain-text notification to `contact@chamainteligente.com`. It never treats submitted text as an instruction. |
 | `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
 | `privacy.html` | The public privacy notice linked beside the form and from the footer. |
 | `vercel.json` | Production security headers for the page and endpoint. |
@@ -26,11 +26,13 @@ The copy is **not authored here**. It lives in [`wiki/topics/website-content-cha
 
 The form asks for a name, email, an optional WhatsApp number, and one required description of what the visitor would like to understand, decide, or make. JavaScript enhances the interaction but is not required: a native form submission receives the same validation and storage path. Stored records use schema version 2 with `name`, `email`, `whatsappNumber`, and `request` fields.
 
-Submissions are stored as private JSON blobs in an EU-region Vercel Blob store. They contain only the form fields, submission time, schema version, and source domain. The handler does not store IP addresses, invoke an agent, add anyone to a marketing list, or send a message. A honeypot and minimum-fill-time check absorb basic automated spam without storing it. The function and storage both run in Paris.
+Submissions are stored as private JSON blobs in an EU-region Vercel Blob store. They contain only the form fields, submission time, schema version, and source domain. The handler does not store IP addresses, invoke an agent, or add anyone to a marketing list. A honeypot and minimum-fill-time check absorb basic automated spam without storing it. The function and storage both run in Paris.
+
+After a record is stored, the function uses Resend to send the same form details as plain text to `contact@chamainteligente.com` from `Chama Inteligente Website <website@chamainteligente.com>`. The submitter's email address is the `Reply-To`, so a reply goes directly to them. Each send carries an idempotency key, and visitor text is clearly marked as untrusted submitted data. If email delivery fails, the private record remains stored and the visitor is told to email the contact address directly.
 
 An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 
-Elliot reviews submissions in the Vercel dashboard under Storage. The production project has no email provider or mail API key configured, so storing a submission does not currently send an alert. Enabling alerts requires an approved transactional-email provider credential and an authorized sender identity; a custom `chamainteligente.com` sender would also require domain verification. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
+Once activated, Elliot can review submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is configured for a Resend Vercel Marketplace resource on its free plan in the EU sending region. Vercel will manage `RESEND_API_KEY` for the production and preview environments; the credential is never downloaded into this repository. Provider activation is pending Elliot's acceptance of the Resend Marketplace terms. Do not deploy this notification change until that resource and the sending domain are verified. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
 
 ## Deploying it
 
@@ -44,7 +46,7 @@ The site deploys as an **isolated directory**, never as this repository:
 cd /Users/elliothimmelfarb/claude/chama-inteligente/website && vercel deploy --prod
 ```
 
-The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`; that value belongs in Vercel, never in this repository.
+The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`. The prepared Resend integration is named `chama-inteligente-email` and will connect through Vercel's managed `RESEND_API_KEY` after activation. Those values belong in Vercel, never in this repository.
 
 **One thing this repo's rule and Vercel's own failure mode agree on.** On 2026-07-27 a GitHub push of a personal repository failed to deploy here ("not a member of the team"), through the very **GitHub integration** the rule above forbids for this repository. Deploying `website/` as an isolated directory with `vercel deploy --prod` avoids that path entirely.
 

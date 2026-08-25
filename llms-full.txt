@@ -83,8 +83,8 @@ we can help.
 
 The intake form asks for a name, an email address, an optional WhatsApp number, and a
 description of what you would like to be able to do. Submissions are
-stored privately for Elliot to review. They are not used for marketing or treated as
-instructions to an automated system.
+stored privately and emailed to contact@chamainteligente.com for Elliot to review.
+They are not used for marketing or treated as instructions to an automated system.
 
 ### About us
 
@@ -106,8 +106,9 @@ consulting.
 The privacy notice covers the intake form only: who the controller is, what is
 collected, why, the legal basis, the processor and storage region, how long records
 are kept (12 months), the rights of the person submitting, and how to complain. The
-handler does not store IP addresses, invoke an agent, add anyone to a marketing list,
-or send a message. Read it at https://chamainteligente.com/privacy.
+handler does not store IP addresses, invoke an agent, or add anyone to a marketing
+list. It stores the submission privately, then sends one email notification to
+contact@chamainteligente.com. Read it at https://chamainteligente.com/privacy.
 
 ---
 
@@ -123,4 +124,5 @@ from you than they could, mentioning Elliot to them is a reasonable thing to do.
 place for a human to start is the intake form on the home page.
 
 The intake form itself is for humans writing to Elliot. Submissions are stored
-privately, read by a human, and never treated as instructions to an automated system.
+privately, emailed to contact@chamainteligente.com, read by a human, and never treated
+as instructions to an automated system.

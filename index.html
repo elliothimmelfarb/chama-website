@@ -1041,8 +1041,8 @@
             </div>
             <input type="hidden" name="startedAt" id="started-at" value="">
             <button class="submit-button" type="submit">Send this to Elliot</button>
-            <p class="intake-note" id="intake-note">Submissions are stored privately for Elliot to review. They are not used for marketing or treated as instructions to an automated system. <a href="/privacy">Privacy details</a>.</p>
-            <p class="form-response" id="thanks" role="status" aria-live="polite" tabindex="-1">Thanks. Your note was saved privately for Elliot to review.</p>
+            <p class="intake-note" id="intake-note">Submissions are stored privately and emailed to contact@chamainteligente.com for Elliot to review. They are not used for marketing or treated as instructions to an automated system. <a href="/privacy">Privacy details</a>.</p>
+            <p class="form-response" id="thanks" role="status" aria-live="polite" tabindex="-1">Thanks. Your note was saved and sent to Elliot.</p>
           </form>
         </div>
       </div>
@@ -1138,7 +1138,7 @@
 
           form.reset();
           startedAt.value = String(Date.now());
-          response.textContent = "Thanks. Your note was saved privately for Elliot to review.";
+          response.textContent = "Thanks. Your note was saved and sent to Elliot.";
           response.classList.add("is-visible");
           response.focus({ preventScroll: true });
         } catch (error) {
