@@ -2,7 +2,7 @@ import { put } from "@vercel/blob";
 import { Resend } from "resend";
 
 const NOTIFICATION = {
-  from: "Chama Inteligente Website <website@chamainteligente.com>",
+  from: `Chama Inteligente Website <website@${process.env.RESEND_EMAIL_DOMAIN || "chamainteligente.com"}>`,
   to: "contact@chamainteligente.com"
 };
 

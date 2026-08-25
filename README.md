@@ -32,7 +32,7 @@ After a record is stored, the function uses Resend to send the same form details
 
 An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 
-Once activated, Elliot can review submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is configured for a Resend Vercel Marketplace resource on its free plan in the EU sending region. Vercel will manage `RESEND_API_KEY` for the production and preview environments; the credential is never downloaded into this repository. Provider activation is pending Elliot's acceptance of the Resend Marketplace terms. Do not deploy this notification change until that resource and the sending domain are verified. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
+Once the sending domain is verified, Elliot can review submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is connected to the `chama-inteligente-email` Resend Vercel Marketplace resource on its free plan in the EU sending region. Vercel manages `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` for the production and preview environments; neither credential was downloaded into this repository. The resource was provisioned on 2026-08-25 after Elliot accepted the Marketplace terms. Domain verification is pending the three Resend sending records at Namecheap. Do not deploy this notification change until the sending domain is verified. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
 
 ## Deploying it
 
@@ -46,23 +46,26 @@ The site deploys as an **isolated directory**, never as this repository:
 cd /Users/elliothimmelfarb/claude/chama-inteligente/website && vercel deploy --prod
 ```
 
-The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`. The prepared Resend integration is named `chama-inteligente-email` and will connect through Vercel's managed `RESEND_API_KEY` after activation. Those values belong in Vercel, never in this repository.
+The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`. The Resend integration is named `chama-inteligente-email` and connects through Vercel's managed `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN`. Those values belong in Vercel, never in this repository.
 
 **One thing this repo's rule and Vercel's own failure mode agree on.** On 2026-07-27 a GitHub push of a personal repository failed to deploy here ("not a member of the team"), through the very **GitHub integration** the rule above forbids for this repository. Deploying `website/` as an isolated directory with `vercel deploy --prod` avoids that path entirely.
 
 A cleaner long-term shape, worth doing if the site grows past one page: give `website/` its own git repository with its own remote, and let that one be public. The public surface and the private brain then have separate histories, which is the same permission split the [domain-unlocks page](../wiki/topics/chamainteligente-domain-unlocks.md) argues for at the content level.
 
-### Production DNS, verified 2026-08-03
+### Production DNS, verified 2026-08-25
 
-Namecheap remains authoritative so its email forwarding stays in place. Only the two web records were replaced:
+Namecheap remains authoritative. Google Workspace now receives the company's root-domain mail, including `contact@chamainteligente.com`; this supersedes the Namecheap-forwarding state recorded here on 2026-08-03. The Resend sending records belong only at `send.chamainteligente.com` and `resend._domainkey.chamainteligente.com`, so they do not replace Google's root MX or SPF records.
 
 | Record | Current value | Meaning |
 |---|---|---|
 | `A @` | `76.76.21.21` | Vercel production deployment at the apex domain. |
 | `A www` | `76.76.21.21` | The same Vercel production deployment at `www`. |
 | `NS` | `pdns1/pdns2.registrar-servers.com` | DNS is at Namecheap (PremiumDNS, bought 2026-07-26). |
-| `MX` | `eforward1-5.registrar-servers.com` | Namecheap email forwarding remains configured. Forwarding is not a mailbox and cannot send as the domain. |
-| `TXT @` | `v=spf1 include:spf.efwd.registrar-servers.com ~all` | The Namecheap forwarding SPF record remains in place. |
+| `MX @` | `1 smtp.google.com` | Google Workspace receives root-domain mail. |
+| `TXT @` | `v=spf1 include:_spf.google.com ~all` | Google Workspace is authorized to send root-domain mail. |
+| `MX send` | Resend EU feedback endpoint, priority 10 | Pending at Namecheap as of 2026-08-25. This is the Resend return path, not inbound company mail. |
+| `TXT send` | Resend SPF policy | Pending at Namecheap as of 2026-08-25. |
+| `TXT resend._domainkey` | Resend DKIM public key | Pending at Namecheap as of 2026-08-25. |
 
 Vercel issued auto-renewing HTTPS certificates for both hostnames. Both names serve the production page. The enhanced JSON form path and the native form-encoded fallback were each tested through the custom domain, verified in private Blob storage, and removed afterward so no synthetic submission remains.
 
