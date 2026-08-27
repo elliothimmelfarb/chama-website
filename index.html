@@ -141,6 +141,10 @@
           "AI-native software development",
           "Software engineering"
         ],
+        "sameAs": [
+          "https://www.linkedin.com/in/elliot-himmelfarb-14347976",
+          "https://github.com/elliothimmelfarb"
+        ],
         "worksFor": { "@id": "https://chamainteligente.com/#organization" }
       },
       {
@@ -558,6 +562,58 @@
       color: var(--quiet);
       font-size: 0.9rem;
       line-height: 1.35;
+    }
+
+    .founder-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.05rem;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      line-height: 1;
+      text-decoration: none;
+      transition: border-color 140ms ease, color 140ms ease;
+    }
+
+    .social-link svg {
+      width: 0.9rem;
+      height: 0.9rem;
+      fill: currentColor;
+      display: block;
+    }
+
+    .social-link:hover,
+    .social-link:focus-visible {
+      border-color: var(--ember);
+      color: var(--ember);
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .footer-social .social-link {
+      padding: 0.4rem;
+      color: var(--quiet);
+    }
+
+    .footer-social .social-link:hover,
+    .footer-social .social-link:focus-visible {
+      color: var(--ember);
     }
 
     .founder-photo {
@@ -983,6 +1039,16 @@
       <div class="founder-identity">
         <h2 class="section-label" id="founder-title">Elliot Himmelfarb</h2>
         <p class="founder-role">AI and technology coach and consultant</p>
+        <div class="founder-links">
+          <a class="social-link" href="https://www.linkedin.com/in/elliot-himmelfarb-14347976" rel="me noopener" target="_blank">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+            LinkedIn
+          </a>
+          <a class="social-link" href="https://github.com/elliothimmelfarb" rel="me noopener" target="_blank">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+            GitHub
+          </a>
+        </div>
         <img class="founder-photo" src="/elliot-rozalie.webp" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
       </div>
       <div class="section-copy">
@@ -1065,6 +1131,14 @@
   <footer class="frame">
     <div class="footer-inner">
       <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
+      <div class="footer-social">
+        <a class="social-link" href="https://www.linkedin.com/in/elliot-himmelfarb-14347976" rel="me noopener" target="_blank" aria-label="Elliot Himmelfarb on LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </a>
+        <a class="social-link" href="https://github.com/elliothimmelfarb" rel="me noopener" target="_blank" aria-label="Elliot Himmelfarb on GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        </a>
+      </div>
       <p>AI and technology coaching and consulting &middot; <a href="/privacy">Privacy</a></p>
     </div>
   </footer>
