@@ -19,6 +19,8 @@ Elliot approved this page for publication and requested a working intake on 2026
 | `sitemap.xml` | The two canonical URLs, with hreflang alternates and the social-card image. |
 | `llms.txt`, `llms-full.txt` | Plain-text summary and full visible site text, for AI crawlers and agents. |
 | `<64-hex>.txt` | The IndexNow key. Do not rename or delete it; the key file is how IndexNow authenticates a submission. |
+| `assets/` | Images embedded in the page body (`elliot-rozalie.webp`, `about-family.jpg`). The old root URLs 301-redirect here via `vercel.json`. Root-level images (`og.png`, favicons, `apple-touch-icon.png`) stay at root: they are convention-bound or cached externally at those URLs. |
+| `brand/` | The brand asset library: logo mark sources and exports, LinkedIn banners and avatars. See `brand/mark/README.md`. |
 
 The copy is **not authored here**. It lives in [`wiki/topics/website-content-chamainteligente-com.md`](../chama-inteligente/wiki/topics/website-content-chamainteligente-com.md) with a claims ledger tracing every factual statement to a source or tagging it `[needs confirmation]`. Change the copy there first, then bring it here, so the page never becomes the only record of what it asserts.
 

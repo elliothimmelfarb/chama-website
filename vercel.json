@@ -27,6 +27,16 @@
       ],
       "destination": "https://chamainteligente.com/:path*",
       "permanent": true
+    },
+    {
+      "source": "/elliot-rozalie.webp",
+      "destination": "/assets/elliot-rozalie.webp",
+      "permanent": true
+    },
+    {
+      "source": "/about-family.jpg",
+      "destination": "/assets/about-family.jpg",
+      "permanent": true
     }
   ],
   "crons": [
