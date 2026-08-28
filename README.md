@@ -38,7 +38,7 @@ Once the sending domain is verified, Elliot can review submissions either in the
 
 **One architectural rule, and it matters more than the deploy method: never connect a git repository to Vercel's git integration - not this one, and never the brain (`../chama-inteligente/`).**
 
-The brain holds the wiki, the founders' cash position, supplier relationships, and a `.gitignore` full of deliberately-excluded identity and tax documents; wiring any repo here to a hosting provider's git integration is a class of coupling this company refuses. This repo has **no git remote today**; if it ever gets one (a public remote is compatible with the split), deploys still stay manual.
+The brain holds the wiki, the founders' cash position, supplier relationships, and a `.gitignore` full of deliberately-excluded identity and tax documents; wiring any repo here to a hosting provider's git integration is a class of coupling this company refuses. This repo is **public at https://github.com/elliothimmelfarb/chama-website** (since 2026-08-28); the remote is for visibility only, and deploys stay manual.
 
 The site deploys with the CLI, never through git:
 
