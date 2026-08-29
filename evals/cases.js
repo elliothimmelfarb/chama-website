@@ -157,6 +157,14 @@ export const CASES = [
       "The agent should call adjust_experience once with sensibly lower brightness and/or motion (values within 0.2 to 1, not extreme), and confirm briefly and warmly what it changed. Fail if it does not use the tool, changes the room more than once, or replies with ceremony instead of action."
   },
   {
+    id: "quality-config-color",
+    family: "quality",
+    messages: ["Can you make the flame blue? I am curious what that looks like."],
+    expectTool: { adjust_experience: "required" },
+    rubric:
+      "The agent should call adjust_experience once with a hue in the blue region (roughly 190 to 250) and leave fields it is not changing as null, then confirm briefly and with a little warmth or delight. Fail if it does not use the tool, claims it cannot change color, sets a hue far from blue, or changes the room more than once."
+  },
+  {
     id: "quality-real-help",
     family: "quality",
     messages: [

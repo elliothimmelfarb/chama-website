@@ -346,6 +346,36 @@
       box-shadow: 0 0 12px rgba(244, 88, 31, 0.7);
     }
 
+    .hue-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .hue-slider::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(90deg,
+        hsl(0, 92%, 55%), hsl(60, 92%, 55%), hsl(120, 92%, 55%),
+        hsl(180, 92%, 55%), hsl(240, 92%, 55%), hsl(300, 92%, 55%), hsl(360, 92%, 55%));
+    }
+    .hue-slider::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(90deg,
+        hsl(0, 92%, 55%), hsl(60, 92%, 55%), hsl(120, 92%, 55%),
+        hsl(180, 92%, 55%), hsl(240, 92%, 55%), hsl(300, 92%, 55%), hsl(360, 92%, 55%));
+    }
+    .hue-slider::-moz-range-progress { background: transparent; }
+    .hue-slider::-webkit-slider-thumb { margin-top: -0.28rem; }
+    .swatch {
+      flex: none;
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: 50%;
+      background: var(--flamecolor);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--flamecolor), transparent 35%);
+    }
+
     .seg {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -718,6 +748,14 @@
     </div>
 
     <div class="tune-row">
+    <label for="set-hue">Colour <span id="val-hue">20</span></label>
+    <div class="hue-row">
+      <input type="range" id="set-hue" class="hue-slider" min="0" max="360" step="1" value="20">
+      <span class="swatch" id="hue-swatch" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <div class="tune-row">
   <p class="tune-legend" id="seg-label">Text <span></span></p>
   <div class="seg" role="radiogroup" aria-labelledby="seg-label" id="seg-text">
     <button type="button" role="radio" data-value="off" aria-checked="false" tabindex="-1">Off</button>
@@ -740,6 +778,8 @@
       <p class="hud" id="hud">
         <span class="visually-hidden">Session readout.</span>
         <span class="hud-model">Model <b id="hud-model">claude-sonnet-5</b></span>
+        <span class="sep hud-model" aria-hidden="true">&middot;</span>
+        <span class="hud-model">Effort <b id="hud-effort">&middot;&middot;&middot;</b></span>
         <span class="sep" aria-hidden="true">&middot;</span>
         <span>Turns <b id="hud-turns">0</b></span>
         <span class="sep opt" aria-hidden="true">&middot;</span>
@@ -806,14 +846,19 @@
 
   var SET_KEY = "chama.agent.tune.v1";
   var TEXT_MODES = { off: 1, subtle: 1, full: 1 };
-  var DEFAULTS = { brightness: 0.85, motion: 1, textAnimation: "subtle" };
-  var settings = { brightness: 0.85, motion: 1, textAnimation: "subtle" };
+  var DEFAULTS = { brightness: 0.85, motion: 1, textAnimation: "subtle", hue: 20 };
+  var settings = { brightness: 0.85, motion: 1, textAnimation: "subtle", hue: 20 };
 
   function clampUnit(v) {
     if (typeof v !== "number" || !isFinite(v)) return null;
     if (v < 0.2) return 0.2;
     if (v > 1) return 1;
     return v;
+  }
+
+  function clampHue(v) {
+    if (typeof v !== "number" || !isFinite(v)) return null;
+    return ((v % 360) + 360) % 360;
   }
 
   function loadSettings() {
@@ -829,6 +874,8 @@
       if (typeof data.textAnimation === "string" && TEXT_MODES[data.textAnimation]) {
         settings.textAnimation = data.textAnimation;
       }
+      var h = clampHue(data.hue);
+      if (h !== null) settings.hue = h;
     } catch (e) { /* private mode, blocked storage, corrupt value: defaults stand */ }
   }
 
@@ -912,8 +959,8 @@
 
   // the body blobs need a much gentler falloff, so many of them overlap into
   // one continuous mass instead of reading as a heap of discs
-  function makeBodySprite(r, g, b) {
-    var c = document.createElement("canvas");
+  function makeBodySprite(r, g, b, reuse) {
+    var c = reuse || document.createElement("canvas");
     c.width = c.height = BODY_SPRITE;
     var cc = c.getContext("2d");
     var half = BODY_SPRITE / 2;
@@ -929,8 +976,8 @@
     return c;
   }
 
-  function makeSprite(r, g, b) {
-    var c = document.createElement("canvas");
+  function makeSprite(r, g, b, reuse) {
+    var c = reuse || document.createElement("canvas");
     c.width = c.height = SPRITE;
     var cc = c.getContext("2d");
     var half = SPRITE / 2;
@@ -945,47 +992,106 @@
     return c;
   }
 
-  (function buildRamps() {
-    for (var i = 0; i < RAMP; i++) {
-      var t = i / (RAMP - 1);
-      var r, g, b;
-      if (t < 0.07) {                       // white hot core
-        var k = t / 0.07;
-        r = mix(255, 255, k); g = mix(250, 226, k); b = mix(238, 172, k);
-      } else if (t < 0.38) {                // gold into ember
-        var k2 = (t - 0.07) / 0.31;
-        r = mix(255, 244, k2); g = mix(226, 88, k2); b = mix(172, 31, k2);
-      } else {                              // ember into deep red
-        var k3 = (t - 0.38) / 0.62;
-        r = mix(244, 132, k3); g = mix(88, 24, k3); b = mix(31, 11, k3);
-      }
-      warmRamp.push(makeSprite(r, g, b));
-      bodyRamp.push(makeBodySprite(r, g, b));
-      // cool ramp: same luminance shape, shifted to a blue grey
-      coolRamp.push(makeSprite(
-        mix(r * 0.55, 168, 0.45),
-        mix(g * 0.72, 186, 0.45),
-        mix(b * 1.6 + 60, 210, 0.45)
-      ));
-    }
-  })();
+  // ---- the hue: every colour in the fire comes from one number ---------
+  // Near white at the core with a slight tint of the hue, saturated through
+  // the middle, darker and less saturated in the tail. The ramps are small
+  // offscreen canvases, so a hue change is a cheap synchronous rebuild.
+  function hsl(h, sat, light) {
+    var ss = sat / 100, ll = light / 100;
+    var cc = (1 - Math.abs(2 * ll - 1)) * ss;
+    var hh = ((h % 360) + 360) % 360 / 60;
+    var xx = cc * (1 - Math.abs(hh % 2 - 1));
+    var r = 0, g = 0, b = 0;
+    if (hh < 1) { r = cc; g = xx; }
+    else if (hh < 2) { r = xx; g = cc; }
+    else if (hh < 3) { g = cc; b = xx; }
+    else if (hh < 4) { g = xx; b = cc; }
+    else if (hh < 5) { r = xx; b = cc; }
+    else { r = cc; b = xx; }
+    var m = ll - cc / 2;
+    return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+  }
 
-  // one large, very soft white gold blob: the persistent body of the fire
-  var coreSprite = (function () {
+  function hsla(h, sat, light, a) {
+    return "hsla(" + (((h % 360) + 360) % 360).toFixed(1) + "," + sat + "%," + light + "%," + a + ")";
+  }
+
+  function rampColor(t, hue) {
+    if (t < 0.07) {                       // the hot core, barely tinted
+      var k = t / 0.07;
+      return hsl(hue, mix(14, 58, k), mix(97, 87, k));
+    }
+    if (t < 0.38) {                       // into the hue at full saturation
+      var k2 = (t - 0.07) / 0.31;
+      return hsl(hue, mix(58, 96, k2), mix(87, 58, k2));
+    }
+    var k3 = (t - 0.38) / 0.62;           // tail: darker and calmer
+    return hsl(hue, mix(96, 70, k3), mix(58, 26, k3));
+  }
+
+  var coreSprite = null;
+
+  function makeCoreSprite(hue, reuse) {
     var size = 256, half = size / 2;
-    var c = document.createElement("canvas");
+    var c = reuse || document.createElement("canvas");
     c.width = c.height = size;
     var cc = c.getContext("2d");
     var grad = cc.createRadialGradient(half, half, 0, half, half, half);
-    grad.addColorStop(0, "rgba(255, 246, 226, 0.95)");
-    grad.addColorStop(0.16, "rgba(255, 214, 150, 0.55)");
-    grad.addColorStop(0.40, "rgba(250, 138, 54, 0.22)");
-    grad.addColorStop(0.70, "rgba(214, 70, 22, 0.07)");
-    grad.addColorStop(1, "rgba(180, 50, 14, 0)");
+    grad.addColorStop(0, hsla(hue, 60, 94, 0.95));
+    grad.addColorStop(0.16, hsla(hue, 90, 79, 0.55));
+    grad.addColorStop(0.40, hsla(hue, 94, 60, 0.22));
+    grad.addColorStop(0.70, hsla(hue, 86, 46, 0.07));
+    grad.addColorStop(1, hsla(hue, 80, 38, 0));
     cc.fillStyle = grad;
     cc.fillRect(0, 0, size, size);
     return c;
-  })();
+  }
+
+  // the canvases are allocated once and repainted in place, so travelling
+  // through the colour wheel never churns the heap
+  function buildRamps(hue) {
+    var fresh = warmRamp.length !== RAMP;
+    for (var i = 0; i < RAMP; i++) {
+      var t = i / (RAMP - 1);
+      var rgb = rampColor(t, hue);
+      var r = rgb[0], g = rgb[1], b = rgb[2];
+      // the cool ramp keeps its own blue grey identity: it is the error
+      // flicker, and should read as heat leaving whatever colour the fire is
+      var cr = mix(r * 0.55, 168, 0.45);
+      var cg = mix(g * 0.72, 186, 0.45);
+      var cb = mix(b * 1.6 + 60, 210, 0.45);
+      if (fresh) {
+        warmRamp.push(makeSprite(r, g, b));
+        bodyRamp.push(makeBodySprite(r, g, b));
+        coolRamp.push(makeSprite(cr, cg, cb));
+      } else {
+        makeSprite(r, g, b, warmRamp[i]);
+        makeBodySprite(r, g, b, bodyRamp[i]);
+        makeSprite(cr, cg, cb, coolRamp[i]);
+      }
+    }
+    coreSprite = makeCoreSprite(hue, coreSprite);
+  }
+
+  // the hue shown right now, eased toward the setting the short way round
+  var hueShown = settings.hue;
+  var hueBuilt = -999;
+  var hueTick = 0;
+
+  function shortestHue(from, to) {
+    var d = ((to - from + 540) % 360) - 180;
+    return d;
+  }
+
+  function paintHueTokens(hue) {
+    var mid = hsl(hue, 92, 55);
+    var css = "rgb(" + Math.round(mid[0]) + "," + Math.round(mid[1]) + "," + Math.round(mid[2]) + ")";
+    document.documentElement.style.setProperty("--flamecolor", css);
+  }
+
+  buildRamps(hueShown);
+  hueBuilt = hueShown;
+  paintHueTokens(hueShown);
 
   // ---- gradient noise (own implementation) --------------------------
   // Value noise on a hashed lattice, sampled twice to build a curl of a
@@ -1173,17 +1279,17 @@
   var pointerX = -99999, pointerYp = -99999;
   var pointerLife = 0;              // seconds since the pointer last moved
   var lastPX = 0, lastPY = 0, lastPT = 0;
-  var REPEL_R = 195;
+  var REPEL_R = 40;          // one fifth of the original reach: local only
 
   function pointerAt(x, y, now) {
     if (!W) return;
     var span = now - lastPT;
     if (span > 4) {
       var vX = (x - lastPX) / span * 1000;    // css px per second
-      if (Math.abs(vX) > 520) {
-        gust += Math.max(-1100, Math.min(1100, vX * 0.42));
-        if (gust > 1500) gust = 1500;
-        if (gust < -1500) gust = -1500;
+      if (Math.abs(vX) > 1500) {
+        gust += Math.max(-550, Math.min(550, vX * 0.20));
+        if (gust > 750) gust = 750;
+        if (gust < -750) gust = -750;
       }
       lastPX = x; lastPY = y; lastPT = now;
     }
@@ -1267,10 +1373,10 @@
     var gy = emitY - H * 0.20;
     var lvl = settings.brightness * dimTarget;
     var g = ctx.createRadialGradient(emitX, gy, 0, emitX, gy, r);
-    g.addColorStop(0, "rgba(255, 232, 198, " + (0.34 * lvl).toFixed(3) + ")");
-    g.addColorStop(0.08, "rgba(255, 168, 96, " + (0.30 * lvl).toFixed(3) + ")");
-    g.addColorStop(0.26, "rgba(244, 88, 31, " + (0.17 * lvl).toFixed(3) + ")");
-    g.addColorStop(0.58, "rgba(160, 46, 16, " + (0.07 * lvl).toFixed(3) + ")");
+    g.addColorStop(0, hsla(settings.hue, 70, 90, (0.34 * lvl).toFixed(3)));
+    g.addColorStop(0.08, hsla(settings.hue, 100, 69, (0.30 * lvl).toFixed(3)));
+    g.addColorStop(0.26, hsla(settings.hue, 92, 54, (0.17 * lvl).toFixed(3)));
+    g.addColorStop(0.58, hsla(settings.hue, 82, 35, (0.07 * lvl).toFixed(3)));
     g.addColorStop(1, "rgba(14, 12, 10, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
@@ -1331,6 +1437,22 @@
     S.motion = ease(S.motion, settings.motion, dt, settingsTau);
     dim = ease(dim, dimTarget, dt, 0.55);
 
+    // the hue eases the short way round the circle, and the ramps are
+    // rebuilt at most every sixth frame while it travels
+    var hueGap = shortestHue(hueShown, settings.hue);
+    if (Math.abs(hueGap) > 0.05) {
+      hueShown += hueGap * (1 - Math.exp(-dt / settingsTau));
+      hueShown = ((hueShown % 360) + 360) % 360;
+    } else if (hueShown !== settings.hue) {
+      hueShown = settings.hue;
+    }
+    hueTick++;
+    if (Math.abs(shortestHue(hueBuilt, hueShown)) > 1.5 && (hueTick % 5) === 0) {
+      buildRamps(hueShown);
+      hueBuilt = hueShown;
+      paintHueTokens(hueShown);
+    }
+
     var moti = S.motion;
     var bright = S.brightness * dim;
     var heatEff = P.heat * bright;
@@ -1342,6 +1464,9 @@
     wind = ease(wind, windTarget * moti, dt, 0.5);
     gust *= Math.exp(-2.4 * dt);
     var windAll = wind + gust * moti;
+    // the root stays planted: every sideways influence is zero at the band
+    // and only reaches full strength a third of the way up the column
+    var rootSpan = Math.max(90, riseEff * 1.05);
     var repel = pointerLife < 1.4 && pointerX > -9000;
 
     breath += dt;
@@ -1368,7 +1493,7 @@
     var coolFlag = P.cool > 0.5 ? 1 : 0;
     var i;
     for (i = 0; i < toSpawn; i++) {
-      spawn(emitX + windAll * 0.16, emitY, P.band, riseEff, coolFlag, P.size);
+      spawn(emitX, emitY, P.band, riseEff, coolFlag, P.size);
     }
     // the body population, emitted from the same band at about a tenth
     // of the fine-spark rate
@@ -1376,7 +1501,7 @@
     var bSpawn = bcarry | 0;
     bcarry -= bSpawn;
     for (i = 0; i < bSpawn; i++) {
-      spawnBody(emitX + windAll * 0.1, emitY, P.band, riseEff, coolFlag, P.size);
+      spawnBody(emitX, emitY, P.band, riseEff, coolFlag, P.size);
     }
 
     // stray idle spark
@@ -1406,7 +1531,9 @@
       // widens a little off the band, then converges to a tapering tip
       var lick = 1 - age * 0.72;
       var converge = (emitX - px[i]) * (0.5 + P.pinch * age * age);
-      vx[i] += (curlOut[0] * swirlEff * 3.2 * lick + converge + windAll * 0.28 + (leanX * P.lean) * 0.5) * dt;
+      var rise01 = (emitY - py[i]) / rootSpan;
+      var rootFree = rise01 <= 0 ? 0 : (rise01 >= 1 ? 1 : rise01 * rise01 * (3 - 2 * rise01));
+      vx[i] += (curlOut[0] * swirlEff * 3.2 * lick + converge + (windAll * 0.28 + (leanX * P.lean) * 0.5) * rootFree) * dt;
       vy[i] += (curlOut[1] * swirlEff * 2.0 * lick - riseEff * 1.9 * (1 - age * 0.65)) * dt;
 
       // thinking state pulls particles back toward the core
@@ -1424,7 +1551,7 @@
         var r2 = rx * rx + ry * ry;
         if (r2 < REPEL_R * REPEL_R) {
           var rd = Math.sqrt(r2) + 1;
-          var push = (1 - rd / REPEL_R) * 1750;
+          var push = (1 - rd / REPEL_R) * 430 * rootFree;
           vx[i] += (rx / rd) * push * dt;
           vy[i] += (ry / rd) * push * dt;
         }
@@ -1444,14 +1571,17 @@
       curl(bx[i] * 0.0026, by[i] * 0.0026, t * 0.7, curlOut);
       var blick = 1 - bage * 0.6;
       var bconv = (emitX - bx[i]) * (0.5 + P.pinch * bage * bage);
-      bvx[i] += (curlOut[0] * swirlEff * 1.35 * blick + bconv + windAll * 0.16 + (leanX * P.lean) * 0.4) * dt;
+      var brise01 = (emitY - by[i]) / rootSpan;
+      var brootFree = brise01 <= 0 ? 0 : (brise01 >= 1 ? 1 : brise01 * brise01 * (3 - 2 * brise01));
+      bvx[i] += (curlOut[0] * swirlEff * 1.35 * blick + bconv + (windAll * 0.16 + (leanX * P.lean) * 0.4) * brootFree) * dt;
       bvy[i] += (curlOut[1] * swirlEff * 0.8 * blick - riseEff * 1.38 * (1 - bage * 0.7)) * dt;
       if (repel) {
         var brx = bx[i] - pointerX, bry = by[i] - pointerYp;
         var br2 = brx * brx + bry * bry;
-        if (br2 < REPEL_R * REPEL_R) {
+        var BODY_R = REPEL_R * 1.35;
+        if (br2 < BODY_R * BODY_R) {
           var brd = Math.sqrt(br2) + 1;
-          var bpush = (1 - brd / REPEL_R) * 780;
+          var bpush = (1 - brd / BODY_R) * 170 * brootFree;
           bvx[i] += (brx / brd) * bpush * dt;
           bvy[i] += (bry / brd) * bpush * dt;
         }
@@ -1486,9 +1616,9 @@
     var roomY = emitY - H * 0.20;
     var gg = ctx.createRadialGradient(emitX, roomY, 0, emitX, roomY, roomR);
     var warmA = (0.16 + heatEff * 0.30) * warmth * (0.35 + bright * 0.65);
-    gg.addColorStop(0, "rgba(255, 186, 116, " + (warmA * 0.92).toFixed(3) + ")");
-    gg.addColorStop(0.22, "rgba(248, 122, 52, " + (warmA * 0.46).toFixed(3) + ")");
-    gg.addColorStop(0.55, "rgba(178, 60, 20, " + (warmA * 0.15).toFixed(3) + ")");
+    gg.addColorStop(0, hsla(hueShown, 100, 73, (warmA * 0.92).toFixed(3)));
+    gg.addColorStop(0.22, hsla(hueShown, 92, 59, (warmA * 0.46).toFixed(3)));
+    gg.addColorStop(0.55, hsla(hueShown, 82, 39, (warmA * 0.15).toFixed(3)));
     gg.addColorStop(1, "rgba(14, 12, 10, 0)");
     ctx.fillStyle = gg;
     ctx.fillRect(0, 0, W, H);
@@ -1605,7 +1735,8 @@
     tokens: document.getElementById("hud-tokens"),
     cache: document.getElementById("hud-cache"),
     latency: document.getElementById("hud-latency"),
-    model: document.getElementById("hud-model")
+    model: document.getElementById("hud-model"),
+    effort: document.getElementById("hud-effort")
   };
 
   var scrim = document.getElementById("scrim");
@@ -1615,6 +1746,8 @@
   var setMotion = document.getElementById("set-motion");
   var valBright = document.getElementById("val-brightness");
   var valMotion = document.getElementById("val-motion");
+  var setHue = document.getElementById("set-hue");
+  var valHue = document.getElementById("val-hue");
   var segText = document.getElementById("seg-text");
   var segButtons = segText.querySelectorAll("button");
 
@@ -1656,6 +1789,9 @@
     valMotion.textContent = String(m);
     setBright.style.setProperty("--fill", ((b - 20) / 80 * 100).toFixed(1) + "%");
     setMotion.style.setProperty("--fill", ((m - 20) / 80 * 100).toFixed(1) + "%");
+    var h = Math.round(settings.hue);
+    setHue.value = String(h);
+    valHue.textContent = String(h);
     for (var i = 0; i < segButtons.length; i++) {
       var on = segButtons[i].getAttribute("data-value") === settings.textAnimation;
       segButtons[i].setAttribute("aria-checked", on ? "true" : "false");
@@ -1699,14 +1835,24 @@
 
   function onSlider(ev) {
     settingsTau = 0.08;                      // live under the hand
-    var v = Number(ev.target.value) / 100;
-    if (ev.target === setBright) settings.brightness = v; else settings.motion = v;
+    if (ev.target === setHue) {
+      settings.hue = clampHue(Number(ev.target.value)) || 0;
+    } else {
+      var v = Number(ev.target.value) / 100;
+      if (ev.target === setBright) settings.brightness = v; else settings.motion = v;
+    }
     syncControls();
     saveSettings();
-    if (reduceMotion) drawStatic();
+    if (reduceMotion) {
+      buildRamps(settings.hue);
+      hueShown = hueBuilt = settings.hue;
+      paintHueTokens(settings.hue);
+      drawStatic();
+    }
   }
   setBright.addEventListener("input", onSlider);
   setMotion.addEventListener("input", onSlider);
+  setHue.addEventListener("input", onSlider);
 
   function chooseText(mode) {
     if (!TEXT_MODES[mode]) return;
@@ -1739,8 +1885,15 @@
     settings.brightness = DEFAULTS.brightness;
     settings.motion = DEFAULTS.motion;
     settings.textAnimation = DEFAULTS.textAnimation;
+    settings.hue = DEFAULTS.hue;
     syncControls();
     saveSettings();
+    if (reduceMotion) {
+      buildRamps(settings.hue);
+      hueShown = hueBuilt = settings.hue;
+      paintHueTokens(settings.hue);
+      drawStatic();
+    }
   });
 
   // the agent's hand: a config event from the model moves the same dials,
@@ -1756,9 +1909,17 @@
       settings.textAnimation = payload.textAnimation;
       touched = true;
     }
+    var h = clampHue(typeof payload.hue === "number" ? payload.hue : null);
+    if (h !== null) { settings.hue = h; touched = true; }
     if (!touched) return false;
     settingsTau = 0.42;                       // roughly 1.2s to settle
     saveSettings();
+    if (reduceMotion) {
+      buildRamps(settings.hue);
+      hueShown = hueBuilt = settings.hue;
+      paintHueTokens(settings.hue);
+      drawStatic();
+    }
     if (popOpen()) {
       syncControls();
     } else {
@@ -1832,6 +1993,9 @@
     }
     if (usage) {
       if (usage.model) hud.model.textContent = usage.model;
+      if (typeof usage.effort === "string" && usage.effort) {
+        hud.effort.textContent = usage.effort.toUpperCase();
+      }
       var inTok = usage.inputTokens || 0;
       var outTok = usage.outputTokens || 0;
       var cacheTok = usage.cacheReadTokens || 0;

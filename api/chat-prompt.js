@@ -63,9 +63,9 @@ Typical things visitors ask, and the shape of a good answer:
 
 # The room
 
-You have limited control over the page you live on, through the adjust_experience tool. It can dim or brighten the flame, calm or energize its motion, and change how your words animate as they arrive. The visitor has the same controls in the tune panel; when you use the tool, their panel updates in front of them.
+You have limited control over the page you live on, through the adjust_experience tool. It can dim or brighten the flame, calm or energize its motion, change the flame's color, and change how your words animate as they arrive. The visitor has the same controls in the tune panel; when you use the tool, their panel updates in front of them.
 
-Use it when the visitor asks you to (dim the lights, calm down, make the fire bigger, stop the text animation), or offer it once if they mention the flame is distracting or the text is hard to read. Confirm what you changed in a few words, without ceremony. Small moments of showmanship are welcome when they serve the conversation (calming the flame when someone says the motion bothers them is hospitality, not a trick), but never flail the controls for effect, never change the room more than once in a reply, and never touch it uninvited beyond that single offer. Values outside the allowed ranges are clamped by the page.
+Use it when the visitor asks you to (dim the lights, calm down, make the fire bigger, make it blue, stop the text animation), or offer it once if they mention the flame is distracting or the text is hard to read. Confirm what you changed in a few words, without ceremony. Small moments of showmanship are welcome when they serve the conversation (calming the flame when someone says the motion bothers them is hospitality, not a trick), but never flail the controls for effect, never change the room more than once in a reply, and never touch it uninvited beyond that single offer. Values outside the allowed ranges are clamped by the page.
 
 # Reaching Elliot
 
@@ -124,11 +124,11 @@ export const TOOLS = [
   {
     name: "adjust_experience",
     description:
-      "Adjust the page the visitor is looking at: the flame's brightness, the amount of motion, and how arriving text animates. The visitor's tune panel updates live to match. Use only as the prompt's rules describe: when the visitor asks, or as a single offer when they mention the flame or text is bothering them. Pass null for anything you are not changing.",
+      "Adjust the page the visitor is looking at: the flame's brightness, the amount of motion, the flame's color, and how arriving text animates. The visitor's tune panel updates live to match. Use only as the prompt's rules describe: when the visitor asks, or as a single offer when they mention the flame or text is bothering them. Pass null for anything you are not changing.",
     input_schema: {
       type: "object",
       additionalProperties: false,
-      required: ["brightness", "motion", "textAnimation"],
+      required: ["brightness", "motion", "hue", "textAnimation"],
       properties: {
         brightness: {
           type: ["number", "null"],
@@ -137,6 +137,10 @@ export const TOOLS = [
         motion: {
           type: ["number", "null"],
           description: "How lively the flame moves, 0.2 (near still) to 1 (full). Null leaves it unchanged."
+        },
+        hue: {
+          type: ["number", "null"],
+          description: "The flame's color as a hue in degrees, 0 to 360. The brand's natural fire is 20 (ember orange). Examples: 45 golden, 0 crimson, 210 blue, 280 violet, 140 emerald. Null leaves it unchanged."
         },
         textAnimation: {
           type: ["string", "null"],

@@ -15,6 +15,8 @@ import { put } from "@vercel/blob";
 import { MODEL, SYSTEM_PROMPT, TOOLS } from "./chat-prompt.js";
 import { buildRecord, sendNotification, validate } from "./intake.js";
 
+const EFFORT = "low";
+
 const LIMITS = {
   messages: 40,
   messageChars: 4000,
@@ -200,14 +202,27 @@ export function clampExperience(input) {
       ? fields.textAnimation
       : null;
 
+  // Hue is circular, so out-of-range values wrap instead of clamping.
+  const hue = (() => {
+    const value = fields.hue;
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return null;
+    return ((parsed % 360) + 360) % 360;
+  })();
+
   const settings = {
     brightness: number(fields.brightness),
     motion: number(fields.motion),
+    hue,
     textAnimation
   };
 
   const changed =
-    settings.brightness !== null || settings.motion !== null || settings.textAnimation !== null;
+    settings.brightness !== null ||
+    settings.motion !== null ||
+    settings.hue !== null ||
+    settings.textAnimation !== null;
 
   return { settings, changed };
 }
@@ -232,13 +247,13 @@ function eventLine(payload) {
 // the model asks for it, and stops after at most LIMITS.modelCalls turns.
 async function runAgent(client, history, emit) {
   const messages = history.map((entry) => ({ role: entry.role, content: entry.content }));
-  const usage = { model: MODEL, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
+  const usage = { model: MODEL, effort: EFFORT, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
 
   for (let call = 0; call < LIMITS.modelCalls; call += 1) {
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: LIMITS.maxTokens,
-      output_config: { effort: "low" },
+      output_config: { effort: EFFORT },
       system: [
         { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }
       ],
