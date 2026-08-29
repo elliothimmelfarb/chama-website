@@ -125,7 +125,11 @@
       z-index: 2;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
+      /* grid items default to min-width auto, which would let the suggestion
+         row's intrinsic width push the whole column past the viewport */
+      grid-template-columns: minmax(0, 1fr);
     }
+    .shell > * { min-width: 0; }
 
     .label {
       font-size: 0.68rem;
@@ -443,7 +447,7 @@
     .column {
       width: min(100%, var(--col));
       margin-inline: auto;
-      padding: clamp(1.5rem, 5vh, 3.5rem) var(--pad) 1.5rem;
+      padding: clamp(1.5rem, 5vh, 3.5rem) var(--pad) 2.4rem;
     }
 
     @media (min-width: 64rem) {
@@ -620,6 +624,62 @@
         margin-left: max(0px, min(calc(50% - 2rem), calc(100% - var(--col))));
         margin-right: 0;
       }
+    }
+
+    /* the starters stay reachable for the whole conversation: one quiet line
+       of glass pills riding just above the composer */
+    .suggest {
+      position: relative;
+      margin: 0 0.15rem 0.5rem;
+      -webkit-mask-image: linear-gradient(90deg,
+        transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
+      mask-image: linear-gradient(90deg,
+        transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
+    }
+    .suggest[hidden] { display: none; }
+    .suggest.in { animation: suggestin 460ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+    @keyframes suggestin {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .suggest-track {
+      display: flex;
+      max-width: 100%;
+      gap: 0.4rem;
+      padding: 0.2rem 0.1rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+    }
+    .suggest-track::-webkit-scrollbar { display: none; }
+
+    .pill {
+      flex: none;
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      padding: 0.36rem 0.72rem;
+      background: rgba(16, 14, 12, 0.55);
+      backdrop-filter: blur(14px) saturate(1.1);
+      -webkit-backdrop-filter: blur(14px) saturate(1.1);
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.72rem;
+      letter-spacing: -0.005em;
+      line-height: 1.25;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+    }
+    .pill:hover {
+      color: var(--paper);
+      border-color: var(--ember-soft);
+      background: rgba(244, 88, 31, 0.12);
+      transform: translateY(-1px);
     }
 
     .bar {
@@ -808,6 +868,7 @@
             <button type="button" class="chip">How were you built?</button>
             <button type="button" class="chip">Could AI change my work?</button>
             <button type="button" class="chip">Turn the flame down low.</button>
+            <button type="button" class="chip">Make the flame green.</button>
           </div>
         </section>
 
@@ -817,6 +878,10 @@
 
     <div class="composer">
       <div class="composer-inner">
+        <div class="suggest" id="suggest" hidden>
+          <div class="suggest-track" id="suggest-track" role="list" aria-label="Suggested prompts"></div>
+        </div>
+
         <form class="bar" id="bar" autocomplete="off">
           <label class="visually-hidden" for="composer-input">Your message to the agent</label>
           <textarea id="composer-input" rows="1" maxlength="4000" placeholder="Say something." enterkeyhint="send"></textarea>
@@ -1274,29 +1339,46 @@
   })();
   var grainPattern = null;
 
-  // ---- pointer wind, gust and repulsion --------------------------------
-  var windTarget = 0, wind = 0, gust = 0;
+  // ---- the pointer, strictly local ------------------------------------
+  // There is no viewport wide breeze. The pointer only exists for particles
+  // within POINT_R of it, and only while it is actually inside or beside the
+  // flame's silhouette, so moving the cursor anywhere else does nothing.
   var pointerX = -99999, pointerYp = -99999;
-  var pointerLife = 0;              // seconds since the pointer last moved
+  var pointerVX = 0, pointerVY = 0;
+  var pointerLife = 99;             // seconds since the pointer last moved
   var lastPX = 0, lastPY = 0, lastPT = 0;
-  var REPEL_R = 40;          // one fifth of the original reach: local only
+  var POINT_R = 80;                 // the whole reach of a pointer, in css px
+  var VEL_CAP = 2600;
+
+  // the silhouette gate, refreshed every frame from the live flame shape.
+  // Pointer terms and taps both ask this before they do anything at all.
+  var gateHalfWide = 0, gateTop = 0;
+
+  function nearFlame(x, y) {
+    return Math.abs(x - emitX) < gateHalfWide &&
+           y < emitY + POINT_R &&
+           y > gateTop - POINT_R;
+  }
+
+  function clampAbs(v, cap) {
+    if (v > cap) return cap;
+    if (v < -cap) return -cap;
+    return v;
+  }
 
   function pointerAt(x, y, now) {
     if (!W) return;
     var span = now - lastPT;
     if (span > 4) {
-      var vX = (x - lastPX) / span * 1000;    // css px per second
-      if (Math.abs(vX) > 1500) {
-        gust += Math.max(-550, Math.min(550, vX * 0.20));
-        if (gust > 750) gust = 750;
-        if (gust < -750) gust = -750;
-      }
+      var ivx = (x - lastPX) / span * 1000;   // css px per second
+      var ivy = (y - lastPY) / span * 1000;
+      pointerVX = clampAbs(pointerVX * 0.45 + ivx * 0.55, VEL_CAP);
+      pointerVY = clampAbs(pointerVY * 0.45 + ivy * 0.55, VEL_CAP);
       lastPX = x; lastPY = y; lastPT = now;
     }
     pointerX = x;
     pointerYp = y;
     pointerLife = 0;
-    windTarget = ((x - emitX) / W) * 120;
   }
 
   window.addEventListener("pointermove", function (ev) {
@@ -1335,6 +1417,8 @@
     if (!t) return;
     var moved = Math.abs(t.clientX - st.x) + Math.abs(t.clientY - st.y);
     if (moved > 14 || performance.now() - st.at > 520) return;
+    // a tap in empty space, over the conversation, or over UI does nothing
+    if (!nearFlame(t.clientX, t.clientY)) return;
     burstAt(t.clientX, t.clientY, 42);
   }, { passive: true });
 
@@ -1459,15 +1543,22 @@
     var riseEff = P.rise * (0.40 + 0.60 * moti);
     var swirlEff = P.swirl * (0.35 + 0.65 * moti);
 
+    // the pointer decays to nothing when it stops moving, so a parked
+    // cursor cannot keep dragging the fire along
     pointerLife += dt;
-    if (pointerLife > 1.4) windTarget = 0;
-    wind = ease(wind, windTarget * moti, dt, 0.5);
-    gust *= Math.exp(-2.4 * dt);
-    var windAll = wind + gust * moti;
+    pointerVX *= Math.exp(-5.5 * dt);
+    pointerVY *= Math.exp(-5.5 * dt);
+
     // the root stays planted: every sideways influence is zero at the band
     // and only reaches full strength a third of the way up the column
     var rootSpan = Math.max(90, riseEff * 1.05);
-    var repel = pointerLife < 1.4 && pointerX > -9000;
+
+    // Gate: the pointer only exists for the flame when it is inside or just
+    // beside the silhouette. Anywhere else on the page, including the whole
+    // conversation column, it is not consulted at all.
+    gateHalfWide = P.band * 1.9 + POINT_R;
+    gateTop = emitY - riseEff * 2.7;
+    var repel = pointerLife < 1.2 && pointerX > -9000 && nearFlame(pointerX, pointerYp);
 
     breath += dt;
     var breathe = 1 + Math.sin(breath * 0.85) * 0.16 + Math.sin(breath * 0.37) * 0.09;
@@ -1533,7 +1624,7 @@
       var converge = (emitX - px[i]) * (0.5 + P.pinch * age * age);
       var rise01 = (emitY - py[i]) / rootSpan;
       var rootFree = rise01 <= 0 ? 0 : (rise01 >= 1 ? 1 : rise01 * rise01 * (3 - 2 * rise01));
-      vx[i] += (curlOut[0] * swirlEff * 3.2 * lick + converge + (windAll * 0.28 + (leanX * P.lean) * 0.5) * rootFree) * dt;
+      vx[i] += (curlOut[0] * swirlEff * 3.2 * lick + converge + (leanX * P.lean) * 0.5 * rootFree) * dt;
       vy[i] += (curlOut[1] * swirlEff * 2.0 * lick - riseEff * 1.9 * (1 - age * 0.65)) * dt;
 
       // thinking state pulls particles back toward the core
@@ -1545,15 +1636,18 @@
         vy[i] += (dy / d) * pull * dt;
       }
 
-      // the flame parts around a pointer moving through it
+      // the flame sways away from a pointer passing through it, and a fast
+      // flick drags only the fire it actually crosses
       if (repel) {
         var rx = px[i] - pointerX, ry = py[i] - pointerYp;
         var r2 = rx * rx + ry * ry;
-        if (r2 < REPEL_R * REPEL_R) {
+        if (r2 < POINT_R * POINT_R) {
           var rd = Math.sqrt(r2) + 1;
-          var push = (1 - rd / REPEL_R) * 430 * rootFree;
-          vx[i] += (rx / rd) * push * dt;
-          vy[i] += (ry / rd) * push * dt;
+          var fall = (1 - rd / POINT_R) * rootFree;
+          var push = fall * 3200;          // radial: the fire parts
+          var tang = push * 0.42;          // tangential: and swirls around it
+          vx[i] += ((rx * push - ry * tang) / rd + pointerVX * fall * 0.55) * dt;
+          vy[i] += ((ry * push + rx * tang) / rd + pointerVY * fall * 0.30) * dt;
         }
       }
 
@@ -1573,17 +1667,18 @@
       var bconv = (emitX - bx[i]) * (0.5 + P.pinch * bage * bage);
       var brise01 = (emitY - by[i]) / rootSpan;
       var brootFree = brise01 <= 0 ? 0 : (brise01 >= 1 ? 1 : brise01 * brise01 * (3 - 2 * brise01));
-      bvx[i] += (curlOut[0] * swirlEff * 1.35 * blick + bconv + (windAll * 0.16 + (leanX * P.lean) * 0.4) * brootFree) * dt;
+      bvx[i] += (curlOut[0] * swirlEff * 1.35 * blick + bconv + (leanX * P.lean) * 0.4 * brootFree) * dt;
       bvy[i] += (curlOut[1] * swirlEff * 0.8 * blick - riseEff * 1.38 * (1 - bage * 0.7)) * dt;
       if (repel) {
         var brx = bx[i] - pointerX, bry = by[i] - pointerYp;
         var br2 = brx * brx + bry * bry;
-        var BODY_R = REPEL_R * 1.35;
+        var BODY_R = POINT_R * 1.35;
         if (br2 < BODY_R * BODY_R) {
           var brd = Math.sqrt(br2) + 1;
-          var bpush = (1 - brd / BODY_R) * 170 * brootFree;
-          bvx[i] += (brx / brd) * bpush * dt;
-          bvy[i] += (bry / brd) * bpush * dt;
+          var bfall = (1 - brd / BODY_R) * brootFree;
+          var bpush = bfall * 1250, btang = bpush * 0.34;
+          bvx[i] += ((brx * bpush - bry * btang) / brd + pointerVX * bfall * 0.22) * dt;
+          bvy[i] += ((bry * bpush + brx * btang) / brd + pointerVY * bfall * 0.13) * dt;
         }
       }
       bvx[i] *= Math.exp(-2.8 * dt);
@@ -1739,6 +1834,8 @@
     effort: document.getElementById("hud-effort")
   };
 
+  var suggest = document.getElementById("suggest");
+  var suggestTrack = document.getElementById("suggest-track");
   var scrim = document.getElementById("scrim");
   var tuneBtn = document.getElementById("tune-btn");
   var tunePop = document.getElementById("tune-pop");
@@ -1759,6 +1856,83 @@
 
   var GENERIC = "Something went wrong. Please try again.";
 
+  /* ---- the suggestion row -------------------------------------------- */
+  // The opening chips are the single source of truth for the prompts. Once
+  // the conversation starts they continue as a slim row above the composer,
+  // minus whatever the visitor has already used.
+  var PROMPTS = (function () {
+    var out = [];
+    var nodes = chips.querySelectorAll(".chip");
+    for (var i = 0; i < nodes.length; i++) out.push(nodes[i].textContent);
+    return out;
+  })();
+  var usedPrompts = {};
+
+  function updateFades() {
+    var over = suggestTrack.scrollWidth - suggestTrack.clientWidth;
+    var left = suggestTrack.scrollLeft;
+    suggest.style.setProperty("--fade-l", (over > 2 && left > 2) ? "18px" : "0px");
+    suggest.style.setProperty("--fade-r", (over > 2 && left < over - 2) ? "22px" : "0px");
+  }
+
+  function renderSuggestions() {
+    var talking = transcript.childNodes.length > 0;
+    var left = [];
+    for (var i = 0; i < PROMPTS.length; i++) {
+      if (!usedPrompts[PROMPTS[i]]) left.push(PROMPTS[i]);
+    }
+
+    if (!talking || busy || !left.length) {
+      if (!suggest.hasAttribute("hidden")) {
+        suggest.setAttribute("hidden", "");
+        suggest.classList.remove("in");
+      }
+      return;
+    }
+
+    var same = suggestTrack.children.length === left.length;
+    if (same) {
+      for (var j = 0; j < left.length; j++) {
+        if (suggestTrack.children[j].textContent !== left[j]) { same = false; break; }
+      }
+    }
+    if (!same) {
+      suggestTrack.textContent = "";
+      for (var k = 0; k < left.length; k++) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "pill";
+        b.setAttribute("role", "listitem");
+        b.textContent = left[k];
+        suggestTrack.appendChild(b);
+      }
+    }
+
+    if (suggest.hasAttribute("hidden")) {
+      suggest.removeAttribute("hidden");
+      if (!reduceMotion) {
+        suggest.classList.remove("in");
+        void suggest.offsetWidth;
+        suggest.classList.add("in");
+      }
+    }
+    updateFades();
+  }
+
+  suggestTrack.addEventListener("scroll", updateFades, { passive: true });
+
+  suggestTrack.addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest(".pill") : null;
+    if (b) send(b.textContent);
+  });
+
+  suggestTrack.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      input.focus();
+    }
+  });
+
   /* ---- legibility: auto dim plus the readability scrim ---------------- */
 
   function placeScrim() {
@@ -1775,6 +1949,7 @@
     dimTarget = busyTalking ? 0.62 : 1;
     scrim.classList.toggle("on", busyTalking);
     placeScrim();
+    renderSuggestions();
     if (reduceMotion) drawStatic();
   }
 
@@ -1934,7 +2109,7 @@
   placeScrim();
   window.addEventListener("resize", function () {
     if (scrimTimer) clearTimeout(scrimTimer);
-    scrimTimer = setTimeout(placeScrim, 160);
+    scrimTimer = setTimeout(function () { placeScrim(); updateFades(); }, 160);
   }, { passive: true });
   var scrimTimer = null;
 
@@ -2020,6 +2195,7 @@
     sendBtn.classList.toggle("busy", on);
     sendBtn.disabled = on;
     sendBtn.setAttribute("aria-label", on ? "The agent is replying" : "Send message");
+    renderSuggestions();
   }
 
   /* ---- links in agent replies ------------------------------------------
@@ -2184,6 +2360,7 @@
     var message = (text || "").replace(/\s+$/, "");
     if (!message || busy) return;
 
+    usedPrompts[message] = true;
     dissolveOpening();
     addTurn("you", message);
     history.push({ role: "user", content: message });
