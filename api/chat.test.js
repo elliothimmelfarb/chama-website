@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  clampExperience,
   countUserTurns,
   executeNoteTool,
   validateChatMessages
@@ -203,4 +204,75 @@ test("treats an email failure as a success the visitor can rely on", async () =>
   assert.equal(outcome.ok, true);
   assert.match(outcome.text, /storage/);
   assert.equal(calls.put.length, 1);
+});
+
+test("passes sensible experience values through untouched", () => {
+  const result = clampExperience({ brightness: 0.5, motion: 0.9, textAnimation: "subtle" });
+
+  assert.deepEqual(result, {
+    settings: { brightness: 0.5, motion: 0.9, textAnimation: "subtle" },
+    changed: true
+  });
+});
+
+test("clamps numbers to the 0.2 to 1 range at both ends", () => {
+  const high = clampExperience({ brightness: 9999, motion: 1.0001, textAnimation: null });
+  assert.equal(high.settings.brightness, 1);
+  assert.equal(high.settings.motion, 1);
+
+  const low = clampExperience({ brightness: -50, motion: 0, textAnimation: null });
+  assert.equal(low.settings.brightness, 0.2);
+  assert.equal(low.settings.motion, 0.2);
+});
+
+test("coerces numeric strings", () => {
+  const result = clampExperience({ brightness: "0.4", motion: "3", textAnimation: null });
+
+  assert.equal(result.settings.brightness, 0.4);
+  assert.equal(result.settings.motion, 1);
+  assert.equal(result.changed, true);
+});
+
+test("turns garbage numbers into null", () => {
+  const result = clampExperience({
+    brightness: "dim please",
+    motion: Number.NaN,
+    textAnimation: null
+  });
+
+  assert.deepEqual(result, {
+    settings: { brightness: null, motion: null, textAnimation: null },
+    changed: false
+  });
+});
+
+test("accepts only the three text animation values", () => {
+  assert.equal(clampExperience({ textAnimation: "off" }).settings.textAnimation, "off");
+  assert.equal(clampExperience({ textAnimation: "full" }).settings.textAnimation, "full");
+  assert.equal(clampExperience({ textAnimation: "sparkly" }).settings.textAnimation, null);
+  assert.equal(clampExperience({ textAnimation: 1 }).settings.textAnimation, null);
+});
+
+test("treats missing fields and a non-object input as no change", () => {
+  assert.deepEqual(clampExperience({}), {
+    settings: { brightness: null, motion: null, textAnimation: null },
+    changed: false
+  });
+  assert.equal(clampExperience("calm it down").changed, false);
+  assert.equal(clampExperience(null).changed, false);
+});
+
+test("reports a change when only one field is valid", () => {
+  const result = clampExperience({ brightness: 0.3, motion: "nope", textAnimation: "loud" });
+
+  assert.deepEqual(result, {
+    settings: { brightness: 0.3, motion: null, textAnimation: null },
+    changed: true
+  });
+});
+
+test("returns exactly the three experience keys", () => {
+  const result = clampExperience({ brightness: 0.5, extra: "ignored" });
+
+  assert.deepEqual(Object.keys(result.settings), ["brightness", "motion", "textAnimation"]);
 });

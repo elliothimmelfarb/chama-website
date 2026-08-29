@@ -1,10 +1,11 @@
-// The website chat agent endpoint: same-origin, streaming, one tool.
+// The website chat agent endpoint: same-origin, streaming, two tools.
 //
 // The prompt and tool definitions live in chat-prompt.js and are authored like
 // copy. This file is only the plumbing: validate the conversation the page
 // sends, run the model with a small agent loop, stream the reply back as
-// Server-Sent Events, and execute send_note_to_elliot through the exact intake
-// pipeline the form uses (api/intake.js).
+// Server-Sent Events, execute send_note_to_elliot through the exact intake
+// pipeline the form uses (api/intake.js), and turn adjust_experience into a
+// config event the page applies.
 //
 // Nothing a visitor types is ever logged. Errors log a name only.
 
@@ -23,7 +24,7 @@ const LIMITS = {
   maxTokens: 1200
 };
 
-const MESSAGES = {
+export const MESSAGES = {
   offline: "The agent is offline right now. The form below still works.",
   unreadable: "That conversation could not be read. Please reload the page and try again.",
   tooLong:
@@ -33,7 +34,9 @@ const MESSAGES = {
   notSaved: "The note could not be saved.",
   savedNotEmailed:
     "The note was saved. The email notification did not go out, but Elliot will see it in storage.",
-  sent: "The note was sent to Elliot."
+  sent: "The note was sent to Elliot.",
+  applied: "Applied.",
+  nothingAdjusted: "No valid changes were given, so nothing was adjusted."
 };
 
 function clean(value) {
@@ -176,6 +179,39 @@ export async function executeNoteTool(input, dependencies = {}) {
   return { ok: true, text: MESSAGES.sent };
 }
 
+// The second tool has no server-side effect: it only tells the page what to
+// change. All the work is validation, so it is a pure function. Anything the
+// model gets wrong becomes null rather than an error, and a call where every
+// field is null changed nothing.
+export function clampExperience(input) {
+  const fields = typeof input === "object" && input !== null ? input : {};
+
+  const number = (value) => {
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return null;
+    return Math.min(1, Math.max(0.2, parsed));
+  };
+
+  const textAnimation =
+    fields.textAnimation === "off" ||
+    fields.textAnimation === "subtle" ||
+    fields.textAnimation === "full"
+      ? fields.textAnimation
+      : null;
+
+  const settings = {
+    brightness: number(fields.brightness),
+    motion: number(fields.motion),
+    textAnimation
+  };
+
+  const changed =
+    settings.brightness !== null || settings.motion !== null || settings.textAnimation !== null;
+
+  return { settings, changed };
+}
+
 export function friendlyErrorFor(error) {
   if (error instanceof Anthropic.RateLimitError) {
     return { message: MESSAGES.overwhelmed, status: 503 };
@@ -192,7 +228,7 @@ function eventLine(payload) {
   return `data: ${JSON.stringify(payload)}\n\n`;
 }
 
-// The agent loop. Streams text deltas out as they arrive, runs the tool when
+// The agent loop. Streams text deltas out as they arrive, runs a tool when
 // the model asks for it, and stops after at most LIMITS.modelCalls turns.
 async function runAgent(client, history, emit) {
   const messages = history.map((entry) => ({ role: entry.role, content: entry.content }));
@@ -227,6 +263,20 @@ async function runAgent(client, history, emit) {
     const toolResults = [];
     for (const block of message.content) {
       if (block.type !== "tool_use") continue;
+
+      if (block.name === "adjust_experience") {
+        const { settings, changed } = clampExperience(block.input);
+        if (changed) {
+          emit({ type: "config", settings });
+        }
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: block.id,
+          is_error: !changed,
+          content: changed ? MESSAGES.applied : MESSAGES.nothingAdjusted
+        });
+        continue;
+      }
 
       if (block.name !== "send_note_to_elliot") {
         toolResults.push({

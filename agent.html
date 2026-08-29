@@ -92,6 +92,22 @@
       pointer-events: none;
     }
 
+    /* a calm ground for the conversation: transparent where the flame lives,
+       deepening across the column so text stays readable at full blaze */
+    .scrim {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: var(--scrim-left, 45%);
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(90deg, rgba(14, 12, 10, 0) 0%, rgba(14, 12, 10, 0.34) 38%, rgba(14, 12, 10, 0.55) 72%, rgba(14, 12, 10, 0.55) 100%);
+      opacity: 0;
+      transition: opacity 700ms ease;
+    }
+    .scrim.on { opacity: 1; }
+
     .vignette {
       position: fixed;
       inset: 0;
@@ -134,6 +150,7 @@
     }
 
     .brand {
+      flex: none;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
@@ -169,6 +186,9 @@
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
       overflow: hidden;
+      flex: 1 1 auto;
+      min-width: 0;
+      justify-content: flex-end;
     }
     .hud > div {
       display: inline-flex;
@@ -183,11 +203,192 @@
     }
     .hud b.live { color: var(--ember); }
 
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: clamp(0.6rem, 1.6vw, 1.4rem);
+      min-width: 0;
+    }
+
+    .tune-wrap { position: relative; flex: none; }
+
+    .tune-btn {
+      appearance: none;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.36rem 0.7rem;
+      cursor: pointer;
+      transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease;
+    }
+    .tune-btn:hover, .tune-btn[aria-expanded="true"] {
+      color: var(--paper);
+      border-color: var(--ember-soft);
+      background: rgba(244, 88, 31, 0.10);
+    }
+    .tune-btn.touched {
+      animation: tunetouch 1500ms cubic-bezier(0.2, 0.7, 0.2, 1) 1;
+    }
+    @keyframes tunetouch {
+      0% { color: var(--text-dim); border-color: var(--line); box-shadow: 0 0 0 0 rgba(244, 88, 31, 0); }
+      14% { color: #fff; border-color: var(--ember); background: rgba(244, 88, 31, 0.34); box-shadow: 0 0 26px 2px rgba(244, 88, 31, 0.45); }
+      100% { color: var(--text-dim); border-color: var(--line); box-shadow: 0 0 0 0 rgba(244, 88, 31, 0); }
+    }
+
+    .tune-pop {
+      position: fixed;
+      top: 3.1rem;
+      right: max(0.75rem, var(--pad));
+      z-index: 30;
+      width: min(19rem, calc(100vw - 2rem));
+      padding: 1rem 1.05rem 0.9rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 1rem;
+      background: rgba(16, 14, 12, 0.72);
+      backdrop-filter: blur(18px) saturate(1.1);
+      -webkit-backdrop-filter: blur(18px) saturate(1.1);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+    }
+    .tune-pop[hidden] { display: none; }
+
+    .tune-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 0 0 0.85rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .tune-title {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .tune-reset {
+      appearance: none;
+      background: none;
+      border: 0;
+      padding: 0.15rem 0.1rem;
+      color: var(--text-faint);
+      font-family: inherit;
+      font-size: 0.66rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+    }
+    .tune-reset:hover { color: var(--ember); border-bottom-color: var(--ember-soft); }
+
+    .tune-row { margin-bottom: 0.95rem; }
+    .tune-row label, .tune-legend {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.45rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      padding: 0;
+    }
+    .tune-row label span, .tune-legend span {
+      color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.06em;
+    }
+
+    input[type="range"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      height: 1.1rem;
+      background: transparent;
+      cursor: pointer;
+      display: block;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 2px;
+      background: linear-gradient(90deg, var(--ember) 0%, var(--ember) var(--fill, 50%), rgba(243, 240, 232, 0.18) var(--fill, 50%), rgba(243, 240, 232, 0.18) 100%);
+    }
+    input[type="range"]::-moz-range-track {
+      height: 2px;
+      background: rgba(243, 240, 232, 0.18);
+    }
+    input[type="range"]::-moz-range-progress {
+      height: 2px;
+      background: var(--ember);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 0.85rem;
+      height: 0.85rem;
+      margin-top: -0.39rem;
+      border-radius: 50%;
+      background: #ffd7b0;
+      border: 0;
+      box-shadow: 0 0 12px rgba(244, 88, 31, 0.7);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 0.85rem;
+      height: 0.85rem;
+      border-radius: 50%;
+      background: #ffd7b0;
+      border: 0;
+      box-shadow: 0 0 12px rgba(244, 88, 31, 0.7);
+    }
+
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.25rem;
+      padding: 0.2rem;
+      border: 1px solid var(--line);
+      border-radius: 0.6rem;
+    }
+    .seg button {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      border-radius: 0.42rem;
+      padding: 0.42rem 0.2rem;
+      color: var(--text-faint);
+      font-family: inherit;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 160ms ease, background-color 160ms ease;
+    }
+    .seg button:hover { color: var(--text); }
+    .seg button[aria-checked="true"] {
+      color: #fff;
+      background: rgba(244, 88, 31, 0.5);
+    }
+
+    .tune-note {
+      margin: 0.5rem 0 0;
+      color: var(--text-faint);
+      font-size: 0.62rem;
+      line-height: 1.45;
+    }
+
     @media (max-width: 46rem) {
       .hud .opt { display: none; }
     }
     @media (max-width: 30rem) {
       .hud .hud-latency { display: none; }
+      .hud .hud-model { display: none; }
+      .hud .sep:first-of-type { display: none; }
     }
 
     /* ---------- conversation ---------- */
@@ -326,6 +527,17 @@
 
     .turn-body { margin: 0; white-space: pre-wrap; overflow-wrap: break-word; }
 
+    .turn-flame .turn-body a {
+      color: var(--ember);
+      text-decoration: none;
+      border-bottom: 1px solid var(--ember-soft);
+      overflow-wrap: anywhere;
+    }
+    .turn-flame .turn-body a:hover {
+      color: #ff7a44;
+      border-bottom-color: #ff7a44;
+    }
+
     .turn-system {
       padding-left: 0.95rem;
       border-left: 1px solid var(--line);
@@ -349,6 +561,15 @@
 
     .frag {
       animation: fragin 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+
+    .word {
+      display: inline;
+      animation: wordin 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    }
+    @keyframes wordin {
+      from { opacity: 0; transform: translateY(0.5em); }
+      to { opacity: 1; transform: none; }
     }
     @keyframes fragin {
       from { opacity: 0; transform: translateY(0.32em); }
@@ -478,6 +699,35 @@
 
   <canvas id="flame" aria-hidden="true"></canvas>
   <div class="vignette" aria-hidden="true"></div>
+  <div class="scrim" id="scrim" aria-hidden="true"></div>
+
+  <div class="tune-pop" id="tune-pop" role="dialog" aria-label="Tune the flame" aria-modal="false" hidden>
+    <div class="tune-head">
+  <span class="tune-title">Tune the flame</span>
+  <button type="button" class="tune-reset" id="tune-reset">Reset</button>
+    </div>
+
+    <div class="tune-row">
+  <label for="set-brightness">Brightness <span id="val-brightness">85</span></label>
+  <input type="range" id="set-brightness" min="20" max="100" step="1" value="85">
+    </div>
+
+    <div class="tune-row">
+  <label for="set-motion">Motion <span id="val-motion">100</span></label>
+  <input type="range" id="set-motion" min="20" max="100" step="1" value="100">
+    </div>
+
+    <div class="tune-row">
+  <p class="tune-legend" id="seg-label">Text <span></span></p>
+  <div class="seg" role="radiogroup" aria-labelledby="seg-label" id="seg-text">
+    <button type="button" role="radio" data-value="off" aria-checked="false" tabindex="-1">Off</button>
+    <button type="button" role="radio" data-value="subtle" aria-checked="true" tabindex="0">Subtle</button>
+    <button type="button" role="radio" data-value="full" aria-checked="false" tabindex="-1">Full</button>
+  </div>
+    </div>
+
+    <p class="tune-note" id="tune-note">Kept in this browser only. The agent can adjust these for you if you ask.</p>
+  </div>
 
   <div class="shell">
     <header class="topbar">
@@ -486,9 +736,10 @@
         <span class="brand-name">Chama Inteligente</span>
       </a>
 
+      <div class="topbar-right">
       <p class="hud" id="hud">
         <span class="visually-hidden">Session readout.</span>
-        <span>Model <b id="hud-model">claude-sonnet-5</b></span>
+        <span class="hud-model">Model <b id="hud-model">claude-sonnet-5</b></span>
         <span class="sep" aria-hidden="true">&middot;</span>
         <span>Turns <b id="hud-turns">0</b></span>
         <span class="sep opt" aria-hidden="true">&middot;</span>
@@ -498,6 +749,12 @@
         <span class="sep hud-latency" aria-hidden="true">&middot;</span>
         <span class="hud-latency">Latency <b id="hud-latency">&middot;&middot;&middot;</b></span>
       </p>
+
+      <div class="tune-wrap">
+        <button type="button" class="tune-btn" id="tune-btn" aria-expanded="false" aria-controls="tune-pop" aria-haspopup="dialog">Tune</button>
+
+      </div>
+      </div>
     </header>
 
     <main class="stage" id="stage">
@@ -539,6 +796,58 @@
   try {
     reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   } catch (e) { reduceMotion = false; }
+
+  /* ==================================================================
+     SETTINGS
+     One source of truth for brightness, motion and text animation.
+     Persisted per browser; the page renders fine with nothing stored.
+     ================================================================== */
+
+  var SET_KEY = "chama.agent.tune.v1";
+  var TEXT_MODES = { off: 1, subtle: 1, full: 1 };
+  var DEFAULTS = { brightness: 0.85, motion: 1, textAnimation: "subtle" };
+  var settings = { brightness: 0.85, motion: 1, textAnimation: "subtle" };
+
+  function clampUnit(v) {
+    if (typeof v !== "number" || !isFinite(v)) return null;
+    if (v < 0.2) return 0.2;
+    if (v > 1) return 1;
+    return v;
+  }
+
+  function loadSettings() {
+    try {
+      var raw = window.localStorage.getItem(SET_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== "object") return;
+      var b = clampUnit(data.brightness);
+      var m = clampUnit(data.motion);
+      if (b !== null) settings.brightness = b;
+      if (m !== null) settings.motion = m;
+      if (typeof data.textAnimation === "string" && TEXT_MODES[data.textAnimation]) {
+        settings.textAnimation = data.textAnimation;
+      }
+    } catch (e) { /* private mode, blocked storage, corrupt value: defaults stand */ }
+  }
+
+  function saveSettings() {
+    try {
+      window.localStorage.setItem(SET_KEY, JSON.stringify(settings));
+    } catch (e) { /* nothing to do: the session still works */ }
+  }
+
+  loadSettings();
+
+  // eased mirrors of the two continuous settings, so a change moves the
+  // flame rather than snapping it. tau is short while a slider is dragged
+  // and long when the agent changes the room for you.
+  var S = { brightness: settings.brightness, motion: settings.motion };
+  var settingsTau = 0.08;
+
+  // auto dim: once there is a conversation, the flame steps back so the
+  // text reads
+  var dim = 1, dimTarget = 1;
 
   /* ==================================================================
      THE FLAME
@@ -815,6 +1124,21 @@
     }
   }
 
+  // a tap on the flame area throws a handful of sparks from that point
+  function burstAt(x, y, n) {
+    for (var k = 0; k < n; k++) {
+      var before = count;
+      spawn(x, y, 12, P.rise, P.cool > 0.5 ? 1 : 0, P.size * 1.5);
+      if (count === before) return;
+      var i = count - 1;
+      var ang = Math.random() * Math.PI * 2;
+      var sp = 80 + Math.random() * 240;
+      vx[i] = Math.cos(ang) * sp;
+      vy[i] = Math.sin(ang) * sp * 0.7 - 55;
+      pl[i] *= 0.85;
+    }
+  }
+
   // ---- the travelling spark (note sent) ------------------------------
   var sparks = [];
   function launchSpark() {
@@ -843,12 +1167,68 @@
   })();
   var grainPattern = null;
 
-  // ---- pointer wind ---------------------------------------------------
-  var windTarget = 0, wind = 0, pointerY = 0.5;
-  window.addEventListener("pointermove", function (ev) {
+  // ---- pointer wind, gust and repulsion --------------------------------
+  var windTarget = 0, wind = 0, gust = 0;
+  var pointerX = -99999, pointerYp = -99999;
+  var pointerLife = 0;              // seconds since the pointer last moved
+  var lastPX = 0, lastPY = 0, lastPT = 0;
+  var REPEL_R = 195;
+
+  function pointerAt(x, y, now) {
     if (!W) return;
-    windTarget = ((ev.clientX - emitX) / W) * 120;
-    pointerY = ev.clientY / H;
+    var span = now - lastPT;
+    if (span > 4) {
+      var vX = (x - lastPX) / span * 1000;    // css px per second
+      if (Math.abs(vX) > 520) {
+        gust += Math.max(-1100, Math.min(1100, vX * 0.42));
+        if (gust > 1500) gust = 1500;
+        if (gust < -1500) gust = -1500;
+      }
+      lastPX = x; lastPY = y; lastPT = now;
+    }
+    pointerX = x;
+    pointerYp = y;
+    pointerLife = 0;
+    windTarget = ((x - emitX) / W) * 120;
+  }
+
+  window.addEventListener("pointermove", function (ev) {
+    if (ev.pointerType === "touch") return;   // touch is handled below
+    pointerAt(ev.clientX, ev.clientY, performance.now());
+  }, { passive: true });
+
+  // Touch. Every listener is passive and nothing is ever prevented, so
+  // scrolling the transcript and typing stay completely unaffected.
+  var touchStart = null;
+
+  function onUi(node) {
+    if (!node || !node.closest) return true;
+    return !!node.closest(".topbar, .composer, .tune-pop, a, button, input, textarea, label");
+  }
+
+  window.addEventListener("touchstart", function (ev) {
+    var t = ev.touches[0];
+    if (!t) return;
+    lastPX = t.clientX; lastPY = t.clientY; lastPT = performance.now();
+    touchStart = { x: t.clientX, y: t.clientY, at: lastPT, ui: onUi(ev.target) };
+  }, { passive: true });
+
+  window.addEventListener("touchmove", function (ev) {
+    var t = ev.touches[0];
+    if (!t) return;
+    if (touchStart) touchStart.moved = true;
+    pointerAt(t.clientX, t.clientY, performance.now());
+  }, { passive: true });
+
+  window.addEventListener("touchend", function (ev) {
+    var st = touchStart;
+    touchStart = null;
+    if (!st || st.ui) return;
+    var t = ev.changedTouches && ev.changedTouches[0];
+    if (!t) return;
+    var moved = Math.abs(t.clientX - st.x) + Math.abs(t.clientY - st.y);
+    if (moved > 14 || performance.now() - st.at > 520) return;
+    burstAt(t.clientX, t.clientY, 42);
   }, { passive: true });
 
   // ---- sizing ---------------------------------------------------------
@@ -884,11 +1264,12 @@
     ctx.fillRect(0, 0, W, H);
     var r = Math.max(W, H) * 0.62;
     var gy = emitY - H * 0.20;
+    var lvl = settings.brightness * dimTarget;
     var g = ctx.createRadialGradient(emitX, gy, 0, emitX, gy, r);
-    g.addColorStop(0, "rgba(255, 232, 198, 0.34)");
-    g.addColorStop(0.08, "rgba(255, 168, 96, 0.30)");
-    g.addColorStop(0.26, "rgba(244, 88, 31, 0.17)");
-    g.addColorStop(0.58, "rgba(160, 46, 16, 0.07)");
+    g.addColorStop(0, "rgba(255, 232, 198, " + (0.34 * lvl).toFixed(3) + ")");
+    g.addColorStop(0.08, "rgba(255, 168, 96, " + (0.30 * lvl).toFixed(3) + ")");
+    g.addColorStop(0.26, "rgba(244, 88, 31, " + (0.17 * lvl).toFixed(3) + ")");
+    g.addColorStop(0.58, "rgba(160, 46, 16, " + (0.07 * lvl).toFixed(3) + ")");
     g.addColorStop(1, "rgba(14, 12, 10, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
@@ -944,7 +1325,23 @@
       var key = keys[k];
       P[key] = ease(P[key], T[key], dt, key === "cool" ? 0.22 : 0.34);
     }
-    wind = ease(wind, windTarget, dt, 0.5);
+    // settings and auto dim ease rather than snap
+    S.brightness = ease(S.brightness, settings.brightness, dt, settingsTau);
+    S.motion = ease(S.motion, settings.motion, dt, settingsTau);
+    dim = ease(dim, dimTarget, dt, 0.55);
+
+    var moti = S.motion;
+    var bright = S.brightness * dim;
+    var heatEff = P.heat * bright;
+    var riseEff = P.rise * (0.40 + 0.60 * moti);
+    var swirlEff = P.swirl * (0.35 + 0.65 * moti);
+
+    pointerLife += dt;
+    if (pointerLife > 1.4) windTarget = 0;
+    wind = ease(wind, windTarget * moti, dt, 0.5);
+    gust *= Math.exp(-2.4 * dt);
+    var windAll = wind + gust * moti;
+    var repel = pointerLife < 1.4 && pointerX > -9000;
 
     breath += dt;
     var breathe = 1 + Math.sin(breath * 0.85) * 0.16 + Math.sin(breath * 0.37) * 0.09;
@@ -953,7 +1350,7 @@
     // style recalc never lands on every frame
     lightTick++;
     if ((lightTick & 3) === 0) {
-      var lit = (0.20 + P.heat * 0.80) * (0.92 + (breathe - 1) * 0.5) * (1 - P.cool * 0.7);
+      var lit = (0.20 + heatEff * 0.80) * (0.92 + (breathe - 1) * 0.5) * (1 - P.cool * 0.7);
       if (lit < 0) lit = 0;
       if (lit > 1) lit = 1;
       if (Math.abs(lit - lastLight) > 0.012) {
@@ -963,14 +1360,14 @@
     }
 
     // emission
-    var rate = P.rate * (state === "idle" ? breathe : 1);
+    var rate = P.rate * moti * (state === "idle" ? breathe : 1);
     carry += rate * dt;
     var toSpawn = carry | 0;
     carry -= toSpawn;
     var coolFlag = P.cool > 0.5 ? 1 : 0;
     var i;
     for (i = 0; i < toSpawn; i++) {
-      spawn(emitX + wind * 0.16, emitY, P.band, P.rise, coolFlag, P.size);
+      spawn(emitX + windAll * 0.16, emitY, P.band, riseEff, coolFlag, P.size);
     }
     // the body population, emitted from the same band at about a tenth
     // of the fine-spark rate
@@ -978,19 +1375,19 @@
     var bSpawn = bcarry | 0;
     bcarry -= bSpawn;
     for (i = 0; i < bSpawn; i++) {
-      spawnBody(emitX + wind * 0.1, emitY, P.band, P.rise, coolFlag, P.size);
+      spawnBody(emitX + windAll * 0.1, emitY, P.band, riseEff, coolFlag, P.size);
     }
 
     // stray idle spark
     if (state === "idle" && Math.random() < dt * 1.5) {
-      spawn(emitX + (Math.random() - 0.5) * 180, emitY - Math.random() * 60, 10, P.rise * 2.1, coolFlag, 0.7);
+      spawn(emitX + (Math.random() - 0.5) * 180, emitY - Math.random() * 60, 10, riseEff * 2.1, coolFlag, 0.7);
     }
     // per-delta flicker bursts
     if (burstQueue > 0) {
       var b = Math.min(burstQueue, 3);
       burstQueue -= b;
       for (i = 0; i < b * 22; i++) {
-        spawn(emitX, emitY - Math.random() * 90, P.band * 0.62, P.rise * 1.5, coolFlag, P.size * 1.15);
+        spawn(emitX, emitY - Math.random() * 90, P.band * 0.62, riseEff * 1.5, coolFlag, P.size * 1.15);
       }
     }
 
@@ -1008,16 +1405,28 @@
       // widens a little off the band, then converges to a tapering tip
       var lick = 1 - age * 0.72;
       var converge = (emitX - px[i]) * (0.5 + P.pinch * age * age);
-      vx[i] += (curlOut[0] * P.swirl * 3.2 * lick + converge + wind * 0.28 + (leanX * P.lean) * 0.5) * dt;
-      vy[i] += (curlOut[1] * P.swirl * 2.0 * lick - P.rise * 1.9 * (1 - age * 0.65)) * dt;
+      vx[i] += (curlOut[0] * swirlEff * 3.2 * lick + converge + windAll * 0.28 + (leanX * P.lean) * 0.5) * dt;
+      vy[i] += (curlOut[1] * swirlEff * 2.0 * lick - riseEff * 1.9 * (1 - age * 0.65)) * dt;
 
       // thinking state pulls particles back toward the core
       if (P.swirl > 60) {
         var dx = emitX - px[i], dy = (emitY - 90) - py[i];
         var d = Math.sqrt(dx * dx + dy * dy) + 1;
-        var pull = ((P.swirl - 60) / 32) * 130;
+        var pull = ((P.swirl - 60) / 32) * 130 * moti;
         vx[i] += (dx / d) * pull * dt;
         vy[i] += (dy / d) * pull * dt;
+      }
+
+      // the flame parts around a pointer moving through it
+      if (repel) {
+        var rx = px[i] - pointerX, ry = py[i] - pointerYp;
+        var r2 = rx * rx + ry * ry;
+        if (r2 < REPEL_R * REPEL_R) {
+          var rd = Math.sqrt(r2) + 1;
+          var push = (1 - rd / REPEL_R) * 1750;
+          vx[i] += (rx / rd) * push * dt;
+          vy[i] += (ry / rd) * push * dt;
+        }
       }
 
       vx[i] *= Math.exp(-2.4 * dt);
@@ -1034,8 +1443,18 @@
       curl(bx[i] * 0.0026, by[i] * 0.0026, t * 0.7, curlOut);
       var blick = 1 - bage * 0.6;
       var bconv = (emitX - bx[i]) * (0.5 + P.pinch * bage * bage);
-      bvx[i] += (curlOut[0] * P.swirl * 1.35 * blick + bconv + wind * 0.16 + (leanX * P.lean) * 0.4) * dt;
-      bvy[i] += (curlOut[1] * P.swirl * 0.8 * blick - P.rise * 1.38 * (1 - bage * 0.7)) * dt;
+      bvx[i] += (curlOut[0] * swirlEff * 1.35 * blick + bconv + windAll * 0.16 + (leanX * P.lean) * 0.4) * dt;
+      bvy[i] += (curlOut[1] * swirlEff * 0.8 * blick - riseEff * 1.38 * (1 - bage * 0.7)) * dt;
+      if (repel) {
+        var brx = bx[i] - pointerX, bry = by[i] - pointerYp;
+        var br2 = brx * brx + bry * bry;
+        if (br2 < REPEL_R * REPEL_R) {
+          var brd = Math.sqrt(br2) + 1;
+          var bpush = (1 - brd / REPEL_R) * 780;
+          bvx[i] += (brx / brd) * bpush * dt;
+          bvy[i] += (bry / brd) * bpush * dt;
+        }
+      }
       bvx[i] *= Math.exp(-2.8 * dt);
       bvy[i] *= Math.exp(-0.62 * dt);
       bx[i] += bvx[i] * dt;
@@ -1062,10 +1481,10 @@
     // the fire lights the room: one broad radial wash whose reach and
     // strength ride the state machine
     var warmth = (1 - P.cool);
-    var roomR = (Math.max(W, H) * (0.42 + P.heat * 0.26)) * (0.94 + breathe * 0.06);
+    var roomR = (Math.max(W, H) * (0.42 + heatEff * 0.26)) * (0.94 + breathe * 0.06);
     var roomY = emitY - H * 0.20;
     var gg = ctx.createRadialGradient(emitX, roomY, 0, emitX, roomY, roomR);
-    var warmA = (0.16 + P.heat * 0.30) * warmth;
+    var warmA = (0.16 + heatEff * 0.30) * warmth * (0.35 + bright * 0.65);
     gg.addColorStop(0, "rgba(255, 186, 116, " + (warmA * 0.92).toFixed(3) + ")");
     gg.addColorStop(0.22, "rgba(248, 122, 52, " + (warmA * 0.46).toFixed(3) + ")");
     gg.addColorStop(0.55, "rgba(178, 60, 20, " + (warmA * 0.15).toFixed(3) + ")");
@@ -1094,8 +1513,8 @@
       var cw = coreW * lo[2] * (fl + wob) * P.core;
       var ch = cw * (2.05 - lo[1] * 0.9);
       var cx = emitX + lo[0] * P.band * (0.9 + wob);
-      var cy = emitY - lo[1] * P.rise * 1.55;
-      ctx.globalAlpha = Math.min(0.92, (0.16 + P.heat * 0.34) * lo[2] * (fl - 0.1) * warmth);
+      var cy = emitY - lo[1] * riseEff * 1.55;
+      ctx.globalAlpha = Math.min(0.92, (0.16 + heatEff * 0.34) * lo[2] * (fl - 0.1) * warmth * (0.30 + bright * 0.70));
       // anchored so a lobe reaches only a little below the band: the core is
       // never cut by the bottom edge
       ctx.drawImage(coreSprite, cx - cw, cy - ch * 1.62, cw * 2, ch * 2);
@@ -1115,7 +1534,7 @@
       if (shade > 1) shade = 1;
       var bidx = (shade * (RAMP - 1)) | 0;
       var bimg = (bc[i] ? coolRamp : bodyRamp)[bidx];
-      var balpha = Math.pow(1 - b2, 0.9) * (0.055 + P.heat * 0.075) * (1 - lat * 0.28);
+      var balpha = Math.pow(1 - b2, 0.9) * (0.055 + heatEff * 0.075) * (1 - lat * 0.28) * bright;
       if (balpha <= 0.003) continue;
       var bsz = bs[i] * (0.78 + b2 * 0.85) * (0.75 + P.size * 0.35);
       ctx.globalAlpha = balpha;
@@ -1128,7 +1547,7 @@
       var idx = (a2 * (RAMP - 1)) | 0;
       if (idx > RAMP - 1) idx = RAMP - 1;
       var img = (pc[i] ? coolRamp : warmRamp)[idx];
-      var alpha = Math.pow(1 - a2, 0.62) * (0.34 + P.heat * 0.42);
+      var alpha = Math.pow(1 - a2, 0.62) * (0.34 + heatEff * 0.42) * bright;
       if (alpha <= 0.004) continue;
       var sz = ps[i] * (0.95 + a2 * 1.05) * (0.7 + P.size * 0.4);
       ctx.globalAlpha = alpha > 1 ? 1 : alpha;
@@ -1188,6 +1607,16 @@
     model: document.getElementById("hud-model")
   };
 
+  var scrim = document.getElementById("scrim");
+  var tuneBtn = document.getElementById("tune-btn");
+  var tunePop = document.getElementById("tune-pop");
+  var setBright = document.getElementById("set-brightness");
+  var setMotion = document.getElementById("set-motion");
+  var valBright = document.getElementById("val-brightness");
+  var valMotion = document.getElementById("val-motion");
+  var segText = document.getElementById("seg-text");
+  var segButtons = segText.querySelectorAll("button");
+
   var history = [];
   var busy = false;
   var turns = 0;
@@ -1195,6 +1624,157 @@
   var openingGone = false;
 
   var GENERIC = "Something went wrong. Please try again.";
+
+  /* ---- legibility: auto dim plus the readability scrim ---------------- */
+
+  function placeScrim() {
+    var col = document.querySelector(".column");
+    if (!col) return;
+    var left = col.getBoundingClientRect().left;
+    var pct = window.innerWidth ? (left / window.innerWidth) * 100 : 45;
+    if (pct < 0) pct = 0;
+    document.documentElement.style.setProperty("--scrim-left", pct.toFixed(1) + "%");
+  }
+
+  function refreshLegibility() {
+    var busyTalking = transcript.childNodes.length > 0;
+    dimTarget = busyTalking ? 0.62 : 1;
+    scrim.classList.toggle("on", busyTalking);
+    placeScrim();
+    if (reduceMotion) drawStatic();
+  }
+
+  /* ---- the tune panel ------------------------------------------------- */
+
+  function syncControls() {
+    var b = Math.round(settings.brightness * 100);
+    var m = Math.round(settings.motion * 100);
+    setBright.value = String(b);
+    setMotion.value = String(m);
+    valBright.textContent = String(b);
+    valMotion.textContent = String(m);
+    setBright.style.setProperty("--fill", ((b - 20) / 80 * 100).toFixed(1) + "%");
+    setMotion.style.setProperty("--fill", ((m - 20) / 80 * 100).toFixed(1) + "%");
+    for (var i = 0; i < segButtons.length; i++) {
+      var on = segButtons[i].getAttribute("data-value") === settings.textAnimation;
+      segButtons[i].setAttribute("aria-checked", on ? "true" : "false");
+      segButtons[i].tabIndex = on ? 0 : -1;
+    }
+  }
+
+  function popOpen() { return !tunePop.hasAttribute("hidden"); }
+
+  function openTune() {
+    tunePop.removeAttribute("hidden");
+    tuneBtn.setAttribute("aria-expanded", "true");
+    tuneBtn.classList.remove("touched");
+    syncControls();
+    setBright.focus();
+  }
+
+  function closeTune(refocus) {
+    if (!popOpen()) return;
+    tunePop.setAttribute("hidden", "");
+    tuneBtn.setAttribute("aria-expanded", "false");
+    if (refocus) tuneBtn.focus();
+  }
+
+  tuneBtn.addEventListener("click", function () {
+    if (popOpen()) closeTune(true); else openTune();
+  });
+
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && popOpen()) {
+      ev.stopPropagation();
+      closeTune(true);
+    }
+  });
+
+  document.addEventListener("pointerdown", function (ev) {
+    if (!popOpen()) return;
+    if (tunePop.contains(ev.target) || tuneBtn.contains(ev.target)) return;
+    closeTune(false);
+  });
+
+  function onSlider(ev) {
+    settingsTau = 0.08;                      // live under the hand
+    var v = Number(ev.target.value) / 100;
+    if (ev.target === setBright) settings.brightness = v; else settings.motion = v;
+    syncControls();
+    saveSettings();
+    if (reduceMotion) drawStatic();
+  }
+  setBright.addEventListener("input", onSlider);
+  setMotion.addEventListener("input", onSlider);
+
+  function chooseText(mode) {
+    if (!TEXT_MODES[mode]) return;
+    settings.textAnimation = mode;
+    syncControls();
+    saveSettings();
+  }
+
+  segText.addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("button") : null;
+    if (b) chooseText(b.getAttribute("data-value"));
+  });
+
+  segText.addEventListener("keydown", function (ev) {
+    var order = ["off", "subtle", "full"];
+    var at = order.indexOf(settings.textAnimation);
+    if (ev.key === "ArrowRight" || ev.key === "ArrowDown") {
+      ev.preventDefault();
+      chooseText(order[(at + 1) % order.length]);
+      segText.querySelector('[aria-checked="true"]').focus();
+    } else if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") {
+      ev.preventDefault();
+      chooseText(order[(at + order.length - 1) % order.length]);
+      segText.querySelector('[aria-checked="true"]').focus();
+    }
+  });
+
+  document.getElementById("tune-reset").addEventListener("click", function () {
+    settingsTau = 0.3;
+    settings.brightness = DEFAULTS.brightness;
+    settings.motion = DEFAULTS.motion;
+    settings.textAnimation = DEFAULTS.textAnimation;
+    syncControls();
+    saveSettings();
+  });
+
+  // the agent's hand: a config event from the model moves the same dials,
+  // eased over about 1.2 seconds so the room visibly changes
+  function applyAgentConfig(payload) {
+    if (!payload || typeof payload !== "object") return false;
+    var touched = false;
+    var b = clampUnit(typeof payload.brightness === "number" ? payload.brightness : null);
+    var m = clampUnit(typeof payload.motion === "number" ? payload.motion : null);
+    if (b !== null) { settings.brightness = b; touched = true; }
+    if (m !== null) { settings.motion = m; touched = true; }
+    if (typeof payload.textAnimation === "string" && TEXT_MODES[payload.textAnimation]) {
+      settings.textAnimation = payload.textAnimation;
+      touched = true;
+    }
+    if (!touched) return false;
+    settingsTau = 0.42;                       // roughly 1.2s to settle
+    saveSettings();
+    if (popOpen()) {
+      syncControls();
+    } else {
+      tuneBtn.classList.remove("touched");
+      void tuneBtn.offsetWidth;               // restart the one shot
+      tuneBtn.classList.add("touched");
+    }
+    return true;
+  }
+
+  syncControls();
+  placeScrim();
+  window.addEventListener("resize", function () {
+    if (scrimTimer) clearTimeout(scrimTimer);
+    scrimTimer = setTimeout(placeScrim, 160);
+  }, { passive: true });
+  var scrimTimer = null;
 
   function nearBottom() {
     return stage.scrollHeight - stage.scrollTop - stage.clientHeight < 140;
@@ -1227,6 +1807,7 @@
     el.appendChild(label);
     el.appendChild(body);
     transcript.appendChild(el);
+    refreshLegibility();
     stick(wasNear);
     return body;
   }
@@ -1237,6 +1818,7 @@
     el.className = "turn-system" + (ok ? " ok" : "");
     el.textContent = text;
     transcript.appendChild(el);
+    refreshLegibility();
     stick(wasNear);
   }
 
@@ -1275,24 +1857,130 @@
     sendBtn.setAttribute("aria-label", on ? "The agent is replying" : "Send message");
   }
 
+  /* ---- links in agent replies ------------------------------------------
+     Model output is never passed through innerHTML. The settled plain text
+     is scanned token by token and the turn is rebuilt from text nodes and
+     anchors created with createElement.                                   */
+
+  var TRAILING = /[.,;:!?)\]]+$/;
+  var ABS_URL = /^https?:\/\/\S+$/i;
+  var BARE_HOST = /^(?:[a-z0-9][-a-z0-9]*\.)+[a-z]{2,6}(?:\/\S*)?$/i;
+  var SITE_PATH = /^\/(?:privacy|agent)?\/?$/i;
+
+  function linkFor(token) {
+    var text = token.replace(TRAILING, "");
+    if (!text || text.length > 400) return null;
+    var href = null, external = true;
+
+    if (ABS_URL.test(text)) {
+      href = text;
+    } else if (SITE_PATH.test(text)) {
+      return { text: text, href: text, external: false };
+    } else if (BARE_HOST.test(text)) {
+      href = "https://" + text;
+    } else {
+      return null;
+    }
+
+    try {
+      var u = new URL(href);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+      if (u.origin === window.location.origin) external = false;
+      return { text: text, href: u.href, external: external };
+    } catch (e) {
+      return null;   // anything the parser dislikes stays plain text
+    }
+  }
+
+  function linkify(container, text) {
+    container.textContent = "";
+    var parts = text.split(/(\s+)/);
+    var buffer = "";
+
+    function flushBuffer() {
+      if (!buffer) return;
+      container.appendChild(document.createTextNode(buffer));
+      buffer = "";
+    }
+
+    for (var i = 0; i < parts.length; i++) {
+      var token = parts[i];
+      if (!token) continue;
+      var hit = /\S/.test(token) ? linkFor(token) : null;
+      if (!hit) { buffer += token; continue; }
+      flushBuffer();
+      var a = document.createElement("a");
+      a.href = hit.href;
+      a.textContent = hit.text;
+      if (hit.external) {
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+      }
+      container.appendChild(a);
+      buffer = token.slice(hit.text.length);   // the trailing punctuation
+    }
+    flushBuffer();
+    if (!container.firstChild) container.appendChild(document.createTextNode(text));
+  }
+
   // ---- streamed text painting -------------------------------------------
+  // Three modes. Whatever the mode, animated fragments are folded back into
+  // one settled text node as they age, and the turn is rebuilt as plain text
+  // plus anchors when it ends, so selection and copy behave normally.
   function makePainter(body) {
+    var mode = reduceMotion ? "off" : settings.textAnimation;
     var pending = "";
     var scheduled = false;
+    var live = [];
+    var settled = document.createTextNode("");
+    body.appendChild(settled);
+
     var caret = document.createElement("span");
     caret.className = "caret";
     caret.setAttribute("aria-hidden", "true");
     body.appendChild(caret);
 
+    function settleOld(now) {
+      while (live.length && now >= live[0].at + 620) {
+        var it = live.shift();
+        settled.data += it.text;
+        if (it.node.parentNode) it.node.remove();
+      }
+    }
+
+    function add(text, cls, delayMs, now) {
+      var span = document.createElement("span");
+      span.className = cls;
+      if (delayMs) span.style.animationDelay = delayMs + "ms";
+      span.textContent = text;
+      body.insertBefore(span, caret);
+      live.push({ node: span, text: text, at: now + (delayMs || 0) });
+    }
+
     function flush() {
       scheduled = false;
+      var now = performance.now();
+      settleOld(now);
       if (!pending) return;
       var wasNear = nearBottom();
-      var span = document.createElement("span");
-      if (!reduceMotion) span.className = "frag";
-      span.textContent = pending;
-      pending = "";
-      body.insertBefore(span, caret);
+
+      if (mode === "off") {
+        settled.data += pending;
+        pending = "";
+      } else if (mode === "subtle") {
+        add(pending, "frag", 0, now);
+        pending = "";
+      } else {
+        // full: reveal whole words only, so nothing already on screen reflows
+        var upto = pending.lastIndexOf(" ");
+        var nl = pending.lastIndexOf("\n");
+        if (nl > upto) upto = nl;
+        if (upto < 0) { return; }           // hold until a word boundary lands
+        var chunk = pending.slice(0, upto + 1);
+        pending = pending.slice(upto + 1);
+        var words = chunk.match(/\S+\s*|\s+/g) || [];
+        for (var i = 0; i < words.length; i++) add(words[i], "word", i * 26, now);
+      }
       stick(wasNear);
     }
 
@@ -1304,9 +1992,24 @@
           requestAnimationFrame(flush);
         }
       },
-      end: function () {
-        flush();
+      end: function (finalText) {
+        pending = "";
         if (caret.parentNode) caret.remove();
+        var wasNear = nearBottom();
+        var text = typeof finalText === "string" ? finalText : body.textContent;
+        var settle = function () {
+          live.length = 0;
+          linkify(body, text);
+          stick(wasNear);
+        };
+        // in full mode the last words are still arriving on screen, so the
+        // rebuild waits for them rather than snapping them into place
+        if (mode === "full" && live.length) {
+          var wait = Math.max(0, live[live.length - 1].at + 560 - performance.now());
+          setTimeout(settle, wait);
+        } else {
+          settle();
+        }
       }
     };
   }
@@ -1344,7 +2047,7 @@
     function fail(msg) {
       if (finished) return;
       finished = true;
-      if (painter) painter.end();
+      if (painter) painter.end(reply);
       addSystem(msg || GENERIC);
       setState("error");
       setTimeout(function () { setState(input === document.activeElement ? "listening" : "idle"); }, 1400);
@@ -1386,15 +2089,19 @@
           reply += event.text;
           painter.push(event.text);
           flicker(1);
-        } else if (event.type === "tool") {
+        } else if (event.type === "tool" && event.name === "send_note_to_elliot") {
           if (event.ok) {
-            if (painter) painter.end();
+            if (painter) painter.end(reply);
             body = null;
             if (reply) { history.push({ role: "assistant", content: reply }); reply = ""; }
             launchSpark();
             addSystem("A note was sent to Elliot.", true);
           } else {
             addSystem("The note could not be sent.");
+          }
+        } else if (event.type === "config") {
+          if (applyAgentConfig(event.settings)) {
+            addSystem("The agent adjusted the room.", true);
           }
         } else if (event.type === "error") {
           addSystem(event.error || GENERIC);
@@ -1435,7 +2142,7 @@
       return pump().then(function () {
         if (finished) return;
         finished = true;
-        if (painter) painter.end();
+        if (painter) painter.end(reply);
         done();
         setState(input === document.activeElement ? "listening" : "idle");
       });
