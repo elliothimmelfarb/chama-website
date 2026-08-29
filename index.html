@@ -854,6 +854,131 @@
       background: rgba(20, 20, 18, 0.08);
     }
 
+    /* Agent panel: the live chat demonstration between the outcome and the
+       invitation. Typographic, not a chat app; same palette and field styles. */
+    .agent .section-copy {
+      max-width: 60rem;
+    }
+
+    .agent-panel {
+      width: min(100%, 46rem);
+      margin-top: clamp(2.4rem, 4vw, 3.4rem);
+    }
+
+    .agent-fallback {
+      max-width: 34ch;
+      color: var(--quiet);
+      font-size: 1rem !important;
+      letter-spacing: 0 !important;
+      line-height: 1.45 !important;
+    }
+
+    .agent-transcript {
+      display: grid;
+      gap: 1.35rem;
+      max-height: min(28rem, 60svh);
+      padding: 1.15rem 1.2rem;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+    }
+
+    .agent-transcript:empty {
+      display: none;
+    }
+
+    .agent-turn {
+      display: grid;
+      gap: 0.35rem;
+      max-width: 46ch;
+    }
+
+    .agent-turn-label {
+      margin: 0;
+      color: var(--quiet);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .agent-turn-text {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .agent-turn.is-visitor {
+      justify-items: end;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .agent-turn.is-visitor .agent-turn-text {
+      padding-right: 0.75rem;
+      border-right: 2px solid var(--ember);
+    }
+
+    .agent-turn.is-agent .agent-turn-text {
+      padding-left: 0.75rem;
+      border-left: 1px solid var(--line);
+    }
+
+    .agent-turn.is-system .agent-turn-text {
+      padding-left: 0.75rem;
+      border-left: 1px solid var(--line);
+      color: var(--quiet);
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    .agent-pending .agent-turn-text::after {
+      content: "";
+      display: inline-block;
+      width: 0.42em;
+      height: 0.42em;
+      margin-left: 0.28em;
+      border-radius: 999px;
+      background: var(--ember);
+      vertical-align: 0.06em;
+      animation: agent-pulse 1100ms ease-in-out infinite;
+    }
+
+    @keyframes agent-pulse {
+      0%, 100% { opacity: 0.25; }
+      50%      { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .agent-pending .agent-turn-text::after {
+        animation: none;
+        opacity: 0.7;
+      }
+    }
+
+    .agent-form {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1.2rem;
+    }
+
+    .agent-form .field textarea {
+      min-height: 4.4rem;
+    }
+
+    .agent-send {
+      width: auto;
+      justify-self: start;
+    }
+
+    .agent-note {
+      max-width: 52ch;
+      margin-top: 1.4rem;
+    }
+
     .honeypot {
       position: absolute;
       width: 1px;
@@ -964,6 +1089,19 @@
 
       .field-row {
         grid-template-columns: 1fr;
+      }
+
+      .agent-panel {
+        width: auto;
+      }
+
+      .agent-transcript {
+        max-height: 24rem;
+        padding: 1rem 0.9rem;
+      }
+
+      .agent-turn {
+        max-width: none;
       }
 
       .footer-inner {
@@ -1078,6 +1216,28 @@
           <span class="eq-line" aria-hidden="true"><span class="eq-op">=</span> incredible things</span>
           <span class="eq-line" aria-hidden="true"><em>only you</em> can do.</span>
         </p>
+      </div>
+    </section>
+
+    <section class="frame content-section agent" aria-labelledby="agent-title">
+      <p class="section-label">See for yourself</p>
+      <div class="section-copy">
+        <h2 id="agent-title">Talk to our <span class="ember-accent">agent</span>.</h2>
+        <p>This page says a lot about being AI-native. Here is a live demonstration: a Claude model configured by Elliot, running on this site. Ask it what we do, whether we can help with what you are trying to do, or how it was built. If you like, it can send Elliot a note for you.</p>
+        <div class="agent-panel">
+          <p class="agent-fallback" id="agent-fallback">The agent needs JavaScript. The form below reaches Elliot directly and works without it.</p>
+          <div class="agent-live" id="agent-live" hidden>
+            <div class="agent-transcript" id="agent-transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>
+            <form class="agent-form" id="agent-form" aria-describedby="agent-note">
+              <label class="field">
+                <span>Message</span>
+                <textarea id="agent-input" name="message" rows="2" maxlength="4000" placeholder="Ask anything." aria-label="Message the agent"></textarea>
+              </label>
+              <button class="submit-button agent-send" id="agent-send" type="submit">Send</button>
+            </form>
+            <p class="intake-note agent-note" id="agent-note">A live Claude model run by Chama Inteligente. Conversations are not stored; a note to Elliot is only sent if you confirm it, through the same private intake as the form below. The agent can make mistakes. <a href="/privacy">Privacy details</a>.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1226,6 +1386,143 @@
           submit.disabled = false;
           submit.textContent = "Send this to Elliot";
         }
+      });
+    })();
+  </script>
+  <script>
+    (() => {
+      const fallback = document.querySelector("#agent-fallback");
+      const live = document.querySelector("#agent-live");
+      const transcript = document.querySelector("#agent-transcript");
+      const form = document.querySelector("#agent-form");
+      const input = document.querySelector("#agent-input");
+      const send = document.querySelector("#agent-send");
+      if (!fallback || !live || !transcript || !form || !input || !send) return;
+
+      fallback.hidden = true;
+      live.hidden = false;
+
+      const history = [];
+      const generic = "Something went wrong. Please try again.";
+      let busy = false;
+
+      const nearBottom = () =>
+        transcript.scrollHeight - transcript.scrollTop - transcript.clientHeight < 64;
+
+      const stick = (wasNear) => {
+        if (wasNear) transcript.scrollTop = transcript.scrollHeight;
+      };
+
+      const addTurn = (kind, label, text) => {
+        const wasNear = nearBottom();
+        const turn = document.createElement("div");
+        turn.className = "agent-turn is-" + kind;
+        const name = document.createElement("p");
+        name.className = "agent-turn-label";
+        name.textContent = label;
+        const body = document.createElement("p");
+        body.className = "agent-turn-text";
+        body.textContent = text;
+        turn.append(name, body);
+        transcript.append(turn);
+        stick(wasNear);
+        return { turn, body };
+      };
+
+      const setBusy = (state) => {
+        busy = state;
+        send.disabled = state;
+        send.textContent = state ? "Thinking..." : "Send";
+      };
+
+      const ask = async (message) => {
+        addTurn("visitor", "You", message);
+        history.push({ role: "user", content: message });
+        setBusy(true);
+
+        let reply = null;
+        let text = "";
+
+        try {
+          const result = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+            body: JSON.stringify({ messages: history.slice(-40) })
+          });
+
+          if (!result.ok || !result.body) {
+            const payload = await result.json().catch(() => ({}));
+            addTurn("system", "Agent", payload.error || generic);
+            return;
+          }
+
+          const reader = result.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+
+          const handle = (event) => {
+            const lines = event.split("\n");
+            for (const line of lines) {
+              if (!line.startsWith("data:")) continue;
+              let data = null;
+              try {
+                data = JSON.parse(line.slice(5).trim());
+              } catch (error) {
+                continue;
+              }
+              if (!data || typeof data !== "object") continue;
+
+              if (data.type === "text" && typeof data.text === "string") {
+                if (!reply) reply = addTurn("agent", "Agent", "");
+                reply.turn.classList.add("agent-pending");
+                const wasNear = nearBottom();
+                text += data.text;
+                reply.body.textContent = text;
+                stick(wasNear);
+              } else if (data.type === "tool") {
+                addTurn("system", "Agent", data.ok
+                  ? "A note was sent to Elliot."
+                  : "The note could not be sent.");
+              } else if (data.type === "error") {
+                addTurn("system", "Agent", data.error || generic);
+              } else if (data.type === "done") {
+                if (reply) reply.turn.classList.remove("agent-pending");
+              }
+            }
+          };
+
+          for (;;) {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            buffer += decoder.decode(chunk.value, { stream: true });
+            const events = buffer.split(/\r?\n\r?\n/);
+            buffer = events.pop() || "";
+            for (const event of events) handle(event);
+          }
+          if (buffer.trim()) handle(buffer);
+        } catch (error) {
+          addTurn("system", "Agent", generic);
+        } finally {
+          if (reply) reply.turn.classList.remove("agent-pending");
+          if (text.trim()) history.push({ role: "assistant", content: text });
+          setBusy(false);
+          input.focus({ preventScroll: true });
+        }
+      };
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (busy) return;
+        const message = input.value.trim();
+        if (!message) return;
+        input.value = "";
+        ask(message);
+      });
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+        event.preventDefault();
+        form.requestSubmit();
       });
     })();
   </script>
