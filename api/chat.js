@@ -196,6 +196,7 @@ function eventLine(payload) {
 // the model asks for it, and stops after at most LIMITS.modelCalls turns.
 async function runAgent(client, history, emit) {
   const messages = history.map((entry) => ({ role: entry.role, content: entry.content }));
+  const usage = { model: MODEL, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
 
   for (let call = 0; call < LIMITS.modelCalls; call += 1) {
     const stream = client.messages.stream({
@@ -216,8 +217,11 @@ async function runAgent(client, history, emit) {
     }
 
     const message = await stream.finalMessage();
+    usage.inputTokens += message.usage.input_tokens;
+    usage.outputTokens += message.usage.output_tokens;
+    usage.cacheReadTokens += message.usage.cache_read_input_tokens || 0;
     if (message.stop_reason !== "tool_use") {
-      return;
+      return usage;
     }
 
     const toolResults = [];
@@ -247,6 +251,8 @@ async function runAgent(client, history, emit) {
     messages.push({ role: "assistant", content: message.content });
     messages.push({ role: "user", content: toolResults });
   }
+
+  return usage;
 }
 
 export default {
@@ -291,14 +297,15 @@ export default {
           controller.enqueue(encoder.encode(eventLine(payload)));
         };
 
+        let usage = null;
         try {
-          await runAgent(client, result.messages, emit);
+          usage = await runAgent(client, result.messages, emit);
         } catch (error) {
           console.error("Chat agent failed", error instanceof Error ? error.name : "UnknownError");
           emit({ type: "error", error: friendlyErrorFor(error).message });
         }
 
-        emit({ type: "done" });
+        emit(usage ? { type: "done", usage } : { type: "done" });
         controller.close();
       }
     });
