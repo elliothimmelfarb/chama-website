@@ -16,10 +16,12 @@ Disallow: /admin
 
 User-agent: Googlebot-Image
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Bingbot
@@ -29,67 +31,83 @@ Disallow: /admin
 
 User-agent: DuckDuckBot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Applebot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 # AI crawlers and AI search assistants
 User-agent: ClaudeBot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Claude-Web
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Claude-User
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Claude-SearchBot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: GPTBot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Perplexity-User
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Meta-ExternalAgent
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: Amazonbot
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: cohere-ai
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 User-agent: MistralAI-User
 Allow: /
+Disallow: /api/
 Disallow: /admin
 
 Sitemap: https://chamainteligente.com/sitemap.xml
