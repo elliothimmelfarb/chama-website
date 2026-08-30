@@ -1645,6 +1645,7 @@
       el.appendChild(label);
       el.appendChild(body);
       transcript.appendChild(el);
+      trailThinking();
       refreshLegibility();
       stick(wasNear);
       return body;
@@ -1656,8 +1657,55 @@
       el.className = "turn-system" + (ok ? " ok" : "");
       el.textContent = text;
       transcript.appendChild(el);
+      trailThinking();
       refreshLegibility();
       stick(wasNear);
+    }
+
+    /* ---- the ember that holds the place of a reply ------------------------
+       From the moment a message is sent until the first streamed character
+       lands, the transcript ends with a flame where the answer will be. It is
+       shaped like the reply it stands in for, so when the real turn arrives
+       nothing jumps. It is aria-hidden: the live region should announce the
+       words, not the waiting. Anything appended while it waits (a settings
+       change, a note confirmation) pushes it back to the end, so it always
+       trails the conversation and never splits it.                         */
+
+    var thinkingEl = null;
+
+    function trailThinking() {
+      if (thinkingEl && thinkingEl.parentNode === transcript) {
+        transcript.appendChild(thinkingEl);   // appendChild moves it to the end
+      }
+    }
+
+    function showThinking() {
+      if (thinkingEl) return;
+      var wasNear = nearBottom();
+      var el = document.createElement("article");
+      el.className = "turn turn-flame turn-thinking";
+      el.setAttribute("aria-hidden", "true");
+      var label = document.createElement("span");
+      label.className = "turn-label";
+      label.textContent = "The flame";
+      var body = document.createElement("p");
+      body.className = "turn-body";
+      var wrap = document.createElement("span");
+      wrap.className = "ember-wrap";
+      wrap.innerHTML = FLAME_SVG;           // static author-written markup
+      body.appendChild(wrap);
+      el.appendChild(label);
+      el.appendChild(body);
+      transcript.appendChild(el);
+      thinkingEl = el;
+      refreshLegibility();
+      stick(wasNear);
+    }
+
+    function hideThinking() {
+      if (!thinkingEl) return;
+      if (thinkingEl.parentNode) thinkingEl.parentNode.removeChild(thinkingEl);
+      thinkingEl = null;
     }
 
     function setHudNumber(node, value) { node.textContent = value; }
@@ -1780,6 +1828,7 @@
       var caret = document.createElement("span");
       caret.className = "caret";
       caret.setAttribute("aria-hidden", "true");
+      caret.innerHTML = FLAME_SVG;          // the same ember, now the cursor
       body.appendChild(caret);
 
       function settleOld(now) {
@@ -1872,6 +1921,7 @@
       autoGrow();
       setBusy(true);
       setState("thinking");
+      showThinking();
 
       var body = null;
       var painter = null;
@@ -1882,6 +1932,7 @@
 
       function ensureBody() {
         if (!body) {
+          hideThinking();
           body = addTurn("flame", "");
           painter = makePainter(body);
         }
@@ -1890,6 +1941,7 @@
       function fail(msg) {
         if (finished) return;
         finished = true;
+        hideThinking();
         if (painter) painter.end(reply);
         addSystem(msg || GENERIC);
         setState("error");
@@ -1939,6 +1991,7 @@
               if (reply) { history.push({ role: "assistant", content: reply }); reply = ""; }
               launchSpark();
               addSystem("A note was sent to Elliot.", true);
+              showThinking();   // whatever it says next is still on its way
             } else {
               addSystem("The note could not be sent.");
             }
@@ -1984,6 +2037,7 @@
         return pump().then(function () {
           if (finished) return;
           finished = true;
+          hideThinking();
           if (painter) painter.end(reply);
           done();
           setState(input === document.activeElement ? "listening" : "idle");
