@@ -343,6 +343,33 @@ body.chama-agent-page {
   border-bottom-color: var(--ember-soft);
 }
 
+/* the way back up, for a thumb: on a phone the seated room owns every
+   gesture, so the bar states the exit in words. Shown by the touch media
+   block below; a mouse leaves with the wheel and never needs it. */
+.chama-agent .leave-link {
+  display: none;
+  flex: none;
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0.36rem 0;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+.chama-agent .leave-link:focus-visible,
+.chama-agent .leave-link:active {
+  color: var(--paper);
+  border-bottom-color: var(--ember-soft);
+}
+
 .chama-agent .tune-wrap { position: relative; flex: none; }
 
 .chama-agent .tune-btn {
@@ -1010,6 +1037,9 @@ body.chama-agent-page {
    pointers only, so laptops and desktops keep the glass. */
 
 @media (hover: none) and (pointer: coarse) {
+  /* the exit exists where the trap exists: touch, embedded */
+  .chama-agent-mode-embed .leave-link { display: inline-block; }
+
   .chama-agent .topbar,
   .chama-agent .bar,
   .chama-agent .pill,
