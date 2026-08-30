@@ -404,7 +404,9 @@ export default {
       return json({ error: "This request could not be accepted." }, 403);
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    // CHAT_DISABLED is the kill switch: any non-empty value takes the flame
+    // offline without touching the key. Set it in Vercel and redeploy.
+    if (process.env.CHAT_DISABLED || !process.env.ANTHROPIC_API_KEY) {
       return json({ error: MESSAGES.offline }, 503);
     }
 
