@@ -72,6 +72,8 @@ Since 2026-08-30 a Vercel Firewall rule ("Chat per-IP rate limit", managed in th
 
 The chat is back within a minute. `CHAT_DISABLED` remains the separate manual override: any non-empty value in the Vercel environment takes the flame offline on the next deploy, and it is not something the watchdog can touch.
 
+**A third way the flame goes out: money.** When the Anthropic account reaches its configured API spend limit, every model call comes back as a `400` whose body says "You have reached your specified API usage limits" and names the date access returns. Since 2026-08-30 `api/chat.js` reads that case as the flame resting rather than as a fault of ours, so the page shows the offline message and the email address instead of asking the visitor to try again at something that cannot work. Nothing in this repo can lift it; the limit lives in the Anthropic Console under the workspace's usage limits, and raising it there brings the flame back with no redeploy. Chat errors log their class, HTTP status and API error type (`describeError`), which is what makes a case like this readable at all: the SDK never sets `name`, so every failure used to log as a bare `Error`.
+
 The watchdog never logs visitor text. Its console lines carry counts, conversation ids and severities only. Transcript content reaches the reviewing model and, when something is wrong, the one email to Elliot.
 
 An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment and authenticates the watchdog as well. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
