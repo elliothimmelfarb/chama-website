@@ -2704,8 +2704,10 @@
     var vv = window.visualViewport || null;
     var kbPinned = false;
     var kbSavedY = 0;
-    var kbTicking = false;
     var kbRelease = 0;
+    var kbBaseH = 0;
+    var kbLastH = 0;
+    var kbLastTop = 0;
     var stageNear = true;
 
     stage.addEventListener("scroll", function () {
@@ -2720,23 +2722,40 @@
       return document.documentElement.clientHeight || window.innerHeight || 0;
     }
 
+    // written straight from the event rather than deferred to a frame: the
+    // work is two custom properties, and a keyboard sliding in should carry
+    // the room with it rather than trail a frame behind
     function writeViewport() {
       var h = Math.round(visibleH());
-      if (!h) return;
+      var top = Math.round(vv ? vv.offsetTop : 0);
+      if (!h || (h === kbLastH && top === kbLastTop)) return;
+      kbLastH = h;
+      kbLastTop = top;
       rootEl.style.setProperty("--vv-height", h + "px");
-      rootEl.style.setProperty("--vv-top", Math.round(vv ? vv.offsetTop : 0) + "px");
+      rootEl.style.setProperty("--vv-top", top + "px");
+    }
+
+    // the pin is harmless without a keyboard: an iPad with a hardware one
+    // focuses the composer and the room keeps exactly the size it had. The
+    // chrome only tightens once the screen has actually lost height, which on
+    // iOS is a couple of hundred milliseconds after the tap, as the keyboard
+    // slides in, and the tightening rides in with it.
+    function markKeyboard() {
+      rootEl.classList.toggle("kb-open", kbBaseH - Math.round(visibleH()) > 100);
     }
 
     function pinToViewport() {
       window.clearTimeout(kbRelease);
       if (kbPinned) return;
       kbPinned = true;
+      kbBaseH = Math.round(visibleH());
       kbSavedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+      kbLastH = kbLastTop = 0;
       writeViewport();
       rootEl.classList.add("kb-pin");
-      rootEl.classList.add("kb-open");
       window.requestAnimationFrame(function () {
         writeViewport();
+        markKeyboard();
         if (stageNear) toBottom();
       });
     }
@@ -2766,25 +2785,17 @@
     function syncViewport() {
       if (!kbPinned) return;
       writeViewport();
+      markKeyboard();
       if (mode === "page") window.scrollTo(0, 0);
       if (stageNear) toBottom();
-    }
-
-    function scheduleViewportSync() {
-      if (kbTicking) return;
-      kbTicking = true;
-      window.requestAnimationFrame(function () {
-        kbTicking = false;
-        syncViewport();
-      });
     }
 
     if (touchDevice) {
       input.addEventListener("focus", pinToViewport);
       input.addEventListener("blur", releaseViewport);
       if (vv) {
-        vv.addEventListener("resize", scheduleViewportSync, { passive: true });
-        vv.addEventListener("scroll", scheduleViewportSync, { passive: true });
+        vv.addEventListener("resize", syncViewport, { passive: true });
+        vv.addEventListener("scroll", syncViewport, { passive: true });
       }
       // the document has no business scrolling while the room owns the screen
       window.addEventListener("scroll", function () {
