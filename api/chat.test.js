@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildConversationRecord,
   clampExperience,
   countUserTurns,
   executeNoteTool,
+  normalizeConversationId,
+  persistConversation,
   validateChatMessages
 } from "./chat.js";
 
@@ -365,4 +368,158 @@ test("returns exactly the experience keys", () => {
   const result = clampExperience({ brightness: 0.5, extra: "ignored" });
 
   assert.deepEqual(Object.keys(result.settings).sort(), Object.keys(NULL_SETTINGS).sort());
+});
+/* ---- saved conversations ---------------------------------------------- */
+
+function fakeStore(overrides = {}) {
+  const calls = { put: [] };
+  const deps = {
+    put: async (key, body, options) => {
+      calls.put.push({ key, body, options });
+      return { url: "https://blob.example/" + key };
+    },
+    now: () => "2026-08-30T09:15:00.000Z",
+    ...overrides
+  };
+  return { calls, deps };
+}
+
+const TURNS = [
+  { role: "user", content: "What is this?" },
+  { role: "assistant", content: "A small flame that answers questions." },
+  { role: "user", content: "Make the flame green." }
+];
+
+test("writes one private json blob per conversation per day", async () => {
+  const { calls, deps } = fakeStore();
+  const outcome = await persistConversation(
+    { conversationId: "9d1f0c22-4b3a-4f7e-8f1e-1c2b3a4d5e6f", turns: TURNS, toolEvents: [] },
+    deps
+  );
+
+  assert.equal(outcome.ok, true);
+  assert.equal(calls.put.length, 1);
+  assert.equal(calls.put[0].key, "chat/2026-08-30/9d1f0c22-4b3a-4f7e-8f1e-1c2b3a4d5e6f.json");
+  assert.deepEqual(calls.put[0].options, {
+    access: "private",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json"
+  });
+});
+
+test("stores the whole transcript including the assistant reply", async () => {
+  const { calls, deps } = fakeStore();
+  await persistConversation(
+    { conversationId: "abcd1234-conversation", turns: TURNS, toolEvents: [] },
+    deps
+  );
+
+  const record = JSON.parse(calls.put[0].body);
+  assert.equal(record.schemaVersion, 1);
+  assert.equal(record.conversationId, "abcd1234-conversation");
+  assert.equal(record.source, "chamainteligente.com");
+  assert.equal(record.updatedAt, "2026-08-30T09:15:00.000Z");
+  assert.deepEqual(record.turns, TURNS);
+  assert.deepEqual(record.toolEvents, []);
+});
+
+test("stores only role and content, never anything else about the visitor", async () => {
+  const { calls, deps } = fakeStore();
+  await persistConversation(
+    {
+      conversationId: "abcd1234-conversation",
+      turns: [{ role: "user", content: "hello", ip: "203.0.113.4", userAgent: "Firefox" }],
+      toolEvents: []
+    },
+    deps
+  );
+
+  const record = JSON.parse(calls.put[0].body);
+  assert.deepEqual(record.turns, [{ role: "user", content: "hello" }]);
+  assert.equal(calls.put[0].body.includes("203.0.113.4"), false);
+  assert.equal(calls.put[0].body.includes("Firefox"), false);
+});
+
+test("stores the tool calls the exchange produced", async () => {
+  const { calls, deps } = fakeStore();
+  const toolEvents = [
+    {
+      name: "send_note_to_elliot",
+      input: { name: "Ada", email: "ada@example.com", request: "Automate my invoices." }
+    },
+    { name: "adjust_experience", input: { hue: 120, brightness: null } }
+  ];
+  await persistConversation(
+    { conversationId: "abcd1234-conversation", turns: TURNS, toolEvents },
+    deps
+  );
+
+  const record = JSON.parse(calls.put[0].body);
+  assert.deepEqual(record.toolEvents, toolEvents);
+});
+
+test("a storage failure is swallowed so the visitor still gets the reply", async () => {
+  const { deps } = fakeStore({
+    put: async () => {
+      throw new Error("BlobError");
+    }
+  });
+
+  const outcome = await persistConversation(
+    { conversationId: "abcd1234-conversation", turns: TURNS, toolEvents: [] },
+    deps
+  );
+
+  assert.equal(outcome.ok, false);
+  assert.equal(outcome.record.conversationId, "abcd1234-conversation");
+});
+
+test("keeps a well formed conversation id", () => {
+  assert.equal(
+    normalizeConversationId("9d1f0c22-4b3a-4f7e-8f1e-1c2b3a4d5e6f"),
+    "9d1f0c22-4b3a-4f7e-8f1e-1c2b3a4d5e6f"
+  );
+  assert.equal(normalizeConversationId("abcd1234"), "abcd1234");
+  assert.equal(normalizeConversationId("a".repeat(64)), "a".repeat(64));
+});
+
+test("replaces a missing or malformed conversation id so storage still works", () => {
+  const made = () => "generated-server-side-id";
+
+  assert.equal(normalizeConversationId(undefined, made), "generated-server-side-id");
+  assert.equal(normalizeConversationId("", made), "generated-server-side-id");
+  assert.equal(normalizeConversationId("short", made), "generated-server-side-id");
+  assert.equal(normalizeConversationId("a".repeat(65), made), "generated-server-side-id");
+  assert.equal(normalizeConversationId("../../etc/passwd", made), "generated-server-side-id");
+  assert.equal(normalizeConversationId("has spaces here", made), "generated-server-side-id");
+  assert.equal(normalizeConversationId(42, made), "generated-server-side-id");
+  assert.match(normalizeConversationId(null), /^[0-9a-f-]{36}$/);
+});
+
+test("a replaced id is what the record and the key are written under", async () => {
+  const { calls, deps } = fakeStore();
+  const conversationId = normalizeConversationId("nope", () => "replacement-id-1234");
+  await persistConversation({ conversationId, turns: TURNS, toolEvents: [] }, deps);
+
+  assert.equal(calls.put[0].key, "chat/2026-08-30/replacement-id-1234.json");
+  assert.equal(JSON.parse(calls.put[0].body).conversationId, "replacement-id-1234");
+});
+
+test("the record builder is pure and returns exactly the stored shape", () => {
+  const record = buildConversationRecord({
+    conversationId: "abcd1234-conversation",
+    turns: TURNS,
+    toolEvents: [],
+    updatedAt: "2026-08-30T09:15:00.000Z"
+  });
+
+  assert.deepEqual(Object.keys(record).sort(), [
+    "conversationId",
+    "schemaVersion",
+    "source",
+    "toolEvents",
+    "turns",
+    "updatedAt"
+  ]);
 });
