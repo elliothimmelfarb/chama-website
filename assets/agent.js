@@ -183,6 +183,14 @@
       reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     } catch (e) { reduceMotion = false; }
 
+    // A phone is not a small desktop: it has a soft keyboard that moves the
+    // viewport out from under the page, and a fill rate a fraction of the one
+    // the fire was written against. Both answers below hang off this.
+    var touchDevice = false;
+    try {
+      touchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    } catch (e3) { touchDevice = false; }
+
     /* ==================================================================
        SETTINGS
        One source of truth for brightness, motion and text animation.
@@ -852,8 +860,19 @@
       return H * 0.5 - H * 0.41 * uy;
     }
 
+    /* ---- how many pixels the fire is worth ------------------------------
+       Every frame the fire is painted once into its own buffer, mirrored into
+       a second, and composited into the canvas: three full screen passes, so
+       cost is pure fill rate and pixel count is the only knob that moves it.
+       A phone starts at 1.5x rather than 2x, which is invisible on a field
+       with no hard edges, and the governor can drop it to 1x once it has shed
+       every particle it is allowed to shed and is still late. It never climbs
+       back: a screen that could not hold 1.5x will not hold it a second time,
+       and rebuilding the buffers on a hunch is its own stall. */
+    var dprCap = touchDevice ? 1.5 : 2;
+
     function layout() {
-      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      DPR = Math.min(window.devicePixelRatio || 1, dprCap);
       var rect = rootEl.getBoundingClientRect();
       var nw = rect.width;
       var nh = rect.height;
@@ -883,6 +902,8 @@
         layout();
         placeScrim();
         updateFades();
+        // a narrower box rewraps what is already typed
+        if (input) autoGrow();
       }, 140);
     }
 
@@ -1005,6 +1026,21 @@
     var running = false;
     var rafId = 0;
 
+    /* A phone cannot paint the fire and move a scroll in the same frame, and
+       when it has to choose it drops the scroll, which is the one thing the
+       hand is holding. So while anything is scrolling the fire paints every
+       other frame: dt still measures the real interval, so it burns at its
+       own speed, on half the frames, and the finger gets the rest. */
+    var lastScrollAt = -1e9;
+    var skipFrame = false;
+
+    function noteScroll() { lastScrollAt = performance.now(); }
+
+    if (touchDevice) {
+      window.addEventListener("scroll", noteScroll, { passive: true });
+      window.addEventListener("touchmove", noteScroll, { passive: true });
+    }
+
     function ease(cur, target, dt, tau) {
       var k = 1 - Math.exp(-dt / tau);
       return cur + (target - cur) * k;
@@ -1024,6 +1060,10 @@
     }
 
     function frame(now) {
+      if (touchDevice && now - lastScrollAt < 260) {
+        skipFrame = !skipFrame;
+        if (skipFrame) { rafId = requestAnimationFrame(frame); return; }
+      }
       frames++;
       if (!last) last = now;
       var raw = now - last;
@@ -1040,6 +1080,7 @@
         if (glitBudget > GLIT_FLOOR) glitBudget = Math.max(GLIT_FLOOR, glitBudget - 8);
         else if (budget > 260) budget -= 14;
         else if (bodyBudget > BODY_FLOOR) bodyBudget -= 2;
+        else if (dprCap > 1 && frameEMA > 26) { dprCap = 1; layout(); }
       } else if (frameEMA < 13.2) {
         if (bodyBudget < BODY_MAX) bodyBudget += 1;
         else if (budget < CAP) budget += 6;
@@ -1523,8 +1564,10 @@
       ctx.globalAlpha = 1;
       ctx.drawImage(fireBuf, 0, 0, W, H);
 
-      // grain
-      if (grainPattern) {
+      // grain: a full screen pattern fill, and the only pass that buys
+      // nothing but texture. On a phone it runs on alternate frames, which
+      // reads as grain moving at half speed and costs half as much.
+      if (grainPattern && !(touchDevice && (frames & 1))) {
         ctx.globalAlpha = 0.14;
         ctx.fillStyle = grainPattern;
         ctx.save();
@@ -2558,14 +2601,25 @@
     }
 
     // ---- composer behaviour --------------------------------------------------
+    /* The box is measured from zero, not from auto: with `auto` the reading
+       is the box's own current height whenever the browser has not laid the
+       subtree out yet, and one bad reading at mount used to leave an empty
+       composer standing at its 8.4rem ceiling, taking a third of a phone
+       screen and never shrinking back. From zero the only answer the engine
+       can give is the height of the text. */
+    var GROW_MAX = 8.4 * 16;
+
     function autoGrow() {
-      input.style.height = "auto";
-      var max = 8.4 * 16;
-      input.style.height = Math.min(input.scrollHeight, max) + "px";
+      input.style.height = "0px";
+      var h = input.scrollHeight;
+      input.style.height = Math.min(h, GROW_MAX) + "px";
     }
 
     input.addEventListener("input", function () {
       autoGrow();
+      // a growing composer takes its height from the transcript, so the last
+      // line of the conversation has to give way rather than slide under it
+      if (stageNear) toBottom();
       if (!busy) setState("listening");
     });
 
@@ -2604,6 +2658,12 @@
     });
 
     autoGrow();
+    // the first measurement can land before the room has a width; take
+    // another once the browser has laid the composer out for real
+    window.requestAnimationFrame(autoGrow);
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(autoGrow).catch(function () {});
+    }
 
     /* ---- when the loop runs ------------------------------------------------
        Full screen, it always runs. Embedded, an IntersectionObserver stops it
@@ -2624,6 +2684,128 @@
       startLoop();
     }
 
+    /* ---- the room and the soft keyboard ------------------------------------
+       A phone keyboard does not take space from the page, it takes space from
+       the screen. On iOS the layout viewport keeps its full height and the
+       browser scrolls the document until the focused field is visible, which
+       walks the top bar and most of the transcript off the top; embedded, the
+       seat magnet then re-seated the room against the shrunken visual
+       viewport and yanked the page a second time.
+
+       So the moment the composer takes focus on a touch device the room stops
+       being a piece of the page: it is pinned to the visual viewport, exactly
+       the visible rectangle, and every band of chrome tightens so what the
+       keyboard left goes to the conversation. Nothing scrolls it, so nothing
+       can move it, and the transcript keeps its place at the bottom across
+       the keyboard opening, the keyboard closing and the rotation between.
+
+       On blur the page is handed back exactly where the visitor left it.   */
+
+    var vv = window.visualViewport || null;
+    var kbPinned = false;
+    var kbSavedY = 0;
+    var kbRelease = 0;
+    var kbBaseH = 0;
+    var kbLastH = 0;
+    var kbLastTop = 0;
+    var stageNear = true;
+
+    stage.addEventListener("scroll", function () {
+      stageNear = nearBottom();
+      if (touchDevice) noteScroll();
+    }, { passive: true });
+
+    function toBottom() { stage.scrollTop = stage.scrollHeight; }
+
+    function visibleH() {
+      if (vv && vv.height) return vv.height;
+      return document.documentElement.clientHeight || window.innerHeight || 0;
+    }
+
+    // written straight from the event rather than deferred to a frame: the
+    // work is two custom properties, and a keyboard sliding in should carry
+    // the room with it rather than trail a frame behind
+    function writeViewport() {
+      var h = Math.round(visibleH());
+      var top = Math.round(vv ? vv.offsetTop : 0);
+      if (!h || (h === kbLastH && top === kbLastTop)) return;
+      kbLastH = h;
+      kbLastTop = top;
+      rootEl.style.setProperty("--vv-height", h + "px");
+      rootEl.style.setProperty("--vv-top", top + "px");
+    }
+
+    // the pin is harmless without a keyboard: an iPad with a hardware one
+    // focuses the composer and the room keeps exactly the size it had. The
+    // chrome only tightens once the screen has actually lost height, which on
+    // iOS is a couple of hundred milliseconds after the tap, as the keyboard
+    // slides in, and the tightening rides in with it.
+    function markKeyboard() {
+      rootEl.classList.toggle("kb-open", kbBaseH - Math.round(visibleH()) > 100);
+    }
+
+    function pinToViewport() {
+      window.clearTimeout(kbRelease);
+      if (kbPinned) return;
+      kbPinned = true;
+      kbBaseH = Math.round(visibleH());
+      kbSavedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+      kbLastH = kbLastTop = 0;
+      writeViewport();
+      rootEl.classList.add("kb-pin");
+      window.requestAnimationFrame(function () {
+        writeViewport();
+        markKeyboard();
+        if (stageNear) toBottom();
+      });
+    }
+
+    function unpin() {
+      if (!kbPinned) return;
+      kbPinned = false;
+      rootEl.classList.remove("kb-pin");
+      rootEl.classList.remove("kb-open");
+      rootEl.style.removeProperty("--vv-height");
+      rootEl.style.removeProperty("--vv-top");
+      window.scrollTo(0, mode === "page" ? 0 : kbSavedY);
+      window.requestAnimationFrame(function () {
+        if (stageNear) toBottom();
+      });
+    }
+
+    // a tap on send or on a pill blurs the field a moment before its own
+    // click lands: releasing the pin on that blur would move the button out
+    // from under the finger, so the release waits to see whether focus is
+    // coming straight back
+    function releaseViewport() {
+      window.clearTimeout(kbRelease);
+      kbRelease = window.setTimeout(unpin, 220);
+    }
+
+    function syncViewport() {
+      if (!kbPinned) return;
+      writeViewport();
+      markKeyboard();
+      if (mode === "page") window.scrollTo(0, 0);
+      if (stageNear) toBottom();
+    }
+
+    if (touchDevice) {
+      input.addEventListener("focus", pinToViewport);
+      input.addEventListener("blur", releaseViewport);
+      if (vv) {
+        vv.addEventListener("resize", syncViewport, { passive: true });
+        vv.addEventListener("scroll", syncViewport, { passive: true });
+      }
+      // the document has no business scrolling while the room owns the screen
+      window.addEventListener("scroll", function () {
+        if (kbPinned && mode === "page") window.scrollTo(0, 0);
+      }, { passive: true });
+      window.addEventListener("orientationchange", function () {
+        if (kbPinned) window.setTimeout(syncViewport, 320);
+      });
+    }
+
     /* ---- seating the room (embedded only) ----------------------------------
        Embedded, the room is one screenful at the end of a long page, and the
        transcript inside it is a scroller of its own. Two scrollers stacked
@@ -2639,7 +2821,9 @@
        the browser's own scroll latching would put in the middle.        */
 
     if (mode !== "page") {
-      var SEAT_EPS = 2;
+      // a finger cannot stop on a pixel, and the room being one thumb's width
+      // off its seat is no reason to hold the transcript shut
+      var SEAT_EPS = touchDevice ? 14 : 2;
       var seatPending = null;
       var touchLately = 0;
       var settleTimer = 0;
@@ -2671,6 +2855,15 @@
       }
 
       function markSeat() {
+        // pinned to the viewport, the room is the screen: it is seated by
+        // definition and the transcript is the only thing there is to scroll
+        if (kbPinned) {
+          if (seatPending !== false) {
+            seatPending = false;
+            rootEl.classList.remove("seat-pending");
+          }
+          return;
+        }
         var pending = Math.abs(seatDelta()) > SEAT_EPS;
         if (pending === seatPending) return;
         seatPending = pending;
@@ -2682,6 +2875,12 @@
       // in. Armed by touch only: a wheel clamps itself, and the keyboard must
       // never be pulled back to a place it just left.
       function magnet() {
+        // On a phone the pull is the jump: a keyboard opening, a URL bar
+        // collapsing or a thumb resting anywhere near the seat would drag the
+        // page under the reader. Touch gets the forgiving epsilon above
+        // instead, and the magnet stays for pointer devices, where a trackpad
+        // flick really does need the last few pixels closed for it.
+        if (touchDevice || kbPinned) return;
         var d = seatDelta();
         if (Math.abs(d) <= SEAT_EPS) return;
         if (Math.abs(d) > viewportH() * 0.22) return;

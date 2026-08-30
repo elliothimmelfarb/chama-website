@@ -67,7 +67,10 @@ body.chama-agent-page {
 
 .chama-agent-mode-page {
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .chama-agent-mode-embed {
@@ -76,6 +79,59 @@ body.chama-agent-page {
   height: 100%;
   overflow: hidden;
 }
+
+/* ---- the room while a phone keyboard is up ----------------------------
+   A soft keyboard does not shrink the layout viewport on iOS: the browser
+   keeps the page its full height and scrolls it so the focused field is
+   visible, which walks the top bar and most of the transcript off the top
+   of the screen. So the moment the composer takes focus on a touch device
+   the room stops being a piece of the page and becomes a sheet pinned to
+   the visual viewport: agent.js writes --vv-height and --vv-top from
+   window.visualViewport, and the room is exactly the visible area, never
+   larger, never offset. Nothing scrolls it, so nothing can move it.
+
+   Embedded, the host box keeps its own height in the flow, so the page
+   behind the sheet does not reflow and comes back untouched on blur. */
+
+.chama-agent.kb-pin {
+  top: var(--vv-top, 0px);
+  height: var(--vv-height, 100%);
+}
+.chama-agent-mode-embed.kb-pin {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 60;
+}
+
+/* pinned, the transcript is the only scroller that matters: it is open
+   whatever the seat says, since the room is the whole screen and there is
+   nothing else a finger could mean, and an overscroll at either end must
+   not reach the page sitting behind the sheet */
+.chama-agent-mode-page .stage,
+.chama-agent.kb-pin .stage {
+  overscroll-behavior-y: contain;
+}
+.chama-agent.kb-pin.seat-pending .stage {
+  overflow-y: auto;
+}
+
+/* and the room spends what the keyboard left on the conversation: the fine
+   print steps out (it was read before the tap) and every band of padding
+   comes in, so the transcript keeps the space instead of the chrome */
+.chama-agent.kb-open .fineprint { display: none; }
+.chama-agent.kb-open .topbar {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.chama-agent.kb-open .composer {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+.chama-agent.kb-open .column {
+  padding-top: 1rem;
+  padding-bottom: 1.2rem;
+}
+.chama-agent.kb-open .suggest { margin-bottom: 0.4rem; }
 
 .chama-agent * { box-sizing: border-box; }
 
@@ -943,4 +999,31 @@ body.chama-agent-page {
     opacity: 1;
   }
   .chama-agent .caret { opacity: 0.9; }
+}
+
+/* ---------- what a phone pays for ----------
+   The glass panels are stacked over a canvas that repaints every frame, so
+   on a phone each blurred layer is a full screen read back and re-blurred
+   sixty times a second, which is most of the cost of the room. The fire is
+   a soft, low frequency field: a dark panel at high opacity over it is very
+   nearly the same picture as a blurred one, for none of the work. Touch
+   pointers only, so laptops and desktops keep the glass. */
+
+@media (hover: none) and (pointer: coarse) {
+  .chama-agent .topbar,
+  .chama-agent .bar,
+  .chama-agent .pill,
+  .chama-agent .tune-pop {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .chama-agent .topbar {
+    background: linear-gradient(180deg, rgba(8, 7, 6, 0.96), rgba(8, 7, 6, 0.72));
+  }
+  .chama-agent-mode-embed .topbar {
+    background: linear-gradient(180deg, var(--ground) 58%, rgba(14, 12, 10, 0));
+  }
+  .chama-agent .bar { background: rgba(16, 14, 12, 0.88); }
+  .chama-agent .pill { background: rgba(16, 14, 12, 0.8); }
+  .chama-agent .tune-pop { background: rgba(16, 14, 12, 0.96); }
 }

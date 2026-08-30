@@ -221,8 +221,13 @@
 
     html {
       /* The rubber band ground: paper past the top, the flame room's dark
-         past the bottom, so neither overscroll flashes the wrong world. */
-      background: linear-gradient(to bottom, var(--paper) 50%, #0e0c0a 50%) fixed;
+         past the bottom, so neither overscroll flashes the wrong world. The
+         gradient is painted against the document, not the viewport: a fixed
+         attachment makes the browser repaint a screen sized gradient on every
+         scrolled frame, which on a phone is most of a frame's budget. The
+         seam lands mid document, under opaque content either way, so only the
+         two ends of the gradient are ever seen and they are unchanged. */
+      background: linear-gradient(to bottom, var(--paper) 50%, #0e0c0a 50%);
       color: var(--ink);
       font-family: var(--sans);
       font-size: 16px;
@@ -747,10 +752,10 @@
       overflow: hidden;
     }
 
-    .flame-room #agent-embed {
-      width: 100%;
-      height: 100%;
-    }
+    /* The mounted room sizes itself (agent.css owns .chama-agent-mode-embed),
+       and it has to be able to leave that size behind when a phone keyboard
+       pins it to the visual viewport. An id rule here would outrank every
+       class rule in agent.css and hold it at the room's height. */
 
     .flame-noscript {
       margin: 0;
