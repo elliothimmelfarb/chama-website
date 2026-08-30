@@ -829,6 +829,10 @@ body.chama-agent-page {
    growing to several lines only moves it down with the last line */
 .chama-agent .send {
   appearance: none;
+  /* the UA default button padding (1px 6px) skews the containing block
+     Chromium gives absolutely positioned children, dragging the busy orb
+     off centre. Zero it; the arrow is grid-centred and needs no padding. */
+  padding: 0;
   flex: none;
   width: 2.5rem;
   height: 2.5rem;
@@ -866,8 +870,15 @@ body.chama-agent-page {
 
 .chama-agent .send-orb {
   display: none;
+  /* a button is a quirky containing block: auto-sized abspos children
+     shrink and drift, and oversized grid children start-align. Explicit
+     size anchored at the middle is the only centring that holds. */
   position: absolute;
-  inset: 0;
+  left: 50%;
+  top: 50%;
+  width: 2.4rem;
+  height: 2.4rem;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle 1.25rem at 50% 50%,
     rgba(255, 249, 234, 0.98) 0%,
@@ -877,7 +888,6 @@ body.chama-agent-page {
     rgba(150, 40, 8, 0.10) 52%,
     rgba(90, 22, 4, 0) 62%);
   opacity: 1;
-  transform: none;
   pointer-events: none;
 }
 .chama-agent .send:disabled { cursor: default; }
@@ -893,8 +903,8 @@ body.chama-agent-page {
   animation: chama-orb 1.2s ease-in-out infinite alternate;
 }
 @keyframes chama-orb {
-  from { opacity: 0.46; transform: scale(0.84); }
-  to { opacity: 1; transform: scale(1.04); }
+  from { opacity: 0.46; transform: translate(-50%, -50%) scale(0.84); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
 }
 
 .chama-agent .fineprint {
@@ -929,7 +939,7 @@ body.chama-agent-page {
      is drawn once by agent.js and never animates */
   .chama-agent .send-orb {
     animation: none !important;
-    transform: none !important;
+    transform: translate(-50%, -50%) !important;
     opacity: 1;
   }
   .chama-agent .caret { opacity: 0.9; }
