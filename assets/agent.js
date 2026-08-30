@@ -27,11 +27,11 @@
     '</svg>';
 
   var CHIPS = [
-    "What do you actually do?",
-    "Why hire Elliot instead of just using ChatGPT?",
-    "How were you built?",
+    "What is this?",
+    "Why is spending time with Elliot valuable?",
+    "How was this built?",
     "Ask Elliot to get in touch with me.",
-    "Turn the flame down low.",
+    "Make the flame dimmer.",
     "Make the flame green."
   ];
 
@@ -140,7 +140,7 @@
                 '<span class="send-flame" aria-hidden="true">' + FLAME_SVG + '</span>' +
               '</button>' +
             '</form>' +
-            '<p class="fineprint">Conversations are not stored. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
+            '<p class="fineprint">Conversations are saved to improve the agent. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
           '</div>' +
         '</div>' +
       '</div>';
