@@ -130,7 +130,7 @@
                 '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>' +
               '</button>' +
             '</form>' +
-            '<p class="fineprint">Conversations are not stored. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a> &middot; Built by hand. View source' + siteLink + '</p>' +
+            '<p class="fineprint">Conversations are not stored. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
           '</div>' +
         '</div>' +
       '</div>';
