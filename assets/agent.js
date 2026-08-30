@@ -41,7 +41,8 @@
       : "";
     var fullscreen = page
       ? ""
-      : '<a class="fullscreen-link" href="/agent">Full screen</a>';
+      : '<button type="button" class="leave-link" id="leave-room">Back to page</button>' +
+        '<a class="fullscreen-link" href="/agent">Full screen</a>';
     var siteLink = page ? ' &middot; <a href="/">chamainteligente.com</a>' : ".";
 
     return '' +
@@ -643,6 +644,16 @@
     var glitBudget = GLIT_MAX;
     var gcarry = 0;
 
+    /* a phone opens with the populations already trimmed rather than making
+       the governor spend its first choppy seconds shedding them: the fire is
+       indistinguishable at these numbers on a small screen, and a fast
+       display (frameEMA under 13.2ms) still earns them back on its own */
+    if (touchDevice) {
+      budget = 1000;
+      bodyBudget = 104;
+      glitBudget = 180;
+    }
+
     function spawnGlitter(x, y, band, upBias, cool, sizeMul, life) {
       if (gcount >= glitBudget || gcount >= GCAP) return;
       var i = gcount++;
@@ -864,12 +875,12 @@
        Every frame the fire is painted once into its own buffer, mirrored into
        a second, and composited into the canvas: three full screen passes, so
        cost is pure fill rate and pixel count is the only knob that moves it.
-       A phone starts at 1.5x rather than 2x, which is invisible on a field
+       A phone starts at 1.25x rather than 2x, which is invisible on a field
        with no hard edges, and the governor can drop it to 1x once it has shed
        every particle it is allowed to shed and is still late. It never climbs
        back: a screen that could not hold 1.5x will not hold it a second time,
        and rebuilding the buffers on a hunch is its own stall. */
-    var dprCap = touchDevice ? 1.5 : 2;
+    var dprCap = touchDevice ? 1.25 : 2;
 
     function layout() {
       DPR = Math.min(window.devicePixelRatio || 1, dprCap);
@@ -892,6 +903,10 @@
       if (emitY <= 0) emitY = wantedY(upY);
       if (emitX < 0) emitX = homeX();   // first layout: start where we belong
       grainPattern = ctx.createPattern(grainTile, "repeat");
+      // a resize can move the floor without moving the keys; drop the caches
+      roomGlowG = null;
+      stoneG_key = -1;
+      fadeG_key = -1;
       if (reduceMotion) drawStatic();
     }
 
@@ -1025,6 +1040,12 @@
     var frames = 0;
     var running = false;
     var rafId = 0;
+
+    // gradient caches: the stone and the reflection fade change only when
+    // the floor line moves, and on touch the room wash lives two frames
+    var roomGlowG = null;
+    var stoneG = null, stoneG_key = -1;
+    var fadeG = null, fadeG_key = -1;
 
     /* A phone cannot paint the fire and move a scroll in the same frame, and
        when it has to choose it drops the scroll, which is the one thing the
@@ -1392,13 +1413,19 @@
       var roomR = (Math.max(W, H) * (0.42 + heatEff * 0.26)) * (0.94 + breathe * 0.06) * (0.55 + sizeS * 0.45);
       var roomOff = H * 0.20 * sizeS;
       var roomCX = emitX + roomOff * upX, roomCY = emitY + roomOff * upY;
-      var gg = ctx.createRadialGradient(roomCX, roomCY, 0, roomCX, roomCY, roomR);
-      var warmA = (0.16 + heatEff * 0.30) * warmth * (0.35 + bright * 0.65);
-      gg.addColorStop(0, hsla(hueShown, 100, 73, (warmA * 0.92).toFixed(3)));
-      gg.addColorStop(0.22, hsla(hueShown, 92, 59, (warmA * 0.46).toFixed(3)));
-      gg.addColorStop(0.55, hsla(hueShown, 82, 39, (warmA * 0.15).toFixed(3)));
-      gg.addColorStop(1, "rgba(14, 12, 10, 0)");
-      ctx.fillStyle = gg;
+      // on a phone the wash gradient is rebuilt every other frame: its drift
+      // (breathe, the emitter's glide) is far slower than a frame, and the
+      // stale copy is pixel-identical to the eye for half the allocations
+      if (!touchDevice || (frames & 1) || !roomGlowG) {
+        var gg = ctx.createRadialGradient(roomCX, roomCY, 0, roomCX, roomCY, roomR);
+        var warmA = (0.16 + heatEff * 0.30) * warmth * (0.35 + bright * 0.65);
+        gg.addColorStop(0, hsla(hueShown, 100, 73, (warmA * 0.92).toFixed(3)));
+        gg.addColorStop(0.22, hsla(hueShown, 92, 59, (warmA * 0.46).toFixed(3)));
+        gg.addColorStop(0.55, hsla(hueShown, 82, 39, (warmA * 0.15).toFixed(3)));
+        gg.addColorStop(1, "rgba(14, 12, 10, 0)");
+        roomGlowG = gg;
+      }
+      ctx.fillStyle = roomGlowG;
       ctx.fillRect(0, 0, W, H);
 
       // the stone drinks a little of the room's light, so the ground reads a
@@ -1411,11 +1438,18 @@
       // the edge of the room, at any height, in either mode.
       var floorRoom = floorDir > 0 ? (H - floorY) : floorY;
       var floorReach = Math.min(floorRoom * 0.98, H * 0.32, 320);
-      var stone = ctx.createLinearGradient(0, floorY, 0, floorY + floorDir * floorReach);
-      stone.addColorStop(0, "rgba(6, 5, 4, 0)");
-      stone.addColorStop(0.45, "rgba(6, 5, 4, 0.045)");
-      stone.addColorStop(1, "rgba(6, 5, 4, 0.20)");
-      ctx.fillStyle = stone;
+      // the stone only moves when the emitter glides or the box resizes, so
+      // its gradient is cached against the floor line instead of remade
+      var stoneEnd = Math.round(floorY + floorDir * floorReach);
+      var stoneKey = Math.round(floorY) * 100000 + stoneEnd;
+      if (stoneKey !== stoneG_key) {
+        stoneG = ctx.createLinearGradient(0, Math.round(floorY), 0, stoneEnd);
+        stoneG.addColorStop(0, "rgba(6, 5, 4, 0)");
+        stoneG.addColorStop(0.45, "rgba(6, 5, 4, 0.045)");
+        stoneG.addColorStop(1, "rgba(6, 5, 4, 0.20)");
+        stoneG_key = stoneKey;
+      }
+      ctx.fillStyle = stoneG;
       if (floorDir > 0) ctx.fillRect(0, floorY, W, H - floorY);
       else ctx.fillRect(0, 0, W, floorY);
 
@@ -1535,28 +1569,38 @@
       var refSquash = 0.965 + Math.sin(breath * 2.4 + 0.6) * 0.022;
       var refReach = Math.max(48, Math.min(floorRoom * 0.90, H * 0.22, 260));
 
-      mx.setTransform(DPR * MIRROR_SCALE, 0, 0, DPR * MIRROR_SCALE, 0, 0);
-      mx.globalCompositeOperation = "source-over";
-      mx.clearRect(0, 0, W, H);
-      mx.save();
-      mx.translate(refWob, floorY);
-      mx.scale(1, -refSquash);              // the mirror about the floor plane
-      mx.translate(0, -floorY);
-      mx.drawImage(fireBuf, 0, 0, W, H);
-      mx.restore();
-      // whatever landed on the fire's own side of the plane is not a reflection
-      if (floorDir > 0) mx.clearRect(0, 0, W, floorY);
-      else mx.clearRect(0, floorY, W, H - floorY);
-      // and it fades to nothing long before the ground runs out
-      mx.globalCompositeOperation = "destination-in";
-      var fade = mx.createLinearGradient(0, floorY, 0, floorY + floorDir * refReach);
-      fade.addColorStop(0, "rgba(0, 0, 0, 1)");
-      fade.addColorStop(0.34, "rgba(0, 0, 0, 0.46)");
-      fade.addColorStop(0.68, "rgba(0, 0, 0, 0.13)");
-      fade.addColorStop(1, "rgba(0, 0, 0, 0)");
-      mx.fillStyle = fade;
-      mx.fillRect(0, 0, W, H);
-      mx.globalCompositeOperation = "source-over";
+      // on a phone the reflection is re-rendered on the frames the grain
+      // sits out, so each frame carries one of the two extras and never
+      // both. A reflection one frame behind a shimmering fire is invisible.
+      if (!touchDevice || !(frames & 1)) {
+        mx.setTransform(DPR * MIRROR_SCALE, 0, 0, DPR * MIRROR_SCALE, 0, 0);
+        mx.globalCompositeOperation = "source-over";
+        mx.clearRect(0, 0, W, H);
+        mx.save();
+        mx.translate(refWob, floorY);
+        mx.scale(1, -refSquash);            // the mirror about the floor plane
+        mx.translate(0, -floorY);
+        mx.drawImage(fireBuf, 0, 0, W, H);
+        mx.restore();
+        // whatever landed on the fire's own side of the plane is not a reflection
+        if (floorDir > 0) mx.clearRect(0, 0, W, floorY);
+        else mx.clearRect(0, floorY, W, H - floorY);
+        // and it fades to nothing long before the ground runs out
+        mx.globalCompositeOperation = "destination-in";
+        var fadeEnd = Math.round(floorY + floorDir * refReach);
+        var fadeKey = Math.round(floorY) * 100000 + fadeEnd;
+        if (fadeKey !== fadeG_key) {
+          fadeG = mx.createLinearGradient(0, Math.round(floorY), 0, fadeEnd);
+          fadeG.addColorStop(0, "rgba(0, 0, 0, 1)");
+          fadeG.addColorStop(0.34, "rgba(0, 0, 0, 0.46)");
+          fadeG.addColorStop(0.68, "rgba(0, 0, 0, 0.13)");
+          fadeG.addColorStop(1, "rgba(0, 0, 0, 0)");
+          fadeG_key = fadeKey;
+        }
+        mx.fillStyle = fadeG;
+        mx.fillRect(0, 0, W, H);
+        mx.globalCompositeOperation = "source-over";
+      }
 
       ctx.globalCompositeOperation = "lighter";
       ctx.globalAlpha = 0.175 + Math.sin(breath * 2.7) * 0.018;
@@ -2904,6 +2948,67 @@
           window.clearTimeout(settleTimer);
           settleTimer = window.setTimeout(magnet, 120);
         }
+      }
+
+      /* ---- the way out, on a phone -------------------------------------
+         Seated, the room is the whole screen and the transcript owns every
+         touch; iOS never hands a gesture from an inner scroller back to the
+         page, it rubber-bands, so a visitor who scrolled into the room had
+         no way to scroll back out of it. Two answers, both explicit:
+
+         a pull past the transcript's edge is routed to the page by hand,
+         which is the chaining the browser refused to do; and the top bar
+         carries a "Back to page" button (touch only, in CSS) that unpins,
+         closes the keyboard and carries the page back above the room.    */
+
+      var leaveBtn = rootEl.querySelector("#leave-room");
+      if (leaveBtn) {
+        leaveBtn.addEventListener("click", function () {
+          window.clearTimeout(kbRelease);
+          if (input) input.blur();
+          unpin();
+          var top = (window.pageYOffset || 0) + rootEl.getBoundingClientRect().top;
+          window.scrollTo({ top: Math.max(0, top - viewportH()), behavior: "smooth" });
+        });
+      }
+
+      if (touchDevice) {
+        var chainY = null;
+        var chainStartY = 0;
+        var chaining = false;
+        stage.addEventListener("touchstart", function (ev) {
+          var t0 = ev.touches && ev.touches[0];
+          if (!t0) return;
+          chainY = chainStartY = t0.clientY;
+          chaining = false;
+        }, { passive: true });
+        stage.addEventListener("touchmove", function (ev) {
+          var t1 = ev.touches && ev.touches[0];
+          if (chainY === null || !t1) return;
+          var y = t1.clientY;
+          var dy = y - chainY;
+          if (kbPinned) {
+            // a decisive pull down at the top of the transcript is the
+            // universal "put the keyboard away" gesture
+            if (y - chainStartY > 48 && stage.scrollTop <= 0 && input) input.blur();
+            chainY = y;
+            return;
+          }
+          if (!chaining) {
+            var atTop = stage.scrollTop <= 0;
+            var atEnd = stage.scrollTop >= stage.scrollHeight - stage.clientHeight - 1;
+            if ((atTop && dy > 0) || (atEnd && dy < 0)) chaining = true;
+            else { chainY = y; return; }
+          }
+          // like native chaining, the gesture belongs to the page from here on
+          if (ev.cancelable) ev.preventDefault();
+          window.scrollBy(0, -dy);
+          chainY = y;
+        }, { passive: false });
+        stage.addEventListener("touchend", function () {
+          chainY = null;
+          chaining = false;
+        }, { passive: true });
       }
 
       function touched() { touchLately = Date.now(); }
