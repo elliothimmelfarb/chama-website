@@ -1,74 +1,95 @@
 # https://chamainteligente.com/robots.txt
 # Everything public is open to every crawler, including AI crawlers and
-# AI search assistants. Only the intake endpoint is closed.
+# AI search assistants. Only the endpoints and the admin area are closed.
 # See /llms.txt and /llms-full.txt for a plain-text summary written for agents.
 
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin
 
 # Search engines
 User-agent: Googlebot
 Allow: /
 Disallow: /api/
+Disallow: /admin
 
 User-agent: Googlebot-Image
 Allow: /
+Disallow: /admin
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /admin
 
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
+Disallow: /admin
 
 User-agent: DuckDuckBot
 Allow: /
+Disallow: /admin
 
 User-agent: Applebot
 Allow: /
+Disallow: /admin
 
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /admin
 
 # AI crawlers and AI search assistants
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin
 
 User-agent: Claude-Web
 Allow: /
+Disallow: /admin
 
 User-agent: Claude-User
 Allow: /
+Disallow: /admin
 
 User-agent: Claude-SearchBot
 Allow: /
+Disallow: /admin
 
 User-agent: GPTBot
 Allow: /
+Disallow: /admin
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /admin
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /admin
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin
 
 User-agent: Perplexity-User
 Allow: /
+Disallow: /admin
 
 User-agent: Meta-ExternalAgent
 Allow: /
+Disallow: /admin
 
 User-agent: Amazonbot
 Allow: /
+Disallow: /admin
 
 User-agent: cohere-ai
 Allow: /
+Disallow: /admin
 
 User-agent: MistralAI-User
 Allow: /
+Disallow: /admin
 
 Sitemap: https://chamainteligente.com/sitemap.xml
