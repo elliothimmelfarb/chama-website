@@ -591,6 +591,60 @@
       }
     }
 
+    /* ---- the glitter: the crackle on top of the volume -------------------
+       The body and the soft particles make a continuous mass; a real fire
+       also throws hard bright points that live for a moment and go out. This
+       is that third population: tiny, drawn from the hottest end of the same
+       ramp (so a hue change or the error state's cool ramp carries it with no
+       new colour system), short lived, fading as remaining life squared so
+       the field is dominated by bright young points, and each one twinkling
+       on a sine of its own phase. It shares the emitter band, the flame's
+       frame, the curl and the state machine, so thinking, streaming and error
+       shape it without a single special case, and because it is painted into
+       the same fire buffer the obsidian floor reflects it for free.        */
+    var GCAP = 420;
+    // the floor is not zero: the glitter sheds first and hardest, but a
+    // machine that simply runs at 30 Hz is not in trouble, and it should not
+    // lose the crackle altogether for the rest of the visit
+    var GLIT_MAX = 300, GLIT_FLOOR = 60;
+    var gx = new Float32Array(GCAP), gy = new Float32Array(GCAP);
+    var gvx = new Float32Array(GCAP), gvy = new Float32Array(GCAP);
+    var ga = new Float32Array(GCAP), glf = new Float32Array(GCAP);
+    var gs = new Float32Array(GCAP), gph = new Float32Array(GCAP);
+    var gc = new Uint8Array(GCAP);
+    var gcount = 0;
+    var glitBudget = GLIT_MAX;
+    var gcarry = 0;
+
+    function spawnGlitter(x, y, band, upBias, cool, sizeMul, life) {
+      if (gcount >= glitBudget || gcount >= GCAP) return;
+      var i = gcount++;
+      var off = bell();
+      var along = bell() * band * 0.10;
+      gx[i] = x + off * band * latX + along * upX;
+      gy[i] = y + off * band * latY + along * upY;
+      var jitter = (Math.random() - 0.5) * 34 - off * 20;
+      var launch = upBias * 0.38 * (0.6 + Math.random() * 1.05);
+      gvx[i] = jitter * latX + launch * upX;
+      gvy[i] = jitter * latY + launch * upY;
+      ga[i] = 0;
+      glf[i] = life * 0.30 * (0.55 + Math.random() * 0.9);
+      gs[i] = (1.0 + Math.random() * 2.0) * sizeMul;
+      gph[i] = Math.random() * 6.28;
+      gc[i] = cool;
+    }
+
+    function killGlitter(i) {
+      var last = --gcount;
+      if (i !== last) {
+        gx[i] = gx[last]; gy[i] = gy[last];
+        gvx[i] = gvx[last]; gvy[i] = gvy[last];
+        ga[i] = ga[last]; glf[i] = glf[last];
+        gs[i] = gs[last]; gph[i] = gph[last];
+        gc[i] = gc[last];
+      }
+    }
+
     // a rotated flame can leave by any edge, so the cull is all four
     function offCanvas(x, y) {
       return x < -140 || x > W + 140 || y < -140 || y > H + 140;
@@ -831,10 +885,10 @@
       var r = Math.max(W, H) * 0.62 * (0.55 + settings.size * 0.45);
       var reach = H * 0.20 * settings.size;
       var a = settings.angle * Math.PI / 180;
-      var gx = emitX + reach * Math.sin(a);
-      var gy = emitY - reach * Math.cos(a);
+      var sgx = emitX + reach * Math.sin(a);
+      var sgy = emitY - reach * Math.cos(a);
       var lvl = settings.brightness * dimTarget;
-      var g = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
+      var g = ctx.createRadialGradient(sgx, sgy, 0, sgx, sgy, r);
       g.addColorStop(0, hsla(settings.hue, 70, 90, (0.34 * lvl).toFixed(3)));
       g.addColorStop(0.08, hsla(settings.hue, 100, 69, (0.30 * lvl).toFixed(3)));
       g.addColorStop(0.26, hsla(settings.hue, 92, 54, (0.17 * lvl).toFixed(3)));
@@ -861,7 +915,7 @@
       if (sDir > 0) ctx.rect(0, emitY, W, sReach);
       else ctx.rect(0, emitY - sReach, W, sReach);
       ctx.clip();
-      var mr = ctx.createRadialGradient(gx, emitY + (emitY - gy), 0, gx, emitY + (emitY - gy), r * 0.7);
+      var mr = ctx.createRadialGradient(sgx, emitY + (emitY - sgy), 0, sgx, emitY + (emitY - sgy), r * 0.7);
       mr.addColorStop(0, hsla(settings.hue, 100, 69, (0.11 * lvl).toFixed(3)));
       mr.addColorStop(0.4, hsla(settings.hue, 92, 54, (0.05 * lvl).toFixed(3)));
       mr.addColorStop(1, "rgba(14, 12, 10, 0)");
@@ -870,6 +924,42 @@
       ctx.fillRect(0, 0, W, H);
       ctx.globalCompositeOperation = "source-over";
       ctx.restore();
+
+      // a modest sprinkling of the glitter, held still. The still frame is a
+      // photograph of the fire, and a photograph of a fire has hard bright
+      // points in it. Deterministic, so a repaint never reshuffles them, and
+      // mirrored into the stone like everything else.
+      var glitN = Math.round(34 * settings.sparkle / 0.5 * settings.size);
+      if (glitN > 0 && warmRamp.length) {
+        var sUpX = Math.sin(a), sUpY = -Math.cos(a);
+        var sLatX = Math.cos(a), sLatY = Math.sin(a);
+        var seed = 20260829;
+        var srnd = function () {
+          seed = (seed * 1664525 + 1013904223) >>> 0;
+          return seed / 4294967296;
+        };
+        ctx.globalCompositeOperation = "lighter";
+        for (var gi = 0; gi < glitN; gi++) {
+          var up01 = srnd();
+          var gUp = up01 * reach * 2.6;
+          var gLat = (srnd() + srnd() - 1) * 62 * settings.size * (1 - up01 * 0.55);
+          var gpx = emitX + gLat * sLatX + gUp * sUpX;
+          var gpy = emitY + gLat * sLatY + gUp * sUpY;
+          var gr = (1.1 + srnd() * 2.0) * settings.size;
+          var galph = (0.30 + srnd() * 0.55) * (1 - up01 * 0.7) * lvl;
+          ctx.globalAlpha = galph;
+          ctx.drawImage(warmRamp[0], gpx - gr, gpy - gr, gr * 2, gr * 2);
+          // its reflection, dim and only where there is ground for it
+          var mpy = emitY + (emitY - gpy) * 0.965;
+          var mdist = (mpy - emitY) * sDir;
+          if (mdist > 0 && mdist < sReach) {
+            ctx.globalAlpha = galph * 0.20 * (1 - mdist / sReach);
+            ctx.drawImage(warmRamp[0], gpx - gr, mpy - gr, gr * 2, gr * 2);
+          }
+        }
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = "source-over";
+      }
 
       rootEl.style.setProperty("--flamelight", "0.45");
       if (grainPattern) {
@@ -925,13 +1015,16 @@
 
       // frame time governor: shed particles, never frames
       if (frameEMA > 21) {
-        // the fine sparks are cheap to lose; the body is what makes it fire,
-        // so it only shrinks once the sparks have bottomed out
-        if (budget > 260) budget -= 14;
+        // the glitter is decoration and sheds first; then the fine sparks,
+        // which are cheap to lose; the body is what makes it fire, so it only
+        // shrinks once everything above it has bottomed out
+        if (glitBudget > GLIT_FLOOR) glitBudget = Math.max(GLIT_FLOOR, glitBudget - 8);
+        else if (budget > 260) budget -= 14;
         else if (bodyBudget > BODY_FLOOR) bodyBudget -= 2;
       } else if (frameEMA < 13.2) {
         if (bodyBudget < BODY_MAX) bodyBudget += 1;
         else if (budget < CAP) budget += 6;
+        else if (glitBudget < GLIT_MAX) glitBudget = Math.min(GLIT_MAX, glitBudget + 4);
       }
 
       // ease every parameter toward the state target
@@ -1055,8 +1148,17 @@
         spawnBody(emitX, emitY, bandEff, riseEff, coolFlag, sizeMul, lifeEff);
       }
 
-      // sparkle: the stray spark, and the shower each text delta throws
+      // sparkle: the glitter pass, the stray spark, and the shower each text
+      // delta throws. Sparkle 0 puts the glitter out entirely; the default
+      // 0.5 emits a tenth of the main rate; 1 doubles that.
       var sparkleS = S.sparkle / 0.5;
+      gcarry += rate * 0.10 * sparkleS * dt;
+      var gSpawn = gcarry | 0;
+      gcarry -= gSpawn;
+      if (sparkleS <= 0.001) gcarry = 0;
+      for (i = 0; i < gSpawn; i++) {
+        spawnGlitter(emitX, emitY, bandEff, riseEff, coolFlag, sizeMul, lifeEff);
+      }
       if (state === "idle" && Math.random() < dt * 1.5 * sparkleS) {
         var strayLat = (Math.random() - 0.5) * 180 * sizeS;
         var strayUp = Math.random() * 60 * sizeS;
@@ -1180,6 +1282,33 @@
         by[i] += bvy[i] * dt;
       }
 
+      // the glitter rides the same field as the fine particles, a little
+      // livelier and with no pointer term: it lives too briefly to be pushed
+      for (i = 0; i < gcount; i++) {
+        ga[i] += dt;
+        if (ga[i] >= glf[i] || offCanvas(gx[i], gy[i])) { killGlitter(i); i--; continue; }
+        var gage = ga[i] / glf[i];
+        curl(gx[i] * 0.0036, gy[i] * 0.0036, t, curlOut);
+        var gox = gx[i] - emitX, goy = gy[i] - emitY;
+        var glat = gox * latX + goy * latY;
+        var gup = gox * upX + goy * upY;
+        var gconv = -glat * (0.5 + P.pinch * gage * gage) * sp2;
+        var grise01 = gup / rootSpan;
+        var grootFree = grise01 <= 0 ? 0 : (grise01 >= 1 ? 1 : grise01 * grise01 * (3 - 2 * grise01));
+        var gbuoy = riseEff * 2.1 * (1 - gage * 0.5);
+        var gside = gconv + (leanX * P.lean) * 0.5 * grootFree * sp2;
+        gvx[i] += (curlOut[0] * swirlEff * 3.6 * sp2 + gside * latX + gbuoy * upX) * dt;
+        gvy[i] += (curlOut[1] * swirlEff * 2.2 * sp2 + gside * latY + gbuoy * upY) * dt;
+        var gvLat = gvx[i] * latX + gvy[i] * latY;
+        var gvUp = gvx[i] * upX + gvy[i] * upY;
+        gvLat *= Math.exp(-2.2 * speedS * dt);
+        gvUp *= Math.exp(-0.40 * speedS * dt);
+        gvx[i] = gvLat * latX + gvUp * upX;
+        gvy[i] = gvLat * latY + gvUp * upY;
+        gx[i] += gvx[i] * dt;
+        gy[i] += gvy[i] * dt;
+      }
+
       // sparks
       for (i = sparks.length - 1; i >= 0; i--) {
         var s = sparks[i];
@@ -1296,12 +1425,31 @@
         var idx = (a2 * (RAMP - 1)) | 0;
         if (idx > RAMP - 1) idx = RAMP - 1;
         var img = (pc[i] ? coolRamp : warmRamp)[idx];
-        var alpha = Math.pow(1 - a2, 0.62) * (0.34 + heatEff * 0.42) * bright;
+        // 0.8 rather than the old 0.62: the old particles carried a haze that
+        // muddied the top of the column, and a slightly steeper fade trims it
+        // without the body losing its continuity, which the body blobs and
+        // the core lobes carry anyway
+        var alpha = Math.pow(1 - a2, 0.8) * (0.34 + heatEff * 0.42) * bright;
         if (alpha <= 0.004) continue;
         var sz = ps[i] * (0.95 + a2 * 1.05) * (0.7 + P.size * 0.4);
         fx.globalAlpha = alpha > 1 ? 1 : alpha;
         fx.drawImage(img, px[i] - sz, py[i] - sz, sz * 2, sz * 2);
       }
+
+      // the glitter, on top of everything the body and the soft pass laid
+      // down: hot pinpoints from the top of the ramp, each on its own twinkle
+      for (i = 0; i < gcount; i++) {
+        var g2 = ga[i] / glf[i];
+        var rem = 1 - g2;
+        var twink = 0.62 + 0.38 * Math.sin(breath * 21 + gph[i] * 5.3);
+        var galpha = rem * rem * twink * (0.55 + heatEff * 0.55) * bright;
+        if (galpha <= 0.006) continue;
+        var gimg = (gc[i] ? coolRamp : warmRamp)[g2 < 0.55 ? 0 : 1];
+        var gsz = gs[i] * (1 + g2 * 0.5) * (0.7 + P.size * 0.4);
+        fx.globalAlpha = galpha > 1 ? 1 : galpha;
+        fx.drawImage(gimg, gx[i] - gsz, gy[i] - gsz, gsz * 2, gsz * 2);
+      }
+      fx.globalAlpha = 1;
 
       // spark trails
       for (i = 0; i < sparks.length; i++) {
