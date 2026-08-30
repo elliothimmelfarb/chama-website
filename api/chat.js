@@ -7,7 +7,10 @@
 // pipeline the form uses (api/intake.js), and turn adjust_experience into a
 // config event the page applies.
 //
-// Nothing a visitor types is ever logged. Errors log a name only.
+// Conversations are saved: after every exchange the whole transcript is
+// written to a private blob so Elliot can read it back and improve the agent.
+// Nothing a visitor types is ever logged to the console. Errors log a name
+// only, and no IP address, user agent or header is ever stored.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
@@ -234,6 +237,62 @@ export function clampExperience(input) {
   return { settings, changed };
 }
 
+// The conversation id the page sends is the storage key, so it has to be
+// something safe to put in a path. A UUID is what the page generates; anything
+// else that is plainly an id is accepted too. Anything missing or malformed is
+// replaced rather than rejected, so a visitor never loses a reply over it.
+const CONVERSATION_ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
+
+export function normalizeConversationId(value, makeId = () => crypto.randomUUID()) {
+  if (typeof value === "string" && CONVERSATION_ID_PATTERN.test(value)) {
+    return value;
+  }
+  return makeId();
+}
+
+// Builds the record written for a conversation. Only the transcript and the
+// tool calls it produced: no IP address, user agent or header.
+export function buildConversationRecord({ conversationId, turns, toolEvents, updatedAt }) {
+  return {
+    schemaVersion: 1,
+    conversationId,
+    source: "chamainteligente.com",
+    updatedAt,
+    turns: turns.map((entry) => ({ role: entry.role, content: entry.content })),
+    toolEvents
+  };
+}
+
+// One blob per conversation per day, overwritten on every turn with the fuller
+// transcript. A conversation that crosses midnight leaves one file on each
+// side of it, which is fine: both carry the same id.
+export async function persistConversation(
+  { conversationId, turns, toolEvents },
+  dependencies = {}
+) {
+  const deps = { put, now: () => new Date().toISOString(), ...dependencies };
+
+  const updatedAt = deps.now();
+  const day = updatedAt.slice(0, 10);
+  const record = buildConversationRecord({ conversationId, turns, toolEvents, updatedAt });
+
+  try {
+    await deps.put(`chat/${day}/${conversationId}.json`, JSON.stringify(record, null, 2), {
+      access: "private",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: "application/json"
+    });
+    return { ok: true, record };
+  } catch (error) {
+    console.error(
+      "Chat conversation storage failed",
+      error instanceof Error ? error.name : "UnknownError"
+    );
+    return { ok: false, record };
+  }
+}
+
 export function friendlyErrorFor(error) {
   if (error instanceof Anthropic.RateLimitError) {
     return { message: MESSAGES.overwhelmed, status: 503 };
@@ -255,6 +314,8 @@ function eventLine(payload) {
 async function runAgent(client, history, emit) {
   const messages = history.map((entry) => ({ role: entry.role, content: entry.content }));
   const usage = { model: MODEL, effort: EFFORT, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
+  const toolEvents = [];
+  let reply = "";
 
   for (let call = 0; call < LIMITS.modelCalls; call += 1) {
     const stream = client.messages.stream({
@@ -270,6 +331,7 @@ async function runAgent(client, history, emit) {
 
     for await (const event of stream) {
       if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+        reply += event.delta.text;
         emit({ type: "text", text: event.delta.text });
       }
     }
@@ -279,7 +341,7 @@ async function runAgent(client, history, emit) {
     usage.outputTokens += message.usage.output_tokens;
     usage.cacheReadTokens += message.usage.cache_read_input_tokens || 0;
     if (message.stop_reason !== "tool_use") {
-      return usage;
+      return { usage, toolEvents, reply };
     }
 
     const toolResults = [];
@@ -288,6 +350,7 @@ async function runAgent(client, history, emit) {
 
       if (block.name === "adjust_experience") {
         const { settings, changed } = clampExperience(block.input);
+        toolEvents.push({ name: block.name, input: settings });
         if (changed) {
           emit({ type: "config", settings });
         }
@@ -310,6 +373,7 @@ async function runAgent(client, history, emit) {
         continue;
       }
 
+      toolEvents.push({ name: block.name, input: block.input });
       const outcome = await executeNoteTool(block.input);
       toolResults.push({
         type: "tool_result",
@@ -324,7 +388,7 @@ async function runAgent(client, history, emit) {
     messages.push({ role: "user", content: toolResults });
   }
 
-  return usage;
+  return { usage, toolEvents, reply };
 }
 
 export default {
@@ -351,6 +415,8 @@ export default {
       return json({ error: MESSAGES.unreadable }, 400);
     }
 
+    const conversationId = normalizeConversationId(body?.conversationId);
+
     const result = validateChatMessages(body?.messages);
     if (result.error) {
       return json({ error: result.error }, 400);
@@ -370,12 +436,25 @@ export default {
         };
 
         let usage = null;
+        let toolEvents = [];
+        let reply = "";
         try {
-          usage = await runAgent(client, result.messages, emit);
+          const outcome = await runAgent(client, result.messages, emit);
+          usage = outcome.usage;
+          toolEvents = outcome.toolEvents;
+          reply = outcome.reply;
         } catch (error) {
           console.error("Chat agent failed", error instanceof Error ? error.name : "UnknownError");
           emit({ type: "error", error: friendlyErrorFor(error).message });
         }
+
+        // Serverless: nothing runs after the response ends, so the transcript
+        // has to be written before the done event goes out. A storage failure
+        // is swallowed inside persistConversation and never reaches the page.
+        const turns = reply
+          ? [...result.messages, { role: "assistant", content: reply }]
+          : result.messages;
+        await persistConversation({ conversationId, turns, toolEvents });
 
         emit(usage ? { type: "done", usage } : { type: "done" });
         controller.close();

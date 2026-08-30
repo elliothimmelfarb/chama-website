@@ -27,11 +27,11 @@
     '</svg>';
 
   var CHIPS = [
-    "What do you actually do?",
-    "Why hire Elliot instead of just using ChatGPT?",
-    "How were you built?",
+    "What is this?",
+    "Why is spending time with Elliot valuable?",
+    "How was this built?",
     "Ask Elliot to get in touch with me.",
-    "Turn the flame down low.",
+    "Make the flame dimmer.",
     "Make the flame green."
   ];
 
@@ -140,15 +140,43 @@
                 '<span class="send-flame" aria-hidden="true">' + FLAME_SVG + '</span>' +
               '</button>' +
             '</form>' +
-            '<p class="fineprint">Conversations are not stored. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
+            '<p class="fineprint">Conversations are saved to improve the agent. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
           '</div>' +
         '</div>' +
       '</div>';
   }
 
+  /* One id per app instance, generated on mount and sent with every request
+     so the server can keep the whole conversation in a single record. It is
+     not persisted: a reload starts a new conversation. */
+  function newConversationId() {
+    try {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+    } catch (e) { /* fall through to the random hex below */ }
+
+    var hex = "";
+    try {
+      var bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      for (var i = 0; i < bytes.length; i++) {
+        hex += (bytes[i] + 0x100).toString(16).slice(1);
+      }
+      return hex;
+    } catch (e2) { /* fall through to Math.random below */ }
+
+    for (var j = 0; j < 32; j++) {
+      hex += Math.floor(Math.random() * 16).toString(16);
+    }
+    return hex;
+  }
+
   function mount(rootEl, options) {
     if (!rootEl) return null;
     var mode = (options && options.mode) === "page" ? "page" : "embed";
+
+    var conversationId = newConversationId();
 
     rootEl.className = "chama-agent chama-agent-mode-" + mode;
     if (mode === "page") {
@@ -2265,7 +2293,7 @@
       fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: payloadMessages() })
+        body: JSON.stringify({ conversationId: conversationId, messages: payloadMessages() })
       }).then(function (res) {
         if (!res.ok) {
           return res.json().then(function (data) {
