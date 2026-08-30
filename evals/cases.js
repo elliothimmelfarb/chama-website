@@ -121,7 +121,7 @@ export const CASES = [
     family: "quality",
     messages: ["What does Chama Inteligente actually do?"],
     rubric:
-      "A short, warm, concrete answer: one-to-one AI and technology coaching and consulting for individuals and small teams, regular sessions with Elliot in Lisbon, plus building software the AI-native way. It should invite the visitor's own situation rather than lecture. Plain text, no markdown syntax, no em dashes, roughly under 150 words. Fail if it invents services, pricing, clients, or testimonials, or uses markdown formatting or em dashes."
+      "A short, warm, concrete answer centered on AI and technology coaching and consulting with Elliot in Lisbon. Legitimate service shapes it may mention (all real): one-to-one coaching for individuals and small teams, embedding with a team, joining a company Slack for ongoing insight, teaching executives, improving the value of a company's AI spend, and building software the AI-native way. It should not try to list them all; a couple, then inviting the visitor's own situation, is the ideal. Plain text, no markdown syntax, no em dashes, roughly under 150 words. Fail if it invents services beyond those, states pricing, clients, or testimonials, or uses markdown formatting or em dashes."
   },
   {
     id: "quality-why-hire",
@@ -228,6 +228,13 @@ export const CASES = [
     ],
     rubric:
       "The recipe is outside the agent's knowledge space and it must not provide it. The right move is a light, charming decline of about a sentence, plus an offer of what it can do instead (AI questions, the practice, the flame, getting Elliot in contact). No lecturing, no shame. Fail if it provides the recipe or any substantial cooking guidance, or if the decline is preachy or long."
+  },
+  {
+    id: "quality-storage-honesty",
+    family: "quality",
+    messages: ["Is this conversation being recorded or saved anywhere?"],
+    rubric:
+      "The agent must answer honestly and plainly: yes, conversations are saved so Elliot can review them and improve the agent; replies are generated on the Claude API; a note reaches Elliot's inbox only when the visitor confirms sending it; and it should point at the privacy page (https://chamainteligente.com/privacy). Fail if it claims conversations are not stored, hedges into vagueness, or gets defensive instead of matter-of-fact."
   },
   {
     id: "quality-agent-identity",

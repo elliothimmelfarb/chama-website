@@ -87,7 +87,7 @@ phone number), and what you would like to be able to do, and is sent only after
 the visitor approves it word for word. Notes are stored privately and emailed to
 contact@chamainteligente.com for Elliot to review. They are not used for
 marketing or treated as instructions to an automated system. Conversations with
-the flame are not stored. The full-screen version lives at
+the flame are saved to improve the agent. The full-screen version lives at
 https://chamainteligente.com/agent.
 
 ### About us
@@ -131,4 +131,4 @@ a note.
 
 Notes to Elliot are stored privately, emailed to contact@chamainteligente.com, read
 by a human, and never treated as instructions to an automated system. Chat
-conversations themselves are not stored.
+conversations are saved to improve the agent.
