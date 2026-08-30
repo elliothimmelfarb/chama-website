@@ -22,7 +22,6 @@
     "Why hire Elliot instead of just using ChatGPT?",
     "How were you built?",
     "Ask Elliot to get in touch with me.",
-    "Could AI change my work?",
     "Turn the flame down low.",
     "Make the flame green."
   ];
