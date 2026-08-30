@@ -1026,6 +1026,21 @@
     var running = false;
     var rafId = 0;
 
+    /* A phone cannot paint the fire and move a scroll in the same frame, and
+       when it has to choose it drops the scroll, which is the one thing the
+       hand is holding. So while anything is scrolling the fire paints every
+       other frame: dt still measures the real interval, so it burns at its
+       own speed, on half the frames, and the finger gets the rest. */
+    var lastScrollAt = -1e9;
+    var skipFrame = false;
+
+    function noteScroll() { lastScrollAt = performance.now(); }
+
+    if (touchDevice) {
+      window.addEventListener("scroll", noteScroll, { passive: true });
+      window.addEventListener("touchmove", noteScroll, { passive: true });
+    }
+
     function ease(cur, target, dt, tau) {
       var k = 1 - Math.exp(-dt / tau);
       return cur + (target - cur) * k;
@@ -1045,6 +1060,10 @@
     }
 
     function frame(now) {
+      if (touchDevice && now - lastScrollAt < 260) {
+        skipFrame = !skipFrame;
+        if (skipFrame) { rafId = requestAnimationFrame(frame); return; }
+      }
       frames++;
       if (!last) last = now;
       var raw = now - last;
@@ -2598,6 +2617,9 @@
 
     input.addEventListener("input", function () {
       autoGrow();
+      // a growing composer takes its height from the transcript, so the last
+      // line of the conversation has to give way rather than slide under it
+      if (stageNear) toBottom();
       if (!busy) setState("listening");
     });
 
@@ -2688,6 +2710,7 @@
 
     stage.addEventListener("scroll", function () {
       stageNear = nearBottom();
+      if (touchDevice) noteScroll();
     }, { passive: true });
 
     function toBottom() { stage.scrollTop = stage.scrollHeight; }
