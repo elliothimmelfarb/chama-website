@@ -349,6 +349,22 @@ export async function isFlameKilled(dependencies = {}) {
   return disabled;
 }
 
+// The SDK's error classes never set `name`, so every API failure used to log as
+// a bare "Error". This says what actually happened: the class, the HTTP status
+// and the API's own error type. None of it contains visitor text.
+export function describeError(error) {
+  if (error instanceof Anthropic.APIError) {
+    const type = error.error && error.error.error && error.error.error.type;
+    return `${error.constructor.name} status=${error.status || "none"} type=${type || "none"}`;
+  }
+
+  if (error instanceof Error) {
+    return error.constructor.name;
+  }
+
+  return "UnknownError";
+}
+
 export function friendlyErrorFor(error) {
   if (error instanceof Anthropic.RateLimitError) {
     return { message: MESSAGES.overwhelmed, status: 503 };
@@ -507,7 +523,7 @@ export default {
           toolEvents = outcome.toolEvents;
           reply = outcome.reply;
         } catch (error) {
-          console.error("Chat agent failed", error instanceof Error ? error.name : "UnknownError");
+          console.error("Chat agent failed", describeError(error));
           emit({ type: "error", error: friendlyErrorFor(error).message });
         }
 
