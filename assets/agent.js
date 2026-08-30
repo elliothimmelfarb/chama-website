@@ -1819,8 +1819,11 @@
     // plus anchors when it ends, so selection and copy behave normally.
     function makePainter(body) {
       var pmode = reduceMotion ? "off" : settings.textAnimation;
-      var pending = "";
-      var scheduled = false;
+      var pending = "";     // revealed, waiting to be painted on this frame
+      var queue = "";       // arrived from the stream, not revealed yet
+      var carry = 0;        // the fraction of a character left over last frame
+      var last = 0;
+      var raf = 0;
       var live = [];
       var settled = document.createTextNode("");
       body.appendChild(settled);
@@ -1848,8 +1851,48 @@
         live.push({ node: span, text: text, at: now + (delayMs || 0) });
       }
 
+      /* ---- the reveal rate ------------------------------------------------
+         The model does not send one character at a time, it sends lumps, and
+         painting a lump the moment it lands is what makes the text jump. So
+         arriving text goes into a queue and is let out at a steady rate.
+
+         The rate is not fixed: every frame the queue is drained towards empty
+         on a fixed time constant, so the reveal takes about WINDOW_MS to catch
+         up no matter how far behind it is. A trickle comes out gently, a burst
+         comes out fast, and the paint can never fall a long way behind the
+         stream. MIN_CPS keeps the last few characters of a reply from crawling
+         out one frame at a time. Nothing is ever lost: end() rebuilds the turn
+         from the full text, so whatever is still queued lands at once.        */
+      var WINDOW_MS = 220;
+      var MIN_CPS = 28;
+
+      function schedule() {
+        if (!raf) raf = requestAnimationFrame(tick);
+      }
+
+      function tick(now) {
+        raf = 0;
+        var dt = last ? Math.min(now - last, 100) : 16;
+        last = now;
+        if (queue) {
+          carry += Math.max(MIN_CPS, queue.length * (1000 / WINDOW_MS)) * (dt / 1000);
+          var n = Math.floor(carry);
+          if (n > 0) {
+            carry -= n;
+            if (n > queue.length) n = queue.length;
+            pending += queue.slice(0, n);
+            queue = queue.slice(n);
+          }
+        } else {
+          carry = 0;
+        }
+        flush();
+        // a partial word held back in "full" mode waits for the next arrival,
+        // exactly as it did before, so an empty queue ends the loop
+        if (queue) schedule();
+      }
+
       function flush() {
-        scheduled = false;
         var now = performance.now();
         settleOld(now);
         if (!pending) return;
@@ -1877,14 +1920,14 @@
 
       return {
         push: function (text) {
-          pending += text;
-          if (!scheduled) {
-            scheduled = true;
-            requestAnimationFrame(flush);
-          }
+          queue += text;
+          schedule();
         },
         end: function (finalText) {
           pending = "";
+          queue = "";
+          carry = 0;
+          if (raf) { cancelAnimationFrame(raf); raf = 0; }
           if (caret.parentNode) caret.remove();
           var wasNear = nearBottom();
           var text = typeof finalText === "string" ? finalText : body.textContent;
