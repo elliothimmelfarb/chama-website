@@ -219,7 +219,9 @@
     }
 
     html {
-      background: var(--paper);
+      /* The rubber band ground: paper past the top, the flame room's dark
+         past the bottom, so neither overscroll flashes the wrong world. */
+      background: linear-gradient(to bottom, var(--paper) 50%, #0e0c0a 50%) fixed;
       color: var(--ink);
       font-family: var(--sans);
       font-size: 16px;
