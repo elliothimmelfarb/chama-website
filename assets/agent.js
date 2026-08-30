@@ -246,6 +246,26 @@
     var canvas = rootEl.querySelector(".flame-canvas");
     var ctx = canvas.getContext("2d", { alpha: false });
 
+    /* ---- the obsidian floor ------------------------------------------------
+       The fire is born on a plane, and a plane you cannot see reads as an
+       accident. So the ground is stated by light alone: the fire is painted
+       once into its own buffer, then composited twice, once as itself and once
+       mirrored about the birth plane, dim and fading to nothing. Polished dark
+       stone, no rule, no horizon line.
+
+       Both passes come from the same buffer, so the reflection inherits the
+       hue, the brightness, the size, the density, the sparks and the position
+       for free, with no second walk over the particles. The mirror is about
+       the horizontal plane through the origin whatever direction the fire
+       burns, so an inverted or sideways flame is reflected correctly without
+       a special case. The mirror buffer is half resolution: a reflection in
+       stone is soft, and the softness is the point.                          */
+    var fireBuf = document.createElement("canvas");
+    var fx = fireBuf.getContext("2d");
+    var mirrorBuf = document.createElement("canvas");
+    var mx = mirrorBuf.getContext("2d");
+    var MIRROR_SCALE = 0.5;
+
     var W = 0, H = 0, DPR = 1;
     var emitX = -1, emitY = 0;
     // the flame's own frame: up is the burn direction, lat is across it
@@ -770,6 +790,13 @@
       canvas.width = Math.max(1, Math.round(W * DPR));
       canvas.height = Math.max(1, Math.round(H * DPR));
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      fireBuf.width = canvas.width;
+      fireBuf.height = canvas.height;
+      fx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      var ms = DPR * MIRROR_SCALE;
+      mirrorBuf.width = Math.max(1, Math.round(W * ms));
+      mirrorBuf.height = Math.max(1, Math.round(H * ms));
+      mx.setTransform(ms, 0, 0, ms, 0, 0);
       if (emitY <= 0) emitY = wantedY(upY);
       if (emitX < 0) emitX = homeX();   // first layout: start where we belong
       grainPattern = ctx.createPattern(grainTile, "repeat");
@@ -815,6 +842,35 @@
       g.addColorStop(1, "rgba(14, 12, 10, 0)");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
+
+      // the same floor, stated the same way: a darker ground and one dim
+      // mirrored wash, so the still flame stands on something too
+      var sDir = Math.cos(a) >= 0 ? 1 : -1;
+      var sRoom = sDir > 0 ? (H - emitY) : emitY;
+      var sReach = Math.max(48, Math.min(sRoom * 0.90, H * 0.22, 260));
+      var sStone = ctx.createLinearGradient(0, emitY, 0, emitY + sDir * Math.min(sRoom * 0.98, H * 0.32, 320));
+      sStone.addColorStop(0, "rgba(6, 5, 4, 0)");
+      sStone.addColorStop(0.45, "rgba(6, 5, 4, 0.045)");
+      sStone.addColorStop(1, "rgba(6, 5, 4, 0.20)");
+      ctx.fillStyle = sStone;
+      if (sDir > 0) ctx.fillRect(0, emitY, W, H - emitY);
+      else ctx.fillRect(0, 0, W, emitY);
+
+      ctx.save();
+      ctx.beginPath();
+      if (sDir > 0) ctx.rect(0, emitY, W, sReach);
+      else ctx.rect(0, emitY - sReach, W, sReach);
+      ctx.clip();
+      var mr = ctx.createRadialGradient(gx, emitY + (emitY - gy), 0, gx, emitY + (emitY - gy), r * 0.7);
+      mr.addColorStop(0, hsla(settings.hue, 100, 69, (0.11 * lvl).toFixed(3)));
+      mr.addColorStop(0.4, hsla(settings.hue, 92, 54, (0.05 * lvl).toFixed(3)));
+      mr.addColorStop(1, "rgba(14, 12, 10, 0)");
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = mr;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.restore();
+
       rootEl.style.setProperty("--flamelight", "0.45");
       if (grainPattern) {
         ctx.globalCompositeOperation = "lighter";
@@ -1156,7 +1212,30 @@
       ctx.fillStyle = gg;
       ctx.fillRect(0, 0, W, H);
 
-      ctx.globalCompositeOperation = "lighter";
+      // the stone drinks a little of the room's light, so the ground reads a
+      // shade deeper than the air above it without ever drawing an edge
+      var floorY = emitY;
+      var floorDir = upY <= 0 ? 1 : -1;      // the reflection lies opposite the fire
+      // how much ground there is on that side. The origin sits close to one
+      // edge when the fire is upright, so everything below is measured against
+      // what is actually there and dies inside it: nothing is ever cut off by
+      // the edge of the room, at any height, in either mode.
+      var floorRoom = floorDir > 0 ? (H - floorY) : floorY;
+      var floorReach = Math.min(floorRoom * 0.98, H * 0.32, 320);
+      var stone = ctx.createLinearGradient(0, floorY, 0, floorY + floorDir * floorReach);
+      stone.addColorStop(0, "rgba(6, 5, 4, 0)");
+      stone.addColorStop(0.45, "rgba(6, 5, 4, 0.045)");
+      stone.addColorStop(1, "rgba(6, 5, 4, 0.20)");
+      ctx.fillStyle = stone;
+      if (floorDir > 0) ctx.fillRect(0, floorY, W, H - floorY);
+      else ctx.fillRect(0, 0, W, floorY);
+
+      // the fire itself is painted into its own buffer, never straight onto
+      // the room, because the room needs it twice
+      fx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      fx.globalCompositeOperation = "source-over";
+      fx.clearRect(0, 0, W, H);
+      fx.globalCompositeOperation = "lighter";
 
       // the persistent bright core, hugging the lower third, drawn under the
       // particles. Flicker is a composite of a 2.2 Hz and a 3.7 Hz sine.
@@ -1173,9 +1252,9 @@
         [0.05, 0.58, 0.44]
       ];
       // one transform for the whole group, so the core rotates with the fire
-      ctx.save();
-      ctx.translate(emitX, emitY);
-      ctx.rotate(rad);
+      fx.save();
+      fx.translate(emitX, emitY);
+      fx.rotate(rad);
       for (var ci = 0; ci < lobes.length; ci++) {
         var lo = lobes[ci];
         var wob = Math.sin(breath * (9 + ci * 3.1) + ci) * 0.14;
@@ -1183,13 +1262,13 @@
         var ch = cw * (2.05 - lo[1] * 0.9);
         var cx = lo[0] * bandEff * (0.9 + wob);
         var cy = -lo[1] * coreReach;
-        ctx.globalAlpha = Math.min(0.92, (0.16 + heatEff * 0.34) * lo[2] * (fl - 0.1) * warmth * (0.30 + bright * 0.70));
+        fx.globalAlpha = Math.min(0.92, (0.16 + heatEff * 0.34) * lo[2] * (fl - 0.1) * warmth * (0.30 + bright * 0.70));
         // anchored so a lobe reaches only a little past the band: the core is
         // never cut by the edge it sits against
-        ctx.drawImage(coreSprite, cx - cw, cy - ch * 1.62, cw * 2, ch * 2);
+        fx.drawImage(coreSprite, cx - cw, cy - ch * 1.62, cw * 2, ch * 2);
       }
-      ctx.restore();
-      ctx.globalAlpha = 1;
+      fx.restore();
+      fx.globalAlpha = 1;
 
       // the continuous body. Each blob is huge and nearly transparent; the
       // ramp index comes from age AND lateral distance from the axis, so the
@@ -1207,10 +1286,10 @@
         var balpha = Math.pow(1 - b2, 0.9) * (0.055 + heatEff * 0.075) * (1 - blat2 * 0.28) * bright;
         if (balpha <= 0.003) continue;
         var bsz = bs[i] * (0.78 + b2 * 0.85) * (0.75 + P.size * 0.35);
-        ctx.globalAlpha = balpha;
-        ctx.drawImage(bimg, bx[i] - bsz, by[i] - bsz, bsz * 2, bsz * 2);
+        fx.globalAlpha = balpha;
+        fx.drawImage(bimg, bx[i] - bsz, by[i] - bsz, bsz * 2, bsz * 2);
       }
-      ctx.globalAlpha = 1;
+      fx.globalAlpha = 1;
 
       for (i = 0; i < count; i++) {
         var a2 = pa[i] / pl[i];
@@ -1220,8 +1299,8 @@
         var alpha = Math.pow(1 - a2, 0.62) * (0.34 + heatEff * 0.42) * bright;
         if (alpha <= 0.004) continue;
         var sz = ps[i] * (0.95 + a2 * 1.05) * (0.7 + P.size * 0.4);
-        ctx.globalAlpha = alpha > 1 ? 1 : alpha;
-        ctx.drawImage(img, px[i] - sz, py[i] - sz, sz * 2, sz * 2);
+        fx.globalAlpha = alpha > 1 ? 1 : alpha;
+        fx.drawImage(img, px[i] - sz, py[i] - sz, sz * 2, sz * 2);
       }
 
       // spark trails
@@ -1230,14 +1309,52 @@
         var pts = sp.trail;
         for (var j = 0; j < pts.length; j += 2) {
           var f = j / Math.max(2, pts.length);
-          ctx.globalAlpha = f * f * 0.75;
+          fx.globalAlpha = f * f * 0.75;
           var tsz = 2 + f * 6;
-          ctx.drawImage(warmRamp[Math.max(0, ((1 - f) * 8) | 0)], pts[j] - tsz, pts[j + 1] - tsz, tsz * 2, tsz * 2);
+          fx.drawImage(warmRamp[Math.max(0, ((1 - f) * 8) | 0)], pts[j] - tsz, pts[j + 1] - tsz, tsz * 2, tsz * 2);
         }
-        ctx.globalAlpha = 0.95;
-        ctx.drawImage(warmRamp[0], sp.x - 11, sp.y - 11, 22, 22);
+        fx.globalAlpha = 0.95;
+        fx.drawImage(warmRamp[0], sp.x - 11, sp.y - 11, 22, 22);
       }
+      fx.globalAlpha = 1;
+
+      // ---- the two passes ----
+      // the reflection first, so the fire is always the brighter thing.
+      // Polished stone is never perfectly still: the mirrored copy drifts a
+      // couple of pixels sideways and squashes a hair toward the plane, on a
+      // slow beat of its own, which is what reads as a shimmer.
+      var refWob = Math.sin(breath * 1.9) * 2.2 + Math.sin(breath * 3.3 + 1.1) * 1.1;
+      var refSquash = 0.965 + Math.sin(breath * 2.4 + 0.6) * 0.022;
+      var refReach = Math.max(48, Math.min(floorRoom * 0.90, H * 0.22, 260));
+
+      mx.setTransform(DPR * MIRROR_SCALE, 0, 0, DPR * MIRROR_SCALE, 0, 0);
+      mx.globalCompositeOperation = "source-over";
+      mx.clearRect(0, 0, W, H);
+      mx.save();
+      mx.translate(refWob, floorY);
+      mx.scale(1, -refSquash);              // the mirror about the floor plane
+      mx.translate(0, -floorY);
+      mx.drawImage(fireBuf, 0, 0, W, H);
+      mx.restore();
+      // whatever landed on the fire's own side of the plane is not a reflection
+      if (floorDir > 0) mx.clearRect(0, 0, W, floorY);
+      else mx.clearRect(0, floorY, W, H - floorY);
+      // and it fades to nothing long before the ground runs out
+      mx.globalCompositeOperation = "destination-in";
+      var fade = mx.createLinearGradient(0, floorY, 0, floorY + floorDir * refReach);
+      fade.addColorStop(0, "rgba(0, 0, 0, 1)");
+      fade.addColorStop(0.34, "rgba(0, 0, 0, 0.46)");
+      fade.addColorStop(0.68, "rgba(0, 0, 0, 0.13)");
+      fade.addColorStop(1, "rgba(0, 0, 0, 0)");
+      mx.fillStyle = fade;
+      mx.fillRect(0, 0, W, H);
+      mx.globalCompositeOperation = "source-over";
+
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = 0.175 + Math.sin(breath * 2.7) * 0.018;
+      ctx.drawImage(mirrorBuf, 0, 0, W, H);
       ctx.globalAlpha = 1;
+      ctx.drawImage(fireBuf, 0, 0, W, H);
 
       // grain
       if (grainPattern) {
