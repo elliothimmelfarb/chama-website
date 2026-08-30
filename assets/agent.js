@@ -112,7 +112,7 @@
           '<div class="column">' +
             '<section class="opening" id="opening">' +
               '<h1>You are talking to the <em>intelligent flame</em>.</h1>' +
-              '<p>Ask it anything. If you would like to hear from Elliot, leave your email or WhatsApp and he will get back to you. Nothing is sent without your approval.</p>' +
+              '<p>Start your conversation with Chama Inteligente here. Ask questions, ask to be contacted, or reshape the flame with your words.</p>' +
               '<div class="chips" id="chips">' + chipMarkup() + '</div>' +
             '</section>' +
             '<div id="transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>' +
