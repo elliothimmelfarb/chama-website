@@ -6,7 +6,7 @@
 
 This file is the complete visible text of https://chamainteligente.com, in reading
 order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing
-the pages do not say. Last updated 2026-08-20.
+the pages do not say. Last updated 2026-08-30.
 
 Chama Inteligente, Lda. is a Portuguese company (NIPC 519425235) based in Lisbon.
 "Chama Inteligente" is Portuguese for "intelligent flame". It is written "Chama"
