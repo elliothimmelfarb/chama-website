@@ -80,7 +80,7 @@
             '<button type="button" role="radio" data-value="full" aria-checked="false" tabindex="-1">Full</button>' +
           '</div>' +
         '</div>' +
-        '<p class="tune-note" id="tune-note">Kept in this browser only. The agent can adjust these for you if you ask.</p>' +
+        '<p class="tune-note" id="tune-note">Yours for this visit. The agent can adjust these for you if you ask.</p>' +
       '</div>' +
 
       '<div class="shell">' +
@@ -158,11 +158,11 @@
     /* ==================================================================
        SETTINGS
        One source of truth for brightness, motion and text animation.
-       Persisted per browser; the page renders fine with nothing stored.
+       Nothing is persisted: settings live for the lifetime of the page, and
+       every load starts the flame from its defaults.
        ================================================================== */
 
-    var SET_KEY = "chama.agent.tune.v2";
-    var OLD_KEYS = ["chama.agent.tune.v1"];
+    var STALE_KEYS = ["chama.agent.tune.v1", "chama.agent.tune.v2"];
     var TEXT_MODES = { off: 1, subtle: 1, full: 1 };
 
     // position is null until someone chooses one: null means the flame's home,
@@ -204,39 +204,15 @@
       return r ? clampNum(v, r[0], r[1]) : null;
     }
 
-    function loadSettings() {
+    // earlier versions kept the tune in localStorage; sweep those keys away so
+    // no visitor is left carrying a setting the page no longer reads
+    function forgetStoredSettings() {
       try {
-        for (var o = 0; o < OLD_KEYS.length; o++) window.localStorage.removeItem(OLD_KEYS[o]);
-        var raw = window.localStorage.getItem(SET_KEY);
-        if (!raw) return;
-        var data = JSON.parse(raw);
-        if (!data || typeof data !== "object") return;
-        for (var name in RANGES) {
-          var v = clampField(name, data[name]);
-          if (v !== null) settings[name] = v;
-        }
-        var h = clampHue(data.hue);
-        if (h !== null) settings.hue = h;
-        var a = clampField("angle", data.angle);
-        if (a !== null) settings.angle = a;
-        if (typeof data.textAnimation === "string" && TEXT_MODES[data.textAnimation]) {
-          settings.textAnimation = data.textAnimation;
-        }
-        if (data.position === null) settings.position = null;
-      } catch (e) { /* private mode, blocked storage, corrupt value: defaults stand */ }
+        for (var k = 0; k < STALE_KEYS.length; k++) window.localStorage.removeItem(STALE_KEYS[k]);
+      } catch (e) { /* private mode, blocked storage: nothing to forget */ }
     }
 
-    function saveSettings() {
-      try {
-        window.localStorage.setItem(SET_KEY, JSON.stringify(settings));
-      } catch (e) { /* nothing to do: the session still works */ }
-    }
-
-    function clearSettings() {
-      try { window.localStorage.removeItem(SET_KEY); } catch (e) { /* fine */ }
-    }
-
-    loadSettings();
+    forgetStoredSettings();
 
     // eased mirrors of the continuous settings, so a change moves the flame
     // rather than snapping it. tau is short while a slider is dragged and long
@@ -1480,7 +1456,6 @@
         if (ev.target === setBright) settings.brightness = v; else settings.motion = v;
       }
       syncControls();
-      saveSettings();
       if (reduceMotion) {
         buildRamps(settings.hue);
         hueShown = hueBuilt = settings.hue;
@@ -1496,7 +1471,6 @@
       if (!TEXT_MODES[m]) return;
       settings.textAnimation = m;
       syncControls();
-      saveSettings();
     }
 
     segText.addEventListener("click", function (ev) {
@@ -1573,7 +1547,6 @@
     // walks them home, so a reset glides rather than snapping
     function resetAll() {
       toDefaults();
-      clearSettings();
     }
 
     function applyAgentConfig(payload) {
@@ -1583,7 +1556,7 @@
       if (payload.reset === true) {
         settingsTau = 0.42;
         resetAll();
-        afterConfig(true);        // a reset leaves nothing behind in storage
+        afterConfig();
         return "The agent restored the flame's defaults.";
       }
 
@@ -1613,8 +1586,7 @@
     }
 
     // everything a settings change has to do once the values are in place
-    function afterConfig(wasReset) {
-      if (!wasReset) saveSettings();
+    function afterConfig() {
       if (reduceMotion) {
         buildRamps(settings.hue);
         hueShown = hueBuilt = settings.hue;
