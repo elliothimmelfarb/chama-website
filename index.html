@@ -709,8 +709,24 @@
     /* The agent, embedded. The room is full bleed and its ground is the
        agent's own ground colour, so the app has no visible box: the page
        simply goes dark for the height of the conversation. */
+    /* The lead-in stands on the room's own ground, not on paper, so the
+       page makes one cut into the dark instead of two: the headline is the
+       ceiling of the room rather than an orphan title card above it. The
+       cut itself is the move the outcome block already makes, so the room
+       arrives in the page's own language. */
     .contact {
-      padding-bottom: clamp(1.6rem, 3vw, 3rem);
+      background: #0e0c0a;
+      color: #ece7dc;
+    }
+
+    .contact-inner {
+      border-top: 0;
+      padding-top: clamp(4rem, 8vw, 8rem);
+      padding-bottom: clamp(2.6rem, 5vw, 4.5rem);
+    }
+
+    .contact .section-label {
+      color: #8d867c;
     }
 
     .contact .section-copy h2 {
@@ -739,6 +755,20 @@
 
     footer {
       padding-bottom: 2rem;
+    }
+
+    /* The footer that follows the flame room needs no rule above it: the
+       room's own edge already closes the page, and a frame width hairline
+       sitting on a full bleed dark edge reads as a stray mark. The About
+       section gets the same treatment for free where it meets the outcome
+       block, because an ink border on an ink ground is invisible. */
+    .footer-quiet .footer-inner {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .footer-quiet {
+      padding-top: clamp(2rem, 4vw, 3.4rem);
     }
 
     .footer-inner {
@@ -962,10 +992,12 @@
       </div>
     </section>
 
-    <section class="frame content-section contact" aria-labelledby="contact-title">
-      <p class="section-label">Questions? Get in touch</p>
-      <div class="section-copy">
-        <h2 id="contact-title">Talk to the <span class="ember-accent">intelligent flame</span>.</h2>
+    <section class="contact" aria-labelledby="contact-title">
+      <div class="frame content-section contact-inner">
+        <p class="section-label">Questions? Get in touch</p>
+        <div class="section-copy">
+          <h2 id="contact-title">Talk to the <span class="ember-accent">intelligent flame</span>.</h2>
+        </div>
       </div>
     </section>
     <section class="flame-room" id="talk" aria-label="Talk to the intelligent flame">
@@ -974,7 +1006,7 @@
     </section>
   </main>
 
-  <footer class="frame">
+  <footer class="frame footer-quiet">
     <div class="footer-inner">
       <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
       <div class="footer-social">

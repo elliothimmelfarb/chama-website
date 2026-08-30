@@ -248,6 +248,25 @@ body.chama-agent-page {
    of instruction. Full screen at /agent keeps the greeting. */
 .chama-agent-mode-embed .opening h1 { display: none; }
 
+/* Embedded, the room's top edge is already a hard cut from paper into the
+   dark, so the bar keeps its glass but drops its rule: one seam, not two.
+   The bar also sits a little lower, so the reader crosses into darkness
+   before the instruments appear. */
+.chama-agent-mode-embed .topbar {
+  border-bottom: 0;
+  padding-top: clamp(1rem, 2.6cqh, 1.9rem);
+  /* the glass still hides the stage scrolling under it, but it is mixed
+     from the room's own ground, so the bar leaves no band at the top edge
+     where the page's dark lead-in runs straight into the room */
+  background: linear-gradient(180deg, var(--ground) 58%, rgba(14, 12, 10, 0));
+}
+
+/* and the room does not end on the fine print: it keeps a breath of dark
+   below the composer, so the page returns to paper on empty ground */
+.chama-agent-mode-embed .composer {
+  padding-bottom: clamp(1.5rem, 3.4cqh, 2.8rem);
+}
+
 /* the quiet way out of the embed, in the same key as the HUD and Tune */
 .chama-agent .fullscreen-link {
   flex: none;
