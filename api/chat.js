@@ -365,9 +365,23 @@ export function describeError(error) {
   return "UnknownError";
 }
 
+// A spend cap reads as a 400 with no distinct error type, so the text is the
+// only signal the API gives. It is our own account's message, never a visitor's.
+function isUsageLimit(error) {
+  if (!(error instanceof Anthropic.BadRequestError)) return false;
+  const detail = error.error && error.error.error && error.error.error.message;
+  return /usage limits|credit balance|billing/i.test(String(detail || ""));
+}
+
 export function friendlyErrorFor(error) {
   if (error instanceof Anthropic.RateLimitError) {
     return { message: MESSAGES.overwhelmed, status: 503 };
+  }
+
+  // Out of budget is not a fault the visitor should be asked to retry through.
+  // It is the same situation as the kill switch: the flame is simply out.
+  if (isUsageLimit(error)) {
+    return { message: MESSAGES.offline, status: 503 };
   }
 
   if (error instanceof Anthropic.APIError) {

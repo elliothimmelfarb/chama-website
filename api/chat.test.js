@@ -1,13 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import Anthropic from "@anthropic-ai/sdk";
+
 import {
   KILL_SWITCH_KEY,
   MESSAGES,
   buildConversationRecord,
   clampExperience,
   countUserTurns,
+  describeError,
   executeNoteTool,
+  friendlyErrorFor,
   isFlameKilled,
   normalizeConversationId,
   persistConversation,
@@ -643,4 +647,40 @@ test("unreadable kill switch content fails open", async () => {
   };
 
   assert.equal(await isFlameKilled(deps), false);
+});
+
+function apiError(Kind, status, message) {
+  return new Kind(
+    status,
+    { type: "error", error: { type: "invalid_request_error", message } },
+    message,
+    new Headers()
+  );
+}
+
+test("a spend cap tells the visitor the flame is resting, not that we broke", () => {
+  const capped = apiError(
+    Anthropic.BadRequestError,
+    400,
+    "You have reached your specified API usage limits. You will regain access on 2026-09-01 at 00:00 UTC."
+  );
+
+  assert.deepEqual(friendlyErrorFor(capped), { message: MESSAGES.offline, status: 503 });
+});
+
+test("any other bad request is still the generic failure", () => {
+  const broken = apiError(Anthropic.BadRequestError, 400, "max_tokens: must be greater than 0");
+
+  assert.deepEqual(friendlyErrorFor(broken), { message: MESSAGES.failed, status: 502 });
+});
+
+test("an API error describes itself by class, status and type", () => {
+  const failed = apiError(Anthropic.BadRequestError, 400, "something");
+
+  assert.equal(describeError(failed), "BadRequestError status=400 type=invalid_request_error");
+});
+
+test("a plain error describes itself by class alone", () => {
+  assert.equal(describeError(new TypeError("bad")), "TypeError");
+  assert.equal(describeError("not an error"), "UnknownError");
 });
