@@ -17,6 +17,7 @@ import { get, put } from "@vercel/blob";
 
 import { MODEL, SYSTEM_PROMPT, TOOLS } from "./chat-prompt.js";
 import { buildRecord, sendNotification, validate } from "./intake.js";
+import { killSwitchBites } from "./watchdog.js";
 
 const EFFORT = "low";
 
@@ -296,7 +297,9 @@ export async function persistConversation(
 // The watchdog's kill switch (see api/watchdog.js). When it finds that an
 // attack landed it writes ops/kill-switch.json, and this is the read that
 // makes that authority real: a disabled switch turns every request into the
-// offline reply until Elliot deletes the blob by hand.
+// offline reply until Elliot deletes the blob by hand, or until the switch
+// expires on its own 24 hours after the watchdog threw it (killSwitchBites in
+// watchdog.js). A hand-written switch with no timestamp never expires.
 //
 // The check is cached in module scope for a minute, positive and negative
 // alike, so it costs one blob read per warm instance per minute rather than
@@ -333,7 +336,7 @@ export async function isFlameKilled(dependencies = {}) {
     const text = await readBlobText(
       await deps.get(KILL_SWITCH_KEY, { access: "private", useCache: false })
     );
-    disabled = text ? JSON.parse(text)?.disabled === true : false;
+    disabled = text ? killSwitchBites(JSON.parse(text), at) : false;
   } catch (error) {
     console.error(
       "Kill switch read failed",

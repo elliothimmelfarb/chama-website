@@ -21,6 +21,20 @@ import { Resend } from "resend";
 
 export const KILL_SWITCH_KEY = "ops/kill-switch.json";
 
+// A thrown switch expires on its own after a day. One reviewer hallucination
+// costs at most 24 hours of downtime instead of waiting for a manual relight,
+// while a persistent attacker just gets shut down again on the next window.
+// A switch with no readable timestamp never expires: that is the manual,
+// hand-written case, and hands stay authoritative.
+export const KILL_SWITCH_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+export function killSwitchBites(record, at) {
+  if (!record || record.disabled !== true) return false;
+  const thrownAt = Date.parse(record.at);
+  if (!Number.isFinite(thrownAt)) return true;
+  return at - thrownAt < KILL_SWITCH_MAX_AGE_MS;
+}
+
 export const MODEL = "claude-sonnet-5";
 
 const EFFORT = "low";
@@ -262,7 +276,7 @@ export function buildWatchdogEmail(report, { at, reviewed, capped }) {
   if (report.verdict === "malicious") {
     lines.push(
       "",
-      `To relight: delete the ${KILL_SWITCH_KEY} blob in the Vercel dashboard under Storage. The flame comes back within a minute.`
+      `To relight: delete the ${KILL_SWITCH_KEY} blob in the Vercel dashboard under Storage. The flame comes back within a minute. Left alone, the switch expires on its own 24 hours after it was thrown; a continuing attack will simply throw it again.`
     );
   }
 
@@ -292,13 +306,13 @@ async function listConversationBlobs(deps, at) {
   return blobs;
 }
 
-async function readKillSwitch(deps) {
+async function readKillSwitch(deps, at) {
   try {
     const text = await readBlobText(
       await deps.get(KILL_SWITCH_KEY, { access: "private", useCache: false })
     );
     if (!text) return false;
-    return JSON.parse(text)?.disabled === true;
+    return killSwitchBites(JSON.parse(text), at);
   } catch (error) {
     console.error(
       "Watchdog kill switch read failed",
@@ -350,7 +364,7 @@ export async function runWatchdog(dependencies = {}) {
   const at = deps.now();
   const runAt = new Date(at).toISOString();
 
-  const alreadyDisabled = await readKillSwitch(deps);
+  const alreadyDisabled = await readKillSwitch(deps, at);
 
   const blobs = await listConversationBlobs(deps, at);
   const { selected, capped, inWindow } = selectConversations(blobs, at);
@@ -415,6 +429,23 @@ export async function runWatchdog(dependencies = {}) {
       shutdown: false,
       summary: "The reviewing model could not be reached, so this window went unreviewed.",
       incidents: []
+    };
+  }
+
+  // A capped window means transcripts went unreviewed, and flooding the window
+  // to evict an attack from review is exactly the trick a public repo teaches.
+  // A capped run therefore never passes silently: a clear verdict becomes a
+  // concern so the email goes out and Elliot sees the volume.
+  if (capped && report.verdict === "clear") {
+    report = {
+      ...report,
+      verdict: "concern",
+      summary: [
+        report.summary,
+        `The window held ${inWindow} conversations and only ${conversations.length} were reviewed. The unreviewed remainder is why this is a concern rather than a clear.`
+      ]
+        .filter(Boolean)
+        .join(" ")
     };
   }
 

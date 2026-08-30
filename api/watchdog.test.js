@@ -3,6 +3,8 @@ import test from "node:test";
 
 import watchdog, {
   KILL_SWITCH_KEY,
+  KILL_SWITCH_MAX_AGE_MS,
+  killSwitchBites,
   buildKillSwitchRecord,
   buildReviewMessage,
   buildWatchdogEmail,
@@ -339,6 +341,53 @@ test("an already disabled flame is reviewed but the switch is never rewritten or
   assert.equal(outcome.alreadyDisabled, true);
   assert.equal(calls.put.length, 0);
   assert.equal(calls.email.length, 1);
+});
+
+test("a thrown switch expires after a day, and a timestampless one never does", () => {
+  const thrownAt = NOW - KILL_SWITCH_MAX_AGE_MS + MINUTE;
+  const fresh = { disabled: true, at: new Date(thrownAt).toISOString() };
+  const stale = { disabled: true, at: new Date(NOW - KILL_SWITCH_MAX_AGE_MS - MINUTE).toISOString() };
+
+  assert.equal(killSwitchBites(fresh, NOW), true);
+  assert.equal(killSwitchBites(stale, NOW), false);
+  assert.equal(killSwitchBites({ disabled: true }, NOW), true);
+  assert.equal(killSwitchBites({ disabled: true, at: "not a date" }, NOW), true);
+  assert.equal(killSwitchBites({ disabled: false, at: new Date(NOW).toISOString() }, NOW), false);
+  assert.equal(killSwitchBites(null, NOW), false);
+});
+
+test("an expired switch is rewritten when the attack is still going", async () => {
+  const { calls, deps } = fakeDeps({
+    blobs: [blob(5)],
+    killSwitch: JSON.stringify({
+      disabled: true,
+      at: new Date(NOW - KILL_SWITCH_MAX_AGE_MS - MINUTE).toISOString()
+    }),
+    reply: reviewJson({ verdict: "malicious", shutdown: true, summary: "Still bad." })
+  });
+
+  const outcome = await runWatchdog(deps);
+
+  assert.equal(outcome.alreadyDisabled, false);
+  assert.equal(outcome.shutdown, true);
+  assert.equal(calls.put.length, 1);
+});
+
+test("a capped clear window is escalated to a concern and emailed", async () => {
+  const blobs = [];
+  for (let index = 0; index < 45; index += 1) {
+    blobs.push(blob(1, { id: `c-${index}`, size: 10 }));
+  }
+  const { calls, deps } = fakeDeps({ blobs, reply: reviewJson() });
+
+  const outcome = await runWatchdog(deps);
+
+  assert.equal(outcome.verdict, "concern");
+  assert.equal(outcome.capped, true);
+  assert.equal(outcome.shutdown, false);
+  assert.equal(outcome.emailed, true);
+  assert.equal(calls.put.length, 0);
+  assert.match(calls.email[0].text, /only 40 were reviewed/);
 });
 
 test("a clear window never touches an existing kill switch", async () => {

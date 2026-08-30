@@ -611,6 +611,30 @@ test("a blob read error fails open so a storage outage never takes the chat down
   assert.equal(reads, 1);
 });
 
+test("a switch thrown more than a day ago has expired and the flame burns", async () => {
+  resetKillSwitchCache();
+  const now = Date.parse("2026-08-30T12:00:00.000Z");
+  const deps = {
+    now: () => now,
+    get: async () => ({
+      text: async () =>
+        JSON.stringify({ disabled: true, at: "2026-08-29T11:00:00.000Z" })
+    })
+  };
+
+  assert.equal(await isFlameKilled(deps), false);
+
+  resetKillSwitchCache();
+  const fresh = {
+    ...deps,
+    get: async () => ({
+      text: async () =>
+        JSON.stringify({ disabled: true, at: "2026-08-30T11:00:00.000Z" })
+    })
+  };
+  assert.equal(await isFlameKilled(fresh), true);
+});
+
 test("unreadable kill switch content fails open", async () => {
   resetKillSwitchCache();
   const deps = {
