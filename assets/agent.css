@@ -264,7 +264,7 @@ body.chama-agent-page {
 /* and the room does not end on the fine print: it keeps a breath of dark
    below the composer, so the page returns to paper on empty ground */
 .chama-agent-mode-embed .composer {
-  padding-bottom: clamp(1.5rem, 3.4cqh, 2.8rem);
+  padding-bottom: clamp(1.8rem, 4.6cqh, 3.6rem);
 }
 
 /* the quiet way out of the embed, in the same key as the HUD and Tune */
