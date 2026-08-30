@@ -510,6 +510,12 @@ body.chama-agent-page {
   scrollbar-color: rgba(244, 88, 31, 0.4) transparent;
   -webkit-overflow-scrolling: touch;
 }
+/* embedded, the transcript is only a scroll target once the room is seated:
+   its bottom edge resting on the bottom of the viewport. Until then a wheel or
+   a finger over the room belongs to the page. */
+.chama-agent.seat-pending .stage {
+  overflow-y: hidden;
+}
 .chama-agent .stage::-webkit-scrollbar { width: 9px; }
 .chama-agent .stage::-webkit-scrollbar-track { background: transparent; }
 .chama-agent .stage::-webkit-scrollbar-thumb {

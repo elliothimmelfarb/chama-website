@@ -2048,6 +2048,139 @@
       startLoop();
     }
 
+    /* ---- seating the room (embedded only) ----------------------------------
+       Embedded, the room is one screenful at the end of a long page, and the
+       transcript inside it is a scroller of its own. Two scrollers stacked
+       like that fight each other: a wheel over a half-visible room moves the
+       conversation when the visitor is still trying to reach the room.
+
+       So the transcript only accepts a gesture once the room is seated: its
+       bottom edge resting on the bottom of the viewport. Until then the stage
+       is not a scroll target at all (overflow hidden), which is what makes
+       touch and the keyboard behave without a single prevented event. The
+       wheel is routed by hand so one gesture can seat the room, or fill the
+       transcript and hand the remainder back to the page, without the pause
+       the browser's own scroll latching would put in the middle.        */
+
+    if (mode !== "page") {
+      var SEAT_EPS = 2;
+      var seatPending = null;
+      var touchLately = 0;
+      var settleTimer = 0;
+      var seatTicking = false;
+      var lastY = window.pageYOffset || 0;
+      var lastDir = 0;
+
+      function viewportH() {
+        var vv = window.visualViewport;
+        if (vv && vv.height) return vv.height;
+        return document.documentElement.clientHeight || window.innerHeight;
+      }
+
+      // how far the page still has to move to seat the room, clamped to the
+      // scroll the document actually has left: if the seat is unreachable the
+      // answer is 0, and the transcript is never locked out of a gesture.
+      function seatDelta() {
+        var vh = viewportH();
+        var want = rootEl.getBoundingClientRect().bottom - vh;
+        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+        var maxY = Math.max(0, (document.documentElement.scrollHeight || 0) - vh);
+        var target = Math.min(Math.max(y + want, 0), maxY);
+        return target - y;
+      }
+
+      function pageBy(px) {
+        if (!px) return;
+        window.scrollTo({ top: (window.pageYOffset || 0) + px, behavior: "auto" });
+      }
+
+      function markSeat() {
+        var pending = Math.abs(seatDelta()) > SEAT_EPS;
+        if (pending === seatPending) return;
+        seatPending = pending;
+        rootEl.classList.toggle("seat-pending", pending);
+      }
+
+      // touch cannot be clamped mid-flick without prevented events, so a
+      // finger that comes to rest near the seat is pulled the last few pixels
+      // in. Armed by touch only: a wheel clamps itself, and the keyboard must
+      // never be pulled back to a place it just left.
+      function magnet() {
+        var d = seatDelta();
+        if (Math.abs(d) <= SEAT_EPS) return;
+        if (Math.abs(d) > viewportH() * 0.22) return;
+        // never pull the visitor back the way they came: a finger travelling
+        // past the room toward the footer is going where it meant to go
+        if (lastDir > 0 && d < 0) return;
+        if (lastDir < 0 && d > 0) return;
+        pageBy(d);
+        markSeat();
+      }
+
+      function onPageScroll() {
+        var y = window.pageYOffset || 0;
+        if (y !== lastY) { lastDir = y > lastY ? 1 : -1; lastY = y; }
+        if (!seatTicking) {
+          seatTicking = true;
+          window.requestAnimationFrame(function () { seatTicking = false; markSeat(); });
+        }
+        if (touchLately && Date.now() - touchLately < 2600) {
+          touchLately = Date.now();            // ride the momentum out
+          window.clearTimeout(settleTimer);
+          settleTimer = window.setTimeout(magnet, 120);
+        }
+      }
+
+      function touched() { touchLately = Date.now(); }
+      rootEl.addEventListener("touchstart", touched, { passive: true });
+      rootEl.addEventListener("touchend", touched, { passive: true });
+
+      window.addEventListener("scroll", onPageScroll, { passive: true });
+      window.addEventListener("resize", markSeat, { passive: true });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", markSeat, { passive: true });
+      }
+      markSeat();
+
+      function wheelPixels(ev) {
+        if (ev.deltaMode === 1) return ev.deltaY * 16;        // lines
+        if (ev.deltaMode === 2) return ev.deltaY * viewportH();
+        return ev.deltaY;
+      }
+
+      rootEl.addEventListener("wheel", function (ev) {
+        if (ev.ctrlKey || ev.defaultPrevented) return;        // pinch zoom
+        var dy = wheelPixels(ev);
+        if (!dy) return;
+        if (ev.target && ev.target.closest && ev.target.closest(".tune-pop, textarea")) return;
+
+        var need = seatDelta();
+        if (Math.abs(need) > SEAT_EPS) {
+          // the room is not seated. A gesture toward it seats it and stops
+          // there; a gesture away from it belongs to the page, untouched.
+          if ((need > 0) !== (dy > 0)) return;
+          ev.preventDefault();
+          pageBy(dy > 0 ? Math.min(dy, need) : Math.max(dy, need));
+          var rest = seatDelta();               // absorb sub-pixel rounding
+          if (rest && Math.abs(rest) <= 8) pageBy(rest);
+          markSeat();
+          return;
+        }
+
+        // seated: the transcript takes what it can hold, the page takes the rest
+        var max = stage.scrollHeight - stage.clientHeight;
+        var room = dy > 0 ? max - stage.scrollTop : stage.scrollTop;
+        var take = Math.max(0, Math.min(Math.abs(dy), room));
+        ev.preventDefault();
+        if (take) stage.scrollTop += dy > 0 ? take : -take;
+        var left = Math.abs(dy) - take;
+        if (left > 0.5) {
+          pageBy(dy > 0 ? left : -left);
+          markSeat();
+        }
+      }, { passive: false });
+    }
+
     var api = {
       mode: mode,
       root: rootEl,
