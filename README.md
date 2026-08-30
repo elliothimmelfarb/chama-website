@@ -74,7 +74,7 @@ The watchdog never logs visitor text. Its console lines carry counts, conversati
 
 An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment and authenticates the watchdog as well. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 
-Once the sending domain is verified, Elliot can review submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is connected to the `chama-inteligente-email` Resend Vercel Marketplace resource on its free plan in the EU sending region. Vercel manages `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` for the production and preview environments; neither credential was downloaded into this repository. The resource was provisioned on 2026-08-25 after Elliot accepted the Marketplace terms. Domain verification is pending the three Resend sending records at Namecheap. Do not deploy this notification change until the sending domain is verified. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
+Elliot reviews submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is connected to the `chama-inteligente-email` Resend Vercel Marketplace resource on its free plan in the EU sending region (Ireland, `eu-west-1`). Vercel manages `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` for the production and preview environments; neither credential was downloaded into this repository. The resource was provisioned on 2026-08-25 after Elliot accepted the Marketplace terms. The sending domain `chamainteligente.com` was verified on 2026-08-30, once the three Resend records were added at Namecheap, and a note left through the flame was confirmed delivered to `contact@chamainteligente.com` end to end. Between 2026-08-25 and 2026-08-30 the domain was unverified, so any note left in that window was stored in Blob but never emailed. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
 
 ## Admin area
 
@@ -135,9 +135,9 @@ Namecheap remains authoritative. Google Workspace now receives the company's roo
 | `NS` | `pdns1/pdns2.registrar-servers.com` | DNS is at Namecheap (PremiumDNS, bought 2026-07-26). |
 | `MX @` | `1 smtp.google.com` | Google Workspace receives root-domain mail. |
 | `TXT @` | `v=spf1 include:_spf.google.com ~all` | Google Workspace is authorized to send root-domain mail. |
-| `MX send` | Resend EU feedback endpoint, priority 10 | Pending at Namecheap as of 2026-08-25. This is the Resend return path, not inbound company mail. |
-| `TXT send` | Resend SPF policy | Pending at Namecheap as of 2026-08-25. |
-| `TXT resend._domainkey` | Resend DKIM public key | Pending at Namecheap as of 2026-08-25. |
+| `MX send` | Resend EU feedback endpoint, priority 10 | Live at Namecheap since 2026-08-30. This is the Resend return path, not inbound company mail. |
+| `TXT send` | Resend SPF policy | Live at Namecheap since 2026-08-30. |
+| `TXT resend._domainkey` | Resend DKIM public key | Live at Namecheap since 2026-08-30. |
 
 Vercel issued auto-renewing HTTPS certificates for both hostnames. Both names serve the production page. The enhanced JSON form path and the native form-encoded fallback were each tested through the custom domain, verified in private Blob storage, and removed afterward so no synthetic submission remains.
 
