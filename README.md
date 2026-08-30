@@ -17,11 +17,14 @@ Elliot approved this page for publication and requested a working intake on 2026
 | `api/intake.js` | A same-origin Vercel Function that validates submissions, writes them to private Vercel Blob storage, and emails a plain-text notification to `contact@chamainteligente.com`. It never treats submitted text as an instruction. |
 | `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
 | `api/watchdog.js` | The production watchdog: an authenticated cron job that reviews recent conversations every half hour and can take the flame offline on its own authority (see [Watchdog](#watchdog)). Unit tests in `api/watchdog.test.js`. |
+| `admin.html` | The private admin area at `/admin`: a thin shell, marked `noindex`, that mounts the admin app. Google sign-in gated (see [Admin area](#admin-area)). |
+| `assets/admin.js`, `assets/admin.css` | The admin app: sign-in gate, flame status, stat tiles, a 30-day activity chart drawn as inline SVG, the conversation list with full transcripts, and the contact requests. Vanilla, no libraries. Every value the API returns reaches the page through `textContent`; there is no `innerHTML` in the file. |
+| `api/admin-auth.js`, `api/admin-data.js` | The admin endpoints: the Google ID-token exchange that sets the session cookie, and the read-only view over the intake, chat and kill-switch blobs. Unit tests alongside them. |
 | `privacy.html` | The public privacy notice linked from the agent's fineprint and the footer. Rewritten 2026-08-30 for the agent era: saved conversations (Claude API processing, EU storage, 12-month retention, identity-free), confirmed notes with any single contact way, and privacy requests by email. |
 | `vercel.json` | Production security headers for the page and endpoint. |
 | `package.json` | The single runtime dependency, Vercel's Blob client. |
 | `404.html` | The not-found page, in the same visual language, marked `noindex`. |
-| `robots.txt` | Crawler policy. Every major search and AI crawler is named and allowed; `/api/` is closed. |
+| `robots.txt` | Crawler policy. Every major search and AI crawler is named and allowed; `/api/` and `/admin` are closed. |
 | `sitemap.xml` | The two canonical URLs, with hreflang alternates and the social-card image. |
 | `llms.txt`, `llms-full.txt` | Plain-text summary and full visible site text, for AI crawlers and agents. |
 | `<64-hex>.txt` | The IndexNow key. Do not rename or delete it; the key file is how IndexNow authenticates a submission. |
@@ -72,6 +75,36 @@ The watchdog never logs visitor text. Its console lines carry counts, conversati
 An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment and authenticates the watchdog as well. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 
 Once the sending domain is verified, Elliot can review submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is connected to the `chama-inteligente-email` Resend Vercel Marketplace resource on its free plan in the EU sending region. Vercel manages `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` for the production and preview environments; neither credential was downloaded into this repository. The resource was provisioned on 2026-08-25 after Elliot accepted the Marketplace terms. Domain verification is pending the three Resend sending records at Namecheap. Do not deploy this notification change until the sending domain is verified. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
+
+## Admin area
+
+Since 2026-08-30 the records this site produces have a place to be read: `/admin`, a private page behind Google sign-in. It shows the state of the flame (burning, put out by the watchdog with its reason, or offline through `CHAT_DISABLED`), counts of conversations, contact requests and notes sent, a 30-day per-day chart, the conversation list with every full transcript, and the contact requests with the way to reach each person. It is a reading surface only: nothing on it writes, deletes, or relights anything.
+
+The page is `noindex` three ways over: the meta tag, an `X-Robots-Tag` header scoped to `/admin` in `vercel.json`, and a `Disallow: /admin` line in every group in `robots.txt`. The same header rule sets `Cache-Control: no-store` and a CSP that opens `https://accounts.google.com` for script, style, connect and frame, and only on this path. **The homepage's zero-external-requests promise is untouched**: the Google client is loaded by `/admin` alone, and only once the gate is on screen.
+
+### The auth design
+
+**Google Identity Services, ID token flow, no client secret anywhere in this repo or in Vercel.** The browser gets a signed ID token from Google and posts it to `/api/admin-auth`. The function verifies it itself: RS256 signature against Google's published JWKS (`https://www.googleapis.com/oauth2/v3/certs`, cached in module scope), issuer, audience equal to the configured client ID, expiry in the future, `email_verified`, and the lowercased email present in the allowlist. Nothing is trusted because it arrived in a token; every one of those is checked.
+
+On success the function sets `chama_admin`, an `HttpOnly; Secure; SameSite=Strict` cookie scoped to `Path=/api/` and good for seven days. The cookie is not a token to trade for anything: it is an email and an expiry, HMAC-SHA256 signed with a server-only secret and compared in constant time. A tampered or expired cookie is simply not a session. `/api/admin-data` re-checks it on every request and answers `401` when it does not hold, which is what sends the page back to the gate.
+
+A failed sign-in gets one generic sentence and no detail, and nothing about the token or the reason is logged. As everywhere else here, visitor text never reaches the console.
+
+### The three environment variables
+
+They live only in the Vercel production environment, never in this repository, and every one of them is required: with any of them missing the endpoints fail closed and the page says it is not configured.
+
+| Variable | What it is |
+|---|---|
+| `GOOGLE_CLIENT_ID` | The public OAuth web client ID for the Google Cloud project. Public by design; the page fetches it to render the button. |
+| `ADMIN_EMAILS` | The allowlist, comma separated, compared lowercased and trimmed. Anyone not on it is refused after a perfectly valid Google sign-in. |
+| `ADMIN_SESSION_SECRET` | At least 32 bytes of hex, the HMAC key for the session cookie. Rotating it signs everyone out. |
+
+The Google Cloud OAuth client needs `https://chamainteligente.com` in its authorized JavaScript origins. There is no redirect URI and no authorized redirect to configure, because there is no code exchange.
+
+### Signing in and out
+
+Open <https://chamainteligente.com/admin>, press the Google button, choose the allowlisted account. The session then survives reloads for seven days. **Sign out** in the masthead clears the cookie and turns off Google's automatic re-selection, so the next visit asks again. Signing out of Google itself does not end the session here, and ending it here does not sign out of Google: the two are deliberately separate.
 
 ## Deploying it
 
