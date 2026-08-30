@@ -879,8 +879,16 @@
        with no hard edges, and the governor can drop it to 1x once it has shed
        every particle it is allowed to shed and is still late. It never climbs
        back: a screen that could not hold 1.5x will not hold it a second time,
-       and rebuilding the buffers on a hunch is its own stall. */
+       and rebuilding the buffers on a hunch is its own stall.
+
+       On touch the fire buffer itself is rendered under CSS resolution and
+       upscaled when it is composited: every particle, lobe and blob is a
+       drawImage into that buffer, so its pixel count is where the frame is
+       actually spent, and a soft additive field survives a 0.7 upscale
+       without an edge to give it away. The buffer is addressed through its
+       transform, so nothing in the draw path knows the difference. */
     var dprCap = touchDevice ? 1.25 : 2;
+    var FIRE_SCALE = touchDevice ? 0.7 : 1;
 
     function layout() {
       DPR = Math.min(window.devicePixelRatio || 1, dprCap);
@@ -893,9 +901,10 @@
       canvas.width = Math.max(1, Math.round(W * DPR));
       canvas.height = Math.max(1, Math.round(H * DPR));
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      fireBuf.width = canvas.width;
-      fireBuf.height = canvas.height;
-      fx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      var fs = DPR * FIRE_SCALE;
+      fireBuf.width = Math.max(1, Math.round(W * fs));
+      fireBuf.height = Math.max(1, Math.round(H * fs));
+      fx.setTransform(fs, 0, 0, fs, 0, 0);
       var ms = DPR * MIRROR_SCALE;
       mirrorBuf.width = Math.max(1, Math.round(W * ms));
       mirrorBuf.height = Math.max(1, Math.round(H * ms));
@@ -1455,7 +1464,7 @@
 
       // the fire itself is painted into its own buffer, never straight onto
       // the room, because the room needs it twice
-      fx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      fx.setTransform(DPR * FIRE_SCALE, 0, 0, DPR * FIRE_SCALE, 0, 0);
       fx.globalCompositeOperation = "source-over";
       fx.clearRect(0, 0, W, H);
       fx.globalCompositeOperation = "lighter";
