@@ -649,8 +649,11 @@
       line-height: 1.4;
     }
 
+    /* The page goes dark twice: here, and again in the flame room. Both use
+       the same ground, so the dark reads as one material the page returns
+       to rather than as two nearly matching blacks. */
     .outcome {
-      background: var(--ink);
+      background: #0e0c0a;
       color: var(--paper);
     }
 
