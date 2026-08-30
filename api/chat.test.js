@@ -2,12 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  KILL_SWITCH_KEY,
+  MESSAGES,
   buildConversationRecord,
   clampExperience,
   countUserTurns,
   executeNoteTool,
+  isFlameKilled,
   normalizeConversationId,
   persistConversation,
+  resetKillSwitchCache,
   validateChatMessages
 } from "./chat.js";
 
@@ -522,4 +526,97 @@ test("the record builder is pure and returns exactly the stored shape", () => {
     "turns",
     "updatedAt"
   ]);
+});
+
+// The watchdog's kill switch, from the chat side. The blob is written by
+// api/watchdog.js; this is the read that makes it bite.
+
+function killSwitchDeps(overrides = {}) {
+  const calls = { get: [] };
+  const { disabled = null, at = 1_000_000, ...rest } = overrides;
+
+  const deps = {
+    now: () => at,
+    get: async (key, options) => {
+      calls.get.push({ key, options });
+      return disabled === null ? null : { text: async () => JSON.stringify({ disabled }) };
+    },
+    ...rest
+  };
+
+  return { calls, deps };
+}
+
+test("a disabled kill switch takes the flame offline", async () => {
+  resetKillSwitchCache();
+  const { calls, deps } = killSwitchDeps({ disabled: true });
+
+  assert.equal(await isFlameKilled(deps), true);
+  assert.equal(calls.get.length, 1);
+  assert.equal(calls.get[0].key, KILL_SWITCH_KEY);
+  assert.equal(calls.get[0].options.access, "private");
+  assert.match(MESSAGES.offline, /resting right now/);
+});
+
+test("no kill switch blob leaves the flame burning", async () => {
+  resetKillSwitchCache();
+  const { deps } = killSwitchDeps({ disabled: null });
+
+  assert.equal(await isFlameKilled(deps), false);
+});
+
+test("a kill switch blob that says disabled false leaves the flame burning", async () => {
+  resetKillSwitchCache();
+  const { deps } = killSwitchDeps({ disabled: false });
+
+  assert.equal(await isFlameKilled(deps), false);
+});
+
+test("the check is cached for a minute, positive and negative alike", async () => {
+  resetKillSwitchCache();
+  const { calls, deps } = killSwitchDeps({ disabled: true, at: 1_000_000 });
+
+  assert.equal(await isFlameKilled(deps), true);
+  assert.equal(await isFlameKilled({ ...deps, now: () => 1_059_999 }), true);
+  assert.equal(calls.get.length, 1);
+
+  resetKillSwitchCache();
+  const clear = killSwitchDeps({ disabled: null, at: 2_000_000 });
+  assert.equal(await isFlameKilled(clear.deps), false);
+  assert.equal(await isFlameKilled({ ...clear.deps, now: () => 2_059_999 }), false);
+  assert.equal(clear.calls.get.length, 1);
+});
+
+test("the cache expires after a minute and the blob is read again", async () => {
+  resetKillSwitchCache();
+  const { calls, deps } = killSwitchDeps({ disabled: true, at: 1_000_000 });
+
+  assert.equal(await isFlameKilled(deps), true);
+  assert.equal(await isFlameKilled({ ...deps, now: () => 1_060_001 }), true);
+  assert.equal(calls.get.length, 2);
+});
+
+test("a blob read error fails open so a storage outage never takes the chat down", async () => {
+  resetKillSwitchCache();
+  let reads = 0;
+  const deps = {
+    now: () => 3_000_000,
+    get: async () => {
+      reads += 1;
+      throw new Error("BlobServiceNotAvailable");
+    }
+  };
+
+  assert.equal(await isFlameKilled(deps), false);
+  assert.equal(reads, 1);
+});
+
+test("unreadable kill switch content fails open", async () => {
+  resetKillSwitchCache();
+  const deps = {
+    now: () => 4_000_000,
+    get: async () => ({ text: async () => "not json" })
+  };
+
+  assert.equal(await isFlameKilled(deps), false);
 });

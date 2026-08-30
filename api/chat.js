@@ -13,7 +13,7 @@
 // only, and no IP address, user agent or header is ever stored.
 
 import Anthropic from "@anthropic-ai/sdk";
-import { put } from "@vercel/blob";
+import { get, put } from "@vercel/blob";
 
 import { MODEL, SYSTEM_PROMPT, TOOLS } from "./chat-prompt.js";
 import { buildRecord, sendNotification, validate } from "./intake.js";
@@ -293,6 +293,59 @@ export async function persistConversation(
   }
 }
 
+// The watchdog's kill switch (see api/watchdog.js). When it finds that an
+// attack landed it writes ops/kill-switch.json, and this is the read that
+// makes that authority real: a disabled switch turns every request into the
+// offline reply until Elliot deletes the blob by hand.
+//
+// The check is cached in module scope for a minute, positive and negative
+// alike, so it costs one blob read per warm instance per minute rather than
+// one per visitor message. A read that fails is cached the same way and fails
+// OPEN: a blob outage must never take the chat down, and the switch is retried
+// a minute later regardless.
+export const KILL_SWITCH_KEY = "ops/kill-switch.json";
+
+const KILL_SWITCH_TTL_MS = 60 * 1000;
+
+let killSwitchCache = null;
+
+export function resetKillSwitchCache() {
+  killSwitchCache = null;
+}
+
+async function readBlobText(result) {
+  if (!result) return null;
+  if (typeof result.text === "function") return await result.text();
+  if (result.stream) return await new Response(result.stream).text();
+  return null;
+}
+
+export async function isFlameKilled(dependencies = {}) {
+  const deps = { get, now: () => Date.now(), ...dependencies };
+  const at = deps.now();
+
+  if (killSwitchCache && at - killSwitchCache.checkedAt < KILL_SWITCH_TTL_MS) {
+    return killSwitchCache.disabled;
+  }
+
+  let disabled = false;
+  try {
+    const text = await readBlobText(
+      await deps.get(KILL_SWITCH_KEY, { access: "private", useCache: false })
+    );
+    disabled = text ? JSON.parse(text)?.disabled === true : false;
+  } catch (error) {
+    console.error(
+      "Kill switch read failed",
+      error instanceof Error ? error.name : "UnknownError"
+    );
+    disabled = false;
+  }
+
+  killSwitchCache = { checkedAt: at, disabled };
+  return disabled;
+}
+
 export function friendlyErrorFor(error) {
   if (error instanceof Anthropic.RateLimitError) {
     return { message: MESSAGES.overwhelmed, status: 503 };
@@ -407,6 +460,11 @@ export default {
     // CHAT_DISABLED is the kill switch: any non-empty value takes the flame
     // offline without touching the key. Set it in Vercel and redeploy.
     if (process.env.CHAT_DISABLED || !process.env.ANTHROPIC_API_KEY) {
+      return json({ error: MESSAGES.offline }, 503);
+    }
+
+    // The watchdog's switch, which it can throw on its own authority.
+    if (await isFlameKilled()) {
       return json({ error: MESSAGES.offline }, 503);
     }
 
