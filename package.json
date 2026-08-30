@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "evals": "node evals/run.js",
-    "check": "node --check api/intake.js && node --check api/intake-cleanup.js && node --check api/chat.js && node --check api/chat-prompt.js && node --test api/intake.test.js api/chat.test.js"
+    "check": "node --check api/intake.js && node --check api/intake-cleanup.js && node --check api/chat.js && node --check api/chat-prompt.js && node --check api/watchdog.js && node --test api/intake.test.js api/chat.test.js api/watchdog.test.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

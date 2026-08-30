@@ -43,6 +43,10 @@
     {
       "path": "/api/intake-cleanup",
       "schedule": "15 3 * * *"
+    },
+    {
+      "path": "/api/watchdog",
+      "schedule": "5,35 * * * *"
     }
   ],
   "headers": [
