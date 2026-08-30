@@ -104,11 +104,16 @@ body.chama-agent-page {
   z-index: 60;
 }
 
-/* pinned, the transcript is the only scroller that matters: an overscroll
-   at either end must not reach the page sitting behind the sheet */
+/* pinned, the transcript is the only scroller that matters: it is open
+   whatever the seat says, since the room is the whole screen and there is
+   nothing else a finger could mean, and an overscroll at either end must
+   not reach the page sitting behind the sheet */
 .chama-agent-mode-page .stage,
 .chama-agent.kb-pin .stage {
   overscroll-behavior-y: contain;
+}
+.chama-agent.kb-pin.seat-pending .stage {
+  overflow-y: auto;
 }
 
 /* and the room spends what the keyboard left on the conversation: the fine

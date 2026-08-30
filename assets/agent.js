@@ -2735,7 +2735,6 @@
       writeViewport();
       rootEl.classList.add("kb-pin");
       rootEl.classList.add("kb-open");
-      rootEl.classList.remove("seat-pending");
       window.requestAnimationFrame(function () {
         writeViewport();
         if (stageNear) toBottom();
