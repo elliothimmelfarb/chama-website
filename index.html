@@ -747,10 +747,10 @@
       overflow: hidden;
     }
 
-    .flame-room #agent-embed {
-      width: 100%;
-      height: 100%;
-    }
+    /* The mounted room sizes itself (agent.css owns .chama-agent-mode-embed),
+       and it has to be able to leave that size behind when a phone keyboard
+       pins it to the visual viewport. An id rule here would outrank every
+       class rule in agent.css and hold it at the room's height. */
 
     .flame-noscript {
       margin: 0;
