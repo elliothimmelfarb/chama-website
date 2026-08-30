@@ -664,57 +664,36 @@ body.chama-agent-page {
 }
 .chama-agent .turn-system.ok { color: var(--ember); }
 
-/* ---------- the ember ----------
-   One small flame, drawn inline, used three ways: the indicator that holds
-   the place of a reply that has not started, the cursor at the end of the
-   text while it streams, and the send button's state while the agent works.
-   It breathes on two slightly different periods so the flicker never looks
-   like a loop. No image, no font, no request. */
+/* ---------- the wisp ----------
+   Not an icon of a flame: a small canvas holding a live piece of the fire,
+   burning whatever colour the fire is burning. It is used twice, and only
+   ever once at a time: as the indicator that holds the place of a reply that
+   has not started, and as the cursor at the end of the text while it streams.
+   The particles, the colour and the loop are all in agent.js; the CSS only
+   places the box. No image, no font, no request. */
 
-.chama-agent .ember {
+.chama-agent .wisp {
   display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  transform-box: fill-box;
-  transform-origin: 50% 96%;
-  animation: chama-ember 1.55s ease-in-out infinite;
-}
-.chama-agent .ember-body { fill: var(--ember); }
-.chama-agent .ember-core {
-  fill: #ffd9ad;
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: chama-ember-core 1.13s ease-in-out infinite;
-}
-
-@keyframes chama-ember {
-  0%, 100% { transform: scale(1, 1); opacity: 0.95; }
-  28% { transform: scale(0.93, 1.08); opacity: 1; }
-  54% { transform: scale(1.05, 0.94); opacity: 0.84; }
-  79% { transform: scale(0.97, 1.05); opacity: 1; }
-}
-@keyframes chama-ember-core {
-  0%, 100% { opacity: 0.9; transform: scaleY(1); }
-  38% { opacity: 0.42; transform: scaleY(0.82); }
-  71% { opacity: 1; transform: scaleY(1.1); }
+  width: 26px;
+  height: 30px;
 }
 
 /* the place the reply will appear, held from the moment you send */
 .chama-agent .turn-thinking .turn-body { min-height: 1.7em; }
-.chama-agent .ember-wrap {
+.chama-agent .wisp-wrap {
   display: inline-block;
-  width: 0.62em;
-  height: 0.86em;
-  vertical-align: -0.1em;
+  width: 26px;
+  height: 30px;
+  margin: -0.5em 0 -0.55em;
+  vertical-align: -0.55em;
 }
 
 .chama-agent .caret {
   display: inline-block;
-  width: 0.6em;
-  height: 0.84em;
-  margin-left: 0.14em;
-  vertical-align: -0.08em;
+  width: 26px;
+  height: 30px;
+  margin: -0.5em 0 -0.55em 0.05em;
+  vertical-align: -0.55em;
 }
 
 .chama-agent .frag {
@@ -877,18 +856,46 @@ body.chama-agent-page {
   outline-offset: 2px;
 }
 .chama-agent .send-arrow { width: 1.05rem; height: 1.05rem; display: block; }
-.chama-agent .send-flame {
+
+/* ---------- the ember orb ----------
+   While a reply is on its way the disc's interior is molten: white gold at
+   the core cooling to ember, breathing slowly. It is painted as a true
+   circle, and the gradient reaches full transparency well inside the disc's
+   radius, so the dimmest frame of the breath can never leave a square behind.
+   The disc clips it as well, and nothing here casts a shadow. */
+
+.chama-agent .send-orb {
   display: none;
-  width: 0.7rem;
-  height: 0.95rem;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle 1.25rem at 50% 50%,
+    rgba(255, 249, 234, 0.98) 0%,
+    rgba(255, 214, 143, 0.86) 12%,
+    rgba(252, 146, 54, 0.62) 26%,
+    rgba(226, 80, 22, 0.34) 40%,
+    rgba(150, 40, 8, 0.10) 52%,
+    rgba(90, 22, 4, 0) 62%);
+  opacity: 1;
+  transform: none;
+  pointer-events: none;
 }
 .chama-agent .send:disabled { cursor: default; }
 .chama-agent .send.busy {
+  position: relative;
+  overflow: hidden;
   border-color: rgba(244, 88, 31, 0.5);
   background: rgba(244, 88, 31, 0.14);
 }
 .chama-agent .send.busy .send-arrow { display: none; }
-.chama-agent .send.busy .send-flame { display: block; }
+.chama-agent .send.busy .send-orb {
+  display: block;
+  animation: chama-orb 1.2s ease-in-out infinite alternate;
+}
+@keyframes chama-orb {
+  from { opacity: 0.46; transform: scale(0.84); }
+  to { opacity: 1; transform: scale(1.04); }
+}
 
 .chama-agent .fineprint {
   margin: 0.7rem 0.35rem 0;
@@ -918,9 +925,9 @@ body.chama-agent-page {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  /* the ember stops flickering and simply sits there, still and lit */
-  .chama-agent .ember,
-  .chama-agent .ember-core {
+  /* the orb stops breathing and simply sits there, still and lit; the wisp
+     is drawn once by agent.js and never animates */
+  .chama-agent .send-orb {
     animation: none !important;
     transform: none !important;
     opacity: 1;

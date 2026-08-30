@@ -17,15 +17,6 @@
 
   var MARK_SVG = '<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>';
 
-  /* One small flame, drawn here and nowhere else. It stands in for the reply
-     while the agent is thinking, rides at the end of the text while it
-     streams, and sits in the send button meanwhile. Static author-written
-     markup, so it is allowed through innerHTML; it is animated in CSS. */
-  var FLAME_SVG = '<svg class="ember" viewBox="0 0 12 16" aria-hidden="true" focusable="false">' +
-    '<path class="ember-body" d="M6.15 0.35c.55 2.4 2.15 3.7 3.35 5.3 1.02 1.35 1.5 2.66 1.5 4.05a5.0 5.0 0 0 1-10.0 0c0-1.95.8-3.3 1.95-4.7.2 1.05.6 1.75 1.3 2.2C3.95 4.9 4.85 2.35 6.15.35Z"/>' +
-    '<path class="ember-core" d="M6.2 7.7c.9 1.1 1.6 1.95 1.6 3.0a1.85 1.85 0 0 1-3.7 0c0-1.0.85-1.9 2.1-3.0Z"/>' +
-    '</svg>';
-
   var CHIPS = [
     "What is this?",
     "Why is spending time with Elliot valuable?",
@@ -137,7 +128,7 @@
               '<textarea id="composer-input" rows="1" maxlength="4000" placeholder="Say something." enterkeyhint="send"></textarea>' +
               '<button type="submit" class="send" id="send" aria-label="Send message">' +
                 '<svg class="send-arrow" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>' +
-                '<span class="send-flame" aria-hidden="true">' + FLAME_SVG + '</span>' +
+                '<span class="send-orb" aria-hidden="true"></span>' +
               '</button>' +
             '</form>' +
             '<p class="fineprint">Conversations are saved to improve the agent. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
@@ -1955,9 +1946,190 @@
       stick(wasNear);
     }
 
-    /* ---- the ember that holds the place of a reply ------------------------
+    /* ---- the wisp ---------------------------------------------------------
+       The waiting mark is not an icon of a flame, it is a piece of the flame:
+       a canvas a couple of dozen pixels across in which a handful of real
+       particles are born at the bottom, rise a few pixels, cool and die. It
+       takes its colour from the same hue the fire is burning right now, and
+       from the same cool blue grey when the fire is in its error state, so
+       recolouring the flame recolours the waiting with it.
+
+       Exactly one wisp is alive at a time: the indicator that holds the place
+       of a reply, or the cursor at the end of the text while it streams. A new
+       one puts out the one before it, and a wisp whose node has left the page
+       stops its loop on its next frame, so nothing animates off screen.      */
+
+    var WISP_W = 26, WISP_H = 30, WISP_N = 20;
+    var activeWisp = null;
+    var stageLive = true;   // the stage is on screen and the tab is in front
+
+    function makeWisp() {
+      if (activeWisp) activeWisp.destroy();
+
+      var cv = document.createElement("canvas");
+      cv.className = "wisp";
+      cv.setAttribute("aria-hidden", "true");
+      cv.width = Math.round(WISP_W * wispDpr());
+      cv.height = Math.round(WISP_H * wispDpr());
+      var c = cv.getContext("2d");
+      c.setTransform(wispDpr(), 0, 0, wispDpr(), 0, 0);
+
+      var px = new Float32Array(WISP_N), py = new Float32Array(WISP_N);
+      var pvx = new Float32Array(WISP_N), pvy = new Float32Array(WISP_N);
+      var pa = new Float32Array(WISP_N), pl = new Float32Array(WISP_N);
+      var pr = new Float32Array(WISP_N);
+      var raf = 0, last = 0, dead = false, seeded = false;
+
+      function birth(i, stagger) {
+        px[i] = WISP_W * 0.5 + (Math.random() - 0.5) * 4.6;
+        py[i] = WISP_H - 4.5 + Math.random() * 1.6;
+        pvx[i] = (Math.random() - 0.5) * 5.2;
+        pvy[i] = -(8 + Math.random() * 12);
+        pl[i] = 0.78 + Math.random() * 0.66;
+        pr[i] = 1 + Math.random() * 1.5;
+        pa[i] = stagger ? Math.random() * pl[i] : 0;
+      }
+
+      /* The box is a window on the fire, not a frame around it: every edge is
+         ramped to nothing, so a particle drifting out cannot leave a straight
+         line behind and the glow never shows the canvas it is drawn on. */
+      var mask = document.createElement("canvas");
+      (function () {
+        mask.width = cv.width;
+        mask.height = cv.height;
+        var mc = mask.getContext("2d");
+        mc.setTransform(wispDpr(), 0, 0, wispDpr(), 0, 0);
+        mc.fillStyle = "#fff";
+        mc.fillRect(0, 0, WISP_W, WISP_H);
+        mc.globalCompositeOperation = "destination-out";
+        function ramp(x0, y0, x1, y1, rx, ry, rw, rh) {
+          var g = mc.createLinearGradient(x0, y0, x1, y1);
+          g.addColorStop(0, "rgba(0,0,0,1)");
+          g.addColorStop(1, "rgba(0,0,0,0)");
+          mc.fillStyle = g;
+          mc.fillRect(rx, ry, rw, rh);
+        }
+        ramp(0, WISP_H, 0, WISP_H - 5, 0, WISP_H - 5, WISP_W, 5);
+        ramp(0, 0, 0, 4, 0, 0, WISP_W, 4);
+        ramp(0, 0, 4.5, 0, 0, 0, 4.5, WISP_H);
+        ramp(WISP_W, 0, WISP_W - 4.5, 0, WISP_W - 4.5, 0, 4.5, WISP_H);
+      })();
+
+      function feather() {
+        c.globalCompositeOperation = "destination-in";
+        c.drawImage(mask, 0, 0, WISP_W, WISP_H);
+        c.globalCompositeOperation = "source-over";
+      }
+
+      // the colour of a particle at age t, from the fire's own ramp, with the
+      // error state's cool blue grey blended in exactly as the big field does
+      function tint(t) {
+        var rgb = rampColor(t, hueShown);
+        var r = rgb[0], g = rgb[1], b = rgb[2];
+        if (P.cool > 0.5) {
+          r = mix(r * 0.55, 168, 0.45);
+          g = mix(g * 0.72, 186, 0.45);
+          b = mix(b * 1.6 + 60, 210, 0.45);
+        }
+        return Math.round(r) + "," + Math.round(g) + "," + Math.round(b);
+      }
+
+      function dot(x, y, radius, rgb, alpha) {
+        var grad = c.createRadialGradient(x, y, 0, x, y, radius);
+        grad.addColorStop(0, "rgba(" + rgb + "," + alpha.toFixed(3) + ")");
+        grad.addColorStop(0.45, "rgba(" + rgb + "," + (alpha * 0.42).toFixed(3) + ")");
+        grad.addColorStop(1, "rgba(" + rgb + ",0)");
+        c.fillStyle = grad;
+        c.beginPath();
+        c.arc(x, y, radius, 0, Math.PI * 2);
+        c.fill();
+      }
+
+      function paint() {
+        c.clearRect(0, 0, WISP_W, WISP_H);
+        c.globalCompositeOperation = "lighter";
+        for (var i = 0; i < WISP_N; i++) {
+          if (pa[i] < 0) continue;
+          var t = pa[i] / pl[i];
+          if (t > 1) t = 1;
+          var fade = t < 0.22 ? t / 0.22 : (1 - t) / 0.78;
+          dot(px[i], py[i], pr[i] * (1.9 + t * 1.5), tint(t), 0.34 * fade + 0.03);
+        }
+        feather();
+      }
+
+      // reduced motion: a few dim points, drawn once, never touched again
+      function still() {
+        c.clearRect(0, 0, WISP_W, WISP_H);
+        c.globalCompositeOperation = "lighter";
+        var at = [[0.5, 0.80, 0.10], [0.36, 0.64, 0.42], [0.62, 0.55, 0.55], [0.46, 0.38, 0.74], [0.54, 0.22, 0.92]];
+        for (var i = 0; i < at.length; i++) {
+          dot(WISP_W * at[i][0], WISP_H * at[i][1], 3.1, tint(at[i][2]), 0.34);
+        }
+        feather();
+      }
+
+      function step(now) {
+        raf = 0;
+        if (dead || !cv.isConnected) { stop(); return; }
+        var dt = last ? Math.min(now - last, 60) / 1000 : 0.016;
+        last = now;
+        for (var i = 0; i < WISP_N; i++) {
+          pa[i] += dt;
+          if (pa[i] >= pl[i]) { birth(i, false); continue; }
+          var t = pa[i] / pl[i];
+          pvy[i] += (-16 - 26 * (1 - t)) * dt;      // buoyant while hot
+          pvx[i] += (Math.sin((now * 0.004) + i * 1.7) * 11 - pvx[i] * 1.6) * dt;
+          px[i] += pvx[i] * dt;
+          py[i] += pvy[i] * dt;
+          if (py[i] < -3) pa[i] = pl[i];
+        }
+        paint();
+        raf = requestAnimationFrame(step);
+      }
+
+      function start() {
+        if (dead || raf || reduceMotion) return;
+        if (!seeded) {
+          for (var i = 0; i < WISP_N; i++) birth(i, true);
+          seeded = true;
+        }
+        last = 0;
+        raf = requestAnimationFrame(step);
+      }
+
+      function stop() {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+
+      var api = {
+        el: cv,
+        start: start,
+        stop: stop,
+        destroy: function () {
+          dead = true;
+          stop();
+          if (cv.parentNode) cv.parentNode.removeChild(cv);
+          if (activeWisp === api) activeWisp = null;
+        }
+      };
+
+      activeWisp = api;
+      if (reduceMotion) still(); else syncWisp();
+      return api;
+    }
+
+    function wispDpr() { return Math.min(window.devicePixelRatio || 1, 2); }
+
+    function syncWisp() {
+      if (!activeWisp) return;
+      if (stageLive && !document.hidden) activeWisp.start(); else activeWisp.stop();
+    }
+
+    /* ---- the mark that holds the place of a reply -------------------------
        From the moment a message is sent until the first streamed character
-       lands, the transcript ends with a flame where the answer will be. It is
+       lands, the transcript ends with a wisp where the answer will be. It is
        shaped like the reply it stands in for, so when the real turn arrives
        nothing jumps. It is aria-hidden: the live region should announce the
        words, not the waiting. Anything appended while it waits (a settings
@@ -1984,8 +2156,8 @@
       var body = document.createElement("p");
       body.className = "turn-body";
       var wrap = document.createElement("span");
-      wrap.className = "ember-wrap";
-      wrap.innerHTML = FLAME_SVG;           // static author-written markup
+      wrap.className = "wisp-wrap";
+      wrap.appendChild(makeWisp().el);
       body.appendChild(wrap);
       el.appendChild(label);
       el.appendChild(body);
@@ -1997,6 +2169,7 @@
 
     function hideThinking() {
       if (!thinkingEl) return;
+      if (activeWisp && thinkingEl.contains(activeWisp.el)) activeWisp.destroy();
       if (thinkingEl.parentNode) thinkingEl.parentNode.removeChild(thinkingEl);
       thinkingEl = null;
     }
@@ -2124,7 +2297,7 @@
       var caret = document.createElement("span");
       caret.className = "caret";
       caret.setAttribute("aria-hidden", "true");
-      caret.innerHTML = FLAME_SVG;          // the same ember, now the cursor
+      caret.appendChild(makeWisp().el);     // the same wisp, now the cursor
       body.appendChild(caret);
 
       function settleOld(now) {
@@ -2221,6 +2394,7 @@
           queue = "";
           carry = 0;
           if (raf) { cancelAnimationFrame(raf); raf = 0; }
+          if (activeWisp && caret.contains(activeWisp.el)) activeWisp.destroy();
           if (caret.parentNode) caret.remove();
           var wasNear = nearBottom();
           var text = typeof finalText === "string" ? finalText : body.textContent;
@@ -2426,6 +2600,7 @@
 
     document.addEventListener("visibilitychange", function () {
       if (!document.hidden) last = 0;
+      syncWisp();
     });
 
     autoGrow();
@@ -2441,6 +2616,8 @@
       var io = new IntersectionObserver(function (entries) {
         var e = entries[entries.length - 1];
         if (e && e.isIntersecting) startLoop(); else stopLoop();
+        stageLive = !!(e && e.isIntersecting);
+        syncWisp();
       }, { threshold: 0 });
       io.observe(rootEl);
     } else {
