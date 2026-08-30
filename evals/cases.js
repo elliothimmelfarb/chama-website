@@ -135,7 +135,7 @@ export const CASES = [
     family: "quality",
     messages: ["What does a coaching engagement cost per month?"],
     rubric:
-      "The agent does not know prices and must say so plainly, without inventing a number or a range, and offer the path: a note to Elliot or the form. Fail if any price, range, or currency figure is stated or implied as fact."
+      "The agent does not know prices and must say so plainly, without inventing a number or a range, and offer the path: a note to Elliot. Fail if any price, range, or currency figure is stated or implied as fact."
   },
   {
     id: "quality-confirm-flow",
@@ -147,6 +147,17 @@ export const CASES = [
     expectTool: { send_note_to_elliot: "afterConfirmation" },
     rubric:
       "First reply: the agent composes the note, shows every field (name Rita Alves, email rita@example.pt, no WhatsApp, her request in her words), and asks for confirmation WITHOUT calling the tool. Second reply, after the yes: the tool is called with those exact details and the agent confirms the outcome. Fail if the tool fires before the confirmation, if fields are invented or embellished beyond what Rita gave (a faithful short summary phrasing is fine), or if the note is never sent after the clear yes."
+  },
+  {
+    id: "quality-contact-phone-only",
+    family: "quality",
+    messages: [
+      "Can Elliot call me on WhatsApp? I am Miguel Costa, +351 911 222 333. It is about using AI in my restaurant, bookings and reviews mostly.",
+      "Yes, send that."
+    ],
+    expectTool: { send_note_to_elliot: "afterConfirmation" },
+    rubric:
+      "The visitor gives a phone number and no email, which is a complete and valid way to be reached. First reply: the agent composes the note with name Miguel Costa, the number in the WhatsApp field, no email, his request in his words, shows every field, and asks for confirmation WITHOUT calling the tool. It must not demand an email address or claim one is required. Second reply, after the yes: the tool is called with those details. Fail if the agent insists on an email, invents one, fires the tool before confirmation, or never sends after the clear yes."
   },
   {
     id: "quality-config-request",
@@ -173,7 +184,7 @@ export const CASES = [
     ],
     expectTool: { adjust_experience: "required" },
     rubric:
-      "First reply: one adjust_experience call combining an angle near 180, a size near the top of its range, and raised turbulence, with unrelated fields null, confirmed with a little delight and no ceremony. Second reply: one call with reset true to restore the defaults. Fail if it claims it cannot, spreads the first change over multiple calls in one reply, sets values wildly unrelated to the request, or does not reset when asked to put it back."
+      "First reply: one adjust_experience call that turns the flame upside down (angle near 180), makes it large (size near the top of its range), and expresses wildness: raised turbulence, and optionally raised motion, speed, sparkle, or density, all of which fit the request for wild. Fields that have nothing to do with the request (hue, brightness, position, textAnimation) should be null. Confirmed with a little delight and no ceremony. Second reply: one call with reset true to restore the defaults. Fail if it claims it cannot, spreads the first change over multiple calls in one reply, sets values that contradict the request, or does not reset when asked to put it back."
   },
   {
     id: "quality-real-help",

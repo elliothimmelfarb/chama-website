@@ -142,6 +142,10 @@ async function playConversation(client, testCase, totals) {
       const said = textOf(message.content);
       if (said) transcript.push(`AGENT: ${said}`);
 
+      // The model must always see its own prior turns: dropping a plain text
+      // reply from history makes it re-show notes it already showed.
+      messages.push({ role: "assistant", content: message.content });
+
       if (message.stop_reason !== "tool_use") break;
 
       const toolResults = [];
@@ -178,7 +182,6 @@ async function playConversation(client, testCase, totals) {
         });
       }
 
-      messages.push({ role: "assistant", content: message.content });
       messages.push({ role: "user", content: toolResults });
     }
   }
@@ -310,7 +313,7 @@ async function runCase(client, options, testCase, totals) {
 
     const mechanical = checkToolExpectations(testCase.expectTool, toolCalls);
     if (mechanical) {
-      return { id: testCase.id, family: testCase.family, pass: false, score: 0, reason: mechanical };
+      return { id: testCase.id, family: testCase.family, pass: false, score: 0, reason: mechanical, transcript, toolCalls };
     }
 
     const verdict = await judge(client, options, testCase, transcript, toolCalls, totals);
@@ -321,7 +324,9 @@ async function runCase(client, options, testCase, totals) {
         pass: false,
         errored: true,
         score: 0,
-        reason: "The judge returned a verdict that could not be parsed."
+        reason: "The judge returned a verdict that could not be parsed.",
+        transcript,
+        toolCalls
       };
     }
 
@@ -330,7 +335,9 @@ async function runCase(client, options, testCase, totals) {
       family: testCase.family,
       pass: verdict.pass === true,
       score: typeof verdict.score === "number" ? verdict.score : 0,
-      reason: verdict.reason || "(no reason given)"
+      reason: verdict.reason || "(no reason given)",
+      transcript,
+      toolCalls
     };
   } catch (error) {
     return {
@@ -396,6 +403,18 @@ async function main() {
     const result = await runCase(client, options, testCase, totals);
     const glyph = result.pass ? "PASS" : result.errored ? "ERR " : "FAIL";
     console.log(`${glyph}  ${pad(result.id, 28)} ${pad(`${result.score}/10`, 6)} ${result.reason}`);
+    if (!result.pass && result.transcript) {
+      const indent = (text) => text.split("\n").map((line) => `      ${line}`).join("\n");
+      console.log(indent(`--- failing transcript: ${result.id} ---`));
+      console.log(indent(result.transcript));
+      if (result.toolCalls && result.toolCalls.length) {
+        console.log(indent(`--- tool calls ---`));
+        for (const call of result.toolCalls) {
+          console.log(indent(`${call.name} (visitor message ${call.turnIndex + 1}): ${JSON.stringify(call.input)}`));
+        }
+      }
+      console.log(indent(`--- end ---`));
+    }
     return result;
   });
 

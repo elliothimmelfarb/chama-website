@@ -8,10 +8,15 @@ Elliot approved this page for publication and requested a working intake on 2026
 
 | File | What it is |
 |---|---|
-| `index.html` | The public editorial page, including the progressively enhanced intake form. It has no external fonts, images, scripts, analytics, or trackers. |
+| `index.html` | The public editorial page. It ends in the flame room: the intelligent flame, the site's live chat agent, embedded full-bleed as the contact channel (there is no longer a form). No external fonts, images, scripts, analytics, or trackers. |
+| `agent.html` | The full-screen home of the intelligent flame at `/agent`, now a thin shell that mounts the shared app. Marked `noindex`. |
+| `assets/agent.js`, `assets/agent.css` | The agent app itself, extracted so both pages share it: `ChamaAgent.mount(root, { mode: "page" | "embed" })`. Canvas particle flame, chat panel, HUD, tune panel. Vanilla, no libraries. Embed mode is container-scoped (container queries, root-relative geometry, pointer events bound to the root) and pauses its animation loop off-screen. |
+| `api/chat.js` | The agent endpoint: same-origin, SSE streaming, a small agent loop over the Claude API with two tools (`send_note_to_elliot` through the intake pipeline, `adjust_experience` as a client config event). Unit tests in `api/chat.test.js`. |
+| `api/chat-prompt.js` | The agent's entire identity: hand-authored frozen system prompt and tool definitions. Reviewed like copy. |
+| `evals/` | Hand-authored eval cases (prompt-injection attacks and quality rubrics) and the runner (`npm run evals`, spends API credit, deliberately not part of `npm run check`). |
 | `api/intake.js` | A same-origin Vercel Function that validates submissions, writes them to private Vercel Blob storage, and emails a plain-text notification to `contact@chamainteligente.com`. It never treats submitted text as an instruction. |
 | `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
-| `privacy.html` | The public privacy notice linked beside the form and from the footer. |
+| `privacy.html` | The public privacy notice linked from the agent's fineprint and the footer. Still describes the old form; needs its rewrite (notes without email, chat processing on the Claude API) before the next deploy. |
 | `vercel.json` | Production security headers for the page and endpoint. |
 | `package.json` | The single runtime dependency, Vercel's Blob client. |
 | `404.html` | The not-found page, in the same visual language, marked `noindex`. |
@@ -26,7 +31,9 @@ The copy is **not authored here**. It lives in [`wiki/topics/website-content-cha
 
 ## Intake behavior
 
-The form asks for a name, email, an optional WhatsApp number, and one required description of what the visitor would like to understand, decide, or make. JavaScript enhances the interaction but is not required: a native form submission receives the same validation and storage path. Stored records use schema version 2 with `name`, `email`, `whatsappNumber`, and `request` fields.
+Since 2026-08-30 the way in is the intelligent flame: the visitor asks the agent to put them in touch, the agent composes a note, shows every field, and sends only after an explicit yes. The homepage form is gone, but `api/intake.js` remains the single pipeline; the agent's `send_note_to_elliot` tool submits through the same `validate`, `buildRecord`, and notification path, so everything below still holds. A direct POST to `/api/intake` also still works.
+
+A note carries a name, at least one way to reach the visitor (email, or a WhatsApp or phone number in the `whatsappNumber` field), and what they would like to be able to do. Stored records use schema version 2 with `name`, `email`, `whatsappNumber`, and `request` fields; when there is no email, the notification simply has no `Reply-To`.
 
 Submissions are stored as private JSON blobs in an EU-region Vercel Blob store. They contain only the form fields, submission time, schema version, and source domain. The handler does not store IP addresses, invoke an agent, or add anyone to a marketing list. A honeypot and minimum-fill-time check absorb basic automated spam without storing it. The function and storage both run in Paris.
 

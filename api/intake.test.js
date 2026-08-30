@@ -39,7 +39,55 @@ test("requires the long-form request", () => {
     request: ""
   });
 
-  assert.match(result.error, /understand, decide, or make/);
+  assert.match(result.error, /would like to be able to do/);
+});
+
+test("accepts a WhatsApp or phone number as the only way to reach the visitor", () => {
+  const result = validate({
+    name: "Ada Lovelace",
+    whatsappNumber: "+351 912 345 678",
+    request: "Talk through AI for my bakery."
+  });
+
+  assert.equal(result.error, undefined);
+  assert.equal(result.submission.email, "");
+  assert.equal(result.submission.whatsappNumber, "+351 912 345 678");
+});
+
+test("requires at least one way to reach the visitor", () => {
+  const result = validate({
+    name: "Ada Lovelace",
+    request: "Talk through AI for my bakery."
+  });
+
+  assert.match(result.error, /way to reach you/);
+});
+
+test("still rejects a malformed email when one is given", () => {
+  const result = validate({
+    name: "Ada Lovelace",
+    email: "not-an-email",
+    whatsappNumber: "+351 912 345 678",
+    request: "Talk through AI for my bakery."
+  });
+
+  assert.match(result.error, /valid email/);
+});
+
+test("builds a notification without a reply-to when there is no email", () => {
+  const notification = buildNotification({
+    schemaVersion: 2,
+    submittedAt: "2026-08-30T10:30:00.000Z",
+    source: "chamainteligente.com",
+    name: "Ada Lovelace",
+    email: "",
+    whatsappNumber: "+351 912 345 678",
+    request: "Call me about AI for my bakery."
+  });
+
+  assert.equal(notification.replyTo, undefined);
+  assert.match(notification.text, /Email: Not provided/);
+  assert.match(notification.text, /WhatsApp: \+351 912 345 678/);
 });
 
 test("stores the approved private record schema", () => {

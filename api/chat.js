@@ -27,12 +27,12 @@ const LIMITS = {
 };
 
 export const MESSAGES = {
-  offline: "The agent is offline right now. The form below still works.",
+  offline: "The flame is resting right now. Email contact@chamainteligente.com and Elliot will get back to you.",
   unreadable: "That conversation could not be read. Please reload the page and try again.",
   tooLong:
-    "This conversation has gone on longer than the agent allows in one sitting. Reload the page to start fresh, or use the form below.",
+    "This conversation has gone on longer than the agent allows in one sitting. Reload the page to start fresh, or email contact@chamainteligente.com.",
   overwhelmed: "The agent is a little overwhelmed right now. Please try again in a minute.",
-  failed: "Something went wrong on our side. Please try again, or use the form below.",
+  failed: "Something went wrong on our side. Please try again, or email contact@chamainteligente.com.",
   notSaved: "The note could not be saved.",
   savedNotEmailed:
     "The note was saved. The email notification did not go out, but Elliot will see it in storage.",

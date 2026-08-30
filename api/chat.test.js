@@ -154,12 +154,20 @@ test("stores and emails a valid note through the intake pipeline", async () => {
   assert.deepEqual(calls.sent[0], record);
 });
 
-test("reports the validation error and stores nothing when a field is missing", async () => {
+test("accepts a note with a WhatsApp number and no email", async () => {
   const { calls, deps } = fakeDeps();
   const outcome = await executeNoteTool({ ...INPUT, email: "" }, deps);
 
+  assert.equal(outcome.ok, true);
+  assert.equal(calls.put.length, 1);
+});
+
+test("reports the validation error and stores nothing when no contact way is given", async () => {
+  const { calls, deps } = fakeDeps();
+  const outcome = await executeNoteTool({ ...INPUT, email: "", whatsappNumber: "" }, deps);
+
   assert.equal(outcome.ok, false);
-  assert.match(outcome.text, /name, email/);
+  assert.match(outcome.text, /way to reach you/);
   assert.equal(calls.put.length, 0);
   assert.equal(calls.sent.length, 0);
 });
