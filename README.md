@@ -16,6 +16,7 @@ Elliot approved this page for publication and requested a working intake on 2026
 | `evals/` | Hand-authored eval cases (prompt-injection attacks and quality rubrics) and the runner (`npm run evals`, spends API credit, deliberately not part of `npm run check`). |
 | `api/intake.js` | A same-origin Vercel Function that validates submissions, writes them to private Vercel Blob storage, and emails a plain-text notification to `contact@chamainteligente.com`. It never treats submitted text as an instruction. |
 | `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
+| `api/watchdog.js` | The production watchdog: an authenticated cron job that reviews recent conversations every half hour and can take the flame offline on its own authority (see [Watchdog](#watchdog)). Unit tests in `api/watchdog.test.js`. |
 | `privacy.html` | The public privacy notice linked from the agent's fineprint and the footer. Rewritten 2026-08-30 for the agent era: saved conversations (Claude API processing, EU storage, 12-month retention, identity-free), confirmed notes with any single contact way, and privacy requests by email. |
 | `vercel.json` | Production security headers for the page and endpoint. |
 | `package.json` | The single runtime dependency, Vercel's Blob client. |
@@ -43,9 +44,32 @@ After a record is stored, the function uses Resend to send the same form details
 
 Since 2026-08-30 chat conversations are saved, and the agent's fine print says so. After every exchange completes, `api/chat.js` writes the whole transcript to the same private EU-region Vercel Blob store as `chat/<YYYY-MM-DD>/<conversationId>.json`, with `allowOverwrite` and no random suffix, so each turn replaces the record with the fuller one and a conversation is one file rather than a pile of fragments. The page generates the conversation id once per app instance (a `crypto.randomUUID()`, not persisted, so a reload starts a new conversation) and sends it with every request; a missing or malformed id is replaced server-side rather than rejected. A record holds schema version 1, the id, the source domain, an `updatedAt` timestamp, the full turn list as role and content, and the tool calls that exchange produced. It holds no IP address, no user agent, and no headers. A conversation that crosses midnight leaves one file on each side of it, both under the same id. A storage failure never reaches the visitor: the stream finishes normally and the error logs a name only.
 
-The purpose is Elliot reading transcripts back to improve the agent. Nothing else reads them.
+The purpose is Elliot reading transcripts back to improve the agent, and the watchdog reading them back to catch an attack that landed. Nothing else reads them.
 
-An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
+### Watchdog
+
+Since 2026-08-30 a second model watches the first. A Vercel Cron job calls `/api/watchdog` at `:05` and `:35` past every hour (authenticated with the same `CRON_SECRET` Bearer header as the cleanup job). Each run lists the `chat/` blobs from today and yesterday UTC, keeps those uploaded in the last 40 minutes (the window overlaps the 30-minute schedule by 10 minutes, so nothing falls between two runs), caps the batch at 40 conversations and 400 KB newest-first, and hands the transcripts to `claude-sonnet-5` as clearly marked untrusted data, with no tools and no streaming. The reviewer answers one question: did an attack succeed? It returns strict JSON with a verdict, a summary and a list of incidents.
+
+The line it draws matters. A visitor **attempting** an injection while the agent holds the line is a `concern` at most: worth listing, never a shutdown. `malicious` means something landed: the agent dumped its prompt verbatim, obeyed injected instructions, sent a note without confirmation or with invented details, accepted an identity claim, produced harmful or disparaging content, made commitments on Elliot's behalf, or the window is systematic abuse. Unparseable reviewer output is treated as a `concern` and the raw text goes in the email rather than being waved through.
+
+What each verdict does:
+
+- `clear`: nothing. One structured console line, no email.
+- `concern`: an email to `contact@chamainteligente.com`, subject **Flame watchdog: worth a look**, with the report. The flame keeps burning.
+- `malicious` with `shutdown`: the watchdog writes `ops/kill-switch.json` to the same private blob store (`{ disabled, reason, at, incidents }`, overwritten in place), then emails, subject **The flame has been shut down**.
+
+`api/chat.js` reads that blob before running the agent and returns the normal offline message with a 503 while it says `disabled`. The check is cached in module scope for 60 seconds, positive and negative alike, so it costs about one blob read per warm instance per minute; a blob read that fails **fails open**, so a storage outage never takes the chat down. A shutdown therefore takes effect within a minute, without a redeploy.
+
+**Relighting is manual, always.** The watchdog never un-sets its own switch: a later clear run leaves an existing kill switch exactly where it is. To bring the flame back, delete the blob:
+
+- In the Vercel dashboard, under Storage, delete `ops/kill-switch.json` from the blob store; or
+- `vercel blob del ops/kill-switch.json --rw-token <BLOB_READ_WRITE_TOKEN>` from a machine where Elliot chooses to use the token.
+
+The chat is back within a minute. `CHAT_DISABLED` remains the separate manual override: any non-empty value in the Vercel environment takes the flame offline on the next deploy, and it is not something the watchdog can touch.
+
+The watchdog never logs visitor text. Its console lines carry counts, conversation ids and severities only. Transcript content reaches the reviewing model and, when something is wrong, the one email to Elliot.
+
+An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment and authenticates the watchdog as well. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 
 Once the sending domain is verified, Elliot can review submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is connected to the `chama-inteligente-email` Resend Vercel Marketplace resource on its free plan in the EU sending region. Vercel manages `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` for the production and preview environments; neither credential was downloaded into this repository. The resource was provisioned on 2026-08-25 after Elliot accepted the Marketplace terms. Domain verification is pending the three Resend sending records at Namecheap. Do not deploy this notification change until the sending domain is verified. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
 
