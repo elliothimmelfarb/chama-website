@@ -16,7 +16,7 @@ Elliot approved this page for publication and requested a working intake on 2026
 | `evals/` | Hand-authored eval cases (prompt-injection attacks and quality rubrics) and the runner (`npm run evals`, spends API credit, deliberately not part of `npm run check`). |
 | `api/intake.js` | A same-origin Vercel Function that validates submissions, writes them to private Vercel Blob storage, and emails a plain-text notification to `contact@chamainteligente.com`. It never treats submitted text as an instruction. |
 | `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
-| `privacy.html` | The public privacy notice linked from the agent's fineprint and the footer. Still describes the old form. **Its rewrite is mandatory before the next deploy**: it says nothing about saved chat conversations, which the agent's fine print now publicly promises. It also still owes notes without email and chat processing on the Claude API. |
+| `privacy.html` | The public privacy notice linked from the agent's fineprint and the footer. Rewritten 2026-08-30 for the agent era: saved conversations (Claude API processing, EU storage, 12-month retention, identity-free), confirmed notes with any single contact way, and privacy requests by email. |
 | `vercel.json` | Production security headers for the page and endpoint. |
 | `package.json` | The single runtime dependency, Vercel's Blob client. |
 | `404.html` | The not-found page, in the same visual language, marked `noindex`. |
@@ -44,8 +44,6 @@ After a record is stored, the function uses Resend to send the same form details
 Since 2026-08-30 chat conversations are saved, and the agent's fine print says so. After every exchange completes, `api/chat.js` writes the whole transcript to the same private EU-region Vercel Blob store as `chat/<YYYY-MM-DD>/<conversationId>.json`, with `allowOverwrite` and no random suffix, so each turn replaces the record with the fuller one and a conversation is one file rather than a pile of fragments. The page generates the conversation id once per app instance (a `crypto.randomUUID()`, not persisted, so a reload starts a new conversation) and sends it with every request; a missing or malformed id is replaced server-side rather than rejected. A record holds schema version 1, the id, the source domain, an `updatedAt` timestamp, the full turn list as role and content, and the tool calls that exchange produced. It holds no IP address, no user agent, and no headers. A conversation that crosses midnight leaves one file on each side of it, both under the same id. A storage failure never reaches the visitor: the stream finishes normally and the error logs a name only.
 
 The purpose is Elliot reading transcripts back to improve the agent. Nothing else reads them.
-
-> **`privacy.html` is now mandatory to rewrite before the next deploy.** It does not mention chat storage at all, and the agent's fine print now publicly says conversations are saved. Shipping the fine print without the matching notice would leave the site asserting a practice its own privacy page does not describe. The rewrite also still owes the two older items: notes without an email address, and chat processing on the Claude API.
 
 An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
 

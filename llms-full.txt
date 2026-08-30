@@ -107,11 +107,12 @@ consulting.
 
 ## Privacy (https://chamainteligente.com/privacy)
 
-The privacy notice covers the intake form only: who the controller is, what is
-collected, why, the legal basis, the processor and storage region, how long records
-are kept (12 months), the rights of the person submitting, and how to complain. The
-handler does not store IP addresses, invoke an agent, or add anyone to a marketing
-list. It stores the submission privately, then sends one email notification to
+The privacy notice covers the two things the site does: conversations with the
+agent (saved to improve it, processed on the Claude API, stored privately in the
+EU, not linked to an identity, deleted within 12 months) and notes to Elliot
+(sent only after word-for-word confirmation, stored privately, emailed to
+contact@chamainteligente.com, deleted within 12 months). No IP addresses are
+stored in either, no marketing, no selling of data. Privacy requests go to
 contact@chamainteligente.com. Read it at https://chamainteligente.com/privacy.
 
 ---

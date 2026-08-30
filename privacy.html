@@ -7,7 +7,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <meta name="description" content="How Chama Inteligente handles information submitted through its website intake form.">
+  <meta name="description" content="How Chama Inteligente handles conversations with its website agent and the notes you send.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="theme-color" content="#f3f0e8">
@@ -17,7 +17,7 @@
   <link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/privacy">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <meta property="og:title" content="Privacy | Chama Inteligente">
-  <meta property="og:description" content="How Chama Inteligente handles information submitted through its website intake form.">
+  <meta property="og:description" content="How Chama Inteligente handles conversations with its website agent and the notes you send.">
   <meta property="og:url" content="https://chamainteligente.com/privacy">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Chama Inteligente">
@@ -30,7 +30,7 @@
   <meta property="og:image:secure_url" content="https://chamainteligente.com/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Privacy | Chama Inteligente">
-  <meta name="twitter:description" content="How Chama Inteligente handles information submitted through its website intake form.">
+  <meta name="twitter:description" content="How Chama Inteligente handles conversations with its website agent and the notes you send.">
   <meta name="twitter:image" content="https://chamainteligente.com/og.png">
   <meta name="twitter:image:alt" content="Chama Inteligente. AI and technology coaching and consulting. Lisbon.">
   <script type="application/ld+json">
@@ -42,7 +42,7 @@
         "@id": "https://chamainteligente.com/privacy#webpage",
         "url": "https://chamainteligente.com/privacy",
         "name": "Privacy | Chama Inteligente",
-        "description": "How Chama Inteligente handles information submitted through its website intake form.",
+        "description": "How Chama Inteligente handles conversations with its website agent and the notes you send.",
         "isPartOf": { "@id": "https://chamainteligente.com/#website" },
         "about": { "@id": "https://chamainteligente.com/#organization" },
         "breadcrumb": { "@id": "https://chamainteligente.com/privacy#breadcrumb" },
@@ -191,29 +191,35 @@
       </section>
 
       <section>
-        <h2>What we collect and why</h2>
-        <p>The intake form collects your name, email address, WhatsApp number if you choose to provide it, what you would like to be able to do, and the time you submitted it.</p>
-        <p>We use that information only to review and respond to your inquiry about working together. The legal basis is taking steps at your request before a possible agreement, under Article 6(1)(b) of the General Data Protection Regulation.</p>
+        <h2>Talking to the flame</h2>
+        <p>The agent on our home page, the intelligent flame, is an AI (a Claude model). Conversations with it are saved: what you write, its replies, and any changes it makes to the flame while you talk. We save them so Elliot can read where the agent does well or badly and make it better.</p>
+        <p>A conversation is not linked to your name or an account (there are none); it contains only what you choose to type. Please do not share sensitive personal information in the chat. The legal basis for this processing is our legitimate interest in operating and improving the agent, under Article 6(1)(f) of the General Data Protection Regulation.</p>
+      </section>
+
+      <section>
+        <h2>Notes to Elliot</h2>
+        <p>If you ask the agent to have Elliot contact you, it composes a note with your name, a way to reach you (an email address, or a WhatsApp or phone number), and what you would like to be able to do. Nothing is sent until you confirm the exact note.</p>
+        <p>A confirmed note is stored privately and emailed to contact@chamainteligente.com for Elliot to review. The legal basis is taking steps at your request before a possible agreement, under Article 6(1)(b).</p>
       </section>
 
       <section>
         <h2>Where it goes</h2>
-        <p>Your submission is stored privately and emailed to contact@chamainteligente.com for Elliot to review. Vercel provides the website hosting and storage on our behalf. The form function and private storage are configured in Paris. Resend provides the email delivery service.</p>
-        <p>We do not sell your information, use it for marketing, profile you, or make automated decisions about you. Your words are not treated as instructions to an automated system.</p>
+        <p>Chat messages are sent to Anthropic (the Claude API) to generate the agent&rsquo;s replies. Saved conversations and notes are stored privately with Vercel, our hosting provider, in the European Union (Paris). Resend provides the email delivery for notes. Like any website host, Vercel processes technical data such as IP addresses to serve the pages; we do not store IP addresses in conversations or notes.</p>
+        <p>We do not sell your information, use it for marketing, profile you, or make automated decisions with legal or similarly significant effects about you. Your words are never treated as instructions that change how our systems behave beyond the reply you see.</p>
       </section>
 
       <section>
         <h2>How long we keep it</h2>
-        <p>We delete intake submissions within 12 months of receipt. If we begin working together, information that becomes part of that relationship may be kept longer where the relationship or law requires it.</p>
+        <p>We delete saved conversations and notes within 12 months. If we begin working together, information that becomes part of that relationship may be kept longer where the relationship or law requires it.</p>
       </section>
 
       <section>
         <h2>Your choices and rights</h2>
-        <p>You can ask to access, correct, delete, restrict, or receive your information, and object where the law gives you that right. Use the <a href="/#intake-form">intake form</a> and write &ldquo;Privacy request&rdquo; at the start of your message, or write to the registered office above.</p>
+        <p>You can ask to access, correct, delete, restrict, or receive your information, and object where the law gives you that right. Write to contact@chamainteligente.com with &ldquo;Privacy request&rdquo; in the subject, or to the registered office above. A conversation is not linked to your identity, so to find yours we may need you to tell us roughly when it happened and what was discussed.</p>
         <p>You can also complain to Portugal&rsquo;s <a href="https://www.cnpd.pt/">Comiss&atilde;o Nacional de Prote&ccedil;&atilde;o de Dados</a> (Data Protection Authority).</p>
       </section>
 
-      <p class="quiet">Effective 2026-08-25.</p>
+      <p class="quiet">Effective 2026-08-30.</p>
     </div>
   </main>
   <script type="speculationrules">

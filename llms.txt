@@ -7,7 +7,7 @@ Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounc
 ## Pages
 
 - [Home](https://chamainteligente.com/): what the work is, and the intelligent flame, a live agent for questions and getting in touch
-- [Privacy](https://chamainteligente.com/privacy): how intake submissions are handled
+- [Privacy](https://chamainteligente.com/privacy): how conversations and notes are handled
 
 ## Optional
 
