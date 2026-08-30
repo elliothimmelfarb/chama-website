@@ -17,6 +17,15 @@
 
   var MARK_SVG = '<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>';
 
+  /* One small flame, drawn here and nowhere else. It stands in for the reply
+     while the agent is thinking, rides at the end of the text while it
+     streams, and sits in the send button meanwhile. Static author-written
+     markup, so it is allowed through innerHTML; it is animated in CSS. */
+  var FLAME_SVG = '<svg class="ember" viewBox="0 0 12 16" aria-hidden="true" focusable="false">' +
+    '<path class="ember-body" d="M6.15 0.35c.55 2.4 2.15 3.7 3.35 5.3 1.02 1.35 1.5 2.66 1.5 4.05a5.0 5.0 0 0 1-10.0 0c0-1.95.8-3.3 1.95-4.7.2 1.05.6 1.75 1.3 2.2C3.95 4.9 4.85 2.35 6.15.35Z"/>' +
+    '<path class="ember-core" d="M6.2 7.7c.9 1.1 1.6 1.95 1.6 3.0a1.85 1.85 0 0 1-3.7 0c0-1.0.85-1.9 2.1-3.0Z"/>' +
+    '</svg>';
+
   var CHIPS = [
     "What do you actually do?",
     "Why hire Elliot instead of just using ChatGPT?",
@@ -127,7 +136,8 @@
               '<label class="visually-hidden" for="composer-input">Your message to the agent</label>' +
               '<textarea id="composer-input" rows="1" maxlength="4000" placeholder="Say something." enterkeyhint="send"></textarea>' +
               '<button type="submit" class="send" id="send" aria-label="Send message">' +
-                '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>' +
+                '<svg class="send-arrow" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>' +
+                '<span class="send-flame" aria-hidden="true">' + FLAME_SVG + '</span>' +
               '</button>' +
             '</form>' +
             '<p class="fineprint">Conversations are not stored. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +

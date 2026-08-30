@@ -664,16 +664,58 @@ body.chama-agent-page {
 }
 .chama-agent .turn-system.ok { color: var(--ember); }
 
+/* ---------- the ember ----------
+   One small flame, drawn inline, used three ways: the indicator that holds
+   the place of a reply that has not started, the cursor at the end of the
+   text while it streams, and the send button's state while the agent works.
+   It breathes on two slightly different periods so the flicker never looks
+   like a loop. No image, no font, no request. */
+
+.chama-agent .ember {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-box: fill-box;
+  transform-origin: 50% 96%;
+  animation: chama-ember 1.55s ease-in-out infinite;
+}
+.chama-agent .ember-body { fill: var(--ember); }
+.chama-agent .ember-core {
+  fill: #ffd9ad;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: chama-ember-core 1.13s ease-in-out infinite;
+}
+
+@keyframes chama-ember {
+  0%, 100% { transform: scale(1, 1); opacity: 0.95; }
+  28% { transform: scale(0.93, 1.08); opacity: 1; }
+  54% { transform: scale(1.05, 0.94); opacity: 0.84; }
+  79% { transform: scale(0.97, 1.05); opacity: 1; }
+}
+@keyframes chama-ember-core {
+  0%, 100% { opacity: 0.9; transform: scaleY(1); }
+  38% { opacity: 0.42; transform: scaleY(0.82); }
+  71% { opacity: 1; transform: scaleY(1.1); }
+}
+
+/* the place the reply will appear, held from the moment you send */
+.chama-agent .turn-thinking .turn-body { min-height: 1.7em; }
+.chama-agent .ember-wrap {
+  display: inline-block;
+  width: 0.62em;
+  height: 0.86em;
+  vertical-align: -0.1em;
+}
+
 .chama-agent .caret {
   display: inline-block;
-  width: 0.5em;
-  height: 1em;
-  margin-left: 0.06em;
-  vertical-align: -0.14em;
-  background: var(--ember);
-  animation: chama-caret 1.05s steps(2, start) infinite;
+  width: 0.6em;
+  height: 0.84em;
+  margin-left: 0.14em;
+  vertical-align: -0.08em;
 }
-@keyframes chama-caret { 50% { opacity: 0.15; } }
 
 .chama-agent .frag {
   animation: chama-fragin 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
@@ -803,38 +845,50 @@ body.chama-agent-page {
 .chama-agent textarea::placeholder { color: var(--text-faint); }
 .chama-agent textarea:focus-visible { outline: 0; }
 
+/* the send button keeps to itself: nothing it does leaves its own circle,
+   so it can never crowd or cross the bar's edge, at any width, and the bar
+   growing to several lines only moves it down with the last line */
 .chama-agent .send {
   appearance: none;
   flex: none;
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   border: 1px solid var(--line-strong);
-  background: rgba(243, 240, 232, 0.04);
+  background: rgba(243, 240, 232, 0.05);
   color: var(--text-dim);
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
+.chama-agent .send > * { grid-area: 1 / 1; }
 .chama-agent .send:hover:not(:disabled) {
   color: #fff;
-  border-color: transparent;
+  border-color: var(--ember);
   background: var(--ember);
-  transform: translateY(-1px);
 }
-.chama-agent .send svg { width: 1.05rem; height: 1.05rem; display: block; }
+.chama-agent .send:active:not(:disabled) {
+  background: #d8480f;
+  border-color: #d8480f;
+}
+.chama-agent .send:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+.chama-agent .send-arrow { width: 1.05rem; height: 1.05rem; display: block; }
+.chama-agent .send-flame {
+  display: none;
+  width: 0.7rem;
+  height: 0.95rem;
+}
 .chama-agent .send:disabled { cursor: default; }
 .chama-agent .send.busy {
-  border-color: transparent;
-  background: radial-gradient(circle at 50% 55%, #ffd8a8 0%, var(--ember) 45%, rgba(244, 88, 31, 0.12) 72%);
-  animation: chama-pulse 1.15s ease-in-out infinite;
+  border-color: rgba(244, 88, 31, 0.5);
+  background: rgba(244, 88, 31, 0.14);
 }
-.chama-agent .send.busy svg { display: none; }
-@keyframes chama-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 88, 31, 0.42); transform: scale(0.94); }
-  50% { box-shadow: 0 0 0 9px rgba(244, 88, 31, 0); transform: scale(1.02); }
-}
+.chama-agent .send.busy .send-arrow { display: none; }
+.chama-agent .send.busy .send-flame { display: block; }
 
 .chama-agent .fineprint {
   margin: 0.7rem 0.35rem 0;
@@ -863,6 +917,13 @@ body.chama-agent-page {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+  /* the ember stops flickering and simply sits there, still and lit */
+  .chama-agent .ember,
+  .chama-agent .ember-core {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1;
   }
   .chama-agent .caret { opacity: 0.9; }
 }
