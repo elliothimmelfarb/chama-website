@@ -120,13 +120,11 @@ body.chama-agent-page {
    print steps out (it was read before the tap) and every band of padding
    comes in, so the transcript keeps the space instead of the chrome */
 .chama-agent.kb-open .fineprint { display: none; }
-.chama-agent.kb-open .topbar,
-.chama-agent-mode-embed.kb-open .topbar {
+.chama-agent.kb-open .topbar {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
-.chama-agent.kb-open .composer,
-.chama-agent-mode-embed.kb-open .composer {
+.chama-agent.kb-open .composer {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 .chama-agent.kb-open .column {
