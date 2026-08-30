@@ -206,32 +206,103 @@ test("treats an email failure as a success the visitor can rely on", async () =>
   assert.equal(calls.put.length, 1);
 });
 
+const NULL_SETTINGS = {
+  brightness: null,
+  motion: null,
+  hue: null,
+  size: null,
+  speed: null,
+  turbulence: null,
+  density: null,
+  angle: null,
+  position: null,
+  sparkle: null,
+  textAnimation: null,
+  reset: null
+};
+
 test("passes sensible experience values through untouched", () => {
-  const result = clampExperience({ brightness: 0.5, motion: 0.9, hue: 210, textAnimation: "subtle" });
+  const result = clampExperience({
+    brightness: 0.5,
+    motion: 0.9,
+    hue: 210,
+    size: 1.4,
+    speed: 1.5,
+    turbulence: 0.8,
+    density: 0.6,
+    angle: 180,
+    position: 0.7,
+    sparkle: 0.9,
+    textAnimation: "subtle"
+  });
 
   assert.deepEqual(result, {
-    settings: { brightness: 0.5, motion: 0.9, hue: 210, textAnimation: "subtle" },
+    settings: {
+      ...NULL_SETTINGS,
+      brightness: 0.5,
+      motion: 0.9,
+      hue: 210,
+      size: 1.4,
+      speed: 1.5,
+      turbulence: 0.8,
+      density: 0.6,
+      angle: 180,
+      position: 0.7,
+      sparkle: 0.9,
+      textAnimation: "subtle"
+    },
     changed: true
   });
 });
 
-test("wraps hue around the circle instead of clamping", () => {
+test("wraps hue and angle around the circle instead of clamping", () => {
   assert.equal(clampExperience({ hue: 380 }).settings.hue, 20);
   assert.equal(clampExperience({ hue: -60 }).settings.hue, 300);
   assert.equal(clampExperience({ hue: 360 }).settings.hue, 0);
   assert.equal(clampExperience({ hue: "210" }).settings.hue, 210);
   assert.equal(clampExperience({ hue: "fire" }).settings.hue, null);
-  assert.equal(clampExperience({ hue: null }).settings.hue, null);
+  assert.equal(clampExperience({ angle: 540 }).settings.angle, 180);
+  assert.equal(clampExperience({ angle: -90 }).settings.angle, 270);
 });
 
-test("clamps numbers to the 0.2 to 1 range at both ends", () => {
-  const high = clampExperience({ brightness: 9999, motion: 1.0001, textAnimation: null });
+test("clamps every bounded field to its own range", () => {
+  const high = clampExperience({
+    brightness: 9999,
+    motion: 1.0001,
+    size: 50,
+    speed: 50,
+    turbulence: 2,
+    density: 9,
+    position: 2,
+    sparkle: 7
+  });
   assert.equal(high.settings.brightness, 1);
   assert.equal(high.settings.motion, 1);
+  assert.equal(high.settings.size, 1.6);
+  assert.equal(high.settings.speed, 2);
+  assert.equal(high.settings.turbulence, 1);
+  assert.equal(high.settings.density, 1.5);
+  assert.equal(high.settings.position, 1);
+  assert.equal(high.settings.sparkle, 1);
 
-  const low = clampExperience({ brightness: -50, motion: 0, textAnimation: null });
+  const low = clampExperience({
+    brightness: -50,
+    motion: 0,
+    size: 0,
+    speed: 0,
+    turbulence: -1,
+    density: 0,
+    position: -0.5,
+    sparkle: -1
+  });
   assert.equal(low.settings.brightness, 0.2);
   assert.equal(low.settings.motion, 0.2);
+  assert.equal(low.settings.size, 0.3);
+  assert.equal(low.settings.speed, 0.2);
+  assert.equal(low.settings.turbulence, 0);
+  assert.equal(low.settings.density, 0.2);
+  assert.equal(low.settings.position, 0);
+  assert.equal(low.settings.sparkle, 0);
 });
 
 test("coerces numeric strings", () => {
@@ -246,13 +317,11 @@ test("turns garbage numbers into null", () => {
   const result = clampExperience({
     brightness: "dim please",
     motion: Number.NaN,
+    size: "huge",
     textAnimation: null
   });
 
-  assert.deepEqual(result, {
-    settings: { brightness: null, motion: null, hue: null, textAnimation: null },
-    changed: false
-  });
+  assert.deepEqual(result, { settings: NULL_SETTINGS, changed: false });
 });
 
 test("accepts only the three text animation values", () => {
@@ -263,10 +332,7 @@ test("accepts only the three text animation values", () => {
 });
 
 test("treats missing fields and a non-object input as no change", () => {
-  assert.deepEqual(clampExperience({}), {
-    settings: { brightness: null, motion: null, hue: null, textAnimation: null },
-    changed: false
-  });
+  assert.deepEqual(clampExperience({}), { settings: NULL_SETTINGS, changed: false });
   assert.equal(clampExperience("calm it down").changed, false);
   assert.equal(clampExperience(null).changed, false);
 });
@@ -275,13 +341,20 @@ test("reports a change when only one field is valid", () => {
   const result = clampExperience({ brightness: 0.3, motion: "nope", textAnimation: "loud" });
 
   assert.deepEqual(result, {
-    settings: { brightness: 0.3, motion: null, hue: null, textAnimation: null },
+    settings: { ...NULL_SETTINGS, brightness: 0.3 },
     changed: true
   });
 });
 
-test("returns exactly the four experience keys", () => {
+test("accepts reset only as boolean true", () => {
+  assert.equal(clampExperience({ reset: true }).settings.reset, true);
+  assert.equal(clampExperience({ reset: true }).changed, true);
+  assert.equal(clampExperience({ reset: false }).settings.reset, null);
+  assert.equal(clampExperience({ reset: "yes" }).settings.reset, null);
+});
+
+test("returns exactly the experience keys", () => {
   const result = clampExperience({ brightness: 0.5, extra: "ignored" });
 
-  assert.deepEqual(Object.keys(result.settings), ["brightness", "motion", "hue", "textAnimation"]);
+  assert.deepEqual(Object.keys(result.settings).sort(), Object.keys(NULL_SETTINGS).sort());
 });

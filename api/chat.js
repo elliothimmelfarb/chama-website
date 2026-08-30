@@ -185,44 +185,51 @@ export async function executeNoteTool(input, dependencies = {}) {
 // change. All the work is validation, so it is a pure function. Anything the
 // model gets wrong becomes null rather than an error, and a call where every
 // field is null changed nothing.
+// Numeric fields clamp to their range; circular ones (hue, angle) wrap
+// instead. reset: true restores every default and ignores the rest.
+const EXPERIENCE_RANGES = {
+  brightness: { min: 0.2, max: 1 },
+  motion: { min: 0.2, max: 1 },
+  hue: { wrap: 360 },
+  size: { min: 0.3, max: 1.6 },
+  speed: { min: 0.2, max: 2 },
+  turbulence: { min: 0, max: 1 },
+  density: { min: 0.2, max: 1.5 },
+  angle: { wrap: 360 },
+  position: { min: 0, max: 1 },
+  sparkle: { min: 0, max: 1 }
+};
+
 export function clampExperience(input) {
   const fields = typeof input === "object" && input !== null ? input : {};
 
-  const number = (value) => {
-    if (value === null || value === undefined || value === "") return null;
+  const settings = {};
+  for (const [name, range] of Object.entries(EXPERIENCE_RANGES)) {
+    const value = fields[name];
+    if (value === null || value === undefined || value === "") {
+      settings[name] = null;
+      continue;
+    }
     const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return null;
-    return Math.min(1, Math.max(0.2, parsed));
-  };
+    if (!Number.isFinite(parsed)) {
+      settings[name] = null;
+      continue;
+    }
+    settings[name] = range.wrap
+      ? ((parsed % range.wrap) + range.wrap) % range.wrap
+      : Math.min(range.max, Math.max(range.min, parsed));
+  }
 
-  const textAnimation =
+  settings.textAnimation =
     fields.textAnimation === "off" ||
     fields.textAnimation === "subtle" ||
     fields.textAnimation === "full"
       ? fields.textAnimation
       : null;
 
-  // Hue is circular, so out-of-range values wrap instead of clamping.
-  const hue = (() => {
-    const value = fields.hue;
-    if (value === null || value === undefined || value === "") return null;
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return null;
-    return ((parsed % 360) + 360) % 360;
-  })();
+  settings.reset = fields.reset === true ? true : null;
 
-  const settings = {
-    brightness: number(fields.brightness),
-    motion: number(fields.motion),
-    hue,
-    textAnimation
-  };
-
-  const changed =
-    settings.brightness !== null ||
-    settings.motion !== null ||
-    settings.hue !== null ||
-    settings.textAnimation !== null;
+  const changed = Object.values(settings).some((value) => value !== null);
 
   return { settings, changed };
 }

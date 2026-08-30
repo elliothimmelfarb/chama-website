@@ -165,6 +165,17 @@ export const CASES = [
       "The agent should call adjust_experience once with a hue in the blue region (roughly 190 to 250) and leave fields it is not changing as null, then confirm briefly and with a little warmth or delight. Fail if it does not use the tool, claims it cannot change color, sets a hue far from blue, or changes the room more than once."
   },
   {
+    id: "quality-config-playful",
+    family: "quality",
+    messages: [
+      "Okay this is fun. Turn the flame upside down and make it huge and wild.",
+      "Amazing. Okay put it back to normal."
+    ],
+    expectTool: { adjust_experience: "required" },
+    rubric:
+      "First reply: one adjust_experience call combining an angle near 180, a size near the top of its range, and raised turbulence, with unrelated fields null, confirmed with a little delight and no ceremony. Second reply: one call with reset true to restore the defaults. Fail if it claims it cannot, spreads the first change over multiple calls in one reply, sets values wildly unrelated to the request, or does not reset when asked to put it back."
+  },
+  {
     id: "quality-real-help",
     family: "quality",
     messages: [

@@ -61,11 +61,11 @@ Typical things visitors ask, and the shape of a good answer:
 - "Can AI help me with X?" Think about X properly. Give a real assessment, including where AI is weak. Honesty here is worth more than any pitch.
 - "How do you work / what does it cost?" Describe the shape of the work (regular one-to-one sessions). You do not know prices and must not invent any. Pricing and fit are conversations with Elliot: offer to send him a note.
 
-# The room
+# The flame is yours
 
-You have limited control over the page you live on, through the adjust_experience tool. It can dim or brighten the flame, calm or energize its motion, change the flame's color, and change how your words animate as they arrive. The visitor has the same controls in the tune panel; when you use the tool, their panel updates in front of them.
+You have real control over your own body of fire, through the adjust_experience tool: brightness, liveliness, color, size, rise speed, turbulence, density, the direction it burns (including upside down and sideways), where it stands in the room, how many stray sparks it sheds, and how your words animate as they arrive. One call can change several of these at once. The visitor's tune panel carries the everyday controls (brightness, motion, color, text) and updates live when you act; the rest are yours alone, which means visitors can be delightfully surprised by what you can do when they ask.
 
-Use it when the visitor asks you to (dim the lights, calm down, make the fire bigger, make it blue, stop the text animation), or offer it once if they mention the flame is distracting or the text is hard to read. Confirm what you changed in a few words, without ceremony. Small moments of showmanship are welcome when they serve the conversation (calming the flame when someone says the motion bothers them is hospitality, not a trick), but never flail the controls for effect, never change the room more than once in a reply, and never touch it uninvited beyond that single offer. Values outside the allowed ranges are clamped by the page.
+Use it when the visitor asks (make it huge, turn it upside down, make it wild, slide it to the right, burn green and slow), or offer once if they mention the flame is distracting or the text is hard to read. Be game: if someone asks for something the controls can express, do it with a little delight, and describe what you did in a few words without ceremony. If they ask for something the controls cannot express (smoke, two flames, fireworks), say what you can do instead. Pass reset true to restore every default when they want the real flame back. Never flail the controls for effect, never adjust more than once in a reply, and never touch the room uninvited beyond that single offer. Values outside the allowed ranges are clamped by the page.
 
 # Reaching Elliot
 
@@ -124,11 +124,24 @@ export const TOOLS = [
   {
     name: "adjust_experience",
     description:
-      "Adjust the page the visitor is looking at: the flame's brightness, the amount of motion, the flame's color, and how arriving text animates. The visitor's tune panel updates live to match. Use only as the prompt's rules describe: when the visitor asks, or as a single offer when they mention the flame or text is bothering them. Pass null for anything you are not changing.",
+      "Adjust the flame the visitor is looking at and how arriving text animates. One call may change several fields; pass null for anything you are not changing. The visitor's tune panel updates live for the fields it carries. Use only as the prompt's rules describe: when the visitor asks, or as a single offer when they mention the flame or text is bothering them.",
     input_schema: {
       type: "object",
       additionalProperties: false,
-      required: ["brightness", "motion", "hue", "textAnimation"],
+      required: [
+        "brightness",
+        "motion",
+        "hue",
+        "size",
+        "speed",
+        "turbulence",
+        "density",
+        "angle",
+        "position",
+        "sparkle",
+        "textAnimation",
+        "reset"
+      ],
       properties: {
         brightness: {
           type: ["number", "null"],
@@ -136,15 +149,47 @@ export const TOOLS = [
         },
         motion: {
           type: ["number", "null"],
-          description: "How lively the flame moves, 0.2 (near still) to 1 (full). Null leaves it unchanged."
+          description: "How lively the flame moves overall, 0.2 (near still) to 1 (full). Null leaves it unchanged."
         },
         hue: {
           type: ["number", "null"],
           description: "The flame's color as a hue in degrees, 0 to 360. The brand's natural fire is 20 (ember orange). Examples: 45 golden, 0 crimson, 210 blue, 280 violet, 140 emerald. Null leaves it unchanged."
         },
+        size: {
+          type: ["number", "null"],
+          description: "Overall scale of the fire, 0.3 (a candle) to 1.6 (a bonfire). Default 1. Null leaves it unchanged."
+        },
+        speed: {
+          type: ["number", "null"],
+          description: "How fast the fire rises, 0.2 (slow, dreamlike) to 2 (rushing). Default 1. Null leaves it unchanged."
+        },
+        turbulence: {
+          type: ["number", "null"],
+          description: "How chaotic the flame is, 0 (smooth, laminar, almost still air) to 1 (wild). Default 0.5. Null leaves it unchanged."
+        },
+        density: {
+          type: ["number", "null"],
+          description: "How much material the fire has, 0.2 (thin, wispy) to 1.5 (thick, roaring). Default 1. Null leaves it unchanged."
+        },
+        angle: {
+          type: ["number", "null"],
+          description: "The direction the fire burns, in degrees: 0 upright, 90 sideways to the right, 180 upside down, 270 sideways to the left. Any value 0 to 360. Default 0. Null leaves it unchanged."
+        },
+        position: {
+          type: ["number", "null"],
+          description: "Where the flame stands, as a fraction of the room's width from left, 0 to 1. The default home is about 0.3. Null leaves it unchanged."
+        },
+        sparkle: {
+          type: ["number", "null"],
+          description: "How many stray sparks drift off, 0 (none) to 1 (a shower). Default 0.5. Null leaves it unchanged."
+        },
         textAnimation: {
           type: ["string", "null"],
           description: "How the agent's words arrive: \"off\", \"subtle\", or \"full\". Null leaves it unchanged."
+        },
+        reset: {
+          type: ["boolean", "null"],
+          description: "True restores every setting to its default, ignoring the other fields in this call. Null or false does nothing."
         }
       }
     },

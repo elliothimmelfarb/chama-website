@@ -909,38 +909,69 @@
      Persisted per browser; the page renders fine with nothing stored.
      ================================================================== */
 
-  var SET_KEY = "chama.agent.tune.v1";
+  var SET_KEY = "chama.agent.tune.v2";
+  var OLD_KEYS = ["chama.agent.tune.v1"];
   var TEXT_MODES = { off: 1, subtle: 1, full: 1 };
-  var DEFAULTS = { brightness: 0.85, motion: 1, textAnimation: "subtle", hue: 20 };
-  var settings = { brightness: 0.85, motion: 1, textAnimation: "subtle", hue: 20 };
 
-  function clampUnit(v) {
+  // position is null until someone chooses one: null means the flame's home,
+  // which differs between wide screens and mobile.
+  var DEFAULTS = {
+    brightness: 0.85, motion: 1, textAnimation: "subtle", hue: 20,
+    size: 1, speed: 1, turbulence: 0.5, density: 1, angle: 0,
+    position: null, sparkle: 0.5
+  };
+
+  var settings = {};
+  function toDefaults() {
+    for (var k in DEFAULTS) settings[k] = DEFAULTS[k];
+  }
+  toDefaults();
+
+  function clampNum(v, lo, hi) {
     if (typeof v !== "number" || !isFinite(v)) return null;
-    if (v < 0.2) return 0.2;
-    if (v > 1) return 1;
+    if (v < lo) return lo;
+    if (v > hi) return hi;
     return v;
   }
-
+  function clampUnit(v) { return clampNum(v, 0.2, 1); }
   function clampHue(v) {
     if (typeof v !== "number" || !isFinite(v)) return null;
     return ((v % 360) + 360) % 360;
   }
 
+  // every numeric field and its range, in one place: load, config events and
+  // the panel all read the ranges from here
+  var RANGES = {
+    brightness: [0.2, 1], motion: [0.2, 1], size: [0.3, 1.6], speed: [0.2, 2],
+    turbulence: [0, 1], density: [0.2, 1.5], sparkle: [0, 1], position: [0, 1]
+  };
+
+  function clampField(name, v) {
+    if (name === "hue") return clampHue(v);
+    if (name === "angle") return clampHue(v);           // degrees, wraps
+    var r = RANGES[name];
+    return r ? clampNum(v, r[0], r[1]) : null;
+  }
+
   function loadSettings() {
     try {
+      for (var o = 0; o < OLD_KEYS.length; o++) window.localStorage.removeItem(OLD_KEYS[o]);
       var raw = window.localStorage.getItem(SET_KEY);
       if (!raw) return;
       var data = JSON.parse(raw);
       if (!data || typeof data !== "object") return;
-      var b = clampUnit(data.brightness);
-      var m = clampUnit(data.motion);
-      if (b !== null) settings.brightness = b;
-      if (m !== null) settings.motion = m;
-      if (typeof data.textAnimation === "string" && TEXT_MODES[data.textAnimation]) {
-        settings.textAnimation = data.textAnimation;
+      for (var name in RANGES) {
+        var v = clampField(name, data[name]);
+        if (v !== null) settings[name] = v;
       }
       var h = clampHue(data.hue);
       if (h !== null) settings.hue = h;
+      var a = clampField("angle", data.angle);
+      if (a !== null) settings.angle = a;
+      if (typeof data.textAnimation === "string" && TEXT_MODES[data.textAnimation]) {
+        settings.textAnimation = data.textAnimation;
+      }
+      if (data.position === null) settings.position = null;
     } catch (e) { /* private mode, blocked storage, corrupt value: defaults stand */ }
   }
 
@@ -950,12 +981,21 @@
     } catch (e) { /* nothing to do: the session still works */ }
   }
 
+  function clearSettings() {
+    try { window.localStorage.removeItem(SET_KEY); } catch (e) { /* fine */ }
+  }
+
   loadSettings();
 
-  // eased mirrors of the two continuous settings, so a change moves the
-  // flame rather than snapping it. tau is short while a slider is dragged
-  // and long when the agent changes the room for you.
-  var S = { brightness: settings.brightness, motion: settings.motion };
+  // eased mirrors of the continuous settings, so a change moves the flame
+  // rather than snapping it. tau is short while a slider is dragged and long
+  // when the agent changes the room for you.
+  var S = {
+    brightness: settings.brightness, motion: settings.motion, size: settings.size,
+    speed: settings.speed, turbulence: settings.turbulence, density: settings.density,
+    sparkle: settings.sparkle
+  };
+  var EASED = ["brightness", "motion", "size", "speed", "turbulence", "density", "sparkle"];
   var settingsTau = 0.08;
 
   // auto dim: once there is a conversation, the flame steps back so the
@@ -971,7 +1011,10 @@
   var ctx = canvas.getContext("2d", { alpha: false });
 
   var W = 0, H = 0, DPR = 1;
-  var emitX = 0, emitY = 0;
+  var emitX = -1, emitY = 0;
+  // the flame's own frame: up is the burn direction, lat is across it
+  var upX = 0, upY = -1, latX = 1, latY = 0;
+  var angleShown = settings.angle;
 
   // ---- target parameter sets per state -----------------------------
   // rate: particles per second. spread: birth jitter in px.
@@ -1231,17 +1274,21 @@
     return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
   }
 
-  function spawn(x, y, band, upBias, cool, sizeMul) {
+  // the band and the launch direction are laid out in the flame's own frame,
+  // so the whole emitter rotates with the angle setting
+  function spawn(x, y, band, upBias, cool, sizeMul, life) {
     if (count >= budget || count >= CAP) return;
     var i = count++;
     var off = bell();
-    px[i] = x + off * band;
-    py[i] = y + bell() * band * 0.11;
-    // the outer edge of the band starts moving inward already
-    vx[i] = (Math.random() - 0.5) * 18 - off * 16;
-    vy[i] = -(upBias * 0.32 * (0.6 + Math.random() * 0.85));
+    var along = bell() * band * 0.11;
+    px[i] = x + off * band * latX + along * upX;
+    py[i] = y + off * band * latY + along * upY;
+    var jitter = (Math.random() - 0.5) * 18 - off * 16;
+    var launch = upBias * 0.32 * (0.6 + Math.random() * 0.85);
+    vx[i] = jitter * latX + launch * upX;
+    vy[i] = jitter * latY + launch * upY;
     pa[i] = 0;
-    pl[i] = P.life * (0.5 + Math.random() * 0.95);
+    pl[i] = life * (0.5 + Math.random() * 0.95);
     ps[i] = (1.5 + Math.random() * 5.2) * sizeMul;
     pj[i] = Math.random() * 6.28;
     pc[i] = cool;
@@ -1259,16 +1306,19 @@
   var bodyBudget = 130;
   var bcarry = 0;
 
-  function spawnBody(x, y, band, upBias, cool, sizeMul) {
+  function spawnBody(x, y, band, upBias, cool, sizeMul, life) {
     if (bcount >= bodyBudget || bcount >= BCAP) return;
     var i = bcount++;
     var off = bell() * 0.82;
-    bx[i] = x + off * band;
-    by[i] = y + bell() * band * 0.09;
-    bvx[i] = (Math.random() - 0.5) * 10 - off * 12;
-    bvy[i] = -(upBias * 0.72 * 0.30 * (0.7 + Math.random() * 0.7));
+    var along = bell() * band * 0.09;
+    bx[i] = x + off * band * latX + along * upX;
+    by[i] = y + off * band * latY + along * upY;
+    var bjit = (Math.random() - 0.5) * 10 - off * 12;
+    var blaunch = upBias * 0.72 * 0.30 * (0.7 + Math.random() * 0.7);
+    bvx[i] = bjit * latX + blaunch * upX;
+    bvy[i] = bjit * latY + blaunch * upY;
     ba[i] = 0;
-    blf[i] = P.life * 0.87 * (0.6 + Math.random() * 0.8);
+    blf[i] = life * 0.87 * (0.6 + Math.random() * 0.8);
     bs[i] = (26 + Math.random() * 44) * sizeMul;
     bo[i] = off;
     bc[i] = cool;
@@ -1283,6 +1333,11 @@
       bs[i] = bs[last]; bo[i] = bo[last];
       bc[i] = bc[last];
     }
+  }
+
+  // a rotated flame can leave by any edge, so the cull is all four
+  function offCanvas(x, y) {
+    return x < -140 || x > W + 140 || y < -140 || y > H + 140;
   }
 
   function kill(i) {
@@ -1300,7 +1355,7 @@
   function burstAt(x, y, n) {
     for (var k = 0; k < n; k++) {
       var before = count;
-      spawn(x, y, 12, P.rise, P.cool > 0.5 ? 1 : 0, P.size * 1.5);
+      spawn(x, y, 12, curRise, P.cool > 0.5 ? 1 : 0, P.size * curSize * 1.5, curLife);
       if (count === before) return;
       var i = count - 1;
       var ang = Math.random() * Math.PI * 2;
@@ -1352,12 +1407,18 @@
 
   // the silhouette gate, refreshed every frame from the live flame shape.
   // Pointer terms and taps both ask this before they do anything at all.
-  var gateHalfWide = 0, gateTop = 0;
+  var gateHalfWide = 0, gateReach = 0;
+  var curRise = 200, curLife = 2.45, curSize = 1;
 
+  // the silhouette test in the flame's own frame: lateral offset across the
+  // band, and height measured along whatever direction the fire burns
   function nearFlame(x, y) {
-    return Math.abs(x - emitX) < gateHalfWide &&
-           y < emitY + POINT_R &&
-           y > gateTop - POINT_R;
+    var dx = x - emitX, dy = y - emitY;
+    var lat = dx * latX + dy * latY;
+    var up = dx * upX + dy * upY;
+    return Math.abs(lat) < gateHalfWide &&
+           up > -POINT_R &&
+           up < gateReach + POINT_R;
   }
 
   function clampAbs(v, cap) {
@@ -1423,6 +1484,23 @@
   }, { passive: true });
 
   // ---- sizing ---------------------------------------------------------
+  // the flame's home: left of the conversation on wide screens, behind it
+  // on mobile. A chosen position overrides it as a fraction of the width.
+  function homeX() {
+    return (W >= 1024 ? 0.29 : 0.5) * W;
+  }
+
+  function wantedX() {
+    return settings.position === null ? homeX() : settings.position * W;
+  }
+
+  // the anchor rides the burn direction, so an inverted flame is rooted at
+  // the ceiling and a sideways jet starts at mid height. 0.41 keeps the
+  // upright base 9% of the viewport above the bottom edge, as before.
+  function wantedY(uy) {
+    return H * 0.5 - H * 0.41 * uy;
+  }
+
   function layout() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     var nw = window.innerWidth || document.documentElement.clientWidth;
@@ -1435,8 +1513,8 @@
     canvas.style.width = W + "px";
     canvas.style.height = H + "px";
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    emitX = W >= 1024 ? W * 0.29 : W * 0.5;
-    emitY = H * 0.91;   // the base sits about 9% of the viewport above the bottom edge
+    if (emitY <= 0) emitY = wantedY(upY);
+    if (emitX < 0) emitX = homeX();   // first layout: start where we belong
     grainPattern = ctx.createPattern(grainTile, "repeat");
     if (reduceMotion) drawStatic();
   }
@@ -1449,14 +1527,19 @@
 
   // ---- static fallback -------------------------------------------------
   function drawStatic() {
+    emitX = wantedX();
+    emitY = wantedY(-Math.cos(settings.angle * Math.PI / 180));
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = "#0e0c0a";
     ctx.fillRect(0, 0, W, H);
-    var r = Math.max(W, H) * 0.62;
-    var gy = emitY - H * 0.20;
+    var r = Math.max(W, H) * 0.62 * (0.55 + settings.size * 0.45);
+    var reach = H * 0.20 * settings.size;
+    var a = settings.angle * Math.PI / 180;
+    var gx = emitX + reach * Math.sin(a);
+    var gy = emitY - reach * Math.cos(a);
     var lvl = settings.brightness * dimTarget;
-    var g = ctx.createRadialGradient(emitX, gy, 0, emitX, gy, r);
+    var g = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
     g.addColorStop(0, hsla(settings.hue, 70, 90, (0.34 * lvl).toFixed(3)));
     g.addColorStop(0.08, hsla(settings.hue, 100, 69, (0.30 * lvl).toFixed(3)));
     g.addColorStop(0.26, hsla(settings.hue, 92, 54, (0.17 * lvl).toFixed(3)));
@@ -1517,9 +1600,30 @@
       P[key] = ease(P[key], T[key], dt, key === "cool" ? 0.22 : 0.34);
     }
     // settings and auto dim ease rather than snap
-    S.brightness = ease(S.brightness, settings.brightness, dt, settingsTau);
-    S.motion = ease(S.motion, settings.motion, dt, settingsTau);
+    for (var si = 0; si < EASED.length; si++) {
+      var sk = EASED[si];
+      S[sk] = ease(S[sk], settings[sk], dt, settingsTau);
+    }
     dim = ease(dim, dimTarget, dt, 0.55);
+
+    // the angle takes the short way round, like the hue
+    var angGap = shortestHue(angleShown, settings.angle);
+    if (Math.abs(angGap) > 0.02) {
+      angleShown += angGap * (1 - Math.exp(-dt / settingsTau));
+      angleShown = ((angleShown % 360) + 360) % 360;
+    } else {
+      angleShown = settings.angle;
+    }
+    // the up axis of the whole system, and the lateral axis across it
+    var rad = angleShown * Math.PI / 180;
+    var sinA = Math.sin(rad), cosA = Math.cos(rad);
+    upX = sinA; upY = -cosA;          // 0 up, 90 right, 180 down, 270 left
+    latX = cosA; latY = sinA;
+
+    // a stately glide when the emitter is asked to move, and the anchor
+    // follows the burn direction at the same pace
+    emitX = ease(emitX, wantedX(), dt, 0.62);
+    emitY = ease(emitY, wantedY(upY), dt, 0.62);
 
     // the hue eases the short way round the circle, and the ramps are
     // rebuilt at most every sixth frame while it travels
@@ -1539,9 +1643,22 @@
 
     var moti = S.motion;
     var bright = S.brightness * dim;
+    var sizeS = S.size, speedS = S.speed;
     var heatEff = P.heat * bright;
-    var riseEff = P.rise * (0.40 + 0.60 * moti);
-    var swirlEff = P.swirl * (0.35 + 0.65 * moti);
+
+    // size sets how far the fire reaches, speed how fast it gets there.
+    // Acceleration carries speed squared and life carries its inverse, so a
+    // fast flame rushes through the same silhouette instead of growing.
+    // speed is a clean time scaling of the flame's own clock: every one of
+    // its accelerations carries speed squared, damping carries speed, and
+    // life carries its inverse, so the silhouette is size's business alone
+    var sp2 = speedS * speedS;
+    var riseEff = P.rise * (0.40 + 0.60 * moti) * sizeS * sp2;
+    var lifeEff = P.life / speedS;
+    var bandEff = P.band * sizeS;
+    // turbulence: 0 an almost laminar candle, 0.5 the house behaviour, 1 wild
+    var turbEff = 0.12 + S.turbulence * 1.76;
+    var swirlEff = P.swirl * (0.35 + 0.65 * moti) * turbEff;
 
     // the pointer decays to nothing when it stops moving, so a parked
     // cursor cannot keep dragging the fire along
@@ -1556,8 +1673,9 @@
     // Gate: the pointer only exists for the flame when it is inside or just
     // beside the silhouette. Anywhere else on the page, including the whole
     // conversation column, it is not consulted at all.
-    gateHalfWide = P.band * 1.9 + POINT_R;
-    gateTop = emitY - riseEff * 2.7;
+    gateHalfWide = bandEff * 1.9 + POINT_R;
+    gateReach = riseEff * 2.7 / (speedS * speedS);
+    curRise = riseEff; curLife = lifeEff; curSize = sizeS;
     var repel = pointerLife < 1.2 && pointerX > -9000 && nearFlame(pointerX, pointerYp);
 
     breath += dt;
@@ -1576,15 +1694,17 @@
       }
     }
 
-    // emission
-    var rate = P.rate * moti * (state === "idle" ? breathe : 1);
+    // emission. density scales both populations; the governor still has the
+    // last word when the frame time says so.
+    var rate = P.rate * moti * S.density * (state === "idle" ? breathe : 1);
     carry += rate * dt;
     var toSpawn = carry | 0;
     carry -= toSpawn;
     var coolFlag = P.cool > 0.5 ? 1 : 0;
+    var sizeMul = P.size * sizeS;
     var i;
     for (i = 0; i < toSpawn; i++) {
-      spawn(emitX, emitY, P.band, riseEff, coolFlag, P.size);
+      spawn(emitX, emitY, bandEff, riseEff, coolFlag, sizeMul, lifeEff);
     }
     // the body population, emitted from the same band at about a tenth
     // of the fine-spark rate
@@ -1592,19 +1712,27 @@
     var bSpawn = bcarry | 0;
     bcarry -= bSpawn;
     for (i = 0; i < bSpawn; i++) {
-      spawnBody(emitX, emitY, P.band, riseEff, coolFlag, P.size);
+      spawnBody(emitX, emitY, bandEff, riseEff, coolFlag, sizeMul, lifeEff);
     }
 
-    // stray idle spark
-    if (state === "idle" && Math.random() < dt * 1.5) {
-      spawn(emitX + (Math.random() - 0.5) * 180, emitY - Math.random() * 60, 10, riseEff * 2.1, coolFlag, 0.7);
+    // sparkle: the stray spark, and the shower each text delta throws
+    var sparkleS = S.sparkle / 0.5;
+    if (state === "idle" && Math.random() < dt * 1.5 * sparkleS) {
+      var strayLat = (Math.random() - 0.5) * 180 * sizeS;
+      var strayUp = Math.random() * 60 * sizeS;
+      spawn(emitX + strayLat * latX + strayUp * upX,
+            emitY + strayLat * latY + strayUp * upY,
+            10, riseEff * 2.1, coolFlag, 0.7 * sizeS, lifeEff);
     }
     // per-delta flicker bursts
     if (burstQueue > 0) {
       var b = Math.min(burstQueue, 3);
       burstQueue -= b;
-      for (i = 0; i < b * 22; i++) {
-        spawn(emitX, emitY - Math.random() * 90, P.band * 0.62, riseEff * 1.5, coolFlag, P.size * 1.15);
+      var shower = Math.round(b * 22 * sparkleS);
+      for (i = 0; i < shower; i++) {
+        var bu = Math.random() * 90 * sizeS;
+        spawn(emitX + bu * upX, emitY + bu * upY,
+              bandEff * 0.62, riseEff * 1.5, coolFlag, sizeMul * 1.15, lifeEff);
       }
     }
 
@@ -1613,7 +1741,7 @@
     var leanX = (W >= 1024 ? W * 0.62 : W * 0.5) - emitX;
     for (i = 0; i < count; i++) {
       pa[i] += dt;
-      if (pa[i] >= pl[i] || py[i] < -80) { kill(i); i--; continue; }
+      if (pa[i] >= pl[i] || offCanvas(px[i], py[i])) { kill(i); i--; continue; }
 
       var age = pa[i] / pl[i];
       curl(px[i] * 0.0036, py[i] * 0.0036, t, curlOut);
@@ -1621,17 +1749,25 @@
       // lateral energy fades with age while the inward pull grows: the body
       // widens a little off the band, then converges to a tapering tip
       var lick = 1 - age * 0.72;
-      var converge = (emitX - px[i]) * (0.5 + P.pinch * age * age);
-      var rise01 = (emitY - py[i]) / rootSpan;
+      // everything below is expressed in the flame's own frame, so the whole
+      // fire rotates with the angle setting
+      var ox = px[i] - emitX, oy = py[i] - emitY;
+      var lat = ox * latX + oy * latY;
+      var up = ox * upX + oy * upY;
+      var converge = -lat * (0.5 + P.pinch * age * age) * sp2;
+      var rise01 = up / rootSpan;
       var rootFree = rise01 <= 0 ? 0 : (rise01 >= 1 ? 1 : rise01 * rise01 * (3 - 2 * rise01));
-      vx[i] += (curlOut[0] * swirlEff * 3.2 * lick + converge + (leanX * P.lean) * 0.5 * rootFree) * dt;
-      vy[i] += (curlOut[1] * swirlEff * 2.0 * lick - riseEff * 1.9 * (1 - age * 0.65)) * dt;
+      var buoy = riseEff * 1.9 * (1 - age * 0.65);
+      var side = converge + (leanX * P.lean) * 0.5 * rootFree * sp2;
+      vx[i] += (curlOut[0] * swirlEff * 3.2 * lick * sp2 + side * latX + buoy * upX) * dt;
+      vy[i] += (curlOut[1] * swirlEff * 2.0 * lick * sp2 + side * latY + buoy * upY) * dt;
 
       // thinking state pulls particles back toward the core
       if (P.swirl > 60) {
-        var dx = emitX - px[i], dy = (emitY - 90) - py[i];
+        var coreX = emitX + 90 * upX * sizeS, coreY = emitY + 90 * upY * sizeS;
+        var dx = coreX - px[i], dy = coreY - py[i];
         var d = Math.sqrt(dx * dx + dy * dy) + 1;
-        var pull = ((P.swirl - 60) / 32) * 130 * moti;
+        var pull = ((P.swirl - 60) / 32) * 130 * moti * sp2;
         vx[i] += (dx / d) * pull * dt;
         vy[i] += (dy / d) * pull * dt;
       }
@@ -1651,8 +1787,16 @@
         }
       }
 
-      vx[i] *= Math.exp(-2.4 * dt);
-      vy[i] *= Math.exp(-0.42 * dt);
+      // damping is strong across the flame and weak along it, so it has to
+      // rotate as well: split the velocity, damp each part, put it back
+      var vLat = vx[i] * latX + vy[i] * latY;
+      var vUp = vx[i] * upX + vy[i] * upY;
+      // the damping rate rides speed, so a shorter life sheds the same
+      // fraction of velocity and the silhouette stays size-determined
+      vLat *= Math.exp(-2.4 * speedS * dt);
+      vUp *= Math.exp(-0.42 * speedS * dt);
+      vx[i] = vLat * latX + vUp * upX;
+      vy[i] = vLat * latY + vUp * upY;
       px[i] += vx[i] * dt;
       py[i] += vy[i] * dt;
     }
@@ -1660,15 +1804,20 @@
     // the body: same field at lower gain, so it billows instead of darting
     for (i = 0; i < bcount; i++) {
       ba[i] += dt;
-      if (ba[i] >= blf[i] || by[i] < -120) { killBody(i); i--; continue; }
+      if (ba[i] >= blf[i] || offCanvas(bx[i], by[i])) { killBody(i); i--; continue; }
       var bage = ba[i] / blf[i];
       curl(bx[i] * 0.0026, by[i] * 0.0026, t * 0.7, curlOut);
       var blick = 1 - bage * 0.6;
-      var bconv = (emitX - bx[i]) * (0.5 + P.pinch * bage * bage);
-      var brise01 = (emitY - by[i]) / rootSpan;
+      var box = bx[i] - emitX, boy = by[i] - emitY;
+      var blat = box * latX + boy * latY;
+      var bup = box * upX + boy * upY;
+      var bconv = -blat * (0.5 + P.pinch * bage * bage) * sp2;
+      var brise01 = bup / rootSpan;
       var brootFree = brise01 <= 0 ? 0 : (brise01 >= 1 ? 1 : brise01 * brise01 * (3 - 2 * brise01));
-      bvx[i] += (curlOut[0] * swirlEff * 1.35 * blick + bconv + (leanX * P.lean) * 0.4 * brootFree) * dt;
-      bvy[i] += (curlOut[1] * swirlEff * 0.8 * blick - riseEff * 1.38 * (1 - bage * 0.7)) * dt;
+      var bbuoy = riseEff * 1.38 * (1 - bage * 0.7);
+      var bside = bconv + (leanX * P.lean) * 0.4 * brootFree * sp2;
+      bvx[i] += (curlOut[0] * swirlEff * 1.35 * blick * sp2 + bside * latX + bbuoy * upX) * dt;
+      bvy[i] += (curlOut[1] * swirlEff * 0.8 * blick * sp2 + bside * latY + bbuoy * upY) * dt;
       if (repel) {
         var brx = bx[i] - pointerX, bry = by[i] - pointerYp;
         var br2 = brx * brx + bry * bry;
@@ -1681,8 +1830,12 @@
           bvy[i] += ((bry * bpush + brx * btang) / brd + pointerVY * bfall * 0.13) * dt;
         }
       }
-      bvx[i] *= Math.exp(-2.8 * dt);
-      bvy[i] *= Math.exp(-0.62 * dt);
+      var bvLat = bvx[i] * latX + bvy[i] * latY;
+      var bvUp = bvx[i] * upX + bvy[i] * upY;
+      bvLat *= Math.exp(-2.8 * speedS * dt);
+      bvUp *= Math.exp(-0.62 * speedS * dt);
+      bvx[i] = bvLat * latX + bvUp * upX;
+      bvy[i] = bvLat * latY + bvUp * upY;
       bx[i] += bvx[i] * dt;
       by[i] += bvy[i] * dt;
     }
@@ -1707,9 +1860,10 @@
     // the fire lights the room: one broad radial wash whose reach and
     // strength ride the state machine
     var warmth = (1 - P.cool);
-    var roomR = (Math.max(W, H) * (0.42 + heatEff * 0.26)) * (0.94 + breathe * 0.06);
-    var roomY = emitY - H * 0.20;
-    var gg = ctx.createRadialGradient(emitX, roomY, 0, emitX, roomY, roomR);
+    var roomR = (Math.max(W, H) * (0.42 + heatEff * 0.26)) * (0.94 + breathe * 0.06) * (0.55 + sizeS * 0.45);
+    var roomOff = H * 0.20 * sizeS;
+    var roomCX = emitX + roomOff * upX, roomCY = emitY + roomOff * upY;
+    var gg = ctx.createRadialGradient(roomCX, roomCY, 0, roomCX, roomCY, roomR);
     var warmA = (0.16 + heatEff * 0.30) * warmth * (0.35 + bright * 0.65);
     gg.addColorStop(0, hsla(hueShown, 100, 73, (warmA * 0.92).toFixed(3)));
     gg.addColorStop(0.22, hsla(hueShown, 92, 59, (warmA * 0.46).toFixed(3)));
@@ -1726,35 +1880,41 @@
       + Math.sin(breath * 13.8) * 0.085
       + Math.sin(breath * 23.2 + 1.7) * 0.055
       + Math.sin(breath * 6.1 + 0.4) * 0.05;
-    var coreW = P.band * (1.28 + P.core * 0.30);
+    var coreW = bandEff * (1.28 + P.core * 0.30);
+    var coreReach = riseEff * 1.55 / (speedS * speedS);
     var lobes = [
       [0.00, 0.10, 1.00],
       [-0.34, 0.30, 0.62],
       [0.34, 0.26, 0.58],
       [0.05, 0.58, 0.44]
     ];
+    // one transform for the whole group, so the core rotates with the fire
+    ctx.save();
+    ctx.translate(emitX, emitY);
+    ctx.rotate(rad);
     for (var ci = 0; ci < lobes.length; ci++) {
       var lo = lobes[ci];
       var wob = Math.sin(breath * (9 + ci * 3.1) + ci) * 0.14;
       var cw = coreW * lo[2] * (fl + wob) * P.core;
       var ch = cw * (2.05 - lo[1] * 0.9);
-      var cx = emitX + lo[0] * P.band * (0.9 + wob);
-      var cy = emitY - lo[1] * riseEff * 1.55;
+      var cx = lo[0] * bandEff * (0.9 + wob);
+      var cy = -lo[1] * coreReach;
       ctx.globalAlpha = Math.min(0.92, (0.16 + heatEff * 0.34) * lo[2] * (fl - 0.1) * warmth * (0.30 + bright * 0.70));
-      // anchored so a lobe reaches only a little below the band: the core is
-      // never cut by the bottom edge
+      // anchored so a lobe reaches only a little past the band: the core is
+      // never cut by the edge it sits against
       ctx.drawImage(coreSprite, cx - cw, cy - ch * 1.62, cw * 2, ch * 2);
     }
+    ctx.restore();
     ctx.globalAlpha = 1;
 
     // the continuous body. Each blob is huge and nearly transparent; the
     // ramp index comes from age AND lateral distance from the axis, so the
     // mass is white gold along the centreline and deep translucent red at
     // its silhouette, which is what reads as volume.
-    var axisBand = Math.max(20, P.band);
+    var axisBand = Math.max(20, bandEff);
     for (i = 0; i < bcount; i++) {
       var b2 = ba[i] / blf[i];
-      var lat = Math.abs(bx[i] - emitX) / axisBand;
+      var lat = Math.abs((bx[i] - emitX) * latX + (by[i] - emitY) * latY) / axisBand;
       if (lat > 1.6) lat = 1.6;
       var shade = 0.10 + b2 * 0.55 + lat * 0.42;
       if (shade > 1) shade = 1;
@@ -2057,12 +2217,8 @@
 
   document.getElementById("tune-reset").addEventListener("click", function () {
     settingsTau = 0.3;
-    settings.brightness = DEFAULTS.brightness;
-    settings.motion = DEFAULTS.motion;
-    settings.textAnimation = DEFAULTS.textAnimation;
-    settings.hue = DEFAULTS.hue;
+    resetAll();                 // the seven the panel does not show go too
     syncControls();
-    saveSettings();
     if (reduceMotion) {
       buildRamps(settings.hue);
       hueShown = hueBuilt = settings.hue;
@@ -2073,22 +2229,89 @@
 
   // the agent's hand: a config event from the model moves the same dials,
   // eased over about 1.2 seconds so the room visibly changes
-  function applyAgentConfig(payload) {
-    if (!payload || typeof payload !== "object") return false;
-    var touched = false;
-    var b = clampUnit(typeof payload.brightness === "number" ? payload.brightness : null);
-    var m = clampUnit(typeof payload.motion === "number" ? payload.motion : null);
-    if (b !== null) { settings.brightness = b; touched = true; }
-    if (m !== null) { settings.motion = m; touched = true; }
-    if (typeof payload.textAnimation === "string" && TEXT_MODES[payload.textAnimation]) {
-      settings.textAnimation = payload.textAnimation;
-      touched = true;
+  // what the visitor is told when the agent reaches for a dial. The order
+  // here is the order the words come out in.
+  var FIELD_WORDS = [
+    ["brightness", "brightness"],
+    ["motion", "motion"],
+    ["hue", "color"],
+    ["size", "size"],
+    ["speed", "speed"],
+    ["turbulence", "turbulence"],
+    ["density", "density"],
+    ["angle", "direction"],
+    ["position", "position"],
+    ["sparkle", "sparkle"],
+    ["textAnimation", "text animation"]
+  ];
+
+  function joinWords(list) {
+    if (list.length === 1) return list[0];
+    if (list.length === 2) return list[0] + " and " + list[1];
+    return list.slice(0, -1).join(", ") + " and " + list[list.length - 1];
+  }
+
+  function configSentence(changed) {
+    if (!changed.length) return "";
+    if (changed.length === 1 && changed[0] === "text animation") {
+      return "The agent changed the text animation.";
     }
-    var h = clampHue(typeof payload.hue === "number" ? payload.hue : null);
-    if (h !== null) { settings.hue = h; touched = true; }
-    if (!touched) return false;
+    var flame = [], other = [];
+    for (var i = 0; i < changed.length; i++) {
+      if (changed[i] === "text animation") other.push(changed[i]); else flame.push(changed[i]);
+    }
+    if (!flame.length) return "The agent changed the " + joinWords(other) + ".";
+    var line = "The agent changed the flame's " + joinWords(flame);
+    if (other.length) line += ", and the " + joinWords(other);
+    return line + ".";
+  }
+
+  // the eased mirrors are left where they are on purpose: the frame loop
+  // walks them home, so a reset glides rather than snapping
+  function resetAll() {
+    toDefaults();
+    clearSettings();
+  }
+
+  function applyAgentConfig(payload) {
+    if (!payload || typeof payload !== "object") return null;
+
+    // reset wins outright and ignores the rest of the call
+    if (payload.reset === true) {
+      settingsTau = 0.42;
+      resetAll();
+      afterConfig(true);        // a reset leaves nothing behind in storage
+      return "The agent restored the flame's defaults.";
+    }
+
+    var changed = [];
+    for (var f = 0; f < FIELD_WORDS.length; f++) {
+      var name = FIELD_WORDS[f][0], word = FIELD_WORDS[f][1];
+      var raw = payload[name];
+      if (raw === null || raw === undefined) continue;
+
+      if (name === "textAnimation") {
+        if (typeof raw === "string" && TEXT_MODES[raw] && raw !== settings.textAnimation) {
+          settings.textAnimation = raw;
+          changed.push(word);
+        }
+        continue;
+      }
+      var v = clampField(name, raw);
+      if (v === null || v === settings[name]) continue;
+      settings[name] = v;
+      changed.push(word);
+    }
+
+    if (!changed.length) return null;
     settingsTau = 0.42;                       // roughly 1.2s to settle
-    saveSettings();
+    afterConfig();
+    return configSentence(changed);
+  }
+
+  // everything a settings change has to do once the values are in place
+  function afterConfig(wasReset) {
+    if (!wasReset) saveSettings();
     if (reduceMotion) {
       buildRamps(settings.hue);
       hueShown = hueBuilt = settings.hue;
@@ -2102,7 +2325,6 @@
       void tuneBtn.offsetWidth;               // restart the one shot
       tuneBtn.classList.add("touched");
     }
-    return true;
   }
 
   syncControls();
@@ -2442,9 +2664,8 @@
             addSystem("The note could not be sent.");
           }
         } else if (event.type === "config") {
-          if (applyAgentConfig(event.settings)) {
-            addSystem("The agent adjusted the room.", true);
-          }
+          var said = applyAgentConfig(event.settings);
+          if (said) addSystem(said, true);
         } else if (event.type === "error") {
           addSystem(event.error || GENERIC);
           setState("error");
