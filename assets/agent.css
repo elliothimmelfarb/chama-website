@@ -1056,4 +1056,25 @@ body.chama-agent-page {
   .chama-agent .bar { background: rgba(16, 14, 12, 0.88); }
   .chama-agent .pill { background: rgba(16, 14, 12, 0.8); }
   .chama-agent .tune-pop { background: rgba(16, 14, 12, 0.96); }
+
+  /* A held finger belongs to the fire, not to the text. Long pressing the
+     room used to start selection and raise the callout loupe, which ended
+     the play mid gesture; on touch the chrome and the flame give up
+     selection entirely, and only the conversation keeps it, because a
+     visitor may well want to copy what the flame said. pan-y and
+     pinch-zoom stay allowed, so the page, the transcript and the zoom all
+     behave exactly as before; only the long press changes hands. */
+  .chama-agent {
+    touch-action: pan-y pinch-zoom;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .chama-agent .turn-body,
+  .chama-agent textarea,
+  .chama-agent input {
+    -webkit-user-select: text;
+    user-select: text;
+  }
 }
