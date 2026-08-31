@@ -1756,6 +1756,7 @@
       var touchLately = 0;
       var settleTimer = 0;
       var seatTicking = false;
+      var chainingOut = false;
       var lastY = window.pageYOffset || 0;
       var lastDir = 0;
 
@@ -1782,7 +1783,35 @@
         window.scrollTo({ top: (window.pageYOffset || 0) + px, behavior: "auto" });
       }
 
+      /* ---- the seat, on a phone ------------------------------------------
+         Touch gets its seat stop from the document's own scroll snapping
+         (index.html, touch pointers only): a proximity snap point at the
+         room's bottom edge, which brings a flick to rest on the seat the
+         way the wheel handler brings a wheel to rest on it, with the
+         browser's physics rather than a fight over touchmove.
+
+         The snap has to know how to stand aside. Every deliberate move away
+         from the seat turns it off, and it is armed again only from a place
+         where arming it cannot move anything under the reader: seated
+         already, or far enough out that the snap has no claim on the page.
+         A phone's URL bar collapsing counts as a scroll, so the arming can
+         never be a pull of its own.                                      */
+      function snapOff() {
+        if (touchDevice) document.documentElement.classList.add("room-unsnapped");
+      }
+
+      function snapArm() {
+        // never mid gesture: a finger is still carrying the page out of the
+        // room, and re-arming under it is exactly the yank this avoids
+        if (!touchDevice || kbPinned || chainingOut) return;
+        var cl = document.documentElement.classList;
+        if (!cl.contains("room-unsnapped")) return;
+        var d = Math.abs(seatDelta());
+        if (d <= SEAT_EPS || d > viewportH() * 0.5) cl.remove("room-unsnapped");
+      }
+
       function markSeat() {
+        if (kbPinned) snapOff(); else snapArm();
         // pinned to the viewport, the room is the screen: it is seated by
         // definition and the transcript is the only thing there is to scroll
         if (kbPinned) {
@@ -1851,6 +1880,9 @@
           window.clearTimeout(kbRelease);
           if (input) input.blur();
           unpin();
+          // this one carries the page a whole screen above the room, and the
+          // seat has no business catching it on the way out
+          snapOff();
           var top = (window.pageYOffset || 0) + rootEl.getBoundingClientRect().top;
           window.scrollTo({ top: Math.max(0, top - viewportH()), behavior: "smooth" });
         });
@@ -1864,7 +1896,7 @@
           var t0 = ev.touches && ev.touches[0];
           if (!t0) return;
           chainY = chainStartY = t0.clientY;
-          chaining = false;
+          chaining = chainingOut = false;
         }, { passive: true });
         stage.addEventListener("touchmove", function (ev) {
           var t1 = ev.touches && ev.touches[0];
@@ -1881,7 +1913,7 @@
           if (!chaining) {
             var atTop = stage.scrollTop <= 0;
             var atEnd = stage.scrollTop >= stage.scrollHeight - stage.clientHeight - 1;
-            if ((atTop && dy > 0) || (atEnd && dy < 0)) chaining = true;
+            if ((atTop && dy > 0) || (atEnd && dy < 0)) { chaining = chainingOut = true; snapOff(); }
             else { chainY = y; return; }
           }
           // like native chaining, the gesture belongs to the page from here on
@@ -1891,7 +1923,7 @@
         }, { passive: false });
         stage.addEventListener("touchend", function () {
           chainY = null;
-          chaining = false;
+          chaining = chainingOut = false;
         }, { passive: true });
       }
 
