@@ -753,6 +753,40 @@
       overflow: hidden;
     }
 
+    /* The seat, on a phone.
+
+       A wheel can be clamped in the middle of a gesture, which is how the
+       room seats itself on a laptop (agent.js routes the wheel by hand). A
+       flick cannot: stopping one would mean preventing touchmove across the
+       whole room, and that takes the page's own scrolling away from it. So
+       the seat is handed to the browser instead. The document carries a
+       single proximity snap point at the room's bottom edge, so a flick
+       toward the room comes to rest with the room resting on the bottom of
+       the screen, and only then does the transcript inside it open. One
+       snap area, and proximity rather than mandatory, so everything above
+       and below the room still scrolls exactly as it always did.
+
+       Touch pointers only: a laptop keeps the hand routed wheel, untouched.
+
+       agent.js takes the snap off the document (.room-unsnapped) for the
+       three moments where a pull is deliberately away from the seat and a
+       snap back would fight it: the keyboard pin, the chaining out of the
+       transcript, and the Back to page button. */
+
+    @media (hover: none) and (pointer: coarse) {
+      html {
+        scroll-snap-type: y proximity;
+      }
+
+      .flame-room {
+        scroll-snap-align: end;
+      }
+
+      html.room-unsnapped {
+        scroll-snap-type: none;
+      }
+    }
+
     /* The mounted room sizes itself (agent.css owns .chama-agent-mode-embed),
        and it has to be able to leave that size behind when a phone keyboard
        pins it to the visual viewport. An id rule here would outrank every
