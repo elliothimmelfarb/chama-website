@@ -611,13 +611,41 @@
     }
 
     /* Each figure draws itself the first time it is seen: strokes trace in
-       (a normalized dash slides off the path), labels fade, points pop.
+       (a normalized dash slides off the path), labels fade, points pop, and
+       a few motion-only parts ride along: a comet head that sits on the
+       front of a drawing stroke (a zero-length round-capped dash walking the
+       path), ripple rings, a ghosting pass, a hug that tightens an outline,
+       and one slow orbit that never stops. Tap a figure to watch it again.
        The hidden starting state exists only once the trigger script has
        armed the page (html.figs-armed) and only for people who have not
        asked for reduced motion, so without JavaScript, and for anyone who
-       prefers stillness, every figure is simply complete. */
+       prefers stillness, every figure is simply complete. The motion-only
+       parts are hidden in that complete state. */
+    .figure .head,
+    .figure .ring,
+    .figure .orbit,
+    .figure .glow,
+    .figure .ghost {
+      opacity: 0;
+    }
+
+    .figure .head,
+    .figure .orbit {
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 0 1;
+    }
+
+    .figure .ring,
+    .figure .flare,
+    .figure .hug {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
     @media (prefers-reduced-motion: no-preference) {
-      html.figs-armed .figure .draw {
+      html.figs-armed .figure .draw,
+      html.figs-armed .figure .ghost {
         stroke-dasharray: 1;
         stroke-dashoffset: 1;
       }
@@ -634,7 +662,19 @@
       }
 
       html.figs-armed .figure.in .draw {
-        animation: fig-draw var(--dur, 900ms) ease-out var(--d, 0ms) forwards;
+        animation: fig-draw var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards;
+      }
+
+      html.figs-armed .figure.in .ghost {
+        animation:
+          fig-draw var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards,
+          fig-ghost 700ms ease-out var(--gd, 0ms) both;
+      }
+
+      html.figs-armed .figure.in .head {
+        animation:
+          fig-head var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards,
+          fig-head-out 500ms ease-out calc(var(--d, 0ms) + var(--dur, 900ms)) forwards;
       }
 
       html.figs-armed .figure.in .fade {
@@ -643,6 +683,26 @@
 
       html.figs-armed .figure.in .pop {
         animation: fig-pop 420ms cubic-bezier(0.2, 0.8, 0.3, 1.2) var(--d, 0ms) forwards;
+      }
+
+      html.figs-armed .figure.in .ring {
+        animation: fig-ring 800ms ease-out var(--d, 0ms) forwards;
+      }
+
+      html.figs-armed .figure.in .hug {
+        animation: fig-hug var(--dur, 800ms) ease-out var(--d, 0ms) both;
+      }
+
+      html.figs-armed .figure.in .orbit {
+        animation: fig-orbit 7s linear var(--d, 0ms) infinite;
+      }
+
+      html.figs-armed .figure.in .glow {
+        animation: fig-glow 7s ease-in-out var(--d, 0ms) infinite;
+      }
+
+      html.figs-armed .figure.in .flare {
+        animation: fig-flare 7s ease-in-out var(--d, 0ms) infinite;
       }
     }
 
@@ -656,6 +716,47 @@
 
     @keyframes fig-pop {
       to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fig-head {
+      from { opacity: 1; stroke-dashoffset: 0; }
+      to   { opacity: 1; stroke-dashoffset: -1; }
+    }
+
+    @keyframes fig-head-out {
+      to { opacity: 0; }
+    }
+
+    @keyframes fig-ring {
+      from { opacity: 0.85; transform: scale(0.2); }
+      to   { opacity: 0; transform: scale(1); }
+    }
+
+    @keyframes fig-ghost {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
+    @keyframes fig-hug {
+      from { transform: scale(1.16); }
+      to   { transform: scale(1); }
+    }
+
+    @keyframes fig-orbit {
+      from { opacity: 1; stroke-dashoffset: 0; }
+      to   { opacity: 1; stroke-dashoffset: -1; }
+    }
+
+    @keyframes fig-glow {
+      0%, 64% { opacity: 0; }
+      84%     { opacity: 0.55; }
+      100%    { opacity: 0; }
+    }
+
+    @keyframes fig-flare {
+      0%, 66% { transform: scale(1); }
+      76%     { transform: scale(1.45); }
+      88%     { transform: scale(1); }
     }
 
     .offer-panel.in > .content-section {
@@ -1183,7 +1284,7 @@
         <p>Most AI courses teach you how to use today&rsquo;s tools and capabilities for a handful of tasks.</p>
         <p>We teach what lasts: the ideas and habits that help you explore your environment for new capabilities that may not have been available yesterday.</p>
         <p>So you grow with AI instead of chasing it.</p>
-        <svg class="figure" viewBox="0 0 560 300" role="img" aria-labelledby="fig-curve-t"><title id="fig-curve-t">Two lines over time. Chasing the tools gives the same short burst with every new capability, then resets. Growing with AI compounds past it and keeps going.</title><path class="draw" pathLength="1" style="--dur:500ms" d="M40 40 V260 H540" fill="none" stroke="currentColor" stroke-opacity=".26"/><path class="fade" style="--d:300ms" d="M130 260v6M220 260v6M310 260v6M400 260v6M490 260v6" fill="none" stroke="currentColor" stroke-opacity=".4"/><path class="draw" pathLength="1" style="--d:400ms;--dur:1600ms" d="M40 260 130 232M130 258 220 231M220 257 310 230M310 256 400 229M400 255 490 228M490 254 540 240" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round"/><path class="fade" style="--d:1800ms" d="M130 232V258M220 231V257M310 230V256M400 229V255M490 228V254" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="2 4"/><path class="draw" pathLength="1" style="--d:1000ms;--dur:1400ms" d="M40 260C170 248 330 200 540 44" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/><text class="fade" style="--d:200ms" x="40" y="28" font-size="10" font-weight="700" letter-spacing="1.2" fill="currentColor" fill-opacity=".55">WHAT YOU CAN DO</text><text class="fade" style="--d:200ms" x="540" y="282" font-size="10" font-weight="700" letter-spacing="1.2" text-anchor="end" fill="currentColor" fill-opacity=".55">TIME</text><text class="fade" style="--d:2000ms" x="290" y="292" font-size="10" letter-spacing="1" text-anchor="middle" fill="currentColor" fill-opacity=".55">each tick: a new capability arrives, the burst is the same</text><text class="fade" style="--d:2100ms" x="500" y="216" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="currentColor" fill-opacity=".7">CHASING</text><text class="fade" style="--d:2300ms" x="532" y="30" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="#f4581f">GROWING</text></svg>
+        <svg class="figure" viewBox="0 0 560 300" role="img" aria-labelledby="fig-curve-t"><title id="fig-curve-t">Two lines over time. Chasing the tools gives the same short burst with every new capability, then drops back. Growing with AI compounds past it and keeps climbing.</title><defs><filter id="fig-glow-curve" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter></defs><path class="draw" pathLength="1" style="--dur:500ms" d="M40 40V260H540" fill="none" stroke="currentColor" stroke-opacity=".26"/><path class="fade" style="--d:300ms" d="M130 260v6M220 260v6M310 260v6M400 260v6M490 260v6" fill="none" stroke="currentColor" stroke-opacity=".4"/><path class="fade" style="--d:2700ms" d="M40 260C170 248 330 200 540 44V260Z" fill="#f4581f" fill-opacity=".06"/><g fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round"><path class="draw" pathLength="1" style="--d:700ms;--dur:240ms" d="M40 260 130 232"/><path class="draw" pathLength="1" style="--d:1000ms;--dur:240ms" d="M130 258 220 231"/><path class="draw" pathLength="1" style="--d:1300ms;--dur:240ms" d="M220 257 310 230"/><path class="draw" pathLength="1" style="--d:1600ms;--dur:240ms" d="M310 256 400 229"/><path class="draw" pathLength="1" style="--d:1900ms;--dur:240ms" d="M400 255 490 228"/><path class="draw" pathLength="1" style="--d:2200ms;--dur:140ms" d="M490 254 540 240"/></g><g fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="2 4"><path class="fade" style="--d:1000ms" d="M130 232V258"/><path class="fade" style="--d:1300ms" d="M220 231V257"/><path class="fade" style="--d:1600ms" d="M310 230V256"/><path class="fade" style="--d:1900ms" d="M400 229V255"/><path class="fade" style="--d:2200ms" d="M490 228V254"/></g><g fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1.2"><circle class="ring" style="--d:1000ms" cx="130" cy="260" r="11"/><circle class="ring" style="--d:1300ms" cx="220" cy="260" r="11"/><circle class="ring" style="--d:1600ms" cx="310" cy="260" r="11"/><circle class="ring" style="--d:1900ms" cx="400" cy="260" r="11"/><circle class="ring" style="--d:2200ms" cx="490" cy="260" r="11"/></g><path class="draw" pathLength="1" style="--d:900ms;--dur:1800ms" d="M40 260C170 248 330 200 540 44" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/><path class="head" pathLength="1" style="--d:900ms;--dur:1800ms" d="M40 260C170 248 330 200 540 44" stroke="#f4581f" stroke-width="12" stroke-opacity=".6" filter="url(#fig-glow-curve)"/><path class="head" pathLength="1" style="--d:900ms;--dur:1800ms" d="M40 260C170 248 330 200 540 44" stroke="#f4581f" stroke-width="5"/><circle class="ring" style="--d:2700ms" cx="540" cy="44" r="14" fill="none" stroke="#f4581f" stroke-width="1.4"/><text class="fade" style="--d:200ms" x="40" y="28" font-size="10" font-weight="700" letter-spacing="1.2" fill="currentColor" fill-opacity=".55">WHAT YOU CAN DO</text><text class="fade" style="--d:200ms" x="540" y="282" font-size="10" font-weight="700" letter-spacing="1.2" text-anchor="end" fill="currentColor" fill-opacity=".55">TIME</text><text class="fade" style="--d:2500ms" x="290" y="292" font-size="10" letter-spacing="1" text-anchor="middle" fill="currentColor" fill-opacity=".55">each tick: a new capability arrives, the burst is the same</text><text class="fade" style="--d:2400ms" x="500" y="216" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="currentColor" fill-opacity=".7">CHASING</text><text class="fade" style="--d:2800ms" x="532" y="30" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="#f4581f">GROWING</text></svg>
       </div>
     </section>
 
@@ -1194,7 +1295,7 @@
         <div class="shape-details">
           <p>You meet with Elliot regularly, so he can get to know how you work, keep track of what you are trying to do, and make each conversation build on the last.</p>
           <p>Bring the questions, decisions, and ideas in front of you. Or just bring yourself, and Elliot will teach you what is new since the last time you talked, or something old you have not learned yet.</p>
-          <svg class="figure" viewBox="0 0 560 200" role="img" aria-labelledby="fig-sess-t"><title id="fig-sess-t">Six session points on a line, joined by arcs that rise higher each time. The latest arc is drawn in ember orange.</title><path class="draw" pathLength="1" style="--dur:500ms" d="M40 156H520" fill="none" stroke="currentColor" stroke-opacity=".26"/><path class="draw" pathLength="1" style="--d:400ms;--dur:1600ms" d="M70 156Q110 108 150 156M150 156Q190 88 230 156M230 156Q270 68 310 156M310 156Q350 48 390 156" fill="none" stroke="currentColor" stroke-width="1.2"/><path class="draw" pathLength="1" style="--d:2000ms;--dur:500ms" d="M390 156Q430 28 470 156" fill="none" stroke="#f4581f" stroke-width="1.6"/><g fill="currentColor"><circle class="pop" style="--d:400ms" cx="70" cy="156" r="3.5"/><circle class="pop" style="--d:800ms" cx="150" cy="156" r="3.5"/><circle class="pop" style="--d:1200ms" cx="230" cy="156" r="3.5"/><circle class="pop" style="--d:1600ms" cx="310" cy="156" r="3.5"/><circle class="pop" style="--d:2000ms" cx="390" cy="156" r="3.5"/></g><circle class="pop" style="--d:2500ms" cx="470" cy="156" r="4.5" fill="#f4581f"/><g font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:500ms" x="70" y="180">1</text><text class="fade" style="--d:900ms" x="150" y="180">2</text><text class="fade" style="--d:1300ms" x="230" y="180">3</text><text class="fade" style="--d:1700ms" x="310" y="180">4</text><text class="fade" style="--d:2100ms" x="390" y="180">5</text></g><text class="fade" style="--d:2600ms" x="470" y="180" font-size="10" text-anchor="middle" fill="#f4581f">6</text><text class="fade" style="--d:2800ms" x="520" y="52" font-size="10" letter-spacing="1" text-anchor="end" fill="currentColor" fill-opacity=".55">each conversation reaches further</text></svg>
+          <svg class="figure" viewBox="0 0 560 200" role="img" aria-labelledby="fig-sess-t"><title id="fig-sess-t">Six session points on a line. A dot hops from one to the next in arcs that rise higher each time. The latest hop is drawn in ember, and a faint arc continues past it.</title><defs><filter id="fig-glow-sess" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter></defs><path class="draw" pathLength="1" style="--dur:500ms" d="M40 156H548" fill="none" stroke="currentColor" stroke-opacity=".26"/><path class="draw" pathLength="1" style="--d:500ms;--dur:2200ms;--ease:linear" d="M70 156Q110 108 150 156Q190 88 230 156Q270 68 310 156Q350 48 390 156" fill="none" stroke="currentColor" stroke-width="1.2"/><path class="head" pathLength="1" style="--d:500ms;--dur:2200ms;--ease:linear" d="M70 156Q110 108 150 156Q190 88 230 156Q270 68 310 156Q350 48 390 156" stroke="currentColor" stroke-width="7"/><path class="draw" pathLength="1" style="--d:2700ms;--dur:600ms;--ease:linear" d="M390 156Q430 28 470 156" fill="none" stroke="#f4581f" stroke-width="1.6"/><path class="head" pathLength="1" style="--d:2700ms;--dur:600ms;--ease:linear" d="M390 156Q430 28 470 156" stroke="#f4581f" stroke-width="12" stroke-opacity=".6" filter="url(#fig-glow-sess)"/><path class="head" pathLength="1" style="--d:2700ms;--dur:600ms;--ease:linear" d="M390 156Q430 28 470 156" stroke="#f4581f" stroke-width="8"/><path class="fade" style="--d:3600ms" d="M470 156Q508 12 546 156" fill="none" stroke="#f4581f" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="2 4"/><g fill="currentColor"><circle class="pop" style="--d:400ms" cx="70" cy="156" r="3.5"/><circle class="pop" style="--d:950ms" cx="150" cy="156" r="3.5"/><circle class="pop" style="--d:1460ms" cx="230" cy="156" r="3.5"/><circle class="pop" style="--d:2040ms" cx="310" cy="156" r="3.5"/><circle class="pop" style="--d:2700ms" cx="390" cy="156" r="3.5"/></g><circle class="pop" style="--d:3300ms" cx="470" cy="156" r="4.5" fill="#f4581f"/><circle class="ring" style="--d:3300ms" cx="470" cy="156" r="14" fill="none" stroke="#f4581f" stroke-width="1.4"/><g font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:500ms" x="70" y="180">1</text><text class="fade" style="--d:1050ms" x="150" y="180">2</text><text class="fade" style="--d:1560ms" x="230" y="180">3</text><text class="fade" style="--d:2140ms" x="310" y="180">4</text><text class="fade" style="--d:2800ms" x="390" y="180">5</text></g><text class="fade" style="--d:3400ms" x="470" y="180" font-size="10" text-anchor="middle" fill="#f4581f">6</text><text class="fade" style="--d:3700ms" x="520" y="52" font-size="10" letter-spacing="1" text-anchor="end" fill="currentColor" fill-opacity=".55">each conversation reaches further</text></svg>
         </div>
       </div>
     </section>
@@ -1205,7 +1306,7 @@
         <h2 id="training-title">We train engineering <span class="ember-accent">teams</span>.</h2>
         <p>Elliot trains engineering teams in agentic engineering: building software with AI agents that plan, write, and verify code.</p>
         <p>The capabilities change every few months. Most teams learn a workflow once and let it age. We teach the habits that keep a team evolving with the capabilities, so you are always building the way today&rsquo;s tools allow, not the way last year&rsquo;s did.</p>
-        <svg class="figure" viewBox="0 0 560 240" role="img" aria-labelledby="fig-loop-t"><title id="fig-loop-t">A loop with three stations: plan, write, verify. The segment from verify back to plan is drawn in ember, labeled: what was learned feeds the next plan.</title><circle class="draw" pathLength="1" style="--dur:700ms" cx="280" cy="128" r="74" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="1.2"/><path class="draw" pathLength="1" style="--d:1300ms;--dur:700ms" d="M215.9 165A74 74 0 0 1 280 54" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/><path class="fade" style="--d:2000ms" d="M269 48 281 54 270 61" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="fade" style="--d:1100ms" d="M348 120 354 131 360 120" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle class="pop" style="--d:600ms" cx="280" cy="54" r="3.5" fill="currentColor"/><circle class="pop" style="--d:800ms" cx="344.1" cy="165" r="3.5" fill="currentColor"/><circle class="pop" style="--d:1000ms" cx="215.9" cy="165" r="3.5" fill="#f4581f"/><path class="pop" style="--d:1600ms" transform="translate(271 119) scale(1.17)" fill="#f4581f" d="M3.04 3.64C6.27.42 9.63.95 14.33.69 12.78 3.04 12.38 5.05 12.18 6.87 13.19 6.66 14.13 6.26 15 5.52 14.46 8.08 13.66 10.36 11.91 12.11 9.16 14.86 5.33 14.93 2.91 12.51.49 10.09.22 6.46 3.04 3.64Z"/><g font-size="11" font-weight="700" letter-spacing="1.4" fill="currentColor"><text class="fade" style="--d:700ms" x="280" y="34" text-anchor="middle">PLAN</text><text class="fade" style="--d:900ms" x="358" y="182">WRITE</text><text class="fade" style="--d:1100ms" x="202" y="182" text-anchor="end">VERIFY</text></g><g font-size="9.5" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:800ms" x="280" y="20" text-anchor="middle">the approach</text><text class="fade" style="--d:1000ms" x="358" y="196">the code</text><text class="fade" style="--d:1200ms" x="202" y="196" text-anchor="end">the proof</text></g><g font-size="10" letter-spacing="1" text-anchor="end" fill="#f4581f"><text class="fade" style="--d:2200ms" x="150" y="86">what was learned</text><text class="fade" style="--d:2300ms" x="150" y="99">feeds the next plan</text></g></svg>
+        <svg class="figure" viewBox="0 0 560 240" role="img" aria-labelledby="fig-loop-t"><title id="fig-loop-t">A loop with three stations: plan, write, verify. The segment from verify back to plan is drawn in ember, labeled: what was learned feeds the next plan. A point keeps circling the loop.</title><defs><filter id="fig-glow-loop" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter></defs><path class="draw" pathLength="1" style="--dur:900ms" d="M280 54A74 74 0 0 1 280 202A74 74 0 0 1 280 54" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="1.2"/><path class="glow" style="--d:2600ms" d="M215.9 165A74 74 0 0 1 280 54" fill="none" stroke="#f4581f" stroke-width="7" stroke-linecap="round" filter="url(#fig-glow-loop)"/><path class="draw" pathLength="1" style="--d:1300ms;--dur:700ms" d="M215.9 165A74 74 0 0 1 280 54" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/><path class="head" pathLength="1" style="--d:1300ms;--dur:700ms" d="M215.9 165A74 74 0 0 1 280 54" stroke="#f4581f" stroke-width="10" stroke-opacity=".6" filter="url(#fig-glow-loop)"/><path class="head" pathLength="1" style="--d:1300ms;--dur:700ms" d="M215.9 165A74 74 0 0 1 280 54" stroke="#f4581f" stroke-width="5"/><path class="fade" style="--d:2000ms" d="M269 48 281 54 270 61" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="fade" style="--d:1100ms" d="M348 120 354 131 360 120" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle class="pop" style="--d:600ms" cx="280" cy="54" r="3.5" fill="currentColor"/><circle class="pop" style="--d:800ms" cx="344.1" cy="165" r="3.5" fill="currentColor"/><circle class="pop" style="--d:1000ms" cx="215.9" cy="165" r="3.5" fill="#f4581f"/><g transform="translate(271 119) scale(1.17)"><g class="flare" style="--d:2600ms"><path class="pop" style="--d:1600ms" fill="#f4581f" d="M3.04 3.64C6.27.42 9.63.95 14.33.69 12.78 3.04 12.38 5.05 12.18 6.87 13.19 6.66 14.13 6.26 15 5.52 14.46 8.08 13.66 10.36 11.91 12.11 9.16 14.86 5.33 14.93 2.91 12.51.49 10.09.22 6.46 3.04 3.64Z"/></g></g><path class="orbit" pathLength="1" style="--d:2600ms" d="M280 54A74 74 0 0 1 280 202A74 74 0 0 1 280 54" stroke="#f4581f" stroke-width="5"/><g font-size="11" font-weight="700" letter-spacing="1.4" fill="currentColor"><text class="fade" style="--d:700ms" x="280" y="34" text-anchor="middle">PLAN</text><text class="fade" style="--d:900ms" x="358" y="182">WRITE</text><text class="fade" style="--d:1100ms" x="202" y="182" text-anchor="end">VERIFY</text></g><g font-size="9.5" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:800ms" x="280" y="20" text-anchor="middle">the approach</text><text class="fade" style="--d:1000ms" x="358" y="196">the code</text><text class="fade" style="--d:1200ms" x="202" y="196" text-anchor="end">the proof</text></g><g font-size="10" letter-spacing="1" text-anchor="end" fill="#f4581f"><text class="fade" style="--d:2200ms" x="150" y="86">what was learned</text><text class="fade" style="--d:2300ms" x="150" y="99">feeds the next plan</text></g></svg>
       </div>
     </section>
     </div>
@@ -1218,7 +1319,7 @@
         <p>The software your company runs on decides what you can and cannot do. It gives you the words you use for your work. It sets the process everyone follows, whether anyone chose it or not.</p>
         <p>Most companies rent that culture off the shelf and bend themselves to fit it.</p>
         <p>Decide how you want to work instead. Then run on software that works that way.</p>
-        <svg class="figure figure-wide" viewBox="0 0 560 260" role="img" aria-labelledby="fig-fit-t"><title id="fig-fit-t">Left: a company's irregular shape shown dashed, crushed into a square labeled off the shelf. Right: the same shape intact, wrapped by an ember outline labeled your own software.</title><rect class="draw" pathLength="1" style="--dur:600ms" x="95" y="55" width="110" height="110" fill="none" stroke="currentColor" stroke-width="1.2"/><path class="fade" style="--d:400ms" d="M150 30 215 90 190 180 115 190 75 110Z" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="3 4" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:700ms;--dur:600ms" d="M150 63 197 90 190 157 115 157 103 110Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><text class="fade" style="--d:1200ms" x="150" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">OFF THE SHELF</text><text class="fade" style="--d:1300ms" x="150" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55">the box decides how you work</text><path class="draw" pathLength="1" style="--d:1500ms;--dur:600ms" d="M400 30 465 90 440 180 365 190 325 110Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:2100ms;--dur:600ms" d="M400 19 473 86 445 187 361 198 316 109Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/><text class="fade" style="--d:2700ms" x="395" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="#f4581f">YOUR OWN SOFTWARE</text><text class="fade" style="--d:2800ms" x="395" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55">you decide</text></svg>
+        <svg class="figure figure-wide" viewBox="0 0 560 260" role="img" aria-labelledby="fig-fit-t"><title id="fig-fit-t">Left: a company's irregular shape is drawn, then a square labeled off the shelf closes around it and every part that does not fit is cut off. Right: the same shape intact, with an ember outline tightening around it, labeled your own software.</title><defs><clipPath id="fig-fit-in"><rect x="95" y="55" width="110" height="110"/></clipPath><clipPath id="fig-fit-out"><path clip-rule="evenodd" d="M0 0H560V260H0ZM95 55V165H205V55Z"/></clipPath></defs><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path class="draw" pathLength="1" style="--dur:700ms" clip-path="url(#fig-fit-in)" d="M150 30 215 90 190 180 115 190 75 110Z"/><path class="ghost" pathLength="1" style="--dur:700ms;--gd:1500ms" clip-path="url(#fig-fit-out)" d="M150 30 215 90 190 180 115 190 75 110Z"/></g><path class="fade" style="--d:1500ms" clip-path="url(#fig-fit-in)" d="M150 30 215 90 190 180 115 190 75 110Z" fill="currentColor" fill-opacity=".06"/><path class="fade" style="--d:1500ms" clip-path="url(#fig-fit-out)" d="M150 30 215 90 190 180 115 190 75 110Z" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="3 4" stroke-linejoin="round"/><rect class="draw" pathLength="1" style="--d:800ms;--dur:600ms" x="95" y="55" width="110" height="110" fill="none" stroke="currentColor" stroke-width="1.2"/><text class="fade" style="--d:2100ms" x="150" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">OFF THE SHELF</text><text class="fade" style="--d:2200ms" x="150" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55">the box decides how you work</text><path class="draw" pathLength="1" style="--d:2000ms;--dur:700ms" d="M400 30 465 90 440 180 365 190 325 110Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><g class="hug" style="--d:2700ms;--dur:800ms"><path class="draw" pathLength="1" style="--d:2700ms;--dur:800ms" d="M400 19 473 86 445 187 361 198 316 109Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/></g><text class="fade" style="--d:3500ms" x="395" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="#f4581f">YOUR OWN SOFTWARE</text><text class="fade" style="--d:3600ms" x="395" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55">you decide</text></svg>
       </div>
     </section>
 
@@ -1409,7 +1510,14 @@
         });
       }, { threshold: 0.35 });
 
-      figures.forEach((figure) => seen.observe(figure));
+      figures.forEach((figure) => {
+        seen.observe(figure);
+        figure.addEventListener("click", () => {
+          figure.classList.remove("in");
+          void figure.getBoundingClientRect();
+          figure.classList.add("in");
+        });
+      });
     })();
   </script>
   <script>
