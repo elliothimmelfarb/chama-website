@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chama Inteligente | AI and technology coaching and consulting</title>
+  <title>Chama Inteligente | AI coaching, training, and custom software</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/agent.css">
   <script src="/assets/flame.js" defer></script>
   <script src="/assets/agent.js" defer></script>
-  <meta name="description" content="AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change. Elliot Himmelfarb, Lisbon, Portugal.">
+  <meta name="description" content="AI coaching and training for people and teams, and custom software built for companies that want to decide how they work. Elliot Himmelfarb, Lisbon, Portugal.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -21,7 +21,7 @@
   <link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <meta property="og:title" content="Chama Inteligente">
-  <meta property="og:description" content="Be AI-native. Grow with AI instead of chasing it. Coaching for individuals and small teams.">
+  <meta property="og:description" content="Be AI-native. Coaching and training for people and teams, and custom software your company owns.">
   <meta property="og:url" content="https://chamainteligente.com/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Chama Inteligente">
@@ -34,7 +34,7 @@
   <meta property="og:image:secure_url" content="https://chamainteligente.com/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Chama Inteligente">
-  <meta name="twitter:description" content="Be AI-native. Grow with AI instead of chasing it. Coaching for individuals and small teams.">
+  <meta name="twitter:description" content="Be AI-native. Coaching and training for people and teams, and custom software your company owns.">
   <meta name="twitter:image" content="https://chamainteligente.com/og.png">
   <meta name="twitter:image:alt" content="Chama Inteligente. AI and technology coaching and consulting. Lisbon.">
   <script type="application/ld+json">
@@ -58,7 +58,7 @@
           "caption": "Chama Inteligente"
         },
         "image": { "@id": "https://chamainteligente.com/#primaryimage" },
-        "description": "AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change.",
+        "description": "AI coaching and training for people and teams, and custom software built for companies that want to decide how they work.",
         "slogan": "AI changes what one person can do.",
         "sameAs": [
           "https://www.linkedin.com/company/chama-inteligente/"
@@ -82,6 +82,7 @@
           "AI coaching",
           "AI tools and assistants",
           "AI-native software development",
+          "Agentic engineering",
           "Software engineering"
         ],
         "contactPoint": {
@@ -92,7 +93,7 @@
         },
         "hasOfferCatalog": {
           "@type": "OfferCatalog",
-          "name": "AI and technology coaching and consulting",
+          "name": "AI coaching, training, and custom software",
           "itemListElement": [
             {
               "@type": "Offer",
@@ -118,9 +119,29 @@
               "@type": "Offer",
               "itemOffered": {
                 "@type": "Service",
+                "name": "Custom company software",
+                "serviceType": "Custom software development",
+                "description": "Software built and maintained for one company, shaped to how that company wants to work, and changed as the company changes.",
+                "provider": { "@id": "https://chamainteligente.com/#organization" }
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
                 "name": "Software and AI-native development consulting",
                 "serviceType": "Software development consulting",
                 "description": "Building software with individuals and small teams, or teaching them to develop it the AI-native way.",
+                "provider": { "@id": "https://chamainteligente.com/#organization" }
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Agentic engineering training for engineering teams",
+                "serviceType": "Professional training",
+                "description": "Training engineering teams to build software with AI agents, and to keep evolving their practices as AI capabilities change.",
                 "provider": { "@id": "https://chamainteligente.com/#organization" }
               }
             }
@@ -145,6 +166,7 @@
           "Artificial intelligence",
           "AI coaching",
           "AI-native software development",
+          "Agentic engineering",
           "Software engineering"
         ],
         "sameAs": [
@@ -183,7 +205,7 @@
         "primaryImageOfPage": { "@id": "https://chamainteligente.com/#primaryimage" },
         "breadcrumb": { "@id": "https://chamainteligente.com/#breadcrumb" },
         "inLanguage": "en",
-        "dateModified": "2026-08-30",
+        "dateModified": "2026-09-01",
         "speakable": {
           "@type": "SpeakableSpecification",
           "cssSelector": ["#opening-title", ".hero-deck"]
@@ -487,6 +509,173 @@
       letter-spacing: -0.035em;
       line-height: 1.15;
       text-wrap: pretty;
+    }
+
+    /* The offer switch: two chapters, one page. The tab bar is hidden until
+       its script runs, so a reader without JavaScript simply gets both
+       chapters in sequence, complete. With it, the two offers stand side by
+       side as peers and the reader chooses a room. */
+    .offer-switch {
+      padding-top: clamp(2rem, 4vw, 4rem);
+      padding-bottom: clamp(1.8rem, 3.6vw, 3.6rem);
+      border-top: 1px solid var(--ink);
+    }
+
+    .offer-switch[hidden] {
+      display: none;
+    }
+
+    .offer-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: clamp(2.2rem, 6vw, 6.5rem);
+      row-gap: 1.1rem;
+      margin-top: clamp(1.4rem, 2.6vw, 2.4rem);
+    }
+
+    .offer-tab {
+      appearance: none;
+      background: none;
+      border: 0;
+      margin: 0;
+      padding: 0 0 0.45rem;
+      position: relative;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      font-size: clamp(1.85rem, 4.4vw, 4.1rem);
+      font-weight: 500;
+      letter-spacing: -0.055em;
+      line-height: 1;
+      color: var(--quiet);
+      transition: color 160ms ease;
+    }
+
+    .offer-tab .offer-num {
+      display: inline-block;
+      margin-right: 0.5em;
+      transform: translateY(-0.55em);
+      font-size: 0.32em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ember);
+    }
+
+    .offer-tab::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: 0;
+      height: 3px;
+      background: var(--ember);
+      transition: right 220ms ease;
+    }
+
+    .offer-tab[aria-selected="true"] {
+      color: var(--ink);
+    }
+
+    .offer-tab[aria-selected="true"]::after {
+      right: 0;
+    }
+
+    .offer-tab:hover,
+    .offer-tab:focus-visible {
+      color: var(--ink);
+    }
+
+    .offer-tab:focus-visible {
+      outline: 2px solid var(--ember);
+      outline-offset: 6px;
+    }
+
+    .offer-panel[hidden] {
+      display: none;
+    }
+
+    /* Section figures: inline SVG diagrams, ink and ember on the page's own
+       ground, no external requests. They inherit the page font and take
+       their ink from currentColor, so they restate the palette for free. */
+    .figure {
+      display: block;
+      width: 100%;
+      max-width: 33rem;
+      height: auto;
+      margin-top: clamp(2.6rem, 4.5vw, 4rem);
+      color: var(--ink);
+    }
+
+    .figure-wide {
+      max-width: 36rem;
+    }
+
+    /* Each figure draws itself the first time it is seen: strokes trace in
+       (a normalized dash slides off the path), labels fade, points pop.
+       The hidden starting state exists only once the trigger script has
+       armed the page (html.figs-armed) and only for people who have not
+       asked for reduced motion, so without JavaScript, and for anyone who
+       prefers stillness, every figure is simply complete. */
+    @media (prefers-reduced-motion: no-preference) {
+      html.figs-armed .figure .draw {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+      }
+
+      html.figs-armed .figure .fade {
+        opacity: 0;
+      }
+
+      html.figs-armed .figure .pop {
+        opacity: 0;
+        transform: scale(0);
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      html.figs-armed .figure.in .draw {
+        animation: fig-draw var(--dur, 900ms) ease-out var(--d, 0ms) forwards;
+      }
+
+      html.figs-armed .figure.in .fade {
+        animation: fig-fade 500ms ease-out var(--d, 0ms) forwards;
+      }
+
+      html.figs-armed .figure.in .pop {
+        animation: fig-pop 420ms cubic-bezier(0.2, 0.8, 0.3, 1.2) var(--d, 0ms) forwards;
+      }
+    }
+
+    @keyframes fig-draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes fig-fade {
+      to { opacity: 1; }
+    }
+
+    @keyframes fig-pop {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .offer-panel.in > .content-section {
+      animation: offer-panel-in 260ms ease-out both;
+    }
+
+    @keyframes offer-panel-in {
+      from { opacity: 0; transform: translateY(0.6rem); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .offer-panel.in > .content-section {
+        animation: none;
+      }
+
+      .offer-tab,
+      .offer-tab::after {
+        transition: none;
+      }
     }
 
     .content-section {
@@ -959,7 +1148,7 @@
       <p class="wordmark-translation">Intelligent Flame</p>
     </div>
     <div class="masthead-notes">
-      <p><strong>AI and technology coaching and consulting</strong>Lisbon</p>
+      <p><strong>AI coaching, training, and custom software</strong>Lisbon</p>
       <p><strong>Written &ldquo;Chama.&rdquo;</strong>Pronounced &ldquo;Shama.&rdquo;</p>
     </div>
   </header>
@@ -977,6 +1166,15 @@
       </div>
     </section>
 
+    <div class="frame offer-switch" id="offers" hidden>
+      <p class="section-label">What we offer</p>
+      <div class="offer-tabs" role="tablist" aria-label="Two ways to work with us">
+        <button class="offer-tab" id="tab-coaching" type="button" role="tab" aria-selected="true" aria-controls="offer-coaching"><span class="offer-num" aria-hidden="true">01</span>Coaching &amp; training</button>
+        <button class="offer-tab" id="tab-software" type="button" role="tab" aria-selected="false" aria-controls="offer-software" tabindex="-1"><span class="offer-num" aria-hidden="true">02</span>Your own software</button>
+      </div>
+    </div>
+
+    <div class="offer-panel" id="offer-coaching" role="tabpanel" aria-labelledby="tab-coaching">
     <section class="frame content-section" aria-labelledby="work-title">
       <p class="section-label">The shortest path up the learning curve</p>
       <div class="section-copy">
@@ -985,6 +1183,7 @@
         <p>Most AI courses teach you how to use today&rsquo;s tools and capabilities for a handful of tasks.</p>
         <p>We teach what lasts: the ideas and habits that help you explore your environment for new capabilities that may not have been available yesterday.</p>
         <p>So you grow with AI instead of chasing it.</p>
+        <svg class="figure" viewBox="0 0 560 300" role="img" aria-labelledby="fig-curve-t"><title id="fig-curve-t">Two lines over time. Chasing the tools gives the same short burst with every new capability, then resets. Growing with AI compounds past it and keeps going.</title><path class="draw" pathLength="1" style="--dur:500ms" d="M40 40 V260 H540" fill="none" stroke="currentColor" stroke-opacity=".26"/><path class="fade" style="--d:300ms" d="M130 260v6M220 260v6M310 260v6M400 260v6M490 260v6" fill="none" stroke="currentColor" stroke-opacity=".4"/><path class="draw" pathLength="1" style="--d:400ms;--dur:1600ms" d="M40 260 130 232M130 258 220 231M220 257 310 230M310 256 400 229M400 255 490 228M490 254 540 240" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round"/><path class="fade" style="--d:1800ms" d="M130 232V258M220 231V257M310 230V256M400 229V255M490 228V254" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="2 4"/><path class="draw" pathLength="1" style="--d:1000ms;--dur:1400ms" d="M40 260C170 248 330 200 540 44" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/><text class="fade" style="--d:200ms" x="40" y="28" font-size="10" font-weight="700" letter-spacing="1.2" fill="currentColor" fill-opacity=".55">WHAT YOU CAN DO</text><text class="fade" style="--d:200ms" x="540" y="282" font-size="10" font-weight="700" letter-spacing="1.2" text-anchor="end" fill="currentColor" fill-opacity=".55">TIME</text><text class="fade" style="--d:2000ms" x="290" y="292" font-size="10" letter-spacing="1" text-anchor="middle" fill="currentColor" fill-opacity=".55">each tick: a new capability arrives, the burst is the same</text><text class="fade" style="--d:2100ms" x="500" y="216" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="currentColor" fill-opacity=".7">CHASING</text><text class="fade" style="--d:2300ms" x="532" y="30" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="#f4581f">GROWING</text></svg>
       </div>
     </section>
 
@@ -995,9 +1194,47 @@
         <div class="shape-details">
           <p>You meet with Elliot regularly, so he can get to know how you work, keep track of what you are trying to do, and make each conversation build on the last.</p>
           <p>Bring the questions, decisions, and ideas in front of you. Or just bring yourself, and Elliot will teach you what is new since the last time you talked, or something old you have not learned yet.</p>
+          <svg class="figure" viewBox="0 0 560 200" role="img" aria-labelledby="fig-sess-t"><title id="fig-sess-t">Six session points on a line, joined by arcs that rise higher each time. The latest arc is drawn in ember orange.</title><path class="draw" pathLength="1" style="--dur:500ms" d="M40 156H520" fill="none" stroke="currentColor" stroke-opacity=".26"/><path class="draw" pathLength="1" style="--d:400ms;--dur:1600ms" d="M70 156Q110 108 150 156M150 156Q190 88 230 156M230 156Q270 68 310 156M310 156Q350 48 390 156" fill="none" stroke="currentColor" stroke-width="1.2"/><path class="draw" pathLength="1" style="--d:2000ms;--dur:500ms" d="M390 156Q430 28 470 156" fill="none" stroke="#f4581f" stroke-width="1.6"/><g fill="currentColor"><circle class="pop" style="--d:400ms" cx="70" cy="156" r="3.5"/><circle class="pop" style="--d:800ms" cx="150" cy="156" r="3.5"/><circle class="pop" style="--d:1200ms" cx="230" cy="156" r="3.5"/><circle class="pop" style="--d:1600ms" cx="310" cy="156" r="3.5"/><circle class="pop" style="--d:2000ms" cx="390" cy="156" r="3.5"/></g><circle class="pop" style="--d:2500ms" cx="470" cy="156" r="4.5" fill="#f4581f"/><g font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:500ms" x="70" y="180">1</text><text class="fade" style="--d:900ms" x="150" y="180">2</text><text class="fade" style="--d:1300ms" x="230" y="180">3</text><text class="fade" style="--d:1700ms" x="310" y="180">4</text><text class="fade" style="--d:2100ms" x="390" y="180">5</text></g><text class="fade" style="--d:2600ms" x="470" y="180" font-size="10" text-anchor="middle" fill="#f4581f">6</text><text class="fade" style="--d:2800ms" x="520" y="52" font-size="10" letter-spacing="1" text-anchor="end" fill="currentColor" fill-opacity=".55">each conversation reaches further</text></svg>
         </div>
       </div>
     </section>
+
+    <section class="frame content-section" aria-labelledby="training-title">
+      <p class="section-label">Team training</p>
+      <div class="section-copy">
+        <h2 id="training-title">We train engineering <span class="ember-accent">teams</span>.</h2>
+        <p>Elliot trains engineering teams in agentic engineering: building software with AI agents that plan, write, and verify code.</p>
+        <p>The capabilities change every few months. Most teams learn a workflow once and let it age. We teach the habits that keep a team evolving with the capabilities, so you are always building the way today&rsquo;s tools allow, not the way last year&rsquo;s did.</p>
+        <svg class="figure" viewBox="0 0 560 240" role="img" aria-labelledby="fig-loop-t"><title id="fig-loop-t">A loop with three stations: plan, write, verify. The segment from verify back to plan is drawn in ember, labeled: what was learned feeds the next plan.</title><circle class="draw" pathLength="1" style="--dur:700ms" cx="280" cy="128" r="74" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="1.2"/><path class="draw" pathLength="1" style="--d:1300ms;--dur:700ms" d="M215.9 165A74 74 0 0 1 280 54" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/><path class="fade" style="--d:2000ms" d="M269 48 281 54 270 61" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="fade" style="--d:1100ms" d="M348 120 354 131 360 120" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle class="pop" style="--d:600ms" cx="280" cy="54" r="3.5" fill="currentColor"/><circle class="pop" style="--d:800ms" cx="344.1" cy="165" r="3.5" fill="currentColor"/><circle class="pop" style="--d:1000ms" cx="215.9" cy="165" r="3.5" fill="#f4581f"/><path class="pop" style="--d:1600ms" transform="translate(271 119) scale(1.17)" fill="#f4581f" d="M3.04 3.64C6.27.42 9.63.95 14.33.69 12.78 3.04 12.38 5.05 12.18 6.87 13.19 6.66 14.13 6.26 15 5.52 14.46 8.08 13.66 10.36 11.91 12.11 9.16 14.86 5.33 14.93 2.91 12.51.49 10.09.22 6.46 3.04 3.64Z"/><g font-size="11" font-weight="700" letter-spacing="1.4" fill="currentColor"><text class="fade" style="--d:700ms" x="280" y="34" text-anchor="middle">PLAN</text><text class="fade" style="--d:900ms" x="358" y="182">WRITE</text><text class="fade" style="--d:1100ms" x="202" y="182" text-anchor="end">VERIFY</text></g><g font-size="9.5" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:800ms" x="280" y="20" text-anchor="middle">the approach</text><text class="fade" style="--d:1000ms" x="358" y="196">the code</text><text class="fade" style="--d:1200ms" x="202" y="196" text-anchor="end">the proof</text></g><g font-size="10" letter-spacing="1" text-anchor="end" fill="#f4581f"><text class="fade" style="--d:2200ms" x="150" y="86">what was learned</text><text class="fade" style="--d:2300ms" x="150" y="99">feeds the next plan</text></g></svg>
+      </div>
+    </section>
+    </div>
+
+    <div class="offer-panel" id="offer-software" role="tabpanel" aria-labelledby="tab-software">
+    <section class="frame content-section" aria-labelledby="software-title">
+      <p class="section-label">Software</p>
+      <div class="section-copy">
+        <h2 id="software-title">Your software is your <span class="ember-accent">culture</span>.</h2>
+        <p>The software your company runs on decides what you can and cannot do. It gives you the words you use for your work. It sets the process everyone follows, whether anyone chose it or not.</p>
+        <p>Most companies rent that culture off the shelf and bend themselves to fit it.</p>
+        <p>Decide how you want to work instead. Then run on software that works that way.</p>
+        <svg class="figure figure-wide" viewBox="0 0 560 260" role="img" aria-labelledby="fig-fit-t"><title id="fig-fit-t">Left: a company's irregular shape shown dashed, crushed into a square labeled off the shelf. Right: the same shape intact, wrapped by an ember outline labeled your own software.</title><rect class="draw" pathLength="1" style="--dur:600ms" x="95" y="55" width="110" height="110" fill="none" stroke="currentColor" stroke-width="1.2"/><path class="fade" style="--d:400ms" d="M150 30 215 90 190 180 115 190 75 110Z" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="3 4" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:700ms;--dur:600ms" d="M150 63 197 90 190 157 115 157 103 110Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><text class="fade" style="--d:1200ms" x="150" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">OFF THE SHELF</text><text class="fade" style="--d:1300ms" x="150" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55">the box decides how you work</text><path class="draw" pathLength="1" style="--d:1500ms;--dur:600ms" d="M400 30 465 90 440 180 365 190 325 110Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:2100ms;--dur:600ms" d="M400 19 473 86 445 187 361 198 316 109Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/><text class="fade" style="--d:2700ms" x="395" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="#f4581f">YOUR OWN SOFTWARE</text><text class="fade" style="--d:2800ms" x="395" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55">you decide</text></svg>
+      </div>
+    </section>
+
+    <section class="frame content-section shape" aria-labelledby="own-title">
+      <h2 class="section-label" id="own-title">Owning it</h2>
+      <div class="section-copy">
+        <p class="shape-lead">Software that only <span class="ember-accent">your company</span> uses.</p>
+        <div class="shape-details">
+          <p>Owning your software used to mean hiring an engineering team and carrying it for years. AI-native development has changed the cost of both. Software shaped to one company is now something that company can afford to own.</p>
+          <p>We build it with you and maintain it. It bakes in how you work: your vocabulary, your process, your rules.</p>
+          <p>When you want to work differently, tell Elliot how. The software changes with you.</p>
+          <p>Prefer to build it yourselves? We also build alongside individuals and small teams, and teach them to develop software the AI-native way.</p>
+        </div>
+      </div>
+    </section>
+    </div>
 
     <section class="frame content-section founder" aria-labelledby="founder-title">
       <div class="founder-identity">
@@ -1018,15 +1255,6 @@
       <div class="section-copy">
         <p>Since 2023, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change. Before that, he was a software engineer, starting in 2016.</p>
         <p>You get the benefit of that accumulated judgment and experience when you spend time with him.</p>
-      </div>
-    </section>
-
-    <section class="frame content-section" aria-labelledby="consulting-title">
-      <p class="section-label">Consulting</p>
-      <div class="section-copy">
-        <h2 id="consulting-title">We also build <span class="ember-accent">software</span>.</h2>
-        <p>AI is changing how software gets made.</p>
-        <p>We consult with individuals and small teams: building software with you, or teaching you to develop it the AI-native way.</p>
       </div>
     </section>
 
@@ -1080,7 +1308,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
         </a>
       </div>
-      <p>AI and technology coaching and consulting &middot; <a href="/privacy">Privacy</a></p>
+      <p>AI coaching, training, and custom software &middot; <a href="/privacy">Privacy</a></p>
     </div>
   </footer>
   <script>
@@ -1122,6 +1350,66 @@
       document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
       calm.addEventListener("change", () => (calm.matches ? stop() : start()));
       start();
+    })();
+  </script>
+  <script>
+    (() => {
+      const switchEl = document.getElementById("offers");
+      if (!switchEl) return;
+
+      const tabs = Array.from(switchEl.querySelectorAll(".offer-tab"));
+      const panels = tabs.map((tab) => document.getElementById(tab.getAttribute("aria-controls")));
+      if (tabs.length < 2 || panels.some((panel) => !panel)) return;
+
+      const select = (next, focus, animate) => {
+        tabs.forEach((tab, i) => {
+          const on = i === next;
+          tab.setAttribute("aria-selected", on ? "true" : "false");
+          tab.tabIndex = on ? 0 : -1;
+          panels[i].hidden = !on;
+          panels[i].classList.toggle("in", on && animate);
+        });
+        if (focus) tabs[next].focus();
+      };
+
+      tabs.forEach((tab, i) => {
+        tab.addEventListener("click", () => select(i, false, true));
+        tab.addEventListener("keydown", (event) => {
+          const last = tabs.length - 1;
+          let to = null;
+          if (event.key === "ArrowRight") to = i === last ? 0 : i + 1;
+          else if (event.key === "ArrowLeft") to = i === 0 ? last : i - 1;
+          else if (event.key === "Home") to = 0;
+          else if (event.key === "End") to = last;
+          if (to !== null) {
+            event.preventDefault();
+            select(to, true, true);
+          }
+        });
+      });
+
+      switchEl.hidden = false;
+      select(location.hash === "#offer-software" ? 1 : 0, false, false);
+    })();
+  </script>
+  <script>
+    (() => {
+      const figures = Array.from(document.querySelectorAll(".figure"));
+      if (!figures.length) return;
+
+      if (!("IntersectionObserver" in window)) return;
+      document.documentElement.classList.add("figs-armed");
+
+      const seen = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            seen.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.35 });
+
+      figures.forEach((figure) => seen.observe(figure));
     })();
   </script>
   <script>
