@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chama Inteligente | Visual exploration: inline SVG editorial illustrations</title>
+<style>
+  :root {
+    --paper: #f3f0e8;
+    --ink: #141412;
+    --quiet: #66635c;
+    --ember: #f4581f;
+    --line: rgba(20, 20, 18, 0.24);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  .frame { max-width: 74rem; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 4rem); }
+  header.frame {
+    padding-top: 3rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--ink);
+  }
+  header h1 {
+    margin: 0 0 0.6rem;
+    font-size: clamp(2.2rem, 5vw, 4.2rem);
+    font-weight: 500;
+    letter-spacing: -0.06em;
+    line-height: 0.95;
+  }
+  header p { max-width: 52ch; color: var(--quiet); font-size: 1rem; line-height: 1.45; margin: 0; }
+  section.group { padding: 3.5rem 0 1rem; }
+  section.group + section.group { border-top: 1px solid var(--ink); }
+  .group-label {
+    margin: 0 0 0.4rem;
+    color: var(--quiet);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .group h2 {
+    margin: 0 0 0.8rem;
+    font-size: clamp(1.7rem, 3.4vw, 2.9rem);
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+  .group > p.note { max-width: 62ch; margin: 0 0 2.2rem; color: var(--quiet); font-size: 0.95rem; line-height: 1.5; }
+  article.cand { margin-bottom: 3.2rem; }
+  article.cand h3 {
+    margin: 0 0 0.3rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  article.cand p.why { max-width: 66ch; margin: 0 0 1.1rem; color: var(--quiet); font-size: 0.88rem; line-height: 1.5; }
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+  @media (max-width: 860px) { .pair { grid-template-columns: 1fr; } }
+  figure.swatch {
+    margin: 0;
+    padding: clamp(1rem, 2.5vw, 2rem);
+    border: 1px solid var(--line);
+  }
+  figure.swatch.paper { background: var(--paper); color: var(--ink); }
+  figure.swatch.dark { background: #0e0c0a; color: #ece7dc; border-color: rgba(236, 231, 220, 0.18); }
+  figure.swatch svg { display: block; width: 100%; height: auto; }
+  figure.swatch figcaption {
+    margin-top: 0.9rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--quiet);
+  }
+  figure.swatch.dark figcaption { color: #8d867c; }
+  svg text { font-family: var(--sans); }
+  /* Motif demos that mix type and SVG */
+  .motif-demo { max-width: 40rem; }
+  .motif-demo .label-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .motif-demo .label-line svg { width: 0.85rem; height: 0.85rem; flex: none; }
+  .motif-demo p.body-demo { font-size: 1.05rem; letter-spacing: -0.02em; line-height: 1.4; max-width: 44ch; }
+  .motif-demo p.body-demo svg { width: 0.8rem; height: 0.8rem; display: inline-block; vertical-align: -0.08em; margin-left: 0.35rem; }
+  footer.frame { padding: 2.5rem 0 3rem; color: var(--quiet); font-size: 0.75rem; }
+</style>
+</head>
+<body>
+
+<!-- Shared symbol library. Hidden but referenceable. -->
+<svg aria-hidden="true" focusable="false" style="position:absolute; width:0; height:0; overflow:hidden">
+  <defs>
+
+    <!-- The flame alone, lifted from the brand mark -->
+    <symbol id="m-flame" viewBox="42 23.8 15.4 15.4">
+      <path fill="#f4581f" d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/>
+    </symbol>
+
+    <!-- 1A. Chasing vs growing, one shared axis -->
+    <symbol id="curve-a" viewBox="0 0 560 300">
+      <!-- axes -->
+      <path d="M40 40 V260 H540" fill="none" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/>
+      <!-- reset ticks on the time axis -->
+      <path d="M130 260 v6 M220 260 v6 M310 260 v6 M400 260 v6 M490 260 v6" stroke="currentColor" stroke-opacity="0.4" stroke-width="1"/>
+      <!-- chasing: learn the tool, the tool changes, start near zero again -->
+      <path d="M40 260 L130 214 M130 250 L220 200 M220 244 L310 190 M310 240 L400 182 M400 236 L490 176 M490 232 L540 206"
+            fill="none" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M130 214 V250 M220 200 V244 M310 190 V240 M400 182 V236 M490 176 V232"
+            fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2" stroke-dasharray="2 4" stroke-linecap="round"/>
+      <!-- growing: compounding -->
+      <path d="M40 260 C 220 254, 420 200, 540 64" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/>
+      <text x="40" y="28" font-size="10" font-weight="700" letter-spacing="1.2" fill="currentColor" fill-opacity="0.55">WHAT YOU CAN DO</text>
+      <text x="540" y="282" font-size="10" font-weight="700" letter-spacing="1.2" text-anchor="end" fill="currentColor" fill-opacity="0.55">TIME</text>
+      <text x="290" y="292" font-size="10" letter-spacing="1" text-anchor="middle" fill="currentColor" fill-opacity="0.55">each tick: a new capability arrives</text>
+      <text x="500" y="156" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="currentColor" fill-opacity="0.7">CHASING</text>
+      <text x="532" y="48" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="#f4581f">GROWING</text>
+    </symbol>
+
+    <!-- 1B. Small multiple: the same axis twice -->
+    <symbol id="curve-b" viewBox="0 0 560 230">
+      <text x="30" y="22" font-size="11" font-weight="700" letter-spacing="1.4" fill="currentColor" fill-opacity="0.7">CHASING</text>
+      <text x="310" y="22" font-size="11" font-weight="700" letter-spacing="1.4" fill="#f4581f">GROWING</text>
+      <path d="M30 40 V190 H260" fill="none" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/>
+      <path d="M310 40 V190 H540" fill="none" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/>
+      <path d="M30 190 L85 156 M85 182 L140 146 M140 178 L195 140 M195 174 L250 134"
+            fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M85 156 V182 M140 146 V178 M195 140 V174" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2" stroke-dasharray="2 4"/>
+      <path d="M310 190 C 400 186, 490 140, 540 52" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/>
+      <text x="145" y="214" font-size="10" letter-spacing="1" text-anchor="middle" fill="currentColor" fill-opacity="0.55">every new tool, a restart</text>
+      <text x="425" y="214" font-size="10" letter-spacing="1" text-anchor="middle" fill="currentColor" fill-opacity="0.55">every new tool, a lift</text>
+    </symbol>
+
+    <!-- 2A. Sessions as rising arcs -->
+    <symbol id="sessions-a" viewBox="0 0 560 200">
+      <path d="M40 156 H520" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/>
+      <path d="M70 156 Q110 108 150 156" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M150 156 Q190 88 230 156" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M230 156 Q270 68 310 156" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M310 156 Q350 48 390 156" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M390 156 Q430 28 470 156" fill="none" stroke="#f4581f" stroke-width="1.6"/>
+      <circle cx="70" cy="156" r="3.5" fill="currentColor"/>
+      <circle cx="150" cy="156" r="3.5" fill="currentColor"/>
+      <circle cx="230" cy="156" r="3.5" fill="currentColor"/>
+      <circle cx="310" cy="156" r="3.5" fill="currentColor"/>
+      <circle cx="390" cy="156" r="3.5" fill="currentColor"/>
+      <circle cx="470" cy="156" r="4.5" fill="#f4581f"/>
+      <text x="70" y="180" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">1</text>
+      <text x="150" y="180" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">2</text>
+      <text x="230" y="180" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">3</text>
+      <text x="310" y="180" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">4</text>
+      <text x="390" y="180" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">5</text>
+      <text x="470" y="180" font-size="10" text-anchor="middle" fill="#f4581f">6</text>
+      <text x="520" y="52" font-size="10" letter-spacing="1" text-anchor="end" fill="currentColor" fill-opacity="0.55">each conversation reaches further</text>
+    </symbol>
+
+    <!-- 2B. Sessions as a staircase that never resets -->
+    <symbol id="sessions-b" viewBox="0 0 560 200">
+      <path d="M60 172 H140" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M140 150 H220" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M220 128 H300" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M300 106 H380" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M380 84 H460" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M460 62 H508" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/>
+      <path d="M140 172 V150 M220 150 V128 M300 128 V106 M380 106 V84 M460 84 V62"
+            stroke="currentColor" stroke-opacity="0.4" stroke-width="1" stroke-dasharray="1.5 3.5"/>
+      <path d="M500 56 L511 62 L500 68" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="100" y="192" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">session 1</text>
+      <text x="420" y="192" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">session 5</text>
+      <text x="60" y="46" font-size="10" letter-spacing="1" fill="currentColor" fill-opacity="0.55">every session starts where the last one ended</text>
+    </symbol>
+
+    <!-- 3A. The agentic loop as a circle -->
+    <symbol id="loop-a" viewBox="0 0 560 240">
+      <circle cx="280" cy="128" r="74" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"/>
+      <!-- verify back to plan, the part most teams skip -->
+      <path d="M215.9 165 A74 74 0 0 1 280 54" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round"/>
+      <path d="M269 48 L281 54 L270 61" fill="none" stroke="#f4581f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- direction of travel -->
+      <path d="M348 120 L354 131 L360 120" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="280" cy="54" r="3.5" fill="currentColor"/>
+      <circle cx="344.1" cy="165" r="3.5" fill="currentColor"/>
+      <circle cx="215.9" cy="165" r="3.5" fill="#f4581f"/>
+      <use href="#m-flame" x="271" y="119" width="18" height="18"/>
+      <text x="280" y="34" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">PLAN</text>
+      <text x="358" y="182" font-size="11" font-weight="700" letter-spacing="1.4" fill="currentColor">WRITE</text>
+      <text x="202" y="182" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="end" fill="currentColor">VERIFY</text>
+      <text x="280" y="20" font-size="9.5" text-anchor="middle" fill="currentColor" fill-opacity="0.55">the approach</text>
+      <text x="358" y="196" font-size="9.5" fill="currentColor" fill-opacity="0.55">the code</text>
+      <text x="202" y="196" font-size="9.5" text-anchor="end" fill="currentColor" fill-opacity="0.55">the proof</text>
+      <text x="150" y="86" font-size="10" letter-spacing="1" text-anchor="end" fill="#f4581f">what was learned</text>
+      <text x="150" y="99" font-size="10" letter-spacing="1" text-anchor="end" fill="#f4581f">feeds the next plan</text>
+    </symbol>
+
+    <!-- 3B. The agentic loop as a pipeline with a return line -->
+    <symbol id="loop-b" viewBox="0 0 560 170">
+      <circle cx="90" cy="70" r="3.5" fill="currentColor"/>
+      <circle cx="280" cy="70" r="3.5" fill="currentColor"/>
+      <circle cx="470" cy="70" r="3.5" fill="currentColor"/>
+      <path d="M100 70 H268" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"/>
+      <path d="M290 70 H458" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2"/>
+      <path d="M262 65 L270 70 L262 75" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M452 65 L460 70 L452 75" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="90" y="48" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">PLAN</text>
+      <text x="280" y="48" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">WRITE</text>
+      <text x="470" y="48" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">VERIFY</text>
+      <path d="M470 82 V118 A8 8 0 0 1 462 126 H98 A8 8 0 0 1 90 118 V88" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M84 96 L90 85 L96 96" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="280" y="150" font-size="10" letter-spacing="1" text-anchor="middle" fill="#f4581f">and back again, knowing more</text>
+    </symbol>
+
+    <!-- 4A. Off the shelf vs your own -->
+    <symbol id="fit-a" viewBox="0 0 560 260">
+      <!-- left: the box, and the company clamped into it -->
+      <rect x="95" y="55" width="110" height="110" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <!-- the company's true shape, ghosted -->
+      <path d="M150 30 L215 90 L190 180 L115 190 L75 110 Z" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="3 4" stroke-linejoin="round"/>
+      <!-- what the box makes of it -->
+      <path d="M150 63 L197 90 L190 157 L115 157 L103 110 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <!-- right: the same company, and software shaped to it -->
+      <path d="M400 30 L465 90 L440 180 L365 190 L325 110 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M400 19 L473 86 L445 187 L361 198 L316 109 Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/>
+      <text x="150" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">OFF THE SHELF</text>
+      <text x="150" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">the box decides how you work</text>
+      <text x="395" y="232" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="#f4581f">YOUR OWN SOFTWARE</text>
+      <text x="395" y="248" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">you decide</text>
+    </symbol>
+
+    <!-- 4B. Software that changes when the company changes -->
+    <symbol id="fit-b" viewBox="0 0 560 210">
+      <path d="M110 55 L150 90 L138 145 L85 148 L70 100 Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M110 48 L156 88 L142 150 L81 154 L64 99 Z" fill="none" stroke="#f4581f" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M285 50 L330 85 L345 130 L300 150 L250 140 L245 95 Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M284 42 L335 82 L352 133 L301 155 L245 144 L239 93 Z" fill="none" stroke="#f4581f" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M465 45 L505 95 L490 150 L430 155 L420 90 Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M465 36 L511 93 L494 156 L426 162 L414 88 Z" fill="none" stroke="#f4581f" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M180 104 H214 M208 99 L216 104 L208 109" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M368 104 H402 M396 99 L404 104 L396 109" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="280" y="196" font-size="10" letter-spacing="1" text-anchor="middle" fill="currentColor" fill-opacity="0.55">when the company changes, the software changes with it</text>
+    </symbol>
+
+    <!-- 4C. Floor plan: the walls you work inside -->
+    <symbol id="fit-c" viewBox="0 0 560 240">
+      <!-- left: a fixed generic floor plan -->
+      <g stroke="currentColor" fill="none" stroke-width="1.2">
+        <rect x="70" y="45" width="160" height="130"/>
+        <path d="M150 45 V115 M70 115 H190 M190 115 V175" stroke-opacity="0.7"/>
+        <path d="M110 115 h20 M150 70 v18" stroke="none"/>
+      </g>
+      <!-- doorways cut into the generic plan -->
+      <path d="M118 115 h22 M150 64 v22 M190 132 v22" stroke="var(--paper, #f3f0e8)" stroke-width="3"/>
+      <!-- right: a plan drawn around how this company actually moves -->
+      <g stroke="currentColor" fill="none" stroke-width="1.2">
+        <path d="M330 60 H470 V100 H500 V175 H360 V140 H330 Z" stroke-linejoin="round"/>
+        <path d="M420 60 V96 M470 132 H430 V175" stroke-opacity="0.7"/>
+      </g>
+      <path d="M436 60 v22 M446 132 h20 M430 148 v20" stroke="var(--paper, #f3f0e8)" stroke-width="3"/>
+      <!-- the paths people actually walk, in ember -->
+      <path d="M355 160 C 380 130, 400 120, 452 78" fill="none" stroke="#f4581f" stroke-width="1.4" stroke-dasharray="1 5" stroke-linecap="round"/>
+      <text x="150" y="206" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">SOMEONE ELSE'S FLOOR PLAN</text>
+      <text x="415" y="206" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="#f4581f">WALLS WHERE YOU WANT THEM</text>
+      <text x="280" y="226" font-size="10" text-anchor="middle" fill="currentColor" fill-opacity="0.55">software is the building your company works inside</text>
+    </symbol>
+
+  </defs>
+</svg>
+
+<header class="frame">
+  <h1>Inline SVG exploration</h1>
+  <p>Candidate editorial illustrations for chamainteligente.com. Every figure is pure inline SVG, no external requests, drawn in the page's own palette: ink hairlines, one ember accent, Helvetica. Each candidate is shown on the paper ground and the dark ground.</p>
+</header>
+
+<main class="frame">
+
+  <section class="group">
+    <p class="group-label">Section 1</p>
+    <h2>AI changes more than the tools we use</h2>
+    <p class="note">The argument is chasing versus growing. Chasing is a sawtooth: learn a tool, the tool changes, start again near zero. Growing is compounding: each new capability lands on top of habits that persist. The diagram should carry that argument on its own.</p>
+
+    <article class="cand">
+      <h3>1A. One shared axis</h3>
+      <p class="why">Both lines on the same field, so the gap between them is the whole story. The resets are dotted, like something falling away. Recommended.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 300" role="img"><title>Two lines over time. Chasing the tools rises and resets with every new capability. Growing with AI compounds past it.</title><use href="#curve-a"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 300" role="img"><title>The same diagram on the dark ground.</title><use href="#curve-a"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>1B. Small multiple</h3>
+      <p class="why">The Swiss comparison: same axis twice, side by side. Calmer, but the reader has to do the overlay themselves.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 230" role="img"><title>Two small charts. Chasing: a sawtooth that restarts with every new tool. Growing: a curve that lifts with every new tool.</title><use href="#curve-b"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 230" role="img"><title>The same pair of charts on the dark ground.</title><use href="#curve-b"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <section class="group">
+    <p class="group-label">Section 2</p>
+    <h2>The shape of the work</h2>
+    <p class="note">Regular one-to-one sessions where each conversation builds on the last. The figure should feel like a rhythm, not a program.</p>
+
+    <article class="cand">
+      <h3>2A. Rising arcs</h3>
+      <p class="why">Six sessions on a baseline; each arc reaches further than the last because it starts from everything before it. The newest session is the ember one. Recommended.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 200" role="img"><title>Six session points on a line, joined by arcs that rise higher each time. The latest arc is drawn in ember orange.</title><use href="#sessions-a"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 200" role="img"><title>The same rising arcs on the dark ground.</title><use href="#sessions-a"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>2B. The staircase</h3>
+      <p class="why">Each tread begins exactly where the last ended: nothing resets, the work accumulates. Quieter, and it rhymes with the compounding curve in section 1.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 200" role="img"><title>A staircase of session lines, each starting at the height the previous one reached, ending in an ember arrow pointing on.</title><use href="#sessions-b"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 200" role="img"><title>The same staircase on the dark ground.</title><use href="#sessions-b"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <section class="group">
+    <p class="group-label">Section 3</p>
+    <h2>Agentic engineering training</h2>
+    <p class="note">Agents that plan, write, and verify code. The differentiator in the copy is the habit of evolving, so the figure emphasizes the return edge: what verification learned feeds the next plan.</p>
+
+    <article class="cand">
+      <h3>3A. The loop</h3>
+      <p class="why">Plan, write, verify around a circle, with the verify-to-plan segment in ember: the part most teams skip. The flame sits at the center. Recommended.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 240" role="img"><title>A circular loop with three stations: plan, write, verify. The segment from verify back to plan is drawn in ember, labeled: what was learned feeds the next plan.</title><use href="#loop-a"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 240" role="img"><title>The same loop on the dark ground.</title><use href="#loop-a"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>3B. The pipeline with a return</h3>
+      <p class="why">A flatter, more architectural reading: a left-to-right pipeline with the ember return line underneath. Better if the section needs something short.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 170" role="img"><title>Plan, write, verify in a row, with an ember return line running from verify back to plan, labeled: and back again, knowing more.</title><use href="#loop-b"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 170" role="img"><title>The same pipeline on the dark ground.</title><use href="#loop-b"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <section class="group">
+    <p class="group-label">Section 4</p>
+    <h2>Custom software for companies</h2>
+    <p class="note">The claim: the software a company uses defines its culture, so owning your software means deciding how you work. The figure has to make constraint versus fit visible without cartooning it.</p>
+
+    <article class="cand">
+      <h3>4A. The box and the fit</h3>
+      <p class="why">Left: the company's true shape (dashed) forced into a box, flattened against its walls. Right: the same shape, with software drawn around it in ember. One idea, two panels. Recommended.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 260" role="img"><title>Left: a company's irregular shape shown dashed, crushed into a square labeled off the shelf. Right: the same shape intact, wrapped by an ember outline labeled your own software.</title><use href="#fit-a"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 260" role="img"><title>The same comparison on the dark ground.</title><use href="#fit-a"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>4B. The shape over time</h3>
+      <p class="why">Three moments: the company's shape changes, and the ember outline changes with it. Says the second half of the claim: owned software keeps fitting.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 210" role="img"><title>Three versions of a company's shape over time, each wrapped closely by an ember outline that has changed along with it.</title><use href="#fit-b"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 210" role="img"><title>The same sequence on the dark ground.</title><use href="#fit-b"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>4C. The floor plan</h3>
+      <p class="why">Software as the building you work inside: a generic plan versus walls placed where this company actually moves, with the walked path dotted in ember. The richest metaphor, but the busiest drawing. Note: the doorway cuts are painted in the ground color, so this one is ground-specific rather than fully portable.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 240" role="img" style="--paper:#f3f0e8"><title>Two floor plans. Left, a generic rectangular plan labeled someone else's floor plan. Right, an irregular plan labeled walls where you want them, with a dotted ember path tracing how people move through it.</title><use href="#fit-c"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 240" role="img" style="--paper:#0e0c0a"><title>The same floor plans on the dark ground.</title><use href="#fit-c"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <section class="group">
+    <p class="group-label">Section 5</p>
+    <h2>Motif system from the flame</h2>
+    <p class="note">Small recurring marks built from the flame alone (the second path of the brand mark), so the fire recurs through the page at whisper volume. All of these reuse one 15 by 15 glyph.</p>
+
+    <article class="cand">
+      <h3>5A. Centered divider</h3>
+      <p class="why">A hairline interrupted by the flame. For major breaks between acts of the page.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 18" aria-hidden="true"><path d="M0 9 H268" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/><use href="#m-flame" x="272" y="1.5" width="15" height="15"/><path d="M292 9 H560" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 18" aria-hidden="true"><path d="M0 9 H268" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/><use href="#m-flame" x="272" y="1.5" width="15" height="15"/><path d="M292 9 H560" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>5B. Flame-tipped ember line</h3>
+      <p class="why">The page's existing ember-line motif, with the flame seated at its head. The ember segment becomes the flame's trail.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 18" aria-hidden="true"><use href="#m-flame" x="0" y="1.5" width="15" height="15"/><path d="M21 9 H86" stroke="#f4581f" stroke-width="1.5"/><path d="M86 9 H560" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 18" aria-hidden="true"><use href="#m-flame" x="0" y="1.5" width="15" height="15"/><path d="M21 9 H86" stroke="#f4581f" stroke-width="1.5"/><path d="M86 9 H560" stroke="currentColor" stroke-opacity="0.26" stroke-width="1"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>5C. Section mark and end mark</h3>
+      <p class="why">The glyph beside a section label, and the glyph closing a final paragraph, the way print closes an article.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <div class="motif-demo">
+            <p class="label-line" style="color: var(--quiet)"><svg viewBox="42 23.8 15.4 15.4" aria-hidden="true"><use href="#m-flame"/></svg>The shape of the work</p>
+            <p class="body-demo">So you grow with AI instead of chasing it.<svg viewBox="42 23.8 15.4 15.4" aria-hidden="true"><use href="#m-flame"/></svg></p>
+          </div>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <div class="motif-demo">
+            <p class="label-line" style="color: #8d867c"><svg viewBox="42 23.8 15.4 15.4" aria-hidden="true"><use href="#m-flame"/></svg>The shape of the work</p>
+            <p class="body-demo">So you grow with AI instead of chasing it.<svg viewBox="42 23.8 15.4 15.4" aria-hidden="true"><use href="#m-flame"/></svg></p>
+          </div>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="cand">
+      <h3>5D. Asterism</h3>
+      <p class="why">Three flames as a print asterism, for a soft pause inside a long section. Use at 10 to 12 pixels, centered.</p>
+      <div class="pair">
+        <figure class="swatch paper">
+          <svg viewBox="0 0 560 20" aria-hidden="true"><use href="#m-flame" x="252" y="4" width="12" height="12"/><use href="#m-flame" x="274" y="4" width="12" height="12"/><use href="#m-flame" x="296" y="4" width="12" height="12"/></svg>
+          <figcaption>On paper</figcaption>
+        </figure>
+        <figure class="swatch dark">
+          <svg viewBox="0 0 560 20" aria-hidden="true"><use href="#m-flame" x="252" y="4" width="12" height="12"/><use href="#m-flame" x="274" y="4" width="12" height="12"/><use href="#m-flame" x="296" y="4" width="12" height="12"/></svg>
+          <figcaption>On dark</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+</main>
+
+<footer class="frame">
+  <p>Chama Inteligente visual exploration. All figures are self-contained inline SVG. No external requests anywhere in this file.</p>
+</footer>
+
+</body>
+</html>

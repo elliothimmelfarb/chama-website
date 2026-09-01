@@ -1,12 +1,12 @@
 # Chama Inteligente: full site text
 
-> AI and technology coaching and consulting for people and small teams who want to
-> learn what they can do now, and keep going as the tools change. Based in Lisbon,
-> Portugal. Working language: English.
+> AI coaching and training for people and teams, and custom software built for
+> companies that want to decide how they work. Based in Lisbon, Portugal.
+> Working language: English.
 
 This file is the complete visible text of https://chamainteligente.com, in reading
 order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing
-the pages do not say. Last updated 2026-08-30.
+the pages do not say. Last updated 2026-09-01.
 
 Chama Inteligente, Lda. is a Portuguese company (NIPC 519425235) based in Lisbon.
 "Chama Inteligente" is Portuguese for "intelligent flame". It is written "Chama"
@@ -17,12 +17,18 @@ and pronounced "Shama". It is the practice of Elliot Himmelfarb.
 ## Home (https://chamainteligente.com/)
 
 Chama Inteligente. Intelligent Flame.
-AI and technology coaching and consulting. Lisbon.
+AI coaching, training, and custom software. Lisbon.
 Written "Chama." Pronounced "Shama."
 
 ### AI changes what one person can do.
 
 Be ready, so when AI can do something new, you can too.
+
+### What we offer
+
+Two ways to work with us: 01 Coaching & training, and 02 Your own software.
+
+## Coaching & training
 
 ### The shortest path up the learning curve
 
@@ -49,6 +55,47 @@ Bring the questions, decisions, and ideas in front of you. Or just bring yoursel
 and Elliot will teach you what is new since the last time you talked, or something
 old you have not learned yet.
 
+### Team training
+
+We train engineering teams.
+
+Elliot trains engineering teams in agentic engineering: building software with AI
+agents that plan, write, and verify code.
+
+The capabilities change every few months. Most teams learn a workflow once and let
+it age. We teach the habits that keep a team evolving with the capabilities, so you
+are always building the way today's tools allow, not the way last year's did.
+
+## Your own software
+
+### Software
+
+Your software is your culture.
+
+The software your company runs on decides what you can and cannot do. It gives you
+the words you use for your work. It sets the process everyone follows, whether
+anyone chose it or not.
+
+Most companies rent that culture off the shelf and bend themselves to fit it.
+
+Decide how you want to work instead. Then run on software that works that way.
+
+### Owning it
+
+Software that only your company uses.
+
+Owning your software used to mean hiring an engineering team and carrying it for
+years. AI-native development has changed the cost of both. Software shaped to one
+company is now something that company can afford to own.
+
+We build it with you and maintain it. It bakes in how you work: your vocabulary,
+your process, your rules.
+
+When you want to work differently, tell Elliot how. The software changes with you.
+
+Prefer to build it yourselves? We also build alongside individuals and small teams,
+and teach them to develop software the AI-native way.
+
 ### Elliot Himmelfarb
 
 AI and technology coach and consultant.
@@ -59,15 +106,6 @@ those capabilities change. Before that, he was a software engineer, starting in 
 
 You get the benefit of that accumulated judgment and experience when you spend time
 with him.
-
-### Consulting
-
-We also build software.
-
-AI is changing how software gets made.
-
-We consult with individuals and small teams: building software with you,
-or teaching you to develop it the AI-native way.
 
 ### The outcome
 
@@ -100,8 +138,8 @@ We are growing our business together, and we want to help people become AI-nativ
 so they can adapt and take advantage of the incredible potential of this rapidly
 changing world.
 
-Footer: Chama Inteligente, Lda. Lisbon, Portugal. AI and technology coaching and
-consulting.
+Footer: Chama Inteligente, Lda. Lisbon, Portugal. AI coaching, training, and
+custom software.
 
 ---
 
