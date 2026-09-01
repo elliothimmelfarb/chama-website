@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chama Inteligente | AI and technology coaching and consulting</title>
+  <title>Chama Inteligente | AI coaching, training, and custom software</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/agent.css">
   <script src="/assets/flame.js" defer></script>
   <script src="/assets/agent.js" defer></script>
-  <meta name="description" content="AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change. Elliot Himmelfarb, Lisbon, Portugal.">
+  <meta name="description" content="AI coaching and training for people and teams, and custom software built for companies that want to decide how they work. Elliot Himmelfarb, Lisbon, Portugal.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -21,7 +21,7 @@
   <link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <meta property="og:title" content="Chama Inteligente">
-  <meta property="og:description" content="Be AI-native. Grow with AI instead of chasing it. Coaching for individuals and small teams.">
+  <meta property="og:description" content="Be AI-native. Coaching and training for people and teams, and custom software your company owns.">
   <meta property="og:url" content="https://chamainteligente.com/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Chama Inteligente">
@@ -34,7 +34,7 @@
   <meta property="og:image:secure_url" content="https://chamainteligente.com/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Chama Inteligente">
-  <meta name="twitter:description" content="Be AI-native. Grow with AI instead of chasing it. Coaching for individuals and small teams.">
+  <meta name="twitter:description" content="Be AI-native. Coaching and training for people and teams, and custom software your company owns.">
   <meta name="twitter:image" content="https://chamainteligente.com/og.png">
   <meta name="twitter:image:alt" content="Chama Inteligente. AI and technology coaching and consulting. Lisbon.">
   <script type="application/ld+json">
@@ -58,7 +58,7 @@
           "caption": "Chama Inteligente"
         },
         "image": { "@id": "https://chamainteligente.com/#primaryimage" },
-        "description": "AI and technology coaching and consulting for people and small teams who want to learn what they can do now, and keep going as the tools change.",
+        "description": "AI coaching and training for people and teams, and custom software built for companies that want to decide how they work.",
         "slogan": "AI changes what one person can do.",
         "sameAs": [
           "https://www.linkedin.com/company/chama-inteligente/"
@@ -93,7 +93,7 @@
         },
         "hasOfferCatalog": {
           "@type": "OfferCatalog",
-          "name": "AI and technology coaching and consulting",
+          "name": "AI coaching, training, and custom software",
           "itemListElement": [
             {
               "@type": "Offer",
@@ -112,6 +112,16 @@
                 "name": "AI coaching for small teams",
                 "serviceType": "AI and technology coaching",
                 "description": "Regular sessions with a small team, working from the questions, decisions, and ideas actually in front of them.",
+                "provider": { "@id": "https://chamainteligente.com/#organization" }
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Custom company software",
+                "serviceType": "Custom software development",
+                "description": "Software built and maintained for one company, shaped to how that company wants to work, and changed as the company changes.",
                 "provider": { "@id": "https://chamainteligente.com/#organization" }
               }
             },
@@ -499,6 +509,109 @@
       letter-spacing: -0.035em;
       line-height: 1.15;
       text-wrap: pretty;
+    }
+
+    /* The offer switch: two chapters, one page. The tab bar is hidden until
+       its script runs, so a reader without JavaScript simply gets both
+       chapters in sequence, complete. With it, the two offers stand side by
+       side as peers and the reader chooses a room. */
+    .offer-switch {
+      padding-top: clamp(2rem, 4vw, 4rem);
+      padding-bottom: clamp(1.8rem, 3.6vw, 3.6rem);
+      border-top: 1px solid var(--ink);
+    }
+
+    .offer-switch[hidden] {
+      display: none;
+    }
+
+    .offer-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: clamp(2.2rem, 6vw, 6.5rem);
+      row-gap: 1.1rem;
+      margin-top: clamp(1.4rem, 2.6vw, 2.4rem);
+    }
+
+    .offer-tab {
+      appearance: none;
+      background: none;
+      border: 0;
+      margin: 0;
+      padding: 0 0 0.45rem;
+      position: relative;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      font-size: clamp(1.85rem, 4.4vw, 4.1rem);
+      font-weight: 500;
+      letter-spacing: -0.055em;
+      line-height: 1;
+      color: var(--quiet);
+      transition: color 160ms ease;
+    }
+
+    .offer-tab .offer-num {
+      display: inline-block;
+      margin-right: 0.5em;
+      transform: translateY(-0.55em);
+      font-size: 0.32em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ember);
+    }
+
+    .offer-tab::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: 0;
+      height: 3px;
+      background: var(--ember);
+      transition: right 220ms ease;
+    }
+
+    .offer-tab[aria-selected="true"] {
+      color: var(--ink);
+    }
+
+    .offer-tab[aria-selected="true"]::after {
+      right: 0;
+    }
+
+    .offer-tab:hover,
+    .offer-tab:focus-visible {
+      color: var(--ink);
+    }
+
+    .offer-tab:focus-visible {
+      outline: 2px solid var(--ember);
+      outline-offset: 6px;
+    }
+
+    .offer-panel[hidden] {
+      display: none;
+    }
+
+    .offer-panel.in > .content-section {
+      animation: offer-panel-in 260ms ease-out both;
+    }
+
+    @keyframes offer-panel-in {
+      from { opacity: 0; transform: translateY(0.6rem); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .offer-panel.in > .content-section {
+        animation: none;
+      }
+
+      .offer-tab,
+      .offer-tab::after {
+        transition: none;
+      }
     }
 
     .content-section {
@@ -971,7 +1084,7 @@
       <p class="wordmark-translation">Intelligent Flame</p>
     </div>
     <div class="masthead-notes">
-      <p><strong>AI and technology coaching and consulting</strong>Lisbon</p>
+      <p><strong>AI coaching, training, and custom software</strong>Lisbon</p>
       <p><strong>Written &ldquo;Chama.&rdquo;</strong>Pronounced &ldquo;Shama.&rdquo;</p>
     </div>
   </header>
@@ -989,6 +1102,15 @@
       </div>
     </section>
 
+    <div class="frame offer-switch" id="offers" hidden>
+      <p class="section-label">What we offer</p>
+      <div class="offer-tabs" role="tablist" aria-label="Two ways to work with us">
+        <button class="offer-tab" id="tab-coaching" type="button" role="tab" aria-selected="true" aria-controls="offer-coaching"><span class="offer-num" aria-hidden="true">01</span>Coaching &amp; training</button>
+        <button class="offer-tab" id="tab-software" type="button" role="tab" aria-selected="false" aria-controls="offer-software" tabindex="-1"><span class="offer-num" aria-hidden="true">02</span>Your own software</button>
+      </div>
+    </div>
+
+    <div class="offer-panel" id="offer-coaching" role="tabpanel" aria-labelledby="tab-coaching">
     <section class="frame content-section" aria-labelledby="work-title">
       <p class="section-label">The shortest path up the learning curve</p>
       <div class="section-copy">
@@ -1011,6 +1133,41 @@
       </div>
     </section>
 
+    <section class="frame content-section" aria-labelledby="training-title">
+      <p class="section-label">Team training</p>
+      <div class="section-copy">
+        <h2 id="training-title">We train engineering <span class="ember-accent">teams</span>.</h2>
+        <p>Elliot trains engineering teams in agentic engineering: building software with AI agents that plan, write, and verify code.</p>
+        <p>The capabilities change every few months. Most teams learn a workflow once and let it age. We teach the habits that keep a team evolving with the capabilities, so you are always building the way today&rsquo;s tools allow, not the way last year&rsquo;s did.</p>
+      </div>
+    </section>
+    </div>
+
+    <div class="offer-panel" id="offer-software" role="tabpanel" aria-labelledby="tab-software">
+    <section class="frame content-section" aria-labelledby="software-title">
+      <p class="section-label">Software</p>
+      <div class="section-copy">
+        <h2 id="software-title">Your software is your <span class="ember-accent">culture</span>.</h2>
+        <p>The software your company runs on decides what you can and cannot do. It gives you the words you use for your work. It sets the process everyone follows, whether anyone chose it or not.</p>
+        <p>Most companies rent that culture off the shelf and bend themselves to fit it.</p>
+        <p>Decide how you want to work instead. Then run on software that works that way.</p>
+      </div>
+    </section>
+
+    <section class="frame content-section shape" aria-labelledby="own-title">
+      <h2 class="section-label" id="own-title">Owning it</h2>
+      <div class="section-copy">
+        <p class="shape-lead">Software that only <span class="ember-accent">your company</span> uses.</p>
+        <div class="shape-details">
+          <p>Owning your software used to mean hiring an engineering team and carrying it for years. AI-native development has changed the cost of both. Software shaped to one company is now something that company can afford to own.</p>
+          <p>We build it with you and maintain it. It bakes in how you work: your vocabulary, your process, your rules.</p>
+          <p>When you want to work differently, tell Elliot how. The software changes with you.</p>
+          <p>Prefer to build it yourselves? We also build alongside individuals and small teams, and teach them to develop software the AI-native way.</p>
+        </div>
+      </div>
+    </section>
+    </div>
+
     <section class="frame content-section founder" aria-labelledby="founder-title">
       <div class="founder-identity">
         <h2 class="section-label" id="founder-title">Elliot Himmelfarb</h2>
@@ -1030,24 +1187,6 @@
       <div class="section-copy">
         <p>Since 2023, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change. Before that, he was a software engineer, starting in 2016.</p>
         <p>You get the benefit of that accumulated judgment and experience when you spend time with him.</p>
-      </div>
-    </section>
-
-    <section class="frame content-section" aria-labelledby="consulting-title">
-      <p class="section-label">Consulting</p>
-      <div class="section-copy">
-        <h2 id="consulting-title">We also build <span class="ember-accent">software</span>.</h2>
-        <p>AI is changing how software gets made.</p>
-        <p>We consult with individuals and small teams: building software with you, or teaching you to develop it the AI-native way.</p>
-      </div>
-    </section>
-
-    <section class="frame content-section" aria-labelledby="training-title">
-      <p class="section-label">Team training</p>
-      <div class="section-copy">
-        <h2 id="training-title">We train engineering <span class="ember-accent">teams</span>.</h2>
-        <p>Elliot trains engineering teams in agentic engineering: building software with AI agents that plan, write, and verify code.</p>
-        <p>The capabilities change every few months. Most teams learn a workflow once and let it age. We teach the habits that keep a team evolving with the capabilities, so you are always building the way today&rsquo;s tools allow, not the way last year&rsquo;s did.</p>
       </div>
     </section>
 
@@ -1101,7 +1240,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
         </a>
       </div>
-      <p>AI and technology coaching and consulting &middot; <a href="/privacy">Privacy</a></p>
+      <p>AI coaching, training, and custom software &middot; <a href="/privacy">Privacy</a></p>
     </div>
   </footer>
   <script>
@@ -1143,6 +1282,46 @@
       document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
       calm.addEventListener("change", () => (calm.matches ? stop() : start()));
       start();
+    })();
+  </script>
+  <script>
+    (() => {
+      const switchEl = document.getElementById("offers");
+      if (!switchEl) return;
+
+      const tabs = Array.from(switchEl.querySelectorAll(".offer-tab"));
+      const panels = tabs.map((tab) => document.getElementById(tab.getAttribute("aria-controls")));
+      if (tabs.length < 2 || panels.some((panel) => !panel)) return;
+
+      const select = (next, focus, animate) => {
+        tabs.forEach((tab, i) => {
+          const on = i === next;
+          tab.setAttribute("aria-selected", on ? "true" : "false");
+          tab.tabIndex = on ? 0 : -1;
+          panels[i].hidden = !on;
+          panels[i].classList.toggle("in", on && animate);
+        });
+        if (focus) tabs[next].focus();
+      };
+
+      tabs.forEach((tab, i) => {
+        tab.addEventListener("click", () => select(i, false, true));
+        tab.addEventListener("keydown", (event) => {
+          const last = tabs.length - 1;
+          let to = null;
+          if (event.key === "ArrowRight") to = i === last ? 0 : i + 1;
+          else if (event.key === "ArrowLeft") to = i === 0 ? last : i - 1;
+          else if (event.key === "Home") to = 0;
+          else if (event.key === "End") to = last;
+          if (to !== null) {
+            event.preventDefault();
+            select(to, true, true);
+          }
+        });
+      });
+
+      switchEl.hidden = false;
+      select(location.hash === "#offer-software" ? 1 : 0, false, false);
     })();
   </script>
   <script>
