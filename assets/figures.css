@@ -1,0 +1,166 @@
+
+/* Section figures: inline SVG diagrams, ink and ember on the page's own
+   ground, no external requests. They inherit the page font and take
+   their ink from currentColor, so they restate the palette for free. */
+.figure {
+  display: block;
+  width: 100%;
+  max-width: 33rem;
+  height: auto;
+  margin-top: clamp(2.6rem, 4.5vw, 4rem);
+  color: var(--ink);
+}
+
+.figure-wide {
+  max-width: 36rem;
+}
+
+/* Each figure draws itself the first time it is seen: strokes trace in
+   (a normalized dash slides off the path), labels fade, points pop, and
+   a few motion-only parts ride along: a comet head that sits on the
+   front of a drawing stroke (a zero-length round-capped dash walking the
+   path), ripple rings, a ghosting pass, a hug that tightens an outline,
+   and one slow orbit that never stops. Tap a figure to watch it again.
+   The hidden starting state exists only once the trigger script has
+   armed the page (html.figs-armed) and only for people who have not
+   asked for reduced motion, so without JavaScript, and for anyone who
+   prefers stillness, every figure is simply complete. The motion-only
+   parts are hidden in that complete state. */
+.figure .head,
+.figure .ring,
+.figure .orbit,
+.figure .glow,
+.figure .ghost {
+  opacity: 0;
+}
+
+.figure .head,
+.figure .orbit {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 0 1;
+}
+
+.figure .ring,
+.figure .flare,
+.figure .hug {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.figs-armed .figure .draw,
+  html.figs-armed .figure .ghost {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  html.figs-armed .figure .fade {
+    opacity: 0;
+  }
+
+  html.figs-armed .figure .pop {
+    opacity: 0;
+    transform: scale(0);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  html.figs-armed .figure.in .draw {
+    animation: fig-draw var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards;
+  }
+
+  html.figs-armed .figure.in .ghost {
+    animation:
+      fig-draw var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards,
+      fig-ghost 700ms ease-out var(--gd, 0ms) both;
+  }
+
+  html.figs-armed .figure.in .head {
+    animation:
+      fig-head var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards,
+      fig-head-out 500ms ease-out calc(var(--d, 0ms) + var(--dur, 900ms)) forwards;
+  }
+
+  html.figs-armed .figure.in .fade {
+    animation: fig-fade 500ms ease-out var(--d, 0ms) forwards;
+  }
+
+  html.figs-armed .figure.in .pop {
+    animation: fig-pop 420ms cubic-bezier(0.2, 0.8, 0.3, 1.2) var(--d, 0ms) forwards;
+  }
+
+  html.figs-armed .figure.in .ring {
+    animation: fig-ring 800ms ease-out var(--d, 0ms) forwards;
+  }
+
+  html.figs-armed .figure.in .hug {
+    animation: fig-hug var(--dur, 800ms) ease-out var(--d, 0ms) both;
+  }
+
+  html.figs-armed .figure.in .orbit {
+    animation: fig-orbit 7s linear var(--d, 0ms) infinite;
+  }
+
+  html.figs-armed .figure.in .glow {
+    animation: fig-glow 7s ease-in-out var(--d, 0ms) infinite;
+  }
+
+  html.figs-armed .figure.in .flare {
+    animation: fig-flare 7s ease-in-out var(--d, 0ms) infinite;
+  }
+}
+
+@keyframes fig-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes fig-fade {
+  to { opacity: 1; }
+}
+
+@keyframes fig-pop {
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fig-head {
+  from { opacity: 1; stroke-dashoffset: 0; }
+  to   { opacity: 1; stroke-dashoffset: -1; }
+}
+
+@keyframes fig-head-out {
+  to { opacity: 0; }
+}
+
+@keyframes fig-ring {
+  from { opacity: 0.85; transform: scale(0.2); }
+  to   { opacity: 0; transform: scale(1); }
+}
+
+@keyframes fig-ghost {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes fig-hug {
+  from { transform: scale(1.16); }
+  to   { transform: scale(1); }
+}
+
+@keyframes fig-orbit {
+  from { opacity: 1; stroke-dashoffset: 0; }
+  to   { opacity: 1; stroke-dashoffset: -1; }
+}
+
+@keyframes fig-glow {
+  0%, 64% { opacity: 0; }
+  84%     { opacity: 0.55; }
+  100%    { opacity: 0; }
+}
+
+@keyframes fig-flare {
+  0%, 66% { transform: scale(1); }
+  76%     { transform: scale(1.45); }
+  88%     { transform: scale(1); }
+}
+
