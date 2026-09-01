@@ -8,8 +8,10 @@
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/agent.css">
+  <link rel="stylesheet" href="/assets/figures.css">
   <script src="/assets/flame.js" defer></script>
   <script src="/assets/agent.js" defer></script>
+  <script src="/assets/figures.js" defer></script>
   <meta name="description" content="AI coaching and training for people and teams, and custom software built for companies that want to decide how they work. Elliot Himmelfarb, Lisbon, Portugal.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -594,171 +596,6 @@
       display: none;
     }
 
-    /* Section figures: inline SVG diagrams, ink and ember on the page's own
-       ground, no external requests. They inherit the page font and take
-       their ink from currentColor, so they restate the palette for free. */
-    .figure {
-      display: block;
-      width: 100%;
-      max-width: 33rem;
-      height: auto;
-      margin-top: clamp(2.6rem, 4.5vw, 4rem);
-      color: var(--ink);
-    }
-
-    .figure-wide {
-      max-width: 36rem;
-    }
-
-    /* Each figure draws itself the first time it is seen: strokes trace in
-       (a normalized dash slides off the path), labels fade, points pop, and
-       a few motion-only parts ride along: a comet head that sits on the
-       front of a drawing stroke (a zero-length round-capped dash walking the
-       path), ripple rings, a ghosting pass, a hug that tightens an outline,
-       and one slow orbit that never stops. Tap a figure to watch it again.
-       The hidden starting state exists only once the trigger script has
-       armed the page (html.figs-armed) and only for people who have not
-       asked for reduced motion, so without JavaScript, and for anyone who
-       prefers stillness, every figure is simply complete. The motion-only
-       parts are hidden in that complete state. */
-    .figure .head,
-    .figure .ring,
-    .figure .orbit,
-    .figure .glow,
-    .figure .ghost {
-      opacity: 0;
-    }
-
-    .figure .head,
-    .figure .orbit {
-      fill: none;
-      stroke-linecap: round;
-      stroke-dasharray: 0 1;
-    }
-
-    .figure .ring,
-    .figure .flare,
-    .figure .hug {
-      transform-box: fill-box;
-      transform-origin: center;
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-      html.figs-armed .figure .draw,
-      html.figs-armed .figure .ghost {
-        stroke-dasharray: 1;
-        stroke-dashoffset: 1;
-      }
-
-      html.figs-armed .figure .fade {
-        opacity: 0;
-      }
-
-      html.figs-armed .figure .pop {
-        opacity: 0;
-        transform: scale(0);
-        transform-box: fill-box;
-        transform-origin: center;
-      }
-
-      html.figs-armed .figure.in .draw {
-        animation: fig-draw var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards;
-      }
-
-      html.figs-armed .figure.in .ghost {
-        animation:
-          fig-draw var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards,
-          fig-ghost 700ms ease-out var(--gd, 0ms) both;
-      }
-
-      html.figs-armed .figure.in .head {
-        animation:
-          fig-head var(--dur, 900ms) var(--ease, ease-out) var(--d, 0ms) forwards,
-          fig-head-out 500ms ease-out calc(var(--d, 0ms) + var(--dur, 900ms)) forwards;
-      }
-
-      html.figs-armed .figure.in .fade {
-        animation: fig-fade 500ms ease-out var(--d, 0ms) forwards;
-      }
-
-      html.figs-armed .figure.in .pop {
-        animation: fig-pop 420ms cubic-bezier(0.2, 0.8, 0.3, 1.2) var(--d, 0ms) forwards;
-      }
-
-      html.figs-armed .figure.in .ring {
-        animation: fig-ring 800ms ease-out var(--d, 0ms) forwards;
-      }
-
-      html.figs-armed .figure.in .hug {
-        animation: fig-hug var(--dur, 800ms) ease-out var(--d, 0ms) both;
-      }
-
-      html.figs-armed .figure.in .orbit {
-        animation: fig-orbit 7s linear var(--d, 0ms) infinite;
-      }
-
-      html.figs-armed .figure.in .glow {
-        animation: fig-glow 7s ease-in-out var(--d, 0ms) infinite;
-      }
-
-      html.figs-armed .figure.in .flare {
-        animation: fig-flare 7s ease-in-out var(--d, 0ms) infinite;
-      }
-    }
-
-    @keyframes fig-draw {
-      to { stroke-dashoffset: 0; }
-    }
-
-    @keyframes fig-fade {
-      to { opacity: 1; }
-    }
-
-    @keyframes fig-pop {
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes fig-head {
-      from { opacity: 1; stroke-dashoffset: 0; }
-      to   { opacity: 1; stroke-dashoffset: -1; }
-    }
-
-    @keyframes fig-head-out {
-      to { opacity: 0; }
-    }
-
-    @keyframes fig-ring {
-      from { opacity: 0.85; transform: scale(0.2); }
-      to   { opacity: 0; transform: scale(1); }
-    }
-
-    @keyframes fig-ghost {
-      from { opacity: 1; }
-      to   { opacity: 0; }
-    }
-
-    @keyframes fig-hug {
-      from { transform: scale(1.16); }
-      to   { transform: scale(1); }
-    }
-
-    @keyframes fig-orbit {
-      from { opacity: 1; stroke-dashoffset: 0; }
-      to   { opacity: 1; stroke-dashoffset: -1; }
-    }
-
-    @keyframes fig-glow {
-      0%, 64% { opacity: 0; }
-      84%     { opacity: 0.55; }
-      100%    { opacity: 0; }
-    }
-
-    @keyframes fig-flare {
-      0%, 66% { transform: scale(1); }
-      76%     { transform: scale(1.45); }
-      88%     { transform: scale(1); }
-    }
-
     .offer-panel.in > .content-section {
       animation: offer-panel-in 260ms ease-out both;
     }
@@ -1332,6 +1169,7 @@
           <p>We build it with you and maintain it. It bakes in how you work: your vocabulary, your process, your rules.</p>
           <p>When you want to work differently, tell Elliot how. The software changes with you.</p>
           <p>Prefer to build it yourselves? We also build alongside individuals and small teams, and teach them to develop software the AI-native way.</p>
+          <svg class="figure figure-wide" viewBox="0 0 560 240" role="img" aria-labelledby="fig-own-t"><title id="fig-own-t">Three stages, left to right. A company's irregular shape is drawn and an ember outline tightens around it, labeled how you work now. The shape changes, and the ember outline follows it, labeled you change it. It changes again, and the outline follows again, labeled and again: it still fits.</title><g transform="translate(95 110)"><path class="draw" pathLength="1" style="--dur:700ms" d="M0 -52 42 -14 26 44 -22 52 -48 2Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="fade" style="--d:700ms" d="M0 -52 42 -14 26 44 -22 52 -48 2Z" fill="currentColor" fill-opacity=".05"/><g class="hug" style="--d:800ms;--dur:700ms"><path class="draw" pathLength="1" style="--d:800ms;--dur:700ms" d="M-0.7 -64.8 52.2 -17 33.1 51.9 -27 62 -58.8 0.7Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/></g></g><path class="draw" pathLength="1" style="--d:1600ms;--dur:300ms" d="M172 110H206" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/><path class="head" pathLength="1" style="--d:1600ms;--dur:300ms" d="M172 110H206" stroke="#f4581f" stroke-width="6"/><path class="fade" style="--d:1850ms" d="M200 104 207 110 200 116" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><g transform="translate(280 110)"><path class="ghost" pathLength="1" style="--d:1900ms;--dur:450ms;--gd:2900ms" d="M0 -52 42 -14 26 44 -22 52 -48 2Z" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:2200ms;--dur:700ms" d="M0 -52 42 -14 52 36 -22 52 -36 -4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="fade" style="--d:2900ms" d="M0 -52 42 -14 52 36 -22 52 -36 -4Z" fill="currentColor" fill-opacity=".05"/><g class="hug" style="--d:3000ms;--dur:700ms"><path class="draw" pathLength="1" style="--d:3000ms;--dur:700ms" d="M-1.3 -65.3 50.2 -18.7 62.6 42.9 -28.6 62.6 -45.8 -6Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/></g></g><path class="draw" pathLength="1" style="--d:3800ms;--dur:300ms" d="M357 110H391" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/><path class="head" pathLength="1" style="--d:3800ms;--dur:300ms" d="M357 110H391" stroke="#f4581f" stroke-width="6"/><path class="fade" style="--d:4050ms" d="M385 104 392 110 385 116" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><g transform="translate(465 110)"><path class="ghost" pathLength="1" style="--d:4100ms;--dur:450ms;--gd:5100ms" d="M0 -52 42 -14 52 36 -22 52 -36 -4Z" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:4400ms;--dur:700ms" d="M8 -56 54 -22 40 50 -30 44 -52 4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="fade" style="--d:5100ms" d="M8 -56 54 -22 40 50 -30 44 -52 4Z" fill="currentColor" fill-opacity=".05"/><g class="hug" style="--d:5200ms;--dur:700ms"><path class="draw" pathLength="1" style="--d:5200ms;--dur:700ms" d="M7.1 -67.8 63.9 -25.9 47.3 59.7 -35.6 52.6 -63.1 2.4Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/></g></g><g font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor"><text class="fade" style="--d:1500ms" x="95" y="207">HOW YOU WORK NOW</text><text class="fade" style="--d:3700ms" x="280" y="207">YOU CHANGE IT</text><text class="fade" style="--d:5900ms" x="465" y="207" fill="#f4581f">AND AGAIN</text></g><g font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:1600ms" x="95" y="223">the software fits it</text><text class="fade" style="--d:3800ms" x="280" y="223">the software follows</text><text class="fade" style="--d:6000ms" x="465" y="223">it still fits</text></g></svg>
         </div>
       </div>
     </section>
@@ -1356,6 +1194,7 @@
       <div class="section-copy">
         <p>Since 2023, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change. Before that, he was a software engineer, starting in 2016.</p>
         <p>You get the benefit of that accumulated judgment and experience when you spend time with him.</p>
+        <svg class="figure" viewBox="0 0 560 140" role="img" aria-labelledby="fig-time-t"><title id="fig-time-t">A timeline from 2016 to now. From 2016 to 2023 the line is ink, labeled software engineer. From 2023 the line turns ember and glows, labeled nearly all of his work: learning what the most capable AI can do, applying it, teaching it, keeping pace. Past now, a dashed ember line keeps going.</title><defs><filter id="fig-glow-time" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="3"/></filter></defs><path class="draw" pathLength="1" style="--dur:600ms" d="M40 100H520" fill="none" stroke="currentColor" stroke-opacity=".26"/><path class="fade" style="--d:300ms" d="M50 100v5M94 100v5M138 100v5M182 100v5M226 100v5M270 100v5M314 100v5" fill="none" stroke="currentColor" stroke-opacity=".4"/><path class="fade" style="--d:1300ms" d="M358 100v5M402 100v5M446 100v5M490 100v5" fill="none" stroke="currentColor" stroke-opacity=".4"/><path class="draw" pathLength="1" style="--d:400ms;--dur:1000ms;--ease:linear" d="M50 100H358" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="head" pathLength="1" style="--d:400ms;--dur:1000ms;--ease:linear" d="M50 100H358" stroke="currentColor" stroke-width="7"/><path class="glow" style="--d:2300ms" d="M358 100H490" fill="none" stroke="#f4581f" stroke-width="7" stroke-linecap="round" filter="url(#fig-glow-time)"/><path class="draw" pathLength="1" style="--d:1400ms;--dur:900ms;--ease:linear" d="M358 100H490" fill="none" stroke="#f4581f" stroke-width="3" stroke-linecap="round"/><path class="head" pathLength="1" style="--d:1400ms;--dur:900ms;--ease:linear" d="M358 100H490" stroke="#f4581f" stroke-width="12" stroke-opacity=".6" filter="url(#fig-glow-time)"/><path class="head" pathLength="1" style="--d:1400ms;--dur:900ms;--ease:linear" d="M358 100H490" stroke="#f4581f" stroke-width="6"/><path class="fade" style="--d:2500ms" d="M490 100H534" fill="none" stroke="#f4581f" stroke-opacity=".45" stroke-width="1.4" stroke-dasharray="2 4"/><path class="fade" style="--d:2600ms" d="M529 95 535 100 529 105" fill="none" stroke="#f4581f" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle class="pop" style="--d:400ms" cx="50" cy="100" r="3.5" fill="currentColor"/><circle class="pop" style="--d:1300ms" cx="358" cy="100" r="4" fill="#f4581f"/><circle class="ring" style="--d:1300ms" cx="358" cy="100" r="13" fill="none" stroke="#f4581f" stroke-width="1.4"/><g class="flare" style="--d:2300ms"><circle class="pop" style="--d:2300ms" cx="490" cy="100" r="5" fill="#f4581f"/></g><circle class="ring" style="--d:2300ms" cx="490" cy="100" r="15" fill="none" stroke="#f4581f" stroke-width="1.4"/><text class="fade" style="--d:1200ms" x="204" y="78" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor">SOFTWARE ENGINEER</text><text class="fade" style="--d:2400ms" x="424" y="50" font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="#f4581f">NEARLY ALL OF HIS WORK</text><g font-size="9.5" text-anchor="middle" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:2500ms" x="424" y="65">learning what the most capable AI can do,</text><text class="fade" style="--d:2600ms" x="424" y="78">applying it, teaching it, keeping pace</text></g><g font-size="10" text-anchor="middle"><text class="fade" style="--d:500ms" x="50" y="123" fill="currentColor" fill-opacity=".55">2016</text><text class="fade" style="--d:1400ms" x="358" y="123" fill="#f4581f">2023</text><text class="fade" style="--d:2400ms" x="490" y="123" font-weight="700" letter-spacing="1.2" fill="#f4581f">NOW</text></g></svg>
       </div>
     </section>
 
@@ -1491,33 +1330,6 @@
 
       switchEl.hidden = false;
       select(location.hash === "#offer-software" ? 1 : 0, false, false);
-    })();
-  </script>
-  <script>
-    (() => {
-      const figures = Array.from(document.querySelectorAll(".figure"));
-      if (!figures.length) return;
-
-      if (!("IntersectionObserver" in window)) return;
-      document.documentElement.classList.add("figs-armed");
-
-      const seen = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in");
-            seen.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.35 });
-
-      figures.forEach((figure) => {
-        seen.observe(figure);
-        figure.addEventListener("click", () => {
-          figure.classList.remove("in");
-          void figure.getBoundingClientRect();
-          figure.classList.add("in");
-        });
-      });
     })();
   </script>
   <script>
