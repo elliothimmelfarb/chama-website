@@ -9,8 +9,11 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/agent.css">
   <link rel="stylesheet" href="/assets/figures.css">
-  <script src="/assets/flame.js" defer></script>
-  <script src="/assets/agent.js" defer></script>
+  <!-- The flame's scripts are 140 KB that only matter at the bottom of the
+       page, so they yield network priority to the stylesheet and the copy;
+       defer already keeps them off the parser's path. -->
+  <script src="/assets/flame.js" defer fetchpriority="low"></script>
+  <script src="/assets/agent.js" defer fetchpriority="low"></script>
   <script src="/assets/figures.js" defer></script>
   <meta name="description" content="AI coaching and training for people and teams, and custom software built for companies that want to decide how they work. Elliot Himmelfarb, Lisbon, Portugal.">
   <meta name="author" content="Elliot Himmelfarb">
@@ -721,7 +724,9 @@
     }
 
     .shape-details {
-      width: min(100%, 38rem);
+      /* max-width, not width: a full-width block with a left margin runs
+         past its column, which is what pushed the figure off a tablet. */
+      max-width: 38rem;
       margin-top: clamp(2.8rem, 5vw, 5.4rem);
       margin-left: clamp(0rem, 7vw, 7rem);
     }
@@ -784,7 +789,7 @@
     }
 
     .footer-social .social-link {
-      padding: 0.4rem;
+      padding: 0.6rem;
       color: var(--quiet);
     }
 
@@ -1007,6 +1012,20 @@
       margin: 0;
     }
 
+    /* The About photo sits beside its copy only when the copy column is
+       wide enough to keep a readable measure next to a 21rem picture. On a
+       tablet the two columns of the section already take most of the width,
+       so the photo steps under the words instead of squeezing them. */
+    @media (max-width: 1100px) {
+      .about-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .about-photo {
+        max-width: 24rem;
+      }
+    }
+
     @media (max-width: 760px) {
       .masthead {
         position: relative;
@@ -1084,12 +1103,7 @@
         min-height: 70svh;
       }
 
-      .about-grid {
-        grid-template-columns: 1fr;
-      }
-
       .about-photo {
-        max-width: 24rem;
         margin-inline: auto;
       }
 
@@ -1237,7 +1251,7 @@
             GitHub
           </a>
         </div>
-        <img class="founder-photo" src="/assets/elliot-rozalie.webp" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
+        <img class="founder-photo" src="/assets/elliot-rozalie-480.webp" srcset="/assets/elliot-rozalie-240.webp 240w, /assets/elliot-rozalie-480.webp 480w, /assets/elliot-rozalie.webp 900w" sizes="15rem" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
       </div>
       <div class="section-copy">
         <p>Since 2023, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change. Before that, he was a software engineer, starting in 2016.</p>
@@ -1266,7 +1280,7 @@
             <p>We are Elliot and Annie. We moved to Portugal in the fall of 2023, sight unseen, to explore more of the world, enjoy more of what life has to offer, and have our baby. Our daughter, Rozalie, was born in November 2025.</p>
             <p>We are growing our business together, and we want to help people become <span class="ember-accent">AI-native</span>, so they can adapt and take advantage of the incredible potential of this rapidly changing world.</p>
           </div>
-          <img class="about-photo" src="/assets/about-family.jpg" alt="Elliot and Annie with their daughter Rozalie, outdoors in Lisbon." width="900" height="1200" loading="lazy" decoding="async">
+          <img class="about-photo" src="/assets/about-family-800.webp" srcset="/assets/about-family-400.webp 400w, /assets/about-family-800.webp 800w, /assets/about-family.jpg 900w" sizes="(max-width: 760px) min(100vw - 2.5rem, 24rem), 21rem" alt="Elliot and Annie with their daughter Rozalie, outdoors in Lisbon." width="900" height="1200" loading="lazy" decoding="async">
         </div>
       </div>
     </section>

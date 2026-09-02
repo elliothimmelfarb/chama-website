@@ -89,6 +89,15 @@
       ]
     },
     {
+      "source": "/assets/(.*)\\.(js|css)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=600, s-maxage=31536000, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/(.*)\\.(png|svg|ico|webp|jpg|jpeg|gif)",
       "headers": [
         {
