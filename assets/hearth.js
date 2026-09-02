@@ -773,7 +773,14 @@
       pw.appendChild(el("p", "label", sec.hasPassword ? "Password" : "Add a password"));
       pw.appendChild(el("p", "small dim", sec.hasPassword ? "You can sign in with your email and password. Setting a new one replaces it." : "Optional. A sign-in link by email always works; a password is for when you would rather not wait for one."));
       var form = el("form", "row");
-      var pwInput = input("password", "password", "At least 12 characters");
+      var current = null;
+      if (sec.hasPassword) {
+        current = input("password", "current", "Current password");
+        current.autocomplete = "current-password";
+        current.classList.add("grow");
+        form.appendChild(current);
+      }
+      var pwInput = input("password", "password", sec.hasPassword ? "New password, 12+ characters" : "At least 12 characters");
       pwInput.autocomplete = "new-password";
       pwInput.classList.add("grow");
       var set = button(sec.hasPassword ? "Change" : "Set password", "btn");
@@ -782,7 +789,7 @@
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         set.disabled = true;
-        api("/auth/password/set", { method: "POST", body: { password: pwInput.value } }).then(function () {
+        api("/auth/password/set", { method: "POST", body: { password: pwInput.value, current: current ? current.value : undefined } }).then(function () {
           toast("Password set.", "good");
           flare();
           render();
@@ -791,7 +798,7 @@
       pw.appendChild(form);
       if (sec.hasPassword) {
         pw.appendChild(append(el("div", "row"), [button("Remove password", "btn ghost sm", function () {
-          api("/auth/password", { method: "DELETE" }).then(function () { toast("Password removed.", "good"); render(); }).catch(function (err) { toast(err.message, "bad"); });
+          api("/auth/password", { method: "DELETE", body: { current: current ? current.value : undefined } }).then(function () { toast("Password removed.", "good"); render(); }).catch(function (err) { toast(err.message, "bad"); });
         })]));
       }
       wrap.appendChild(pw);

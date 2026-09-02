@@ -39,6 +39,7 @@ async function readParams(request) {
   const type = (request.headers.get("content-type") || "").toLowerCase();
   const text = await request.text();
   const out = {};
+  if (text.length > 64 * 1024) return out;
   if (type.includes("application/json")) {
     try {
       Object.assign(out, JSON.parse(text || "{}"));

@@ -10,6 +10,7 @@
 import { configured, ready } from "../lib/hearth/db.js";
 import { json, requestContext, requestOrigin } from "../lib/hearth/http.js";
 import { resolveBearer, handleRpc, useHearthHandler } from "../lib/hearth/mcp.js";
+import { addressKey } from "../lib/hearth/auth.js";
 import { handleHearth } from "./hearth.js";
 import { sql } from "../lib/hearth/db.js";
 
@@ -38,7 +39,7 @@ export async function handleMcp(request) {
   if (!configured()) return json({ error: "The Hearth is not open yet." }, 503);
   try {
     await ready();
-    const context = requestContext(request);
+    const context = { ...requestContext(request), addressKey: addressKey(request) };
     const header = request.headers.get("authorization");
     let caller = null;
     if (header) {

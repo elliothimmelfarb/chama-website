@@ -14,12 +14,12 @@
 import { configured, ready, sql } from "../lib/hearth/db.js";
 import {
   HttpError, json, redirect, isSameOrigin, readJson, requestContext, requestOrigin,
-  matchPath, isEmail, normalizeEmail, clampText
+  matchPath, isEmail, normalizeEmail, clampText, cookie, readCookie
 } from "../lib/hearth/http.js";
 import {
   createSession, sessionCookie, clearSessionCookie, readSession, revokeSession,
   revokeAllSessions, listSessions, issueEmailToken, consumeEmailToken, hashPassword,
-  verifyPassword, passwordProblem, allow, addressKey
+  verifyPassword, passwordProblem, allow, addressKey, randomToken, hashToken
 } from "../lib/hearth/auth.js";
 import {
   ensureRoles, findUserByEmail, findUserById, createUser, userForIdentity, loadActor,
@@ -50,6 +50,7 @@ export const MESSAGES = {
 };
 
 const HEARTH_PATH = "/hearth";
+const NONCE_COOKIE = "chama_hearth_nonce";
 
 /* ---------- routing table ---------- */
 
@@ -152,6 +153,7 @@ async function loadContext(request, injected = null) {
 
 function needs(context, permission) {
   if (!context.actor) throw new HttpError(401, MESSAGES.signedOut);
+  if (!context.actor.permissions.has("hearth.enter")) throw new HttpError(403, MESSAGES.forbidden);
   if (permission && !context.actor.permissions.has(permission)) throw new HttpError(403, MESSAGES.forbidden);
 }
 
@@ -235,12 +237,18 @@ route("GET", "/auth/:provider", async (context, params) => {
   const available = availableProviders();
   if (!["github", "discord"].includes(provider) || !available[provider]) throw new HttpError(404, MESSAGES.notFound);
   const url = new URL(context.request.url);
+  // The browser that starts the flow is the only one that may finish it: a
+  // nonce cookie, hashed into the state, closes login CSRF.
+  const nonce = randomToken(24);
   const state = await issueState(provider, {
     ref: url.searchParams.get("ref") || "",
-    next: url.searchParams.get("next") || ""
+    next: url.searchParams.get("next") || "",
+    nonce: hashToken(nonce)
   });
   const args = { clientId: config.clientId, redirectUri: callbackUrl(context.request, provider), state };
-  return redirect(provider === "github" ? githubAuthorizeUrl(args) : discordAuthorizeUrl(args));
+  return redirect(provider === "github" ? githubAuthorizeUrl(args) : discordAuthorizeUrl(args), 302, {
+    "Set-Cookie": cookie(NONCE_COOKIE, nonce, { maxAge: 600, path: "/api/hearth/auth", sameSite: "Lax" })
+  });
 });
 
 route("GET", "/auth/:provider/callback", async (context, params) => {
@@ -249,8 +257,11 @@ route("GET", "/auth/:provider/callback", async (context, params) => {
   const url = new URL(context.request.url);
   const meta = await consumeState(provider, url.searchParams.get("state"));
   const code = url.searchParams.get("code");
-  const failed = () => redirect(`${HEARTH_PATH}?error=signin`);
+  const clearNonce = cookie(NONCE_COOKIE, "", { maxAge: 0, path: "/api/hearth/auth", sameSite: "Lax" });
+  const failed = () => redirect(`${HEARTH_PATH}?error=signin`, 302, { "Set-Cookie": clearNonce });
   if (!meta || typeof code !== "string" || !code) return failed();
+  const nonce = readCookie(context.request.headers.get("cookie"), NONCE_COOKIE);
+  if (!nonce || !meta.nonce || hashToken(nonce) !== meta.nonce) return failed();
   const exchange = provider === "github" ? githubExchange : discordExchange;
   const result = await exchange({ code, redirectUri: callbackUrl(context.request, provider) });
   if (!result.ok) {
@@ -264,8 +275,11 @@ route("GET", "/auth/:provider/callback", async (context, params) => {
   const referredBy = existing ? null : await referrerFor(meta.ref);
   const { user, created } = await userForIdentity({ ...result.identity, referredBy });
   if (created) await recordReferral(referredBy, user.id);
-  const { cookie, to } = await finishSignIn(context, user, { created, provider, next: meta.next });
-  return redirect(to, 302, { "Set-Cookie": cookie });
+  const signed = await finishSignIn(context, user, { created, provider, next: meta.next });
+  const headers = new Headers({ Location: signed.to, "Cache-Control": "no-store" });
+  headers.append("Set-Cookie", signed.cookie);
+  headers.append("Set-Cookie", clearNonce);
+  return new Response(null, { status: 302, headers });
 });
 
 /* ---------- email: magic link ---------- */
@@ -280,8 +294,13 @@ route("POST", "/auth/email/start", async (context) => {
   const settings = await readSettings();
   const existing = await findUserByEmail(email);
   // The answer is the same whether or not the address is known, so the
-  // endpoint cannot be used to learn who is a member.
-  if (!existing && !settings.open_signup) return json({ ok: true });
+  // endpoint cannot be used to learn who is a member; with signup closed the
+  // unknown branch also spends about what a real send costs, so timing says
+  // nothing either.
+  if (!existing && !settings.open_signup) {
+    await new Promise((resolve) => setTimeout(resolve, 250 + Math.floor(Math.random() * 300)));
+    return json({ ok: true });
+  }
   const token = await issueEmailToken({
     email, userId: existing?.id || null, purpose: "magic",
     meta: { ref: typeof body.ref === "string" ? body.ref.slice(0, 16) : "", next: typeof body.next === "string" ? body.next.slice(0, 200) : "" }
@@ -299,7 +318,8 @@ route("POST", "/auth/email/start", async (context) => {
 
 route("GET", "/auth/email/callback", async (context) => {
   const url = new URL(context.request.url);
-  const row = await consumeEmailToken(url.searchParams.get("token"), "magic");
+  const token = url.searchParams.get("token");
+  const row = (await consumeEmailToken(token, "magic")) || (await consumeEmailToken(token, "invite"));
   if (!row) return redirect(`${HEARTH_PATH}?error=link`);
   let user = row.user_id ? await findUserById(row.user_id) : await findUserByEmail(row.email);
   let created = false;
@@ -347,6 +367,9 @@ route("POST", "/auth/password/set", async (context) => {
   const problem = passwordProblem(body.password);
   if (problem) throw new HttpError(400, problem);
   const user = context.actor.user;
+  const existing = await sql()`select password_hash from credentials where user_id = ${user.id}`;
+  if (existing[0]?.password_hash && !verifyPassword(body.current, existing[0].password_hash)) throw new HttpError(403, "Your current password is needed to change it.");
+  await revokeAllSessions(user.id, context.session ? context.session.id : null);
   await sql()`
     insert into credentials (user_id, password_hash, password_set_at, updated_at)
     values (${user.id}, ${hashPassword(body.password)}, now(), now())
@@ -359,6 +382,9 @@ route("POST", "/auth/password/set", async (context) => {
 route("DELETE", "/auth/password", async (context) => {
   needs(context);
   const user = context.actor.user;
+  const body = await readJson(context.request);
+  const existing = await sql()`select password_hash from credentials where user_id = ${user.id}`;
+  if (existing[0]?.password_hash && !verifyPassword(body.current, existing[0].password_hash)) throw new HttpError(403, "Your current password is needed to remove it.");
   await sql()`update credentials set password_hash = null, updated_at = now() where user_id = ${user.id}`;
   await auditor(context, user)(EVENTS.passwordSet, user.id, { removed: true });
   return json({ ok: true });
@@ -421,6 +447,7 @@ route("POST", "/auth/signout-all", async (context) => {
 
 route("GET", "/sessions", async (context) => {
   needs(context);
+  if (!context.session) throw new HttpError(403, MESSAGES.forbidden);
   const rows = await listSessions(context.actor.user.id);
   return json({
     current: context.session.id,
@@ -553,6 +580,8 @@ route("PUT", "/admin/members/:id/permissions", async (context, params) => {
   const [permission] = sanitizePermissionList([body.permission]);
   if (!permission) throw new HttpError(400, "Unknown permission.");
   if (target.role === "owner") throw new HttpError(400, "An owner already holds every permission.");
+  if (target.id === context.actor.user.id) throw new HttpError(400, "You cannot change your own permissions.");
+  if (body.granted && !context.actor.permissions.has(permission)) throw new HttpError(403, "You can only grant what you hold yourself.");
   if (body.granted === null || body.granted === undefined) {
     await sql()`delete from user_permissions where user_id = ${target.id} and permission = ${permission}`;
   } else {
@@ -580,7 +609,7 @@ route("POST", "/admin/invite", async (context) => {
   } else if (user.role !== role && user.role !== "owner") {
     await sql()`update users set role = ${role} where id = ${user.id}`;
   }
-  const token = await issueEmailToken({ email, userId: user.id, purpose: "magic", meta: { invite: true } });
+  const token = await issueEmailToken({ email, userId: user.id, purpose: "invite", meta: { invite: true } });
   const link = `${requestOrigin(context.request)}/api/hearth/auth/email/callback?token=${encodeURIComponent(token)}`;
   const roleLabel = (await sql()`select label from roles where name = ${role}`)[0]?.label || role;
   try {
@@ -605,6 +634,8 @@ route("PUT", "/admin/roles/:name", async (context, params) => {
   if (params.name === "owner") throw new HttpError(400, "The owner role always holds every permission.");
   const body = await readJson(context.request);
   const permissions = sanitizePermissionList(body.permissions);
+  if (params.name === context.actor.user.role) throw new HttpError(400, "You cannot edit your own role.");
+  if (permissions.some((p) => !context.actor.permissions.has(p))) throw new HttpError(403, "You can only grant what you hold yourself.");
   await sql()`update roles set permissions = ${permissions}, updated_at = now() where name = ${params.name}`;
   await auditor(context, context.actor.user)(EVENTS.roleUpdated, params.name, { permissions });
   return json({ ok: true });

@@ -9,6 +9,7 @@
 
 import { configured, ready, sql } from "../lib/hearth/db.js";
 import { json } from "../lib/hearth/http.js";
+import { constantTimeEqual } from "../lib/hearth/auth.js";
 import * as mail from "../lib/hearth/mail.js";
 import * as google from "../lib/hearth/google.js";
 import { deriveAndStore } from "../lib/hearth/routes/transcripts.js";
@@ -18,7 +19,7 @@ function authorized(request, env = process.env) {
   const secret = typeof env.CRON_SECRET === "string" ? env.CRON_SECRET.trim() : "";
   if (!secret) return false;
   const header = request.headers.get("authorization") || "";
-  return header === `Bearer ${secret}`;
+  return constantTimeEqual(header, `Bearer ${secret}`);
 }
 
 async function settingValue(key, fallback) {

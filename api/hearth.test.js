@@ -279,7 +279,7 @@ test("the audit log needs audit.read", async () => {
   useClient(
     signedIn({
       role: "staff",
-      permissions: ["audit.read"],
+      permissions: ["hearth.enter", "audit.read"],
       extra: [[/from audit_log l left join users u/, [{ id: 9, event: "auth.sign_in" }]]]
     })
   );
