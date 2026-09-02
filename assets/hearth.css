@@ -69,13 +69,16 @@ body {
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
+  overflow-x: clip;
 }
 
 .hearth a { color: inherit; }
 .hearth a:hover { color: var(--ember); }
 
 .hearth .frame {
-  width: min(100%, var(--col));
+  width: 100%;
+  max-width: var(--col);
   margin: 0 auto;
   padding-inline: var(--pad);
 }
@@ -519,12 +522,14 @@ body {
   min-height: calc(100vh - 3.6rem);
   min-height: calc(100dvh - 3.6rem);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   padding: 2rem var(--pad) 4rem;
 }
 
 .gate-card {
-  width: min(100%, 25rem);
+  width: 100%;
+  max-width: 25rem;
   display: grid;
   gap: 1.2rem;
 }
@@ -624,3 +629,18 @@ body {
 /* ---------- figures in the dark room ---------- */
 
 .hearth .figure { color: var(--text); margin-top: 0; max-width: none; }
+
+.hearth a.card { text-decoration: none; }
+.hearth a.card:hover { color: inherit; border-color: var(--line-strong); }
+
+/* the hidden attribute wins over any display rule above */
+.hearth [hidden], .hearth .field[hidden] { display: none !important; }
+
+/* narrow screens: list rows stack their actions, tiles pair up */
+@media (max-width: 52rem) {
+  .list > * { grid-template-columns: minmax(0, 1fr); }
+  .list .primary { white-space: normal; }
+  .list > * > .row { justify-content: flex-start; }
+  .grid3 { grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); }
+  .stat .num { font-size: 1.9rem; }
+}

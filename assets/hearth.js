@@ -225,7 +225,7 @@
         canvas: canvas,
         touchDevice: "ontouchstart" in window,
         reduceMotion: false,
-        settings: { brightness: 0.55, motion: 0.8, hue: 20, size: 0.55, speed: 0.9, turbulence: 0.45, density: 0.7, angle: 0, sparkle: 0.35, position: { x: 0.12, y: 1.0 } },
+        settings: { brightness: 0.55, motion: 0.8, hue: 20, size: 0.55, speed: 0.9, turbulence: 0.45, density: 0.7, angle: 0, sparkle: 0.35, position: 0.14 },
         emit: function () {}
       });
     } catch (e) {
@@ -651,7 +651,8 @@
     function tile(num, what, emberish) {
       var card = el("div", "card stat");
       card.style.setProperty("--i", String(i++));
-      var n = el("div", "num" + (emberish ? " ember" : ""), "0");
+      var n = el("div", "num" + (emberish ? " ember" : ""), typeof num === "number" ? "0" : String(num));
+      if (typeof num !== "number") n.style.fontSize = "1.4rem";
       card.appendChild(n);
       card.appendChild(el("div", "what", what));
       tiles.appendChild(card);

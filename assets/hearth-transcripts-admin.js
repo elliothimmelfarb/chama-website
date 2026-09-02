@@ -572,7 +572,7 @@
     }
 
     return Promise.all([loadNotes(), loadOwed()]).then(function () { return wrap; });
-  }, { perm: "transcripts.manage", title: "Notes", nav: { group: "Business", label: "Notes", order: 15 } });
+  }, { perm: "transcripts.manage", title: "Notes", nav: { group: "Business", label: "Client notes", order: 15 } });
 
   /* ---------- one tile on the home view ---------- */
 

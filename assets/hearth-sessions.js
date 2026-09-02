@@ -153,7 +153,7 @@
         var c = el("div", "card stat");
         c.style.setProperty("--i", String(i));
         var n = el("div", "num" + (emberish ? " ember" : ""), typeof value === "number" ? "0" : value);
-        if (typeof value === "number") H.countUp(n, value);
+        if (typeof value === "number") H.countUp(n, value); else n.style.fontSize = "1.4rem";
         append(c, [n, el("div", "what", what)]);
         tiles.appendChild(c);
       }

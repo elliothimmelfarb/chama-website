@@ -538,7 +538,7 @@
     ]);
 
     return first.then(load).then(function () { return wrap; });
-  }, { perm: "sessions.manage", title: "Sessions", nav: { group: "Business", label: "Sessions", order: 10 } });
+  }, { perm: "sessions.manage", title: "Sessions", nav: { group: "Business", label: "All sessions", order: 10 } });
 
   /* ---------- packs ---------- */
 
