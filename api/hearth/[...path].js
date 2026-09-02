@@ -30,6 +30,7 @@ import { audit, auditor, EVENTS } from "../../lib/hearth/audit.js";
 import * as mail from "../../lib/hearth/mail.js";
 import { registerSessionRoutes } from "../../lib/hearth/routes/sessions.js";
 import { registerTranscriptRoutes } from "../../lib/hearth/routes/transcripts.js";
+import { registerAgentRoutes } from "../../lib/hearth/routes/agents.js";
 import {
   availableProviders, providerConfig, verifyGoogleIdToken, issueState, consumeState,
   githubAuthorizeUrl, githubExchange, discordAuthorizeUrl, discordExchange
@@ -127,8 +128,14 @@ function rolesReady() {
 
 /* ---------- the actor ---------- */
 
-async function loadContext(request) {
-  const context = { request, ...requestContext(request), actor: null, session: null };
+async function loadContext(request, injected = null) {
+  const context = { request, ...requestContext(request), actor: null, session: null, actorKind: "user", actorRef: null };
+  if (injected && injected.actor) {
+    context.actor = injected.actor;
+    context.actorKind = injected.actorKind || "agent";
+    context.actorRef = injected.actorRef || null;
+    return context;
+  }
   const session = await readSession(request);
   if (session) {
     const actor = await loadActor(session.userId);
@@ -672,10 +679,11 @@ route("GET", "/admin/metrics", async (context) => {
 
 registerSessionRoutes({ route, needs, readSettings });
 registerTranscriptRoutes({ route, needs, readSettings });
+registerAgentRoutes({ route, needs, readSettings });
 
 /* ---------- dispatch ---------- */
 
-export async function handleHearth(request) {
+export async function handleHearth(request, injected = null) {
   if (!configured()) return json({ error: MESSAGES.unconfigured }, 503);
   const { path } = resolvePath(request);
   const method = request.method.toUpperCase();
@@ -694,11 +702,11 @@ export async function handleHearth(request) {
   const matched = chosen ? chosen.candidate : null;
   const params = chosen ? chosen.params : null;
   if (!matched) return json({ error: MESSAGES.notFound }, methodSeen ? 405 : 404);
-  if (method !== "GET" && !isSameOrigin(request)) return json({ error: MESSAGES.refused }, 403);
+  if (!injected && method !== "GET" && !isSameOrigin(request)) return json({ error: MESSAGES.refused }, 403);
   try {
     await ready();
     await rolesReady();
-    const context = await loadContext(request);
+    const context = await loadContext(request, injected);
     return await matched.handler(context, params);
   } catch (error) {
     if (error instanceof HttpError) return json({ error: error.message, ...error.extra }, error.status);
