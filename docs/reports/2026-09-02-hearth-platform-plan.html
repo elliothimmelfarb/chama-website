@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hearth: platform plan</title>
+<style>
+  :root {
+    --paper: #f3f0e8; --ink: #141412; --quiet: #66635c; --ember: #f4581f;
+    --room: #0e0c0a; --room-2: #1c1917; --line: rgba(20,20,18,.22);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; }
+  .frame { width: min(100%, 72rem); margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 3rem); }
+  header.top { padding: clamp(2rem,5vw,4rem) 0 1.5rem; border-bottom: 1px solid var(--ink); display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end; }
+  .kicker { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--quiet); font-weight: 700; margin: 0 0 .6rem; }
+  h1 { font-size: clamp(2.2rem, 6vw, 4.4rem); line-height: .98; letter-spacing: -.03em; margin: 0; font-weight: 700; }
+  h1 em { font-style: normal; color: var(--ember); }
+  .meta { font-size: .8rem; color: var(--quiet); text-align: right; line-height: 1.5; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -.02em; margin: 0 0 1rem; line-height: 1.1; }
+  h3 { font-size: 1.05rem; margin: 0 0 .5rem; letter-spacing: -.01em; }
+  section { padding: clamp(2rem,5vw,3.5rem) 0; border-bottom: 1px solid var(--line); }
+  p, li { line-height: 1.55; }
+  .lede { font-size: clamp(1.15rem, 2.2vw, 1.5rem); line-height: 1.35; max-width: 46ch; margin: 0 0 1.5rem; }
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+  .card { border: 1px solid var(--line); padding: 1.1rem 1.2rem; background: #fff8; border-radius: 4px; position: relative; overflow: hidden; }
+  .card .n { position: absolute; top: .6rem; right: .8rem; font-size: 2.4rem; font-weight: 700; color: rgba(20,20,18,.07); line-height: 1; }
+  .card p { margin: .3rem 0 0; font-size: .95rem; }
+  .dark { background: var(--room); color: var(--paper); border-color: #000; }
+  .dark .card { border-color: rgba(243,240,232,.16); background: rgba(243,240,232,.04); }
+  .dark .kicker { color: rgba(243,240,232,.6); }
+  .dark .quiet { color: rgba(243,240,232,.6); }
+  .ember { color: var(--ember); }
+  .quiet { color: var(--quiet); }
+  .tag { display: inline-block; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; padding: .2rem .5rem; border: 1px solid currentColor; border-radius: 999px; margin-right: .4rem; }
+  .tag.ember { border-color: var(--ember); color: var(--ember); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--quiet); }
+  code { font-family: var(--mono); font-size: .85em; background: rgba(20,20,18,.06); padding: .1em .35em; border-radius: 3px; }
+  .dark code { background: rgba(243,240,232,.1); }
+  pre { font-family: var(--mono); font-size: .8rem; background: var(--room); color: var(--paper); padding: 1rem; border-radius: 4px; overflow-x: auto; }
+  .diagram { width: 100%; height: auto; display: block; }
+  .phases { display: grid; gap: .75rem; }
+  .phase { display: grid; grid-template-columns: 4.5rem 1fr; gap: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 4px; background: #fff8; }
+  .phase .num { font-size: 1.8rem; font-weight: 700; color: var(--ember); letter-spacing: -.03em; line-height: 1; }
+  .phase .num small { display: block; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--quiet); margin-top: .35rem; }
+  .phase ul { margin: .4rem 0 0; padding-left: 1.1rem; font-size: .92rem; }
+  .ask { border-left: 3px solid var(--ember); padding: .8rem 1rem; background: rgba(244,88,31,.06); margin: .8rem 0; }
+  .ask strong { display: block; margin-bottom: .2rem; }
+  .two { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); align-items: start; }
+  .fig { margin: 1.5rem 0; }
+  .fig figcaption { font-size: .8rem; color: var(--quiet); margin-top: .5rem; }
+  footer { padding: 2rem 0 4rem; font-size: .8rem; color: var(--quiet); }
+  @media (max-width: 40rem) { header.top { grid-template-columns: 1fr; } .meta { text-align: left; } .phase { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="frame">
+  <header class="top">
+    <div>
+      <p class="kicker">Chama Inteligente / platform plan / 2026-09-02</p>
+      <h1>The <em>Hearth</em>.<br>The website becomes the company.</h1>
+    </div>
+    <div class="meta">Designed by Fable, owned end to end.<br>Tracking: <a href="https://github.com/elliothimmelfarb/chama-website/issues/29">issue #29</a><br>Status: building, milestone A in progress</div>
+  </header>
+
+  <section>
+    <p class="lede">A hearth is the place in a house where the fire is kept and people gather around it. Chama Inteligente already has the fire, the intelligent flame on the homepage. The Hearth is the room around it: where clients keep everything from their work with Elliot, where members run the business, and where their agents can come and sit too.</p>
+    <div class="grid">
+      <div class="card"><span class="n">1</span><h3>For a client</h3><p>Buy a pack of sessions, book them against Elliot's real availability, and own every transcript. Each session comes back as a summary, the key points, the decisions, and follow-ups for both sides. Ask the flame about your own sessions. Point your Claude at it and it knows what you two talked about.</p></div>
+      <div class="card"><span class="n">2</span><h3>For Elliot</h3><p>Members and roles, packs and prices set in the room rather than in code, availability, the transcript intake, metrics, an audit log of who came, went and what their agents called. The existing flame admin folds in as one section.</p></div>
+      <div class="card"><span class="n">3</span><h3>For an agent</h3><p>An MCP server on the company's own domain. OAuth 2.1 with dynamic registration and PKCE, so "add custom connector" in Claude just works; API keys for scripts and other agents; a public read-only tool set for anyone's assistant. The company that teaches organizations to be callable is callable.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">What you did not ask for and, I think, want</p>
+    <h2>The things that make it "I would tell people about this"</h2>
+    <div class="grid">
+      <div class="card"><h3>Your sessions, drawn</h3><p>The homepage already has the figure: sessions as hops that reach a little further each time. A client's home page in the Hearth <em>is that figure</em>, drawn from their real sessions, growing as they go. Nobody else's dashboard is the company's own homepage metaphor made personal.</p></div>
+      <div class="card"><h3>Ask the flame about your sessions</h3><p>The same flame from the homepage, in the client's room, with only their own transcripts as context. "What did we decide about the sales pipeline in July?" A private, personal intelligent flame. Transcripts are data, never instruction, same rule as everywhere on the domain.</p></div>
+      <div class="card"><h3>Follow-ups that live between sessions</h3><p>Derived follow-ups become a shared list with an owner (you or them) and a due date. The client's agent can read and tick them. The next session opens with what happened since, not "where were we".</p></div>
+      <div class="card"><h3>Before-next-time</h3><p>A short "try this before we meet" block derived from each transcript, so the doing between sessions (the mechanism the offer names for how skills compound) has a place to be written down and reported on.</p></div>
+      <div class="card"><h3>A fatura-shaped purchase flow</h3><p>Portugal requires invoices from certified software, so Stripe alone was never going to be the whole flow. Purchase requests land in your room, you issue the fatura from the certified software, mark it paid, and credits appear. A Stripe adapter can be switched on later behind the same interface without touching the rest.</p></div>
+      <div class="card"><h3>The organization, queryable</h3><p>The public MCP tools are the demo you cannot give today: a prospect points their assistant at chamainteligente.com during the meeting and it comes back with the brief, the offer in structured form, and how to get in touch. Bold proposal B from the domain-unlocks page, built.</p></div>
+      <div class="card"><h3>Every event, one log</h3><p>Sign-ins, sign-outs, bookings, purchases, transcript uploads, every MCP call with its tool name, every API key use: one append-only audit log with the actor, the country and the device family, never the IP. The metrics page reads from it.</p></div>
+      <div class="card"><h3>Referral rewards you can change</h3><p>Every member has a referral link. When a referred person's first pack is paid, the referrer gets the reward you configured: a free session credit or a percentage off their next pack. The rule lives in settings, not in code.</p></div>
+      <div class="card"><h3>Passkeys next</h3><p>Sign-in is built so passkeys (WebAuthn) can be added as a second factor or a primary key in the next milestone. That is the world that is coming; the table for it is in the first schema.</p></div>
+    </div>
+  </section>
+
+  <section class="dark" style="margin:0 calc(-1 * clamp(1.1rem,4vw,3rem)); padding-left:clamp(1.1rem,4vw,3rem); padding-right:clamp(1.1rem,4vw,3rem)">
+    <p class="kicker">Architecture</p>
+    <h2>One room, one router, one database, one log</h2>
+    <figure class="fig">
+      <svg class="diagram" viewBox="0 0 900 430" role="img" aria-label="Architecture: browsers and agents on the left, Vercel functions in the middle, Neon Postgres, Blob, Resend and the Claude API on the right.">
+        <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5 0 10z" fill="#f4581f"/></marker></defs>
+        <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#f3f0e8">
+          <rect x="20" y="30" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="120" y="55" text-anchor="middle" font-weight="700">Browser: /hearth</text><text x="120" y="74" text-anchor="middle" fill-opacity=".6">vanilla SPA, no libraries</text>
+          <rect x="20" y="120" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="120" y="145" text-anchor="middle" font-weight="700">Claude / any MCP client</text><text x="120" y="164" text-anchor="middle" fill-opacity=".6">OAuth 2.1 + PKCE, or API key</text>
+          <rect x="20" y="210" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="120" y="235" text-anchor="middle" font-weight="700">Anyone's assistant</text><text x="120" y="254" text-anchor="middle" fill-opacity=".6">public tools, no auth</text>
+          <rect x="20" y="300" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="120" y="325" text-anchor="middle" font-weight="700">Vercel Cron</text><text x="120" y="344" text-anchor="middle" fill-opacity=".6">reminders, retention, watchdog</text>
+
+          <rect x="330" y="30" width="240" height="330" rx="4" fill="rgba(244,88,31,.06)" stroke="#f4581f"/>
+          <text x="450" y="55" text-anchor="middle" font-weight="700" fill="#f4581f">Vercel functions (Paris)</text>
+          <rect x="350" y="75" width="200" height="44" rx="3" fill="rgba(243,240,232,.06)"/><text x="450" y="93" text-anchor="middle">api/hearth/[...path].js</text><text x="450" y="110" text-anchor="middle" fill-opacity=".6">one router: auth, sessions, packs, feed, admin</text>
+          <rect x="350" y="130" width="200" height="44" rx="3" fill="rgba(243,240,232,.06)"/><text x="450" y="148" text-anchor="middle">api/mcp.js</text><text x="450" y="165" text-anchor="middle" fill-opacity=".6">Streamable HTTP, JSON-RPC, tools by role</text>
+          <rect x="350" y="185" width="200" height="44" rx="3" fill="rgba(243,240,232,.06)"/><text x="450" y="203" text-anchor="middle">api/oauth/[...path].js</text><text x="450" y="220" text-anchor="middle" fill-opacity=".6">register, authorize, token, well-known</text>
+          <rect x="350" y="240" width="200" height="44" rx="3" fill="rgba(243,240,232,.06)"/><text x="450" y="258" text-anchor="middle">lib/hearth/*</text><text x="450" y="275" text-anchor="middle" fill-opacity=".6">db, auth, permissions, audit, mail, slots</text>
+          <rect x="350" y="295" width="200" height="44" rx="3" fill="rgba(243,240,232,.06)"/><text x="450" y="313" text-anchor="middle">existing: chat, intake, watchdog, admin</text><text x="450" y="330" text-anchor="middle" fill-opacity=".6">untouched</text>
+
+          <rect x="680" y="30" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="780" y="55" text-anchor="middle" font-weight="700">Neon Postgres (Frankfurt)</text><text x="780" y="74" text-anchor="middle" fill-opacity=".6">users, sessions, bookings, transcripts, log</text>
+          <rect x="680" y="120" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="780" y="145" text-anchor="middle" font-weight="700">Vercel Blob (Paris)</text><text x="780" y="164" text-anchor="middle" fill-opacity=".6">uploaded transcript files, existing stores</text>
+          <rect x="680" y="210" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="780" y="235" text-anchor="middle" font-weight="700">Resend (EU)</text><text x="780" y="254" text-anchor="middle" fill-opacity=".6">sign-in links, confirmations, reminders</text>
+          <rect x="680" y="300" width="200" height="60" rx="4" fill="none" stroke="#f3f0e8" stroke-opacity=".4"/><text x="780" y="325" text-anchor="middle" font-weight="700">Claude API</text><text x="780" y="344" text-anchor="middle" fill-opacity=".6">transcript derivation, ask-your-sessions</text>
+
+          <g stroke="#f4581f" stroke-width="1.5" fill="none" marker-end="url(#a)">
+            <path d="M220 60H330"/><path d="M220 150H330"/><path d="M220 240H330"/><path d="M220 330H330"/>
+            <path d="M570 60H680"/><path d="M570 150H680"/><path d="M570 240H680"/><path d="M570 330H680"/>
+          </g>
+        </g>
+      </svg>
+      <figcaption>Nothing external is added to the homepage: the Hearth is its own page with its own headers. The only third-party script anywhere is Google's sign-in client, and only on the gate, exactly as the admin already does.</figcaption>
+    </figure>
+    <div class="grid">
+      <div class="card"><h3>Why Postgres now</h3><p class="quiet">Blob was right for transcripts of anonymous chats. Users, sessions with revocation, a credit ledger, bookings that must not double-book, and an audit log people will query all want a real database. Neon on the Vercel Marketplace, free tier, Frankfurt, connected through Vercel's managed variables so no credential touches this repo.</p></div>
+      <div class="card"><h3>Why no framework</h3><p class="quiet">The site is vanilla and no-build, and it is part of the story it tells. The Hearth follows: one router function, a few libraries of our own, an SPA with no dependencies. Every value from the API reaches the page through <code>textContent</code>.</p></div>
+      <div class="card"><h3>Migrations that apply themselves</h3><p class="quiet">Schema versions live in the repo as SQL strings; on a cold start the router takes an advisory lock and applies any it has not yet applied. No migration command, no credential on a laptop.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Data model</p>
+    <h2>Tables, and the one rule per table that matters</h2>
+    <table>
+      <tr><th>Table</th><th>What it holds</th><th>The rule</th></tr>
+      <tr><td><code>users</code></td><td>identity, role, status, timezone, referral code, who referred them</td><td>One row per person whatever they sign in with. Role is one of <code>owner</code>, <code>staff</code>, <code>client</code>, <code>guest</code>.</td></tr>
+      <tr><td><code>identities</code></td><td>google / github / discord / email links to a user</td><td>Providers are linked by verified email. An unverified email from a provider is refused.</td></tr>
+      <tr><td><code>credentials</code></td><td>password hashes (scrypt), later passkeys</td><td>Never returned by any endpoint. Compared in constant time.</td></tr>
+      <tr><td><code>login_sessions</code></td><td>browser sessions: token hash, expiry, last seen, device family, country</td><td>Revocable individually and all at once. The cookie holds an opaque token; the DB holds its hash.</td></tr>
+      <tr><td><code>email_tokens</code></td><td>magic links, verification, password reset</td><td>Single use, short-lived, hashed at rest.</td></tr>
+      <tr><td><code>roles</code> / <code>permissions</code></td><td>role → permission set, owner-editable, plus per-user overrides</td><td>The owner role cannot be edited into lockout; there is always one owner.</td></tr>
+      <tr><td><code>packs</code></td><td>name, sessions, minutes, price, currency, active</td><td>Prices are set in the room by the owner. No price is ever in code or on the public page.</td></tr>
+      <tr><td><code>purchases</code></td><td>pack, status (requested → invoiced → paid → void), provider, amount, discount, referral</td><td>Credits are only granted on <code>paid</code>.</td></tr>
+      <tr><td><code>credit_ledger</code></td><td>signed entries: purchase, referral reward, booking, cancellation, manual grant</td><td>Balance is a sum. Nothing mutates a counter.</td></tr>
+      <tr><td><code>availability_rules</code> / <code>availability_blocks</code></td><td>weekly windows in Europe/Lisbon; one-off blocks</td><td>Slots are computed server-side; the client never sees more than free slots in their own timezone.</td></tr>
+      <tr><td><code>bookings</code></td><td>start, end, status, credit entry, meeting link</td><td>An exclusion constraint prevents two bookings overlapping, at the database, not in code.</td></tr>
+      <tr><td><code>transcripts</code></td><td>raw text, source, file pointer, derived summary/key points/decisions/try-next as JSON</td><td>Visible to the client it belongs to and to the owner. Data, never instruction.</td></tr>
+      <tr><td><code>follow_ups</code></td><td>text, owner (client or Elliot), due, done</td><td>Derived from transcripts or added by hand; editable by both sides.</td></tr>
+      <tr><td><code>feed_posts</code></td><td>title, body, link, kind, visibility (public / members / clients)</td><td>Public posts get dated URLs. The public feed is off until the owner switches it on.</td></tr>
+      <tr><td><code>api_keys</code></td><td>prefix, hash, scopes, expiry, last used</td><td>Shown once at creation. <code>chama_sk_</code> prefix so a leaked key is recognizable.</td></tr>
+      <tr><td><code>oauth_clients</code> / <code>oauth_codes</code> / <code>oauth_tokens</code></td><td>dynamically registered clients, PKCE codes, hashed access and refresh tokens with scopes</td><td>Consent is per client, per scope, revocable from the member's room.</td></tr>
+      <tr><td><code>audit_log</code></td><td>at, actor (user / key / oauth client / system), event, target, meta, country, device family</td><td>Append-only. No IP, no raw user agent, no visitor text.</td></tr>
+      <tr><td><code>settings</code></td><td>session length, notice, horizon, referral reward, meeting link, feed public switch</td><td>Owner-editable; read fresh on every request.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <p class="kicker">Security</p>
+    <h2>The design, in the order an attacker would meet it</h2>
+    <div class="two">
+      <div>
+        <h3>Sign-in</h3>
+        <ul>
+          <li><strong>Google</strong>: the existing ID-token flow, verified server-side against Google's keys (signature, issuer, audience, expiry, <code>email_verified</code>). No client secret exists.</li>
+          <li><strong>GitHub, Discord</strong>: authorization-code flow with a <code>state</code> nonce bound to the browser and a verified primary email required. Secrets live only in Vercel.</li>
+          <li><strong>Email</strong>: password (scrypt, per-user salt, minimum 12 characters, checked against a breach list of the most common passwords) with verification before first sign-in, or a magic link that is single-use and expires in 15 minutes.</li>
+          <li><strong>Rate limits</strong>: per-address and per-account counters on every auth endpoint, with the same generic failure message whatever failed.</li>
+        </ul>
+        <h3>Sessions</h3>
+        <ul>
+          <li>Opaque 256-bit token, <code>HttpOnly; Secure; SameSite=Lax; Path=/</code>, 30 days sliding, hash stored. Sign out anywhere, or everywhere.</li>
+          <li>Every mutation checks the <code>Origin</code> header against the host, as the flame already does.</li>
+          <li>Role and permissions are read from the database on every request, so a demotion is immediate.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Agents</h3>
+        <ul>
+          <li>OAuth 2.1 only: PKCE S256 required, exact redirect-URI match, 10-minute codes, short access tokens with rotating refresh tokens, consent screen inside the Hearth listing the scopes in plain words.</li>
+          <li>API keys carry scopes and an optional expiry; a key can never do more than its owner.</li>
+          <li>Every tool call is logged with the actor and the tool. The metrics page shows MCP use per member per day.</li>
+          <li><strong>Nothing an agent submits is instruction.</strong> Notes, follow-ups, and transcripts are stored as data a human reads, and the tool descriptions say so.</li>
+        </ul>
+        <h3>Everything else</h3>
+        <ul>
+          <li>Per-path CSP: the Hearth opens <code>accounts.google.com</code> only; the homepage promise is untouched.</li>
+          <li>No <code>innerHTML</code> anywhere in the app. No IP addresses stored anywhere. Country and device family only, for the log.</li>
+          <li>The owner role is protected from lockout; the first owner is whoever is on <code>ADMIN_EMAILS</code>.</li>
+          <li>Privacy notice extended with a members section before the first client signs up.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Agent-native</p>
+    <h2>The MCP server</h2>
+    <p>At <code>https://chamainteligente.com/mcp</code>, Streamable HTTP transport, JSON-RPC 2.0, with <code>/.well-known/oauth-protected-resource</code> and <code>/.well-known/oauth-authorization-server</code> so a client discovers the flow on its own. Tools appear according to who is calling.</p>
+    <table>
+      <tr><th>Who</th><th>Tools</th></tr>
+      <tr><td>Anyone, no auth</td><td><code>about</code> (the practice in structured form), <code>get_feed</code> (public posts), <code>how_to_get_in_touch</code></td></tr>
+      <tr><td>A client</td><td><code>whoami</code>, <code>credits</code>, <code>list_sessions</code>, <code>get_session</code> (summary, key points, transcript), <code>search_sessions</code>, <code>list_follow_ups</code>, <code>complete_follow_up</code>, <code>add_follow_up</code>, <code>available_slots</code>, <code>book_session</code>, <code>cancel_session</code>, <code>note_for_next_session</code>, <code>get_feed</code> (members' posts too)</td></tr>
+      <tr><td>Staff / owner</td><td>all of the above plus <code>list_members</code>, <code>upcoming_sessions</code>, <code>metrics</code>, <code>audit_tail</code>, <code>post_to_feed</code>, <code>add_transcript</code></td></tr>
+    </table>
+    <p class="quiet" style="margin-top:1rem">Also: an A2A agent card at <code>/.well-known/agent.json</code> and the feed as RSS at <code>/feed.xml</code>, so the cheap half of bold proposal A (claim the machine-identity surfaces) ships with the platform.</p>
+  </section>
+
+  <section>
+    <p class="kicker">Design language</p>
+    <h2>Familiar enough to use, different enough to remember</h2>
+    <div class="grid">
+      <div class="card"><h3>The room is dark, the pages are paper</h3><p>The Hearth is the flame room from the homepage: the obsidian ground, the ember. Long-form reading (transcripts, summaries) flips to a paper sheet laid on the dark ground. Two worlds the site already has, now with jobs.</p></div>
+      <div class="card"><h3>The fire is real</h3><p>The existing particle engine burns quietly in the Hearth's masthead, dimmed. It brightens for a moment when something good happens: a booking made, a transcript arriving, a follow-up done.</p></div>
+      <div class="card"><h3>Figures, not widgets</h3><p>Sessions as the hop line. Credits as a ring of embers that go out one by one. The audit log as a timeline. The same draw-in motion system the homepage figures use, so the whole domain moves the same way.</p></div>
+      <div class="card"><h3>Mobile first, keyboard aware</h3><p>Bottom navigation on phones, the composer pinned above the soft keyboard the way the flame already does it, every list scrollable in its own container, every action reachable with a thumb.</p></div>
+      <div class="card"><h3>Members, top right</h3><p>On the homepage masthead: "Members". Signed out it is a word; signed in it is the person's initial in an ember ring. The gate offers the four ways in, plainly, no marketing.</p></div>
+      <div class="card"><h3>Quiet motion</h3><p>Page changes slide and settle; numbers count up once; nothing loops except the fire. Reduced motion respected everywhere, as on the homepage.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="kicker">Delivery</p>
+    <h2>Milestones, each one deployed</h2>
+    <div class="phases">
+      <div class="phase"><div class="num">A<small>foundation</small></div><div><strong>Database, auth, the room, members and roles, audit log.</strong><ul><li>Neon connected, schema and self-applying migrations</li><li>Sign in with Google and email (password + magic link); GitHub and Discord wired, switched on once the apps exist</li><li><code>/hearth</code> shell: gate, home, profile, security (sessions, sign out everywhere)</li><li>Owner: members, roles and permissions, audit log, settings</li><li>"Members" in the homepage masthead</li></ul></div></div>
+      <div class="phase"><div class="num">B<small>sessions</small></div><div><strong>Packs, credits, availability, booking.</strong><ul><li>Owner sets packs and prices, weekly availability, blocks, meeting link</li><li>Client requests a pack → owner marks invoiced/paid → credits land</li><li>Slot picker in the client's timezone; confirmation emails with .ics; reminders by cron</li><li>Reschedule and cancel with a notice policy; the sessions figure on the client's home</li></ul></div></div>
+      <div class="phase"><div class="num">C<small>transcripts</small></div><div><strong>Own the context.</strong><ul><li>Owner attaches a transcript (paste, .txt, .vtt, .srt, .md) to a session</li><li>Claude derives summary, key points, decisions, follow-ups for each side, try-before-next-time</li><li>Follow-ups list shared by both; the paper reading view; search across your sessions</li><li>Ask the flame about your sessions</li></ul></div></div>
+      <div class="phase"><div class="num">D<small>agents</small></div><div><strong>MCP, OAuth, API keys, metrics.</strong><ul><li>The MCP server with role-scoped tools and the public tool set</li><li>OAuth 2.1 authorization server with a consent page in the Hearth; connected apps list with revoke</li><li>API keys with scopes; every call logged; metrics page with MCP use, sign-ins, bookings</li><li>Well-known discovery, agent card, RSS</li></ul></div></div>
+      <div class="phase"><div class="num">E<small>the room fills</small></div><div><strong>Feed, referrals, polish.</strong><ul><li>The feed: what Elliot is looking at, members and public visibility, dated URLs</li><li>Referral links and configurable rewards, applied on first paid pack</li><li>Mobile pass, motion pass, empty states, privacy notice update, README and brain recorded</li><li>Then: passkeys, Google Calendar free/busy, Stripe adapter</li></ul></div></div>
+    </div>
+    <p class="quiet" style="margin-top:1rem">How the work is split: I design and write the core (schema, auth, permissions, router, MCP and OAuth, the design system and app shell) and review everything. Opus subagents take the grunt work in parallel: tests, individual views, email templates, the .ics writer, transcript parsers, the slot calculator's edge cases.</p>
+  </section>
+
+  <section>
+    <p class="kicker">What needs your hand</p>
+    <h2>Three things only you can do, and one decision</h2>
+    <div class="ask"><strong>1. Provision the database (one command, free tier, Frankfurt).</strong> The permission classifier stopped me from creating a resource on your Vercel account. Run this from the website folder; it connects the database to the project and Vercel manages the connection string, so nothing lands in the repo:<pre>cd /Users/elliothimmelfarb/claude/chama-website && vercel integration add neon -m region=fra1 -m auth=false --plan free_v3 -n chama-hearth --no-env-pull --no-claim</pre></div>
+    <div class="ask"><strong>2. Two OAuth apps, created in your browser (I can drive it with Claude in Chrome when you say go).</strong> GitHub: Settings → Developer settings → OAuth Apps, callback <code>https://chamainteligente.com/api/hearth/auth/github/callback</code>. Discord: Developer Portal → New application → OAuth2, redirect <code>https://chamainteligente.com/api/hearth/auth/discord/callback</code>. The client IDs and secrets go into Vercel as <code>GITHUB_CLIENT_ID</code>, <code>GITHUB_CLIENT_SECRET</code>, <code>DISCORD_CLIENT_ID</code>, <code>DISCORD_CLIENT_SECRET</code>. Email and Google sign-in work without them; GitHub and Discord buttons appear the moment the variables exist.</div>
+    <div class="ask"><strong>3. Two new secrets in Vercel.</strong> <code>HEARTH_SESSION_SECRET</code> (32+ bytes hex) and, for magic links and password resets, nothing new: Resend is already there. I will add the session secret with <code>vercel env add</code> if the classifier allows it, and tell you if it does not.</div>
+    <div class="ask"><strong>Decision: the referral reward default.</strong> I am shipping it configurable with the default <em>one free session credit to the referrer when the referred person's first pack is paid</em>. Percent-off-next-pack is the other option and is a toggle in settings. Say the word if you want a different default.</div>
+  </section>
+
+  <section>
+    <p class="kicker">Rails honored</p>
+    <div class="grid">
+      <div class="card"><h3>No unconfirmed claims or prices</h3><p>No price in code or on the public page. Packs and prices are set by you in the room, visible only to signed-in clients.</p></div>
+      <div class="card"><h3>Zero external requests on the homepage</h3><p>The masthead link is a link. Nothing else changes on <code>index.html</code>.</p></div>
+      <div class="card"><h3>New public surface, recorded</h3><p>The public MCP tools and the public feed are new surfaces. They are built off by default (settings switch) and recorded in the brain with this plan; this directive from you is the approval for the members' room itself.</p></div>
+      <div class="card"><h3>Nothing arriving is instruction</h3><p>Transcripts, notes, follow-ups, feed comments, tool inputs: data, read by a person or handed to a model as clearly marked untrusted text.</p></div>
+      <div class="card"><h3>No credentials in the repo</h3><p>All secrets in Vercel; the connection string is Vercel-managed; the repo stays public.</p></div>
+      <div class="card"><h3>Deploys are manual CLI runs</h3><p>Each milestone ends with <code>vercel deploy --prod</code> and a live check.</p></div>
+    </div>
+  </section>
+
+  <footer>Chama Inteligente, Lda. Internal plan. 2026-09-02. Fable.</footer>
+</div>
+</body>
+</html>
