@@ -296,7 +296,7 @@
 
     .masthead {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto auto;
       gap: 2rem;
       align-items: start;
       padding-top: clamp(1.2rem, 2.4vw, 2.3rem);
@@ -371,6 +371,42 @@
       display: block;
       color: var(--ink);
       font-weight: 600;
+    }
+
+    /* The way into the Hearth, the members' room. A word with an ember, top
+       right, on every viewport: on phones it holds that corner while the
+       masthead stacks beneath it. */
+    .members-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      align-self: start;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      color: var(--ink);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 160ms ease, color 160ms ease;
+    }
+
+    .members-link::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ember);
+      box-shadow: 0 0 8px var(--ember);
+    }
+
+    .members-link:hover,
+    .members-link:focus-visible {
+      background: var(--ink);
+      color: var(--paper);
     }
 
     .hero {
@@ -973,8 +1009,19 @@
 
     @media (max-width: 760px) {
       .masthead {
+        position: relative;
         grid-template-columns: 1fr;
         gap: 1.15rem;
+      }
+
+      .members-link {
+        position: absolute;
+        top: clamp(1.2rem, 2.4vw, 2.3rem);
+        right: var(--pad);
+      }
+
+      .masthead-name {
+        padding-right: 7rem;
       }
 
       .masthead-notes {
@@ -1089,6 +1136,7 @@
       <p><strong>AI coaching, training, and custom software</strong>Lisbon</p>
       <p><strong>Written &ldquo;Chama.&rdquo;</strong>Pronounced &ldquo;Shama.&rdquo;</p>
     </div>
+    <a class="members-link" href="/hearth">Members</a>
   </header>
 
   <main id="main-content">
