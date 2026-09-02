@@ -894,7 +894,7 @@
           meetRow.appendChild(off);
         } else {
           meetLine.textContent = "Connect your Google account once. From then on every booking becomes a Calendar event with a Meet room, the client invited, and the transcript is pulled through the Meet API after the meeting. Turn on transcription in Meet, or set it to automatic in Workspace.";
-          meetRow.appendChild(H.link("Connect Google", "/api/hearth/google/connect", "btn primary sm"));
+          meetRow.appendChild(H.link("Connect Google", "/api/hearth/admin/google/connect", "btn primary sm"));
         }
       }).catch(function () { meetLine.textContent = "Could not read the Google connection."; });
       form.appendChild(meet);
