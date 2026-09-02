@@ -99,6 +99,6 @@ test("a run with the right secret sweeps and reports what it sent", async () => 
   useClient(db);
   const response = await quiet(() => handleCron(cron("the-cron-secret")));
   assert.equal(response.status, 200);
-  assert.deepEqual(await body(response), { ok: true, reminders: 0 });
+  assert.deepEqual(await body(response), { ok: true, reminders: 0, meet: { pulled: 0, checked: 0 } });
   assert.equal(db.matching(/^\s*delete from/).length, 5);
 });

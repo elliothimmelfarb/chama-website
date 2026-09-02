@@ -873,6 +873,35 @@
       zone.appendChild(field("Timezone", ownerTimezone, "Availability is set in this zone."));
       form.appendChild(zone);
 
+      // Google Meet: connected once by the owner; every booking then gets its
+      // own Meet room and the transcript is pulled after the meeting.
+      var meet = el("div", "card stack tight");
+      meet.appendChild(el("p", "label", "Google Meet"));
+      var meetLine = el("p", "small dim", "Checking...");
+      var meetRow = el("div", "row");
+      append(meet, [meetLine, meetRow]);
+      api("/admin/google").then(function (g) {
+        if (!g.configured) {
+          meetLine.textContent = "Not set up yet: GOOGLE_CLIENT_SECRET is missing in Vercel. Until then bookings use the standing meeting link above.";
+          return;
+        }
+        if (g.connected) {
+          meetLine.textContent = "Connected as " + (g.email || "your Google account") + " since " + H.fmtDate(g.connectedAt, { dateStyle: "medium" }) + ". Every booking gets its own Meet room on your calendar with the client invited, and the transcript is pulled through the Meet API after the meeting.";
+          var off = button("Disconnect", "btn danger sm", function () {
+            if (!window.confirm("Disconnect Google? New bookings fall back to the standing link.")) return;
+            busy(off, api("/admin/google", { method: "DELETE" })).then(function () { toast("Disconnected.", "good"); H.render(); }).catch(function (err) { toast(err.message, "bad"); });
+          });
+          meetRow.appendChild(off);
+        } else {
+          meetLine.textContent = "Connect your Google account once. From then on every booking becomes a Calendar event with a Meet room, the client invited, and the transcript is pulled through the Meet API after the meeting. Turn on transcription in Meet, or set it to automatic in Workspace.";
+          meetRow.appendChild(H.link("Connect Google", "/api/hearth/google/connect", "btn primary sm"));
+        }
+      }).catch(function () { meetLine.textContent = "Could not read the Google connection."; });
+      form.appendChild(meet);
+      var googleResult = new URLSearchParams(location.search).get("google");
+      if (googleResult === "connected") toast("Google connected.", "good");
+      if (googleResult === "failed") toast("Google could not be connected. Try again.", "bad");
+
       var save = button("Save settings", "btn primary");
       save.type = "submit";
       form.appendChild(append(el("div", "row"), [save]));
