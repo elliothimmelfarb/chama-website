@@ -10,7 +10,7 @@
 import { configured, ready } from "../lib/hearth/db.js";
 import { json, requestContext, requestOrigin } from "../lib/hearth/http.js";
 import { resolveBearer, handleRpc, useHearthHandler } from "../lib/hearth/mcp.js";
-import { handleHearth } from "./hearth/[...path].js";
+import { handleHearth } from "./hearth.js";
 import { sql } from "../lib/hearth/db.js";
 
 useHearthHandler(handleHearth);

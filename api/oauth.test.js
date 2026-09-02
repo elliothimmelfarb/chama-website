@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import test from "node:test";
 
-import { useClient } from "../../lib/hearth/db.js";
-import { fakeDb, makeRequest } from "../../lib/hearth/test-helpers.js";
-import { hashToken } from "../../lib/hearth/auth.js";
-import handleOauthDefault, { handleOauth } from "./[...path].js";
+import { useClient } from "../lib/hearth/db.js";
+import { fakeDb, makeRequest } from "../lib/hearth/test-helpers.js";
+import { hashToken } from "../lib/hearth/auth.js";
+import handleOauthDefault, { handleOauth } from "./oauth.js";
 
 // A dummy connection string is enough: useClient means neon() is never
 // called, so nothing here can reach a database.

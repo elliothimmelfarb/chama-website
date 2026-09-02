@@ -11,31 +11,31 @@
 // origin, the wire only ever sees one short generic sentence on failure, and
 // nothing a visitor sent reaches the console.
 
-import { configured, ready, sql } from "../../lib/hearth/db.js";
+import { configured, ready, sql } from "../lib/hearth/db.js";
 import {
   HttpError, json, redirect, isSameOrigin, readJson, requestContext, requestOrigin,
   matchPath, isEmail, normalizeEmail, clampText
-} from "../../lib/hearth/http.js";
+} from "../lib/hearth/http.js";
 import {
   createSession, sessionCookie, clearSessionCookie, readSession, revokeSession,
   revokeAllSessions, listSessions, issueEmailToken, consumeEmailToken, hashPassword,
   verifyPassword, passwordProblem, allow, addressKey
-} from "../../lib/hearth/auth.js";
+} from "../lib/hearth/auth.js";
 import {
   ensureRoles, findUserByEmail, findUserById, createUser, userForIdentity, loadActor,
   publicUser, countOwners, promoteIfAdmin
-} from "../../lib/hearth/users.js";
-import { PERMISSIONS, ROLE_NAMES, sanitizePermissionList } from "../../lib/hearth/permissions.js";
-import { audit, auditor, EVENTS } from "../../lib/hearth/audit.js";
-import * as mail from "../../lib/hearth/mail.js";
-import { registerSessionRoutes } from "../../lib/hearth/routes/sessions.js";
-import { registerTranscriptRoutes } from "../../lib/hearth/routes/transcripts.js";
-import { registerAgentRoutes } from "../../lib/hearth/routes/agents.js";
-import { registerFeedRoutes } from "../../lib/hearth/routes/feed.js";
+} from "../lib/hearth/users.js";
+import { PERMISSIONS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
+import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
+import * as mail from "../lib/hearth/mail.js";
+import { registerSessionRoutes } from "../lib/hearth/routes/sessions.js";
+import { registerTranscriptRoutes } from "../lib/hearth/routes/transcripts.js";
+import { registerAgentRoutes } from "../lib/hearth/routes/agents.js";
+import { registerFeedRoutes } from "../lib/hearth/routes/feed.js";
 import {
   availableProviders, providerConfig, verifyGoogleIdToken, issueState, consumeState,
   githubAuthorizeUrl, githubExchange, discordAuthorizeUrl, discordExchange
-} from "../../lib/hearth/providers.js";
+} from "../lib/hearth/providers.js";
 
 export const MESSAGES = {
   unconfigured: "The Hearth is not open yet.",

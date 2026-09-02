@@ -8,12 +8,12 @@
 // revoke    - RFC 7009
 // metadata, resource - the discovery documents
 
-import { configured, ready } from "../../lib/hearth/db.js";
-import { json, redirect, requestOrigin, matchPath } from "../../lib/hearth/http.js";
-import { allow, addressKey } from "../../lib/hearth/auth.js";
-import { metadata, resourceMetadata, registerClient, startAuthorization, exchangeCode, refreshTokens, revokeToken } from "../../lib/hearth/oauth.js";
-import { audit, EVENTS } from "../../lib/hearth/audit.js";
-import { requestContext } from "../../lib/hearth/http.js";
+import { configured, ready } from "../lib/hearth/db.js";
+import { json, redirect, requestOrigin, matchPath } from "../lib/hearth/http.js";
+import { allow, addressKey } from "../lib/hearth/auth.js";
+import { metadata, resourceMetadata, registerClient, startAuthorization, exchangeCode, refreshTokens, revokeToken } from "../lib/hearth/oauth.js";
+import { audit, EVENTS } from "../lib/hearth/audit.js";
+import { requestContext } from "../lib/hearth/http.js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +24,8 @@ const CORS = {
 function resolvePath(request) {
   const url = new URL(request.url);
   let path = url.pathname.startsWith("/api/oauth") ? url.pathname.slice("/api/oauth".length) : "";
+  if (url.pathname === "/.well-known/oauth-authorization-server") path = "/metadata";
+  if (url.pathname === "/.well-known/oauth-protected-resource") path = "/resource";
   if (!path || path === "/") {
     const segments = url.searchParams.getAll("path");
     if (segments.length) path = "/" + segments.join("/");

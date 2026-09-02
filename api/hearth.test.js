@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { useClient } from "../../lib/hearth/db.js";
-import { fakeDb, makeRequest } from "../../lib/hearth/test-helpers.js";
-import { SESSION_COOKIE } from "../../lib/hearth/auth.js";
-import { MESSAGES, SETTING_DEFAULTS, handleHearth, readSettings } from "./[...path].js";
+import { useClient } from "../lib/hearth/db.js";
+import { fakeDb, makeRequest } from "../lib/hearth/test-helpers.js";
+import { SESSION_COOKIE } from "../lib/hearth/auth.js";
+import { MESSAGES, SETTING_DEFAULTS, handleHearth, readSettings } from "./hearth.js";
 
 // A dummy connection string is enough: useClient means neon() is never
 // called, and mail stays unconfigured so nothing can leave the process.
