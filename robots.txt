@@ -7,107 +7,128 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 # Search engines
 User-agent: Googlebot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Googlebot-Image
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Google-Extended
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: DuckDuckBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Applebot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Applebot-Extended
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 # AI crawlers and AI search assistants
 User-agent: ClaudeBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Claude-Web
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Claude-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Claude-SearchBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: GPTBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: ChatGPT-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: PerplexityBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Perplexity-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Meta-ExternalAgent
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: Amazonbot
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: cohere-ai
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 User-agent: MistralAI-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
+Disallow: /hearth
 
 Sitemap: https://chamainteligente.com/sitemap.xml

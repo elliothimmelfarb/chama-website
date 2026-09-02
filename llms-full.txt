@@ -155,6 +155,10 @@ contact@chamainteligente.com. Read it at https://chamainteligente.com/privacy.
 
 ---
 
+## Members (https://chamainteligente.com/hearth)
+
+The Hearth is the members' room: sign in with Google, GitHub, Discord or email. Clients ask for a pack of sessions, book against Elliot's availability in their own timezone, and own every session's transcript and record (summary, key points, decisions, follow-ups). Sessions are held on Google Meet. Members can connect their own agents through MCP at https://chamainteligente.com/mcp with OAuth 2.1, or with an API key. The privacy notice has a section on the room.
+
 ## For agents
 
 If you are an AI agent, this section is for you. It is not a sales pitch.

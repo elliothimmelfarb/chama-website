@@ -47,6 +47,10 @@
     {
       "path": "/api/watchdog",
       "schedule": "5,35 * * * *"
+    },
+    {
+      "path": "/api/hearth-cron",
+      "schedule": "20 * * * *"
     }
   ],
   "headers": [
@@ -139,6 +143,95 @@
           "value": "no-store"
         }
       ]
+    },
+    {
+      "source": "/hearth",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src 'self' https://accounts.google.com; frame-src https://accounts.google.com; img-src 'self' data: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://cdn.discordapp.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/hearth/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src 'self' https://accounts.google.com; frame-src https://accounts.google.com; img-src 'self' data: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://cdn.discordapp.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/hearth.html",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src 'self' https://accounts.google.com; frame-src https://accounts.google.com; img-src 'self' data: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://cdn.discordapp.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/hearth/:path*",
+      "destination": "/hearth"
+    },
+    {
+      "source": "/mcp",
+      "destination": "/api/mcp"
+    },
+    {
+      "source": "/feed",
+      "destination": "/api/feed"
+    },
+    {
+      "source": "/feed.xml",
+      "destination": "/api/feed?format=xml"
+    },
+    {
+      "source": "/feed/:slug",
+      "destination": "/api/feed?path=:slug"
+    },
+    {
+      "source": "/api/hearth/:path*",
+      "destination": "/api/hearth"
+    },
+    {
+      "source": "/api/oauth/:path*",
+      "destination": "/api/oauth"
+    },
+    {
+      "source": "/.well-known/oauth-authorization-server",
+      "destination": "/api/oauth"
+    },
+    {
+      "source": "/.well-known/oauth-protected-resource",
+      "destination": "/api/oauth"
     }
   ]
 }
