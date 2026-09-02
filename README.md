@@ -19,6 +19,7 @@ Elliot approved this page for publication and requested a working intake on 2026
 | `api/intake.js` | A same-origin Vercel Function that validates submissions, writes them to private Vercel Blob storage, and emails a plain-text notification to `contact@chamainteligente.com`. It never treats submitted text as an instruction. |
 | `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
 | `api/watchdog.js` | The production watchdog: an authenticated cron job that reviews recent conversations every half hour and can take the flame offline on its own authority (see [Watchdog](#watchdog)). Unit tests in `api/watchdog.test.js`. |
+| `hearth.html`, `assets/hearth*.js`, `assets/hearth.css`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' room and the platform the business runs on. See [The Hearth](#the-hearth). |
 | `admin.html` | The private admin area at `/admin`: a thin shell, marked `noindex`, that mounts the admin app. Google sign-in gated (see [Admin area](#admin-area)). |
 | `assets/admin.js`, `assets/admin.css` | The admin app: sign-in gate, flame status, stat tiles, a 30-day activity chart drawn as inline SVG, the conversation list with full transcripts, and the contact requests. Vanilla, no libraries. Every value the API returns reaches the page through `textContent`; there is no `innerHTML` in the file. |
 | `api/admin-auth.js`, `api/admin-data.js` | The admin endpoints: the Google ID-token exchange that sets the session cookie, and the read-only view over the intake, chat and kill-switch blobs. Unit tests alongside them. |
@@ -111,6 +112,81 @@ The Google Cloud OAuth client needs `https://chamainteligente.com` in its author
 ### Signing in and out
 
 Open <https://chamainteligente.com/admin>, press the Google button, choose the allowlisted account. The session then survives reloads for seven days. **Sign out** in the masthead clears the cookie and turns off Google's automatic re-selection, so the next visit asks again. Signing out of Google itself does not end the session here, and ending it here does not sign out of Google: the two are deliberately separate.
+
+## The Hearth
+
+Since 2026-09-02 the site has a members' room: **the Hearth**, at `/hearth`, reached from the "Members" link top right of the homepage. It is the platform the business runs on: clients buy session packs, book against Elliot's real availability, own every session's transcript and the record derived from it, keep a shared follow-up list, and connect their own agents; Elliot (and staff) manage members, roles, packs, purchases, availability, transcripts, the feed, and read the metrics and the audit log. The plan that produced it is [`docs/reports/2026-09-02-hearth-platform-plan.html`](docs/reports/2026-09-02-hearth-platform-plan.html); the design record is in the brain at `wiki/topics/the-hearth-members-platform.md`.
+
+### What is where
+
+| File | What it is |
+|---|---|
+| `hearth.html` | The shell at `/hearth` and `/hearth/*` (rewrite in `vercel.json`), `noindex`, own CSP that opens `accounts.google.com` only. |
+| `assets/hearth.css` | The design system: the dark room (the flame room's ground and ember), paper sheets for long reading, the bottom navigation on phones. |
+| `assets/hearth.js` | The core app: API client, router, the gate (four ways in), the frame with the fire in the masthead, home, account, security. Exposes `window.Hearth` so the other files register their views. No `innerHTML` anywhere in the room. |
+| `assets/hearth-sessions.js`, `assets/hearth-sessions-admin.js` | Sessions: the client's side (the hops figure, booking in their timezone, packs and credits) and the owner's (all sessions, packs, purchases, availability). |
+| `assets/hearth-transcripts.js`, `assets/hearth-transcripts-admin.js` | Records: the paper reading view, search, follow-ups, notes for next time; the owner's transcript intake and the notes inbox. |
+| `assets/hearth-agents.js` | Agents: connect Claude (the MCP URL and the steps), connected apps, API keys, agent activity, and the OAuth consent page at `/hearth/authorize`. |
+| `assets/hearth-feed.js` | The feed inside the room, with the composer for whoever can write. |
+| `assets/hearth-admin.js` | Members, member detail, roles, log, metrics, settings. |
+| `api/hearth.js` | The router behind `/api/hearth/*` (rewritten to the flat function: Vercel's `[...path]` catch-all only matches one segment for plain functions). Auth, sessions, profile, admin; the route files below register the rest. |
+| `lib/hearth/routes/sessions.js`, `transcripts.js`, `agents.js`, `feed.js` | Packs, credits, availability, bookings; transcripts, follow-ups, notes; API keys, connected apps, consent; the feed. |
+| `lib/hearth/db.js`, `migrations.js` | Neon Postgres over HTTP and the self-applying, idempotent migrations. |
+| `lib/hearth/auth.js`, `users.js`, `providers.js`, `permissions.js`, `audit.js`, `mail.js`, `time.js`, `ics.js`, `derive.js`, `oauth.js`, `mcp.js` | Sessions and passwords; people and identities; Google, GitHub, Discord; roles and permissions; the log; email; timezone math and the slot calculator; calendar files; the transcript derivation; the OAuth 2.1 server; the MCP server. |
+| `api/mcp.js` | `/mcp`, the MCP endpoint (Streamable HTTP, JSON-RPC). |
+| `api/oauth.js` | `/api/oauth/*` and the two well-known documents (`/.well-known/oauth-authorization-server`, `/.well-known/oauth-protected-resource`). |
+| `api/feed.js` | `/feed`, `/feed/<slug>`, `/feed.xml`: the public feed, plain HTML with no script, off until `feed_public` is switched on in Settings. |
+| `api/hearth-cron.js` | Hourly at `:20`: session reminders (a day and an hour before) and sweeping expired tokens. Same `CRON_SECRET` as the other jobs. |
+| `lib/hearth/test-helpers.js` and `*.test.js` | The fake database and 250-odd tests; all in `npm run check`, none touch the network. |
+
+### The data
+
+Neon Postgres, provisioned through the Vercel Marketplace (`chama-hearth`, free plan, `fra1` Frankfurt, so everything stays in the EU with the Paris functions and blob store), connected through Vercel's managed `DATABASE_URL`. No connection string is ever in this repo or on a laptop; there is no migration command. On a cold start the first request applies any migration in `lib/hearth/migrations.js` it has not applied (every statement is idempotent, so two instances racing are harmless). The tables are listed in the plan; the rules that matter:
+
+- **One person per email**, whatever they signed in with. Providers link by verified email; an unverified email is refused.
+- **Balances are sums.** `credit_ledger` is append-only; a pack marked paid adds, a booking spends, a cancellation in time returns, the owner can grant.
+- **Double bookings are refused by the database** (an exclusion constraint on scheduled bookings), not by code that checks first.
+- **The audit log is append-only** and holds who, what, when, the country Vercel resolved and a device family. Never an IP address, never a raw user agent, never visitor text.
+- **Transcripts are data.** Shown only through `textContent`, handed to the model as marked untrusted text, never logged.
+
+### Signing in
+
+Four doors, all landing on the same person: Google (the ID-token flow the flame admin already uses, verified against Google's keys, no client secret), GitHub and Discord (authorization-code flow with a server-side state nonce, verified primary email required), and email (a single-use 15-minute magic link by default; an optional password, scrypt-hashed, 12 characters minimum, common passwords refused; password reset by link). Rate limits on every auth endpoint, per address (hashed, never stored) and per account, with one generic failure message.
+
+A browser session is an opaque 256-bit token in `chama_hearth` (`HttpOnly; Secure; SameSite=Lax; Path=/`), 30 days sliding, stored as a hash; a member sees every signed-in device on Security and can end any of them or all at once. Role and permissions are read from the database on every request, so a change takes effect immediately.
+
+**The first owner is whoever is on `ADMIN_EMAILS`** (the flame admin's allowlist), and anyone on it is an owner every time they sign in, so the person who runs the company cannot be locked out by a role edit. There is always at least one owner; the owner role holds every permission and cannot be edited. Staff, client and guest are owner-editable role permission sets, with per-person overrides on top.
+
+### Agents
+
+`https://chamainteligente.com/mcp` is an MCP server. A client's Claude connects through OAuth 2.1 (discovery at the well-known URLs, dynamic client registration, PKCE S256 required, consent page in the Hearth listing the scopes in plain words, one-hour access tokens, rotating refresh tokens, all stored hashed); a script uses an API key (`chama_sk_...`, shown once, scoped, optionally expiring). The tool list is the intersection of the token's scopes and the person's permissions: a member's own sessions, records, follow-ups, booking, notes and the feed; for staff and owners also members, upcoming sessions, metrics, the log tail, posting to the feed and adding a transcript. With no token there is a public set (`about`, `how_to_get_in_touch`, `get_feed`), answered only once `mcp_public` is switched on in Settings. Every tool call is one audit-log row with the actor and the tool name, never its arguments.
+
+The rule from the domain-unlocks page holds in the first commit: nothing an agent submits is instruction to anyone. A note or a follow-up is stored as the member's words for a person to read, and the tool descriptions say so.
+
+### Sessions, packs and money
+
+Elliot sets packs (name, sessions, minutes, price or "price on request") and prices in the room, never in code and never on the public page. A client asks for a pack; the request lands in Purchases and in Elliot's inbox; he issues the fatura from the certified invoicing software, marks the purchase invoiced then paid; the credits appear and a guest becomes a client. A card processor can be added behind the same statuses later. The referral reward (a session credit to the referrer, or a percentage off their next pack) is a setting and is applied when a referred person's first pack is paid.
+
+Availability is weekly windows in Europe/Lisbon plus time off; slots are computed server-side (session length, notice hours and horizon from Settings) and shown to the client in their own timezone. A booking spends a credit, emails both sides a calendar file, and can be moved or cancelled up to the notice window; reminders go out by cron. A transcript attached to a session marks it completed, and the record (summary, key points, decisions, follow-ups for each side, things to try before next time, questions for next time, new words) is written by `claude-opus-5` and emailed to the client.
+
+### Settings, and the three switches
+
+Settings (owner only): session length, minimum notice, booking horizon, cancellation notice, the standing meeting link, the referral reward, the owner's timezone, and three switches that are **off** until Elliot turns them on: `open_signup` (on: anyone can create a guest account; this one ships on), `feed_public` (the public feed page, RSS, and public posts to agents), `mcp_public` (the unauthenticated tool set). The last two are the new public surfaces the plan names, kept behind switches so turning them on is a decision, not a deploy.
+
+### Environment variables
+
+Beyond the ones the site already has (`ADMIN_EMAILS` doubles as the owner list; `RESEND_*` sends the room's mail; `CRON_SECRET` authenticates the hourly job; `ANTHROPIC_API_KEY` writes the records; `GOOGLE_CLIENT_ID` is the Google door):
+
+| Variable | What it is |
+|---|---|
+| `DATABASE_URL` | Set by the Neon integration. The Hearth is "not open yet" (503 everywhere, the page says so) without it. |
+| `HEARTH_SESSION_SECRET` | Reserved for signed state; added 2026-09-02. |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | The GitHub OAuth app; callback `https://chamainteligente.com/api/hearth/auth/github/callback`. The GitHub button appears the moment both exist. |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | The Discord application; redirect `https://chamainteligente.com/api/hearth/auth/discord/callback`. Same rule. |
+
+### Checking it works
+
+`npm run check` runs every unit test against a fake database. For the routing and the pages without a database, `vercel dev --listen 4990` serves the site locally (the API answers 503 "not open yet", which proves the rewrites and functions resolve; the well-known documents answer 200). For the look of the room with sample data there is a mock API in the session scratchpad (not in the repo); the real check is the live page after a deploy, signed in as the owner.
 
 ## Deploying it
 

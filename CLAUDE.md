@@ -15,6 +15,8 @@ The site's center of gravity is **the intelligent flame**, the live chat agent:
 - `api/watchdog.js` is a second model on a cron that reads recent transcripts and can take the flame offline on its own authority. Relighting is always manual (README has the exact steps).
 - `api/intake.js` is the single pipeline for notes to Elliot, whether from the agent's tool or a direct POST.
 
+The members' room, **the Hearth** (`/hearth`), is the platform the business runs on: `api/hearth.js` and `lib/hearth/` are its backend, `assets/hearth*.js` its front end, `api/mcp.js` its MCP server. The README has the full map.
+
 Verify work with:
 
 ```bash
