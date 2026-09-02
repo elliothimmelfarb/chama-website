@@ -212,6 +212,18 @@
     {
       "source": "/.well-known/oauth-protected-resource",
       "destination": "/api/oauth/resource"
+    },
+    {
+      "source": "/feed",
+      "destination": "/api/feed"
+    },
+    {
+      "source": "/feed.xml",
+      "destination": "/api/feed?format=xml"
+    },
+    {
+      "source": "/feed/:slug",
+      "destination": "/api/feed?path=:slug"
     }
   ]
 }

@@ -31,6 +31,7 @@ import * as mail from "../../lib/hearth/mail.js";
 import { registerSessionRoutes } from "../../lib/hearth/routes/sessions.js";
 import { registerTranscriptRoutes } from "../../lib/hearth/routes/transcripts.js";
 import { registerAgentRoutes } from "../../lib/hearth/routes/agents.js";
+import { registerFeedRoutes } from "../../lib/hearth/routes/feed.js";
 import {
   availableProviders, providerConfig, verifyGoogleIdToken, issueState, consumeState,
   githubAuthorizeUrl, githubExchange, discordAuthorizeUrl, discordExchange
@@ -680,6 +681,7 @@ route("GET", "/admin/metrics", async (context) => {
 registerSessionRoutes({ route, needs, readSettings });
 registerTranscriptRoutes({ route, needs, readSettings });
 registerAgentRoutes({ route, needs, readSettings });
+registerFeedRoutes({ route, needs, readSettings });
 
 /* ---------- dispatch ---------- */
 
