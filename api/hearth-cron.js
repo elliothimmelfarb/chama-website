@@ -127,6 +127,7 @@ export async function sweep() {
   await sql()`delete from rate_limits where window_start < now() - interval '1 day'`;
   await sql()`delete from oauth_codes where expires_at < now() - interval '1 day'`;
   await sql()`delete from login_sessions where expires_at < now() - interval '30 days' or (revoked_at is not null and revoked_at < now() - interval '30 days')`;
+  await sql()`delete from audit_log where at < now() - interval '12 months'`;
 }
 
 export async function handleCron(request) {

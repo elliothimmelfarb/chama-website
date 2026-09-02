@@ -88,7 +88,7 @@ test("the sweep clears out everything that has expired", async () => {
   useClient(db);
   await sweep();
   const deletes = db.matching(/^\s*delete from/);
-  assert.equal(deletes.length, 5);
+  assert.equal(deletes.length, 6);
   for (const table of ["email_tokens", "oauth_states", "rate_limits", "oauth_codes", "login_sessions"]) {
     assert.equal(db.count(new RegExp(`delete from ${table}`)), 1, table);
   }
@@ -100,5 +100,5 @@ test("a run with the right secret sweeps and reports what it sent", async () => 
   const response = await quiet(() => handleCron(cron("the-cron-secret")));
   assert.equal(response.status, 200);
   assert.deepEqual(await body(response), { ok: true, reminders: 0, meet: { pulled: 0, checked: 0 } });
-  assert.equal(db.matching(/^\s*delete from/).length, 5);
+  assert.equal(db.matching(/^\s*delete from/).length, 6);
 });
