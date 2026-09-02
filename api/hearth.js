@@ -33,6 +33,7 @@ import { registerTranscriptRoutes } from "../lib/hearth/routes/transcripts.js";
 import { registerAgentRoutes } from "../lib/hearth/routes/agents.js";
 import { registerFeedRoutes } from "../lib/hearth/routes/feed.js";
 import { registerGoogleRoutes } from "../lib/hearth/routes/google.js";
+import { registerAskRoutes } from "../lib/hearth/routes/ask.js";
 import {
   availableProviders, providerConfig, verifyGoogleIdToken, issueState, consumeState,
   githubAuthorizeUrl, githubExchange, discordAuthorizeUrl, discordExchange
@@ -684,6 +685,7 @@ registerTranscriptRoutes({ route, needs, readSettings });
 registerAgentRoutes({ route, needs, readSettings });
 registerFeedRoutes({ route, needs, readSettings });
 registerGoogleRoutes({ route, needs, readSettings });
+registerAskRoutes({ route, needs, readSettings });
 
 /* ---------- dispatch ---------- */
 
