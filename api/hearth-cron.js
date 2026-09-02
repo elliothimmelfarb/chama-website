@@ -1,0 +1,91 @@
+// The Hearth's hourly housekeeping, called by Vercel Cron with the same
+// CRON_SECRET bearer as the other jobs.
+//
+// Two things, both idempotent: session reminders (a day before and an hour
+// before, each sent once and recorded on the booking), and sweeping expired
+// tokens, states and rate-limit windows so the small tables stay small.
+
+import { configured, ready, sql } from "../lib/hearth/db.js";
+import { json } from "../lib/hearth/http.js";
+import * as mail from "../lib/hearth/mail.js";
+
+function authorized(request, env = process.env) {
+  const secret = typeof env.CRON_SECRET === "string" ? env.CRON_SECRET.trim() : "";
+  if (!secret) return false;
+  const header = request.headers.get("authorization") || "";
+  return header === `Bearer ${secret}`;
+}
+
+async function settingValue(key, fallback) {
+  const rows = await sql()`select value from settings where key = ${key}`;
+  return rows[0] ? rows[0].value : fallback;
+}
+
+// Reminders go to the client only; the owner has the calendar file. The
+// window is generous (the job runs hourly) and the `reminded` column keeps
+// each kind to one send.
+export async function sendReminders(now = new Date()) {
+  const meetingUrl = await settingValue("meeting_url", "");
+  const kinds = [
+    { key: "day", fromH: 23, toH: 25, text: "tomorrow" },
+    { key: "hour", fromH: 0.75, toH: 1.5, text: "in about an hour" }
+  ];
+  let sent = 0;
+  for (const kind of kinds) {
+    const from = new Date(now.getTime() + kind.fromH * 3600000).toISOString();
+    const to = new Date(now.getTime() + kind.toH * 3600000).toISOString();
+    const rows = await sql()`
+      select b.id, b.starts_at, b.ends_at, b.meeting_url, u.email, u.name, u.timezone
+      from bookings b join users u on u.id = b.user_id
+      where b.status = 'scheduled' and b.starts_at >= ${from} and b.starts_at < ${to}
+        and not (${kind.key} = any(b.reminded)) and u.status = 'active'
+      limit 50
+    `;
+    for (const b of rows) {
+      const when = new Date(b.starts_at).toLocaleString("en-GB", { timeZone: b.timezone, dateStyle: "full", timeStyle: "short" });
+      const link = b.meeting_url || meetingUrl;
+      try {
+        await mail.send({
+          to: b.email,
+          subject: `Your session with Elliot is ${kind.text}`,
+          text: `${when} (${b.timezone}).\n\n${link ? "Join here: " + link : "The meeting link is in the Hearth."}\n\nYour sessions: https://chamainteligente.com/hearth/sessions\n\nElliot Himmelfarb\nChama Inteligente`,
+          idempotencyKey: `reminder-${b.id}-${kind.key}`
+        });
+        await sql()`update bookings set reminded = array_append(reminded, ${kind.key}) where id = ${b.id}`;
+        sent += 1;
+      } catch (error) {
+        console.error("Reminder failed", kind.key, error instanceof Error ? error.message : "UnknownError");
+      }
+    }
+  }
+  return sent;
+}
+
+export async function sweep() {
+  await sql()`delete from email_tokens where expires_at < now() - interval '7 days'`;
+  await sql()`delete from oauth_states where expires_at < now()`;
+  await sql()`delete from rate_limits where window_start < now() - interval '1 day'`;
+  await sql()`delete from oauth_codes where expires_at < now() - interval '1 day'`;
+  await sql()`delete from login_sessions where expires_at < now() - interval '30 days' or (revoked_at is not null and revoked_at < now() - interval '30 days')`;
+}
+
+export async function handleCron(request) {
+  if (!authorized(request)) return json({ error: "Unauthorized." }, 401);
+  if (!configured()) return json({ ok: false, reason: "unconfigured" }, 503);
+  try {
+    await ready();
+    const reminders = await sendReminders();
+    await sweep();
+    console.info("Hearth cron", JSON.stringify({ reminders }));
+    return json({ ok: true, reminders });
+  } catch (error) {
+    console.error("Hearth cron failed", error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError");
+    return json({ ok: false }, 500);
+  }
+}
+
+export default {
+  async fetch(request) {
+    return await handleCron(request);
+  }
+};

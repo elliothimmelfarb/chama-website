@@ -47,6 +47,10 @@
     {
       "path": "/api/watchdog",
       "schedule": "5,35 * * * *"
+    },
+    {
+      "path": "/api/hearth-cron",
+      "schedule": "20 * * * *"
     }
   ],
   "headers": [

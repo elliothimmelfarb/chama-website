@@ -29,6 +29,7 @@ import { PERMISSIONS, ROLE_NAMES, sanitizePermissionList } from "../../lib/heart
 import { audit, auditor, EVENTS } from "../../lib/hearth/audit.js";
 import * as mail from "../../lib/hearth/mail.js";
 import { registerSessionRoutes } from "../../lib/hearth/routes/sessions.js";
+import { registerTranscriptRoutes } from "../../lib/hearth/routes/transcripts.js";
 import {
   availableProviders, providerConfig, verifyGoogleIdToken, issueState, consumeState,
   githubAuthorizeUrl, githubExchange, discordAuthorizeUrl, discordExchange
@@ -670,6 +671,7 @@ route("GET", "/admin/metrics", async (context) => {
 });
 
 registerSessionRoutes({ route, needs, readSettings });
+registerTranscriptRoutes({ route, needs, readSettings });
 
 /* ---------- dispatch ---------- */
 

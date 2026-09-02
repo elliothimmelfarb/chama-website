@@ -620,3 +620,7 @@ body {
   .hh-view > .view, .rise > *, .toast { animation: none; }
   .hh-fire { display: none; }
 }
+
+/* ---------- figures in the dark room ---------- */
+
+.hearth .figure { color: var(--text); margin-top: 0; max-width: none; }
