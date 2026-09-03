@@ -1029,23 +1029,51 @@
     }
 
     @media (max-width: 760px) {
+      /* Phones: the lockup and the Members pill share the first row as
+         real grid neighbours, so neither can ever sit on the other. The
+         lockup stacks its translation under the wordmark, with the mark
+         centred on the pair, and the wordmark scales with the viewport so
+         it always stops short of the pill. The notes take the row below. */
       .masthead {
-        position: relative;
-        grid-template-columns: 1fr;
-        gap: 1.15rem;
-      }
-
-      .members-link {
-        position: absolute;
-        top: clamp(1.2rem, 2.4vw, 2.3rem);
-        right: var(--pad);
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: clamp(0.9rem, 3vw, 1.5rem);
+        row-gap: 1.15rem;
+        align-items: center;
       }
 
       .masthead-name {
-        padding-right: 7rem;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: clamp(0.45rem, 1.8vw, 0.85rem);
+        row-gap: 0.15rem;
+        align-items: baseline;
+        white-space: normal;
+      }
+
+      .masthead-name .mark {
+        grid-row: 1 / 3;
+        align-self: center;
+      }
+
+      .wordmark {
+        font-size: clamp(1.05rem, 5.3vw, 1.35rem);
+      }
+
+      .wordmark-translation {
+        grid-column: 2;
+      }
+
+      .members-link {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: center;
+        padding: 0.36rem 0.68rem;
+        font-size: 0.66rem;
+        letter-spacing: 0.1em;
       }
 
       .masthead-notes {
+        grid-column: 1 / -1;
         grid-template-columns: 1fr 1fr;
       }
 
@@ -1124,10 +1152,6 @@
     }
 
     @media (max-width: 380px) {
-      .wordmark {
-        font-size: clamp(1.12rem, 6.3vw, 1.35rem);
-      }
-
       .masthead-notes {
         grid-template-columns: 1fr;
         gap: 0.7rem;
