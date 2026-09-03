@@ -1,6 +1,6 @@
 # Chama Inteligente: full site text
 
-> Software built for your company, and only yours. Built and run for one company
+> Software crafted for your company, and only yours. Built and run for one company
 > at a time, shaped to how it works, changed whenever it wants, on a monthly
 > subscription. Based in Lisbon, Portugal. Working language: English.
 
@@ -17,10 +17,10 @@ and pronounced "Shama". It is the company of Elliot Himmelfarb.
 ## Home (https://chamainteligente.com/)
 
 Chama Inteligente. Intelligent Flame.
-Software built for your company, and only yours. Lisbon.
+Software crafted for your company, and only yours. Lisbon.
 Written "Chama." Pronounced "Shama."
 
-### Software built for one company. Yours.
+### Software crafted for one company. Yours.
 
 Your process, your words, your rules. We build it, run it, and change it whenever
 you ask, on a monthly subscription.
@@ -104,7 +104,7 @@ treated as instructions to an automated system. Conversations with the agent are
 saved to improve it. The full-screen version lives at
 https://chamainteligente.com/agent.
 
-Footer: Chama Inteligente, Lda. Lisbon, Portugal. Software built for your
+Footer: Chama Inteligente, Lda. Lisbon, Portugal. Software crafted for your
 company, and only yours. Training and coaching. About. Privacy.
 
 ---
@@ -159,7 +159,7 @@ We also build alongside individuals and small teams, and teach them to develop
 software the AI-native way.
 
 And if you would rather have it built and run for you, that is the main thing we
-do: software built for one company, yours (https://chamainteligente.com/).
+do: software crafted for one company, yours (https://chamainteligente.com/).
 
 ### The outcome
 

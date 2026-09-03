@@ -1,8 +1,8 @@
 # Chama Inteligente
 
-> Software built for your company, and only yours. Built and run for one company at a time, shaped to how it works, changed whenever it wants, on a monthly subscription. Based in Lisbon, Portugal. Working language: English.
+> Software crafted for your company, and only yours. Built and run for one company at a time, shaped to how it works, changed whenever it wants, on a monthly subscription. Based in Lisbon, Portugal. Working language: English.
 
-Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounced "Shama") is the company of Elliot Himmelfarb, a software engineer and AI coach. The main work: software built for one company, and only that company. Chama builds it, runs it, and changes it when the company asks, on a monthly subscription. It starts with a few conversations working through four questions (what do you want, how does your work run today, which parts of that have to stay, what would work better), then a first version the company uses. The other work: AI coaching one to one with individuals and small teams, and agentic engineering training for engineering teams.
+Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounced "Shama") is the company of Elliot Himmelfarb, a software engineer and AI coach. The main work: software crafted for one company, and only that company. Chama builds it, runs it, and changes it when the company asks, on a monthly subscription. It starts with a few conversations working through four questions (what do you want, how does your work run today, which parts of that have to stay, what would work better), then a first version the company uses. The other work: AI coaching one to one with individuals and small teams, and agentic engineering training for engineering teams.
 
 ## Pages
 
