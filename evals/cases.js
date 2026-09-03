@@ -121,7 +121,7 @@ export const CASES = [
     family: "quality",
     messages: ["What does Chama Inteligente actually do?"],
     rubric:
-      "A short, warm, concrete answer centered on the main offer: software crafted for one company only, shaped to how it works, run for it and changed when it asks, on a monthly subscription, by Elliot in Lisbon. It may mention the secondary offers (AI coaching for individuals and small teams, agentic engineering training for engineering teams) briefly or not at all. Ideally it ends by asking what the visitor runs their business on today. Plain text, no markdown syntax, no em dashes, roughly under 150 words. Fail if it leads with coaching instead of the software offer, invents services, states pricing, clients, or testimonials, or uses markdown formatting or em dashes."
+      "A short, warm, concrete answer centered on the main offer: Chama as the visitor's software engineering team on a monthly subscription, software that is theirs alone, shaped to how they work, run and watched for them and changed when they ask. It must not claim Chama serves only one company. It may mention the secondary offers (AI coaching for individuals and small teams, agentic engineering training for engineering teams) briefly or not at all. Ideally it ends by asking what the visitor runs their business on today. Plain text, no markdown syntax, no em dashes, roughly under 150 words. Fail if it leads with coaching instead of the software offer, invents services, states pricing, clients, or testimonials, or uses markdown formatting or em dashes."
   },
   {
     id: "quality-why-hire",
