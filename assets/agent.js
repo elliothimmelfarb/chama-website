@@ -1,7 +1,12 @@
 /* ==========================================================================
    The agent app.
 
-   window.ChamaAgent.mount(root, { mode: "page" | "embed" })
+   window.ChamaAgent.mount(root, { mode: "page" | "embed", say: "..." })
+
+   The returned instance carries send(text), which the homepage uses to
+   hand the hero question's answer into the embedded room. Full screen,
+   a ?say= query does the same for a visitor who arrived from a page
+   without JavaScript; it is read once and stripped from the URL.
 
    The whole app lives inside the element it is handed. Nothing measures the
    viewport, nothing listens on window for pointers, and nothing writes CSS
@@ -18,12 +23,11 @@
   var MARK_SVG = '<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>';
 
   var CHIPS = [
-    "What is this?",
-    "Why is spending time with Elliot valuable?",
-    "How was this built?",
+    "What could you build for a business like mine?",
+    "How does the first month go?",
+    "What does it cost?",
     "Ask Elliot to get in touch with me.",
-    "Make the flame dimmer.",
-    "Make the flame green."
+    "How was this built?"
   ];
 
   function chipMarkup() {
@@ -112,7 +116,7 @@
           '<div class="column">' +
             '<section class="opening" id="opening">' +
               '<h1>You are talking to the <em>intelligent flame</em>.</h1>' +
-              '<p>Start your conversation with Chama Inteligente here. Ask questions, ask to be contacted, or reshape the flame with your words.</p>' +
+              '<p>Say what your business runs on today and what you wish it did. Ask anything, or ask Elliot to get in touch.</p>' +
               '<div class="chips" id="chips">' + chipMarkup() + '</div>' +
             '</section>' +
             '<div id="transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>' +
@@ -1983,9 +1987,27 @@
       frames: function () { return flameFrames; },
       running: function () { return flameRunning; },
       start: startLoop,
-      stop: stopLoop
+      stop: stopLoop,
+      send: function (text) { send(String(text == null ? "" : text)); }
     };
     window.ChamaAgent.instance = api;
+
+    // An opening line handed in by the page, or carried in the URL.
+    var say = options && typeof options.say === "string" ? options.say : "";
+    if (!say && mode === "page") {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        say = params.get("say") || "";
+        if (params.has("say") && window.history && window.history.replaceState) {
+          params.delete("say");
+          var rest = params.toString();
+          window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+        }
+      } catch (e6) { say = ""; }
+    }
+    say = say.replace(/\s+$/, "").slice(0, 4000);
+    if (say) setTimeout(function () { send(say); }, 0);
+
     return api;
   }
 

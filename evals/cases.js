@@ -121,7 +121,7 @@ export const CASES = [
     family: "quality",
     messages: ["What does Chama Inteligente actually do?"],
     rubric:
-      "A short, warm, concrete answer centered on AI and technology coaching and consulting with Elliot in Lisbon. Legitimate service shapes it may mention (all real): one-to-one coaching for individuals and small teams, embedding with a team, joining a company Slack for ongoing insight, teaching executives, improving the value of a company's AI spend, and building software the AI-native way. It should not try to list them all; a couple, then inviting the visitor's own situation, is the ideal. Plain text, no markdown syntax, no em dashes, roughly under 150 words. Fail if it invents services beyond those, states pricing, clients, or testimonials, or uses markdown formatting or em dashes."
+      "A short, warm, concrete answer centered on the main offer: software built for one company only, shaped to how it works, run for it and changed when it asks, on a monthly subscription, by Elliot in Lisbon. It may mention the secondary offers (AI coaching for individuals and small teams, agentic engineering training for engineering teams) briefly or not at all. Ideally it ends by asking what the visitor runs their business on today. Plain text, no markdown syntax, no em dashes, roughly under 150 words. Fail if it leads with coaching instead of the software offer, invents services, states pricing, clients, or testimonials, or uses markdown formatting or em dashes."
   },
   {
     id: "quality-why-hire",
@@ -133,7 +133,7 @@ export const CASES = [
   {
     id: "quality-pricing-unknown",
     family: "quality",
-    messages: ["What does a coaching engagement cost per month?"],
+    messages: ["What does the software subscription cost per month?"],
     rubric:
       "The agent does not know prices and must say so plainly, without inventing a number or a range, and offer the path: leaving contact information so Elliot can get back to them. Fail if any price, range, or currency figure is stated or implied as fact."
   },
@@ -158,6 +158,28 @@ export const CASES = [
     expectTool: { send_note_to_elliot: "afterConfirmation" },
     rubric:
       "The visitor gives a phone number and no email, which is a complete and valid way to be reached. First reply: the agent composes the note with name Miguel Costa, the number in the WhatsApp field, no email, his request in his words, shows every field, and asks for confirmation WITHOUT calling the tool. It must not demand an email address or claim one is required. Second reply, after the yes: the tool is called with those details. Fail if the agent insists on an email, invents one, fires the tool before confirmation, or never sends after the clear yes."
+  },
+  {
+    id: "quality-software-wish",
+    family: "quality",
+    messages: [
+      "Orders come in on WhatsApp and email, I copy them into a spreadsheet, then into the invoicing app, and I still lose track of what has shipped."
+    ],
+    expectTool: { send_note_to_elliot: "none" },
+    rubric:
+      "The visitor has answered the home page question. The agent should build on what they said without making them repeat it: reflect the picture back briefly (three places, double entry, shipping lost), and ask one focused follow-up question (for example what they use for invoicing, how many orders a day, or what they most want to stop doing by hand). It may say plainly that software of their own could take orders from those channels into one place and track shipping. It must ask at most one question in this reply, must not send a note, must not quote a price or timeline, and must not pitch coaching. Plain text, no markdown, no em dashes, under 130 words."
+  },
+  {
+    id: "quality-contact-phone-not-whatsapp",
+    family: "quality",
+    messages: [
+      "Yes please have Elliot call me. Ana Ferreira, +351 933 000 111. It is about replacing the spreadsheet we run the workshop on.",
+      "No, that number is not on WhatsApp, it is a landline.",
+      "Yes, send it."
+    ],
+    expectTool: { send_note_to_elliot: "afterConfirmation" },
+    rubric:
+      "First reply: the visitor gave a name and a phone number, so the agent asks exactly one question, whether the number is a WhatsApp number, and does not ask for an email. Second reply, after learning it is not WhatsApp: the agent composes the note with name Ana Ferreira, the number in the WhatsApp field, no email, her request in her words with the line 'Phone, not WhatsApp.' at the end of the request text, shows every field, and asks for confirmation without calling the tool. Third reply, after the yes: the tool is called with those details. Fail if the agent asks for an email, drops the number because it is not WhatsApp, omits the 'Phone, not WhatsApp.' marker, fires the tool before confirmation, or never sends after the clear yes."
   },
   {
     id: "quality-config-request",
