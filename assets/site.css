@@ -186,20 +186,36 @@ body {
 }
 
 .hero {
-  /* Height is capped by width too: the headline scales with vw, so a
-     rem/svh-only floor opens a dead band on tall narrow viewports. */
-  min-height: min(54rem, calc(100svh - 7.8rem), calc(32vw + 22rem));
+  /* The room is the page's second panel, so the hero stops short of the
+     fold: its dark top edge should show on the first screen. Height is
+     capped by width too: the headline scales with vw, so a rem/svh-only
+     floor opens a dead band on tall narrow viewports. */
+  min-height: min(36rem, calc(100svh - 19rem), calc(22vw + 14rem));
   display: grid;
-  grid-template-rows: 1fr auto;
-  padding-top: clamp(3.3rem, 8vh, 7.2rem);
-  padding-bottom: clamp(2.5rem, 5vw, 5rem);
+  grid-template-rows: 1fr auto auto;
+  padding-top: clamp(2.2rem, 5vh, 4rem);
+  padding-bottom: clamp(1.2rem, 2vw, 1.6rem);
+}
+
+/* The seam into the room: a small label sitting on the paper's last line. */
+.start-label {
+  margin: clamp(1.8rem, 3vw, 2.4rem) 0 0;
+  color: var(--ember);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.start-label::after {
+  content: " \2193";
 }
 
 .hero h1 {
   align-self: center;
   margin: 0;
   max-width: 12ch;
-  font-size: clamp(3.55rem, 9.2vw, 8.8rem);
+  font-size: clamp(3.3rem, 8.2vw, 7.6rem);
   font-weight: 500;
   letter-spacing: -0.075em;
   line-height: 0.86;
@@ -224,7 +240,7 @@ body {
   grid-template-columns: minmax(8rem, 1fr) minmax(17rem, 36rem);
   gap: clamp(2rem, 8vw, 9rem);
   align-items: start;
-  margin-top: clamp(4rem, 10vh, 8rem);
+  margin-top: clamp(2.2rem, 5vh, 4rem);
 }
 
 .ember-line {
@@ -244,7 +260,7 @@ body {
 
 .hero-deck {
   margin: 0;
-  font-size: clamp(1.35rem, 2.4vw, 2.15rem);
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
   font-weight: 400;
   letter-spacing: -0.035em;
   line-height: 1.15;
@@ -492,25 +508,6 @@ body {
    the ceiling of the room instead of an orphan title card above it.
    The cut itself is the move the outcome block already makes, so the
    room arrives in the page's own language. */
-.contact {
-  background: #0e0c0a;
-  color: #ece7dc;
-}
-
-.contact-inner {
-  border-top: 0;
-  padding-top: clamp(4rem, 8vw, 8rem);
-  padding-bottom: clamp(2.6rem, 5vw, 4.5rem);
-}
-
-.contact .section-label {
-  color: #8d867c;
-}
-
-.contact .section-copy h2 {
-  margin-bottom: 0;
-}
-
 .flame-room {
   width: 100%;
   height: max(36rem, min(100svh, 58rem));
@@ -673,8 +670,8 @@ footer {
   }
 
   .hero {
-    min-height: min(calc(100svh - 10.5rem), calc(62vw + 30rem));
-    padding-top: clamp(3rem, 9vh, 5.2rem);
+    min-height: min(calc(100svh - 24rem), calc(50vw + 12rem));
+    padding-top: clamp(2.4rem, 6vh, 3.6rem);
   }
 
   .hero h1 {
@@ -754,96 +751,6 @@ footer {
 
   .hero {
     min-height: auto;
-  }
-}
-
-/* The hero's question. The deck line became a prompt: one question, a
-   box to answer it in, and a send. With JavaScript the answer goes into
-   the flame room at the bottom of this page; without it the form is a
-   plain GET to /agent, which reads the answer from the query string. */
-.hero-ask {
-  margin: 0;
-}
-
-.hero-ask .hero-deck {
-  margin-bottom: clamp(1.2rem, 2.4vw, 2rem);
-}
-
-.hero-ask-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  align-items: end;
-}
-
-.hero-ask textarea {
-  width: 100%;
-  min-height: 3.4rem;
-  margin: 0;
-  padding: 0.85rem 0.95rem;
-  border: 1px solid var(--ink);
-  border-radius: 0;
-  background: #fff;
-  color: var(--ink);
-  font: inherit;
-  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
-  letter-spacing: -0.02em;
-  line-height: 1.35;
-  resize: vertical;
-}
-
-.hero-ask textarea::placeholder {
-  color: var(--quiet);
-  opacity: 1;
-}
-
-.hero-ask textarea:focus-visible {
-  outline: 2px solid var(--ember);
-  outline-offset: 2px;
-}
-
-.hero-ask button {
-  appearance: none;
-  margin: 0;
-  padding: 0.95rem 1.4rem;
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--paper);
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease;
-}
-
-.hero-ask button:hover,
-.hero-ask button:focus-visible {
-  background: var(--ember);
-  border-color: var(--ember);
-}
-
-.hero-ask button:focus-visible {
-  outline: 2px solid var(--ember);
-  outline-offset: 3px;
-}
-
-.hero-ask-note {
-  margin: 0.9rem 0 0;
-  color: var(--quiet);
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-@media (max-width: 40rem) {
-  .hero-ask-row {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-ask button {
-    justify-self: start;
   }
 }
 

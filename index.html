@@ -15,8 +15,7 @@
   <script src="/assets/flame.js" defer fetchpriority="low"></script>
   <script src="/assets/agent.js" defer fetchpriority="low"></script>
   <script src="/assets/figures.js" defer></script>
-  <meta name="description" content="Chama Inteligente builds and runs software for one company at a time, shaped to how that company works and changed whenever it wants, on a monthly subscription. Elliot Himmelfarb, Lisbon.">
-  <meta name="author" content="Elliot Himmelfarb">
+  <meta name="description" content="Chama Inteligente builds and runs software for one company at a time, shaped to how that company works and changed whenever it wants, on a monthly subscription. Lisbon, Portugal.">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="theme-color" content="#f3f0e8">
@@ -75,8 +74,6 @@
           "addressLocality": "Lisbon",
           "addressCountry": "PT"
         },
-        "founder": { "@id": "https://chamainteligente.com/#founder" },
-        "employee": { "@id": "https://chamainteligente.com/#founder" },
         "knowsLanguage": {
           "@type": "Language",
           "name": "English",
@@ -154,33 +151,6 @@
         }
       },
       {
-        "@type": "Person",
-        "@id": "https://chamainteligente.com/#founder",
-        "name": "Elliot Himmelfarb",
-        "givenName": "Elliot",
-        "familyName": "Himmelfarb",
-        "jobTitle": "AI and technology coach and consultant",
-        "description": "Software engineer since 2016. Since 2023 nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change.",
-        "url": "https://chamainteligente.com/",
-        "knowsLanguage": {
-          "@type": "Language",
-          "name": "English",
-          "alternateName": "en"
-        },
-        "knowsAbout": [
-          "Artificial intelligence",
-          "AI coaching",
-          "AI-native software development",
-          "Agentic engineering",
-          "Software engineering"
-        ],
-        "sameAs": [
-          "https://www.linkedin.com/in/elliot-himmelfarb-14347976/",
-          "https://github.com/elliothimmelfarb"
-        ],
-        "worksFor": { "@id": "https://chamainteligente.com/#organization" }
-      },
-      {
         "@type": "ImageObject",
         "@id": "https://chamainteligente.com/#primaryimage",
         "url": "https://chamainteligente.com/og.png",
@@ -213,7 +183,7 @@
         "dateModified": "2026-09-03",
         "speakable": {
           "@type": "SpeakableSpecification",
-          "cssSelector": ["#opening-title", "#offer-title"]
+          "cssSelector": ["#opening-title", ".hero-deck"]
         }
       },
       {
@@ -245,7 +215,6 @@
       <p><strong>Software built for your company, and only yours</strong>Lisbon</p>
       <p><strong>Written &ldquo;Chama.&rdquo;</strong>Pronounced &ldquo;Shama.&rdquo;</p>
     </div>
-    <a class="members-link" href="/hearth">Members</a>
   </header>
 
   <main id="main-content">
@@ -256,19 +225,15 @@
         <span class="line-three">Yours.</span>
       </h1>
       <div class="hero-bottom">
-        <div>
-          <p class="section-label">Start here</p>
-          <div class="ember-line" aria-hidden="true"></div>
-        </div>
-        <form class="hero-ask" id="hero-ask" action="/agent" method="get">
-          <label class="hero-deck" for="hero-ask-input">What do you wish the software you run your business on could do?</label>
-          <div class="hero-ask-row">
-            <textarea id="hero-ask-input" name="say" rows="2" maxlength="4000" placeholder="Orders still get retyped into three places" required></textarea>
-            <button type="submit">Send</button>
-          </div>
-          <p class="hero-ask-note">Your answer goes to the agent on this page. Nothing reaches Elliot until you say so.</p>
-        </form>
+        <div class="ember-line" aria-hidden="true"></div>
+        <p class="hero-deck">Your process, your words, your rules. We build it, run it, and change it whenever you ask, on a monthly subscription.</p>
       </div>
+      <p class="start-label" aria-hidden="true">Start here</p>
+    </section>
+
+    <section class="flame-room" id="talk" aria-label="Tell us what you wish your software could do">
+      <div id="agent-embed"></div>
+      <noscript><p class="flame-noscript">The conversation needs JavaScript. Email contact@chamainteligente.com and we will get back to you.</p></noscript>
     </section>
 
     <section class="frame content-section" aria-labelledby="offer-title">
@@ -276,7 +241,7 @@
       <div class="section-copy">
         <h2 id="offer-title"><span class="ember-accent">Your own</span> engineering team, on a monthly subscription.</h2>
         <p>Chama builds software for one company at a time. It runs your business in your words, it does what you do, and nobody else uses it.</p>
-        <p>When you want it to do something new, tell Elliot. There is no other customer ahead of you and no roadmap to wait for.</p>
+        <p>When you want it to do something new, tell us. There is no other customer ahead of you and no roadmap to wait for.</p>
         <p>One subscription covers building it, running it, and changing it as often as you like.</p>
         <p>AI made this affordable. Software for one company used to need a team on payroll. Now it needs a subscription and a few conversations.</p>
       </div>
@@ -294,7 +259,7 @@
             <li>Which parts of that have to stay?</li>
             <li>What would work better?</li>
           </ol>
-          <p>Then Elliot builds a first version and you use it. Keep it, change it, or stop there.</p>
+          <p>Then we build a first version and you use it. Keep it, change it, or stop there.</p>
         </div>
       </div>
     </section>
@@ -316,7 +281,7 @@
         <div class="shape-details">
           <p>Owning your software used to mean hiring an engineering team and carrying it for years. AI-native development has changed the cost of both. Software shaped to one company is now something that company can afford to own.</p>
           <p>We build it with you and maintain it. It bakes in how you work: your vocabulary, your process, your rules.</p>
-          <p>When you want to work differently, tell Elliot how. The software changes with you.</p>
+          <p>When you want to work differently, tell us how. The software changes with you.</p>
           <svg class="figure figure-wide" viewBox="0 0 560 240" role="img" aria-labelledby="fig-own-t"><title id="fig-own-t">Three stages, left to right. A company's irregular shape is drawn and an ember outline tightens around it, labeled how you work now. The shape changes, and the ember outline follows it, labeled you change it. It changes again, and the outline follows again, labeled and again: it still fits.</title><g transform="translate(95 110)"><path class="draw" pathLength="1" style="--dur:700ms" d="M0 -52 42 -14 26 44 -22 52 -48 2Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="fade" style="--d:700ms" d="M0 -52 42 -14 26 44 -22 52 -48 2Z" fill="currentColor" fill-opacity=".05"/><g class="hug" style="--d:800ms;--dur:700ms"><path class="draw" pathLength="1" style="--d:800ms;--dur:700ms" d="M-0.7 -64.8 52.2 -17 33.1 51.9 -27 62 -58.8 0.7Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/></g></g><path class="draw" pathLength="1" style="--d:1600ms;--dur:300ms" d="M172 110H206" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/><path class="head" pathLength="1" style="--d:1600ms;--dur:300ms" d="M172 110H206" stroke="#f4581f" stroke-width="6"/><path class="fade" style="--d:1850ms" d="M200 104 207 110 200 116" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><g transform="translate(280 110)"><path class="ghost" pathLength="1" style="--d:1900ms;--dur:450ms;--gd:2900ms" d="M0 -52 42 -14 26 44 -22 52 -48 2Z" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:2200ms;--dur:700ms" d="M0 -52 42 -14 52 36 -22 52 -36 -4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="fade" style="--d:2900ms" d="M0 -52 42 -14 52 36 -22 52 -36 -4Z" fill="currentColor" fill-opacity=".05"/><g class="hug" style="--d:3000ms;--dur:700ms"><path class="draw" pathLength="1" style="--d:3000ms;--dur:700ms" d="M-1.3 -65.3 50.2 -18.7 62.6 42.9 -28.6 62.6 -45.8 -6Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/></g></g><path class="draw" pathLength="1" style="--d:3800ms;--dur:300ms" d="M357 110H391" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/><path class="head" pathLength="1" style="--d:3800ms;--dur:300ms" d="M357 110H391" stroke="#f4581f" stroke-width="6"/><path class="fade" style="--d:4050ms" d="M385 104 392 110 385 116" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><g transform="translate(465 110)"><path class="ghost" pathLength="1" style="--d:4100ms;--dur:450ms;--gd:5100ms" d="M0 -52 42 -14 52 36 -22 52 -36 -4Z" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2" stroke-linejoin="round"/><path class="draw" pathLength="1" style="--d:4400ms;--dur:700ms" d="M8 -56 54 -22 40 50 -30 44 -52 4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="fade" style="--d:5100ms" d="M8 -56 54 -22 40 50 -30 44 -52 4Z" fill="currentColor" fill-opacity=".05"/><g class="hug" style="--d:5200ms;--dur:700ms"><path class="draw" pathLength="1" style="--d:5200ms;--dur:700ms" d="M7.1 -67.8 63.9 -25.9 47.3 59.7 -35.6 52.6 -63.1 2.4Z" fill="none" stroke="#f4581f" stroke-width="1.6" stroke-linejoin="round"/></g></g><g font-size="11" font-weight="700" letter-spacing="1.4" text-anchor="middle" fill="currentColor"><text class="fade" style="--d:1500ms" x="95" y="207">HOW YOU WORK NOW</text><text class="fade" style="--d:3700ms" x="280" y="207">YOU CHANGE IT</text><text class="fade" style="--d:5900ms" x="465" y="207" fill="#f4581f">AND AGAIN</text></g><g font-size="10" text-anchor="middle" fill="currentColor" fill-opacity=".55"><text class="fade" style="--d:1600ms" x="95" y="223">the software fits it</text><text class="fade" style="--d:3800ms" x="280" y="223">the software follows</text><text class="fade" style="--d:6000ms" x="465" y="223">it still fits</text></g></svg>
         </div>
       </div>
@@ -339,34 +304,19 @@
       <div class="section-copy">
         <div class="also-links">
           <a href="/training">We also train engineering teams and coach individuals.</a>
-          <a href="/about">About Elliot and the company.</a>
+          <a href="/about">About Chama.</a>
         </div>
       </div>
     </section>
 
-    <section class="contact" aria-labelledby="contact-title">
-      <div class="frame content-section contact-inner">
-        <p class="section-label">Get in touch</p>
-        <div class="section-copy">
-          <h2 id="contact-title">Tell us what you wish your <span class="ember-accent">software</span> did.</h2>
-        </div>
-      </div>
-    </section>
-    <section class="flame-room" id="talk" aria-label="Talk to the agent">
-      <div id="agent-embed"></div>
-      <noscript><p class="flame-noscript">The conversation needs JavaScript. Email contact@chamainteligente.com and Elliot will get back to you.</p></noscript>
-    </section>
   </main>
 
-  <footer class="footer-quiet">
+  <footer class="page-end">
     <div class="frame footer-inner">
       <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
       <div class="footer-social">
         <a class="social-link" href="https://www.linkedin.com/company/chama-inteligente/" rel="noopener" target="_blank" aria-label="Chama Inteligente on LinkedIn">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
-        </a>
-        <a class="social-link" href="https://github.com/elliothimmelfarb" rel="me noopener" target="_blank" aria-label="Elliot Himmelfarb on GitHub">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.2.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
         </a>
       </div>
       <p>Software built for your company, and only yours &middot; <a href="/training">Training and coaching</a> &middot; <a href="/about">About</a> &middot; <a href="/privacy">Privacy</a></p>
@@ -375,30 +325,9 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       var host = document.getElementById("agent-embed");
-      var agent = (host && window.ChamaAgent) ? window.ChamaAgent.mount(host, { mode: "embed" }) : null;
-
-      // The hero's question hands its answer to the room at the bottom of
-      // the page. Without the agent (no script, or it failed to load) the
-      // form keeps its native GET to /agent, which reads the answer itself.
-      var form = document.getElementById("hero-ask");
-      var input = document.getElementById("hero-ask-input");
-      if (!form || !input) return;
-      form.addEventListener("submit", function (ev) {
-        if (!agent || typeof agent.send !== "function") return;
-        var text = input.value.replace(/\s+$/, "");
-        if (!text) return;
-        ev.preventDefault();
-        input.value = "";
-        agent.send(text);
-        var room = document.getElementById("talk");
-        if (room) room.scrollIntoView({ behavior: "smooth", block: "end" });
-      });
-      input.addEventListener("keydown", function (ev) {
-        if (ev.key === "Enter" && !ev.shiftKey) {
-          ev.preventDefault();
-          if (form.requestSubmit) form.requestSubmit(); else form.submit();
-        }
-      });
+      if (host && window.ChamaAgent) {
+        window.ChamaAgent.mount(host, { mode: "embed" });
+      }
     });
   </script>
   <script type="speculationrules">

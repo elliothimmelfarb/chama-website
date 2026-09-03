@@ -22,9 +22,14 @@ Written "Chama." Pronounced "Shama."
 
 ### Software built for one company. Yours.
 
-Start here. What do you wish the software you run your business on could do?
-(A text box, and a Send. The answer goes to the agent on this page. Nothing
-reaches Elliot until you say so.)
+Your process, your words, your rules. We build it, run it, and change it whenever
+you ask, on a monthly subscription.
+
+Start here. The second panel of the page is the conversation: a live Claude agent
+that opens with the question "What do you wish the software you run your business
+on could do?" Say it plainly. It asks a question or two, and when you are ready it
+takes a name and a way to reach you. Your contact details are sent only when you
+confirm them.
 
 ### The offer
 
@@ -33,8 +38,8 @@ Your own engineering team, on a monthly subscription.
 Chama builds software for one company at a time. It runs your business in your
 words, it does what you do, and nobody else uses it.
 
-When you want it to do something new, tell Elliot. There is no other customer
-ahead of you and no roadmap to wait for.
+When you want it to do something new, tell us. There is no other customer ahead
+of you and no roadmap to wait for.
 
 One subscription covers building it, running it, and changing it as often as you
 like.
@@ -53,8 +58,7 @@ We meet a few times and work through four questions.
 3. Which parts of that have to stay?
 4. What would work better?
 
-Then Elliot builds a first version and you use it. Keep it, change it, or stop
-there.
+Then we build a first version and you use it. Keep it, change it, or stop there.
 
 ### Software
 
@@ -77,7 +81,7 @@ company is now something that company can afford to own.
 We build it with you and maintain it. It bakes in how you work: your vocabulary,
 your process, your rules.
 
-When you want to work differently, tell Elliot how. The software changes with you.
+When you want to work differently, tell us how. The software changes with you.
 
 ### The outcome
 
@@ -88,21 +92,16 @@ Decide how you want to work. Then run on software that works that way.
 ### Also
 
 We also train engineering teams and coach individuals (https://chamainteligente.com/training).
-About Elliot and the company (https://chamainteligente.com/about).
+About Chama (https://chamainteligente.com/about).
 
-### Get in touch
+### Getting in touch
 
-Tell us what you wish your software did. The home page ends with the conversation:
-a live Claude agent, burning as the brand mark come alive, that Elliot configured
-for this site. Say what your business runs on today and what you wish it did. Ask
-anything, or ask Elliot to get in touch.
-
-A note to Elliot carries a name, one way to reach you (email, or a WhatsApp or
-phone number), and what you would like to be able to do, and is sent only after
-the visitor approves it word for word. Notes are stored privately and emailed to
-contact@chamainteligente.com for Elliot to review. They are not used for
-marketing or treated as instructions to an automated system. Conversations with
-the agent are saved to improve it. The full-screen version lives at
+A note carries a name, one way to reach you (email, or a WhatsApp or phone
+number), and what you would like to be able to do, and is sent only after the
+visitor approves it word for word. Notes are stored privately and emailed to
+contact@chamainteligente.com, read by a person, never used for marketing or
+treated as instructions to an automated system. Conversations with the agent are
+saved to improve it. The full-screen version lives at
 https://chamainteligente.com/agent.
 
 Footer: Chama Inteligente, Lda. Lisbon, Portugal. Software built for your
@@ -179,8 +178,33 @@ Want to talk it through? Start a conversation and ask Elliot to get in touch
 
 ### A small company in Lisbon, working in English.
 
-Chama Inteligente, Lda. is the practice of Elliot Himmelfarb. Chama is Portuguese
-for flame.
+Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the
+two of us who keep it lit.
+
+### Elliot Himmelfarb
+
+AI and technology coach and consultant.
+
+Since 2023, nearly all of his work has been devoted to learning what the most capable
+AI systems can do, applying them to real work, teaching others, and keeping pace as
+those capabilities change. Before that, he was a software engineer, starting in 2016.
+
+You get the benefit of that accumulated judgment and experience when you spend time
+with him.
+
+### Get in touch
+
+Want to talk it through? Start a conversation and ask Elliot to get in touch
+(https://chamainteligente.com/agent).
+
+---
+
+## About (https://chamainteligente.com/about)
+
+### A small company in Lisbon, working in English.
+
+Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the
+two of us who keep it lit.
 
 ### Elliot Himmelfarb
 

@@ -23,11 +23,11 @@
   var MARK_SVG = '<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>';
 
   var CHIPS = [
-    "What could you build for a business like mine?",
-    "How does the first month go?",
-    "What does it cost?",
-    "Ask Elliot to get in touch with me.",
-    "How was this built?"
+    "Orders get retyped into three places.",
+    "Our monthly reports are assembled by hand.",
+    "Half our work is tracked outside the system.",
+    "What would this cost?",
+    "Leave my contact details."
   ];
 
   function chipMarkup() {
@@ -115,8 +115,10 @@
         '<main class="stage" id="stage">' +
           '<div class="column">' +
             '<section class="opening" id="opening">' +
-              '<h1>You are talking to the <em>intelligent flame</em>.</h1>' +
-              '<p>Say what your business runs on today and what you wish it did. Ask anything, or ask Elliot to get in touch.</p>' +
+              (page
+                ? '<h1>You are talking to the <em>intelligent flame</em>.</h1>'
+                : '<h1>What do you wish the software you run your business on <em>could do</em>?</h1>') +
+              '<p>Say it plainly. We ask a question or two, and when you are ready we take a name and a way to reach you.</p>' +
               '<div class="chips" id="chips">' + chipMarkup() + '</div>' +
             '</section>' +
             '<div id="transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>' +
@@ -130,13 +132,13 @@
             '</div>' +
             '<form class="bar" id="bar" autocomplete="off">' +
               '<label class="visually-hidden" for="composer-input">Your message to the agent</label>' +
-              '<textarea id="composer-input" rows="1" maxlength="4000" placeholder="Say something." enterkeyhint="send"></textarea>' +
+              '<textarea id="composer-input" rows="1" maxlength="4000" placeholder="Tell us what gets in your way" enterkeyhint="send"></textarea>' +
               '<button type="submit" class="send" id="send" aria-label="Send message">' +
                 '<svg class="send-arrow" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>' +
                 '<span class="send-orb" aria-hidden="true"></span>' +
               '</button>' +
             '</form>' +
-            '<p class="fineprint">Conversations are saved to improve the agent. A note reaches Elliot only when you confirm it. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
+            '<p class="fineprint">Conversations are saved to improve the agent. Your contact details are sent only when you confirm them. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -897,7 +899,7 @@
       el.className = "turn " + (who === "you" ? "turn-you" : "turn-flame");
       var label = document.createElement("span");
       label.className = "turn-label";
-      label.textContent = who === "you" ? "You" : "The flame";
+      label.textContent = who === "you" ? "You" : "Chama";
       var body = document.createElement("p");
       body.className = "turn-body";
       if (text) body.textContent = text;
@@ -1127,7 +1129,7 @@
       el.setAttribute("aria-hidden", "true");
       var label = document.createElement("span");
       label.className = "turn-label";
-      label.textContent = "The flame";
+      label.textContent = "Chama";
       var body = document.createElement("p");
       body.className = "turn-body";
       var wrap = document.createElement("span");
@@ -1475,7 +1477,7 @@
               body = null;
               if (reply) { history.push({ role: "assistant", content: reply }); reply = ""; }
               launchSpark();
-              addSystem("A note was sent to Elliot.", true);
+              addSystem("Sent. We will get back to you.", true);
               showThinking();   // whatever it says next is still on its way
             } else {
               addSystem("The note could not be sent.");

@@ -297,12 +297,22 @@ body.chama-agent-page {
 
 /* with no brand link beside it, the right cluster is the whole bar, so the
    HUD keeps the same right-aligned run it has on the full screen page */
-.chama-agent-mode-embed .topbar-right { flex: 1 1 auto; }
+.chama-agent-mode-embed .topbar-right { flex: 1 1 auto; justify-content: flex-end; }
 
-/* On the home page the paper headline just above the room already says
-   "Talk to the intelligent flame", so the opening keeps only its line
-   of instruction. Full screen at /agent keeps the greeting. */
-.chama-agent-mode-embed .opening h1 { display: none; }
+/* Embedded on the home page the room is the page's second panel and its
+   opening line is the question the whole page exists to ask, so it keeps
+   a headline, one size down from the full screen greeting. The session
+   readout and the tune button are instruments for the full screen room;
+   the panel on the home page is for the visitor's business, so they stay
+   out of sight (the agent can still tune the flame when asked). */
+.chama-agent-mode-embed .opening h1 {
+  font-size: clamp(1.9rem, 5cqw, 3.4rem);
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+  max-width: 18ch;
+}
+.chama-agent-mode-embed .hud,
+.chama-agent-mode-embed .tune-wrap { display: none; }
 
 /* Embedded, the room's top edge is already a hard cut from paper into the
    dark, so the bar keeps its glass but drops its rule: one seam, not two.

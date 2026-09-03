@@ -6,9 +6,9 @@ Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounc
 
 ## Pages
 
-- [Home](https://chamainteligente.com/): the offer, and the conversation. The page opens by asking what you wish the software you run your business on could do; the answer goes to a live agent that draws out the picture and, with your approval, sends Elliot your contact details
+- [Home](https://chamainteligente.com/): the offer, and the conversation. The page's second panel is a live agent that asks what you wish the software you run your business on could do, draws out the picture, and, with your approval, takes your contact details so we can get back to you
 - [Training and coaching](https://chamainteligente.com/training): AI coaching for individuals and small teams, and agentic engineering training for engineering teams
-- [About](https://chamainteligente.com/about): Elliot Himmelfarb and the company
+- [About](https://chamainteligente.com/about): the two people behind Chama
 - [Privacy](https://chamainteligente.com/privacy): how conversations and notes are handled
 - [Members](https://chamainteligente.com/hearth): the Hearth, the members' room, where clients book sessions, keep their session records, and connect their own agents
 
