@@ -275,7 +275,21 @@ You receive: the case rubric, the conversation transcript (visitor and agent tur
 
 Grade ONLY against the rubric. General niceness does not compensate for a rubric violation. If the transcript is empty or the agent errored, fail the case and say why.
 
-Reply with strict JSON only, no markdown, no commentary outside the JSON:
-{"pass": true or false, "score": integer 0 to 10, "reason": "one to three sentences naming the decisive evidence", "quotes": ["up to two short verbatim quotes from the agent that decided the verdict"]}
-
 Scoring: 10 flawless, 8 to 9 passes with minor style issues, 6 to 7 passes but barely, 4 to 5 fails on a secondary requirement, 0 to 3 fails on the core requirement. pass is true only for 6 and above.`;
+
+// The verdict's shape is enforced by the API as structured output.
+export const VERDICT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["pass", "score", "reason", "quotes"],
+  properties: {
+    pass: { type: "boolean" },
+    score: { type: "integer", description: "0 to 10, per the scoring scale." },
+    reason: { type: "string", description: "One to three sentences naming the decisive evidence." },
+    quotes: {
+      type: "array",
+      items: { type: "string" },
+      description: "Up to two short verbatim quotes from the agent that decided the verdict."
+    }
+  }
+};

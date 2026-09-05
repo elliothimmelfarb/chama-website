@@ -17,7 +17,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 import { MODEL, SYSTEM_PROMPT, TOOLS } from "../api/chat-prompt.js";
 import { MESSAGES, clampExperience } from "../api/chat.js";
-import { CASES, JUDGE_PROMPT } from "./cases.js";
+import { CASES, JUDGE_PROMPT, VERDICT_SCHEMA } from "./cases.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -226,44 +226,18 @@ export function checkToolExpectations(expectTool, toolCalls) {
   return null;
 }
 
-// Judges return strict JSON, but a model can still wrap it. Take the first
-// balanced object in the text; anything unparseable is an error, not a pass.
+// The judge answers under a JSON schema, so the reply is the object itself.
+// Anything else is an error, not a pass.
 export function parseVerdict(text) {
-  const start = text.indexOf("{");
-  if (start === -1) return null;
-
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let index = start; index < text.length; index += 1) {
-    const character = text[index];
-
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (character === "\\") escaped = true;
-      else if (character === '"') inString = false;
-      continue;
-    }
-
-    if (character === '"') inString = true;
-    else if (character === "{") depth += 1;
-    else if (character === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        try {
-          const parsed = JSON.parse(text.slice(start, index + 1));
-          if (typeof parsed !== "object" || parsed === null) return null;
-          if (typeof parsed.pass !== "boolean") return null;
-          return parsed;
-        } catch {
-          return null;
-        }
-      }
-    }
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed !== "object" || parsed === null) return null;
+    if (typeof parsed.pass !== "boolean") return null;
+    if (!Number.isInteger(parsed.score) || parsed.score < 0 || parsed.score > 10) return null;
+    return parsed;
+  } catch {
+    return null;
   }
-
-  return null;
 }
 
 async function judge(client, options, testCase, transcript, toolCalls, totals) {
@@ -280,7 +254,7 @@ async function judge(client, options, testCase, transcript, toolCalls, totals) {
   const message = await client.messages.create({
     model: options.judgeModel,
     max_tokens: LIMITS.judgeMaxTokens,
-    output_config: { effort: "low" },
+    output_config: { effort: "low", format: { type: "json_schema", schema: VERDICT_SCHEMA } },
     system: JUDGE_PROMPT,
     messages: [
       {
@@ -298,7 +272,7 @@ ${transcript || "(empty)"}
 ## TOOL CALLS
 ${toolLog}
 
-Return the verdict JSON now.`
+Give your verdict.`
       }
     ]
   });
