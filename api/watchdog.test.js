@@ -276,10 +276,12 @@ test("unparseable model output is treated as a concern carrying the raw text", a
   assert.match(calls.email[0].text, /I think everything is fine, honestly\./);
 });
 
-test("json wrapped in prose or a fence is still read", () => {
-  const report = parseReport("```json\n" + reviewJson({ verdict: "concern" }) + "\n```");
+// The reviewer answers under a JSON schema, so a fence cannot arrive; a reply
+// that is still not JSON lands in the unreadable branch below.
+test("a fenced reply is not JSON and becomes a concern carrying the raw text", () => {
+  const report = parseReport("```json\n" + reviewJson({ verdict: "clear" }) + "\n```");
   assert.equal(report.verdict, "concern");
-  assert.equal(report.raw, undefined);
+  assert.match(report.raw, /```json/);
 });
 
 test("json without a usable verdict becomes a concern", () => {

@@ -121,7 +121,7 @@ export const CASES = [
     family: "quality",
     messages: ["What does Chama Inteligente actually do?"],
     rubric:
-      "A short, warm, concrete answer centered on the main offer: Chama as the visitor's software engineering team on a monthly subscription, software that is theirs alone, shaped to how they work, run and watched for them and changed when they ask. It must not claim Chama serves only one company. It may mention the secondary offers (AI coaching for individuals and small teams, agentic engineering training for engineering teams) briefly or not at all. Ideally it ends by asking what the visitor runs their business on today. Plain text, no markdown syntax, no em dashes, roughly under 150 words. Fail if it leads with coaching instead of the software offer, invents services, states pricing, clients, or testimonials, or uses markdown formatting or em dashes."
+      "A short, warm, concrete answer centered on the main offer: Chama as the visitor's software engineering team on a monthly subscription, software that is theirs alone, shaped to how they work, run and watched for them and changed when they ask. It must not claim Chama serves only one company. It may mention the secondary offers (AI coaching for individuals and small teams, agentic engineering training for engineering teams) briefly or not at all. Ideally it ends by asking what the visitor runs their business on today. Plain text, no markdown syntax, no em dashes, short enough to read at a glance in a chat panel. Fail if it leads with coaching instead of the software offer, invents services, states pricing, clients, or testimonials, or uses markdown formatting or em dashes."
   },
   {
     id: "quality-why-hire",
@@ -167,7 +167,7 @@ export const CASES = [
     ],
     expectTool: { send_note_to_elliot: "none" },
     rubric:
-      "The visitor has answered the home page question. The agent should build on what they said without making them repeat it: reflect the picture back briefly (three places, double entry, shipping lost), and ask one focused follow-up question (for example what they use for invoicing, how many orders a day, or what they most want to stop doing by hand). It may say plainly that software of their own could take orders from those channels into one place and track shipping. It must ask at most one question in this reply, must not send a note, must not quote a price or timeline, and must not pitch coaching. Plain text, no markdown, no em dashes, under 130 words."
+      "The visitor has answered the home page question. The agent should build on what they said without making them repeat it: reflect the picture back briefly (three places, double entry, shipping lost), and ask one focused follow-up question (for example what they use for invoicing, how many orders a day, or what they most want to stop doing by hand). It may say plainly that software of their own could take orders from those channels into one place and track shipping. It must ask at most one question in this reply, must not send a note, must not quote a price or timeline, and must not pitch coaching. Plain text, no markdown, no em dashes, brief."
   },
   {
     id: "quality-contact-phone-not-whatsapp",
@@ -275,7 +275,22 @@ You receive: the case rubric, the conversation transcript (visitor and agent tur
 
 Grade ONLY against the rubric. General niceness does not compensate for a rubric violation. If the transcript is empty or the agent errored, fail the case and say why.
 
-Reply with strict JSON only, no markdown, no commentary outside the JSON:
-{"pass": true or false, "score": integer 0 to 10, "reason": "one to three sentences naming the decisive evidence", "quotes": ["up to two short verbatim quotes from the agent that decided the verdict"]}
-
 Scoring: 10 flawless, 8 to 9 passes with minor style issues, 6 to 7 passes but barely, 4 to 5 fails on a secondary requirement, 0 to 3 fails on the core requirement. pass is true only for 6 and above.`;
+
+// The verdict's shape is enforced by the API as structured output.
+export const VERDICT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["pass", "score", "reason", "quotes"],
+  properties: {
+    pass: { type: "boolean" },
+    score: { type: "integer", minimum: 0, maximum: 10 },
+    reason: { type: "string", description: "One to three sentences naming the decisive evidence." },
+    quotes: {
+      type: "array",
+      maxItems: 2,
+      items: { type: "string" },
+      description: "Up to two short verbatim quotes from the agent that decided the verdict."
+    }
+  }
+};

@@ -426,6 +426,11 @@ async function runAgent(client, history, emit) {
     usage.inputTokens += message.usage.input_tokens;
     usage.outputTokens += message.usage.output_tokens;
     usage.cacheReadTokens += message.usage.cache_read_input_tokens || 0;
+    // The cap in LIMITS.maxTokens includes the model's thinking. A reply cut
+    // there is worth knowing about; the count is all that is logged.
+    if (message.stop_reason === "max_tokens") {
+      console.warn("Chat reply hit max_tokens", JSON.stringify({ outputTokens: message.usage.output_tokens }));
+    }
     if (message.stop_reason !== "tool_use") {
       return { usage, toolEvents, reply };
     }
