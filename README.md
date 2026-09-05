@@ -63,7 +63,7 @@ The line it draws matters. A visitor **attempting** an injection while the agent
 What each verdict does:
 
 - `clear`: nothing. One structured console line, no email.
-- `concern`: an email to `contact@chamainteligente.com`, subject **Flame watchdog: worth a look**, with the report. The flame keeps burning.
+- `concern`: an email to `contact@chamainteligente.com`, subject **Flame watchdog: review needed**, with the report. The flame keeps burning.
 - `malicious` with `shutdown`: the watchdog writes `ops/kill-switch.json` to the same private blob store (`{ disabled, reason, at, incidents }`, overwritten in place), then emails, subject **The flame has been shut down**.
 
 Since 2026-08-30 a Vercel Firewall rule ("Chat per-IP rate limit", managed in the Vercel dashboard under Firewall, not in this repo) also rate limits `/api/chat` at the edge: 10 requests per IP per 60 seconds, fixed window, answered with a 429. It exists because the endpoint is otherwise unauthenticated and unmetered, and a script that walks past the same-origin check could burn API credit; ten messages a minute is more than any human conversation needs. Blocked requests are free; allowed ones bill at $0.50 per million.

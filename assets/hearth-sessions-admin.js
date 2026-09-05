@@ -391,7 +391,7 @@
 
       append(card, [
         field("Title", title),
-        field("Your note", note, "Only the business sees this."),
+        field("Your note", note, "Visible to staff only."),
         field("Meeting link", meeting),
         field("Status", status),
         refund.node,
@@ -407,7 +407,7 @@
     function draw(bookings) {
       clear(listCard);
       if (!bookings.length) {
-        listCard.appendChild(H.empty("No sessions in that stretch of time."));
+        listCard.appendChild(H.empty("No sessions in this range."));
         return;
       }
       var list = el("div", "list");
@@ -464,7 +464,7 @@
     function bookCard() {
       var card = el("div", "card stack tight");
       card.appendChild(el("p", "label", "Book for a member"));
-      card.appendChild(el("p", "small dim", "This books the time whatever the calendar offers, and sends both of you the invitation."));
+      card.appendChild(el("p", "small dim", "Books the time regardless of availability and emails the invitation to both of you."));
       var picker = memberPicker("Search name or email");
       var when = input("datetime-local", "startsAt", "");
       var minutes = input("number", "minutes", String(sessionMinutes), sessionMinutes);
@@ -507,7 +507,7 @@
       });
       append(card, [
         picker.node,
-        field("Starts", when, "Your own clock, converted on the way out."),
+        field("Starts", when, "In your timezone."),
         field("Minutes", minutes),
         field("Title", title),
         free.node,
@@ -553,8 +553,8 @@
       newForm.hidden = !newForm.hidden;
     });
 
-    wrap.appendChild(H.viewHead("Packs", "What someone can buy, and what it costs.", [newButton]));
-    wrap.appendChild(el("p", "small dim", "Prices live here, never in code or on the public page. Packs are visible only to signed-in members."));
+    wrap.appendChild(H.viewHead("Packs", "Session packs and prices.", [newButton]));
+    wrap.appendChild(el("p", "small dim", "Packs are visible only to signed-in members."));
     wrap.appendChild(newForm);
 
     var listWrap = el("div", "stack rise");
@@ -662,7 +662,7 @@
         editRow.hidden = !editRow.hidden;
       });
       var remove = button("Delete", "btn sm danger", function () {
-        if (!window.confirm("Delete " + (pack.name || "this pack") + "? A pack somebody has bought is switched off instead.")) return;
+        if (!window.confirm("Delete " + (pack.name || "this pack") + "? Packs that have been purchased are hidden instead of deleted.")) return;
         busy(remove, api("/admin/packs/" + encodeURIComponent(pack.id), { method: "DELETE" }))
           .then(function () { toast("Gone.", "good"); load(); })
           .catch(function (error) { toast(error.message, "bad"); });
@@ -696,7 +696,7 @@
     var wrap = el("div", "stack");
     var status = "requested";
 
-    wrap.appendChild(H.viewHead("Purchases", "A pack asked for, invoiced by hand, then marked paid here. Marking it paid is what adds the credits."));
+    wrap.appendChild(H.viewHead("Purchases", "Pack requests. Invoice by hand, then mark paid here to add the credits."));
 
     var controls = el("div", "row");
     controls.appendChild(select(PURCHASE_FILTERS, status, function (value) { status = value; load(); }));
@@ -758,7 +758,7 @@
       var saveOnly = button("Save details", "btn ghost", function () { patch(saveOnly, numbers()); });
 
       append(card, [
-        field("Invoice reference", ref, "Whatever your certified invoicing software calls it."),
+        field("Invoice reference", ref, "Invoice number"),
         field("Amount in cents", amount),
         field("Discount in cents", discount),
         append(el("div", "row"), [saveOnly, invoiced, paid, voided]),
@@ -822,7 +822,7 @@
     function grantCard() {
       var card = el("div", "card stack tight");
       card.appendChild(el("p", "label", "Grant credits"));
-      card.appendChild(el("p", "small dim", "By hand, in either direction. Every grant is in the log with your name on it."));
+      card.appendChild(el("p", "small dim", "Add or remove credits. Every adjustment is recorded in the log."));
       var picker = memberPicker("Search name or email");
       var delta = input("number", "delta", "1");
       delta.step = "1";
@@ -849,7 +849,7 @@
             toast(error.message, "bad");
           });
       });
-      append(card, [picker.node, field("Credits", delta, "Negative takes them away."), field("Note", note), append(el("div", "row"), [grant]), line]);
+      append(card, [picker.node, field("Credits", delta, "Use a negative number to remove credits."), field("Note", note), append(el("div", "row"), [grant]), line]);
       return card;
     }
 
@@ -874,7 +874,7 @@
     return api("/admin/availability").then(function (data) {
       var zone = data.timezone || ownerZone();
       var wrap = el("div", "stack");
-      wrap.appendChild(H.viewHead("Availability", "The week the calendar offers, and the days it does not."));
+      wrap.appendChild(H.viewHead("Availability", "Weekly availability and blocked dates."));
       wrap.appendChild(el("p", "small dim", "Windows are in " + zone + "; change it in Settings."));
 
       var rules = data.rules || [];
@@ -949,14 +949,14 @@
 
       var blocksCard = el("div", "card stack tight");
       blocksCard.appendChild(el("p", "label", "Time off"));
-      blocksCard.appendChild(el("p", "small dim", "Nothing can be booked inside these, whatever the week says."));
+      blocksCard.appendChild(el("p", "small dim", "Blocked dates override the weekly availability."));
       var blockList = el("div", "list");
       blocksCard.appendChild(blockList);
 
       function drawBlocks(blocks) {
         clear(blockList);
         if (!blocks.length) {
-          blockList.appendChild(el("div", "small dim", "Nothing booked out."));
+          blockList.appendChild(el("div", "small dim", "No blocked dates."));
           return;
         }
         blocks.forEach(function (block) {
@@ -986,7 +986,7 @@
 
       var from = input("datetime-local", "startsAt", "");
       var to = input("datetime-local", "endsAt", "");
-      var reason = input("text", "reason", "Why, for your own memory");
+      var reason = input("text", "reason", "Reason (optional)");
       var blockLine = el("p", "form-error");
       var addBlock = button("Book the time out", "btn", function () {
         blockLine.textContent = "";

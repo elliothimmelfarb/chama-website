@@ -81,20 +81,20 @@
   // Hardcoded from lib/hearth/mcp.js: the member's tools only, in the
   // order they are defined there.
   var TOOLS = [
-    ["whoami", "Who the connection belongs to, and what it may do."],
+    ["whoami", "The member the connection belongs to, and its permissions."],
     ["credits", "The session credit balance and recent credit history."],
     ["list_sessions", "Sessions with Elliot, upcoming and past."],
     ["list_records", "Every session record: title, date and summary."],
     ["get_record", "One record in full, with the transcript if asked for."],
     ["search_records", "Full-text search across records and transcripts."],
-    ["list_follow_ups", "What you said you would do, and what Elliot owes you."],
+    ["list_follow_ups", "Your follow-ups and Elliot's."],
     ["add_follow_up", "Add a follow-up, stored as your words."],
-    ["complete_follow_up", "Tick a follow-up off, or reopen it."],
+    ["complete_follow_up", "Mark a follow-up done, or reopen it."],
     ["available_slots", "Free times for a session, in your timezone."],
     ["book_session", "Book one of those times. Spends a credit."],
     ["cancel_session", "Cancel a scheduled session."],
     ["note_for_next_session", "Leave a note for Elliot to read before next time."],
-    ["get_feed", "What Elliot is looking at."]
+    ["get_feed", "Recent feed posts."]
   ];
 
   function toolsCard() {
@@ -111,7 +111,7 @@
       list.appendChild(line);
     });
     card.appendChild(list);
-    card.appendChild(el("p", "small faint", "Anything an agent writes here is stored as your words, for a person to read. Nothing it sends is treated as an instruction."));
+    card.appendChild(el("p", "small faint", "Anything an agent adds here is stored as a note from you, for a person to read."));
     return card;
   }
 
@@ -120,7 +120,7 @@
   H.register("/agents", function () {
     return api("/agents").then(function (data) {
       var wrap = el("div", "stack");
-      wrap.appendChild(H.viewHead("Your agents", "Connect Claude, or any MCP client, to your own sessions, records and follow-ups. Everything an agent reads here is yours; everything it writes is stored as your words for a person to read."));
+      wrap.appendChild(H.viewHead("Agents", "Connect Claude or any MCP client to your sessions, records and follow-ups."));
       wrap.appendChild(connectCard(data));
       wrap.appendChild(appsCard(data));
       wrap.appendChild(keysCard(data));
@@ -128,14 +128,14 @@
       wrap.appendChild(toolsCard());
       return wrap;
     });
-  }, { perm: "keys.own", title: "Agents", nav: { group: "Room", label: "Agents", order: 5 } });
+  }, { perm: "keys.own", title: "Agents", nav: { group: "Member", label: "Agents", order: 5 } });
 
   /* ---------- connect ---------- */
 
   function connectCard(data) {
     var card = el("div", "card glow stack tight");
     card.appendChild(el("p", "label", "Connect Claude"));
-    card.appendChild(el("p", "small dim", "This is the address of the room's MCP server."));
+    card.appendChild(el("p", "small dim", "MCP server address"));
     var url = data.mcpUrl || "";
     card.appendChild(codeBlock(url));
     card.appendChild(append(el("div", "row"), [copyButton("Copy address", url)]));
@@ -184,7 +184,7 @@
       left.appendChild(el("div", "secondary", "connected " + H.fmtDate(app.connectedAt, { dateStyle: "medium" }) + (app.lastUsedAt ? " · last used " + H.fmtRelative(app.lastUsedAt) : " · not used yet")));
       left.appendChild(scopePills(data.scopes || [], app.scopes));
       var drop = button("Disconnect", "btn ghost sm", function () {
-        if (!window.confirm("Disconnect " + app.name + "? Anything it holds stops working straight away.")) return;
+        if (!window.confirm("Disconnect " + app.name + "? Its access is revoked immediately.")) return;
         drop.disabled = true;
         api("/agents/apps/" + encodeURIComponent(app.id), { method: "DELETE" }).then(function () {
           H.toast("Disconnected.", "good");
@@ -204,7 +204,7 @@
   function keysCard(data) {
     var card = el("div", "card pad0");
     card.appendChild(cardHead("API keys"));
-    var intro = el("p", "small dim", "For scripts and agents that cannot do OAuth. A key is shown once, when it is made.");
+    var intro = el("p", "small dim", "For scripts and agents that cannot use OAuth. Each key is shown once, when created.");
     intro.style.padding = "0 1.1rem 0.6rem";
     card.appendChild(intro);
 
@@ -239,7 +239,7 @@
     left.appendChild(el("div", "secondary", bits));
     left.appendChild(scopePills(data.scopes || [], k.scopes));
     var revoke = button("Revoke", "btn ghost sm", function () {
-      if (!window.confirm("Revoke " + k.name + "? Anything using it stops working straight away.")) return;
+      if (!window.confirm("Revoke " + k.name + "? Anything using it loses access immediately.")) return;
       revoke.disabled = true;
       api("/agents/keys/" + encodeURIComponent(k.id), { method: "DELETE" }).then(function () {
         H.toast("Revoked.", "good");
@@ -292,7 +292,7 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var scopes = boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; });
-      if (!scopes.length) { H.toast("Pick at least one thing the key may do.", "bad"); return; }
+      if (!scopes.length) { H.toast("Select at least one permission for the key.", "bad"); return; }
       make.disabled = true;
       var days = expiry.value ? Number(expiry.value) : null;
       api("/agents/keys", { method: "POST", body: { name: name.value, scopes: scopes, expiresInDays: days } }).then(function (result) {

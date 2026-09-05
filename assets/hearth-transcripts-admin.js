@@ -233,13 +233,13 @@
 
   H.register("/admin/transcripts", function () {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Transcripts", "The raw record of a session goes in here; the model writes it up and both sides read it."));
+    wrap.appendChild(H.viewHead("Transcripts", "Session transcripts and the records written from them."));
 
     /* ---------- adding one ---------- */
 
     var addCard = el("div", "card stack tight");
     addCard.appendChild(el("p", "label", "Add a transcript"));
-    addCard.appendChild(el("p", "small dim", "Paste the transcript or pick the file the call left behind. Writing the record takes a minute and the member is told when it is ready."));
+    addCard.appendChild(el("p", "small dim", "Paste the transcript or choose the file. Writing the record takes about a minute; the member is emailed when it is ready."));
 
     var sessionSelect = el("select", "select");
     var sessionField = field("Session", sessionSelect, "Only sessions in the last 90 days that have no transcript yet.");
@@ -247,7 +247,7 @@
     var bookingsById = {};
 
     var heldAt = input("datetime-local", "heldAt", "");
-    var titleInput = input("text", "title", "What the session was about, if you want to name it yourself");
+    var titleInput = input("text", "title", "Title (optional)");
     var text = textarea("", 10);
     text.placeholder = "Paste the transcript here.";
     var file = el("input", "input");
@@ -255,7 +255,7 @@
     file.accept = FILE_TYPES;
     var filename = "";
     var fileLine = el("p", "small dim");
-    var derive = toggle("Derive the record now", true);
+    var derive = toggle("Write the record", true);
     var line = el("p", "form-error");
     var working = el("p", "small dim");
     working.hidden = true;
@@ -346,7 +346,7 @@
       busy(send, api("/admin/transcripts", { method: "POST", body: payload }))
         .then(function (data) {
           working.hidden = true;
-          toast("The transcript is in.", "good");
+          toast("Transcript added.", "good");
           flare();
           var id = data && data.transcript && data.transcript.id;
           picker.reset();
@@ -369,7 +369,7 @@
     append(addCard, [
       picker.node,
       sessionField,
-      field("Held at", heldAt, "Your own clock, converted on the way out."),
+      field("Held at", heldAt, "In your timezone."),
       field("Title", titleInput),
       field("Transcript", text),
       field("Or a file", file, "A .txt, .vtt, .srt or .md file, read here in your browser."),
@@ -411,9 +411,9 @@
 
       var again = button("Derive again", "btn sm ghost", function (event) {
         stop(event);
-        if (!window.confirm("Write the record again? What the model said last time is replaced.")) return;
+        if (!window.confirm("Rewrite the record? The current record will be replaced.")) return;
         busy(again, api("/admin/transcripts/" + encodeURIComponent(transcript.id) + "/derive", { method: "POST" }))
-          .then(function () { toast("The record is rewritten.", "good"); flare(); load(); })
+          .then(function () { toast("Record rewritten.", "good"); flare(); load(); })
           .catch(function (error) { toast(error.message, "bad"); });
       });
       var remove = button("Delete", "btn sm danger", function (event) {
@@ -458,7 +458,7 @@
 
   H.register("/admin/notes", function () {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Notes", "What clients leave for the next session, and the follow-ups that are yours."));
+    wrap.appendChild(H.viewHead("Notes", "Notes from clients and your open follow-ups."));
 
     /* ---------- follow-ups the coach owes ---------- */
 
@@ -472,7 +472,7 @@
       clear(owedList);
       var mine = followUps.filter(function (f) { return f.owner === "coach" && !f.doneAt; });
       if (!mine.length) {
-        owedList.appendChild(el("div", "small dim", "Nothing owed. Every follow-up of yours is done."));
+        owedList.appendChild(el("div", "small dim", "No open follow-ups."));
         return;
       }
       mine.forEach(function (followUp) {

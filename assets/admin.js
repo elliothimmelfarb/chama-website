@@ -203,7 +203,7 @@
     heading.appendChild(el("em", null, "admin"));
     heading.appendChild(document.createTextNode(" door."));
     gate.appendChild(heading);
-    gate.appendChild(el("p", null, "Conversations, contact requests and the state of the flame. One account opens this, and it is not yours unless it is on the list."));
+    gate.appendChild(el("p", null, "Conversations, contact requests and the state of the flame. Access is limited to listed accounts."));
 
     var slot = el("div", "gate-button");
     gate.appendChild(slot);
@@ -317,7 +317,7 @@
 
   function openDashboard() {
     state.signedIn = true;
-    show(loadingState("Reading the room."));
+    show(loadingState("Loading."));
     return apiGet("view=summary")
       .then(function (data) {
         state.summary = data;
@@ -326,7 +326,7 @@
       })
       .catch(function (error) {
         if (error instanceof Unauthorized) { goToGate(); return; }
-        show(errorState("The summary did not come back. This is usually the blob store or a cold function.", openDashboard));
+        show(errorState("The summary could not be loaded. Try again.", openDashboard));
       });
   }
 
@@ -354,13 +354,13 @@
     var label;
     if (flame.chatDisabledEnv) {
       pill.classList.add("out");
-      label = "Offline by environment";
+      label = "Offline (CHAT_DISABLED)";
     } else if (flame.killed) {
       pill.classList.add("out");
-      label = "The flame is out";
+      label = "Offline (watchdog)";
     } else {
       pill.classList.add("burning");
-      label = "The flame is burning";
+      label = "Online";
     }
     pill.appendChild(el("span", null, label));
     block.appendChild(pill);
@@ -556,7 +556,7 @@
         var current = sectionSlot();
         if (!current) { return; }
         clear(current);
-        current.appendChild(errorState("That list did not come back.", function () {
+        current.appendChild(errorState("The list could not be loaded.", function () {
           state.lists[tab] = null;
           renderSection();
         }));
@@ -565,7 +565,7 @@
 
   function conversationList(rows) {
     if (!rows.length) {
-      return emptyState("No conversations", "Nothing has been said to the flame in this window. The list fills itself as visitors talk.");
+      return emptyState("No conversations", "No conversations in this window.");
     }
 
     var list = el("ul", "rows");
@@ -592,7 +592,7 @@
 
   function intakeList(rows) {
     if (!rows.length) {
-      return emptyState("No contact requests", "Nobody has asked to be put in touch in this window.");
+      return emptyState("No contact requests", "No contact requests in this window.");
     }
 
     var list = el("ul", "rows");
@@ -635,7 +635,7 @@
         if (error instanceof Unauthorized) { goToGate(); return; }
         var wrap = el("section");
         wrap.appendChild(button("Back to the list", "btn back", renderDashboard));
-        wrap.appendChild(errorState("That transcript did not come back.", function () { openTranscript(row); }));
+        wrap.appendChild(errorState("The transcript could not be loaded.", function () { openTranscript(row); }));
         show(wrap);
       });
   }

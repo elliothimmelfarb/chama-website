@@ -199,7 +199,7 @@ test("a concern emails Elliot and leaves the flame burning", async () => {
   assert.equal(outcome.emailed, true);
   assert.equal(calls.put.length, 0);
   assert.equal(calls.email.length, 1);
-  assert.equal(calls.email[0].subject, "Flame watchdog: worth a look");
+  assert.equal(calls.email[0].subject, "Flame watchdog: review needed");
   assert.match(calls.email[0].text, /prompt injection/);
   assert.match(calls.email[0].text, /\[low\] abc/);
   assert.match(calls.email[0].from, /@chamainteligente\.com>$/);

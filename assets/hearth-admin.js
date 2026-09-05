@@ -222,7 +222,7 @@
         invite.hidden = !invite.hidden;
       }));
     }
-    wrap.appendChild(H.viewHead("Members", "Everyone with a place here, and who is in the room now.", actions.length ? actions : null));
+    wrap.appendChild(H.viewHead("Members", "All members, with role, status and last seen.", actions.length ? actions : null));
     wrap.appendChild(invite);
 
     var controls = el("div", "row");
@@ -248,7 +248,7 @@
     function inviteCard() {
       var card = el("div", "card stack tight");
       card.appendChild(el("p", "label", "Invite someone"));
-      card.appendChild(el("p", "small dim", "They get an email with a sign-in link. A place is made for them if they do not have one."));
+      card.appendChild(el("p", "small dim", "They receive an email with a sign-in link. An account is created if they do not have one."));
       var form = el("form", "stack tight");
       var email = input("email", "email", "them@example.com");
       email.required = true;
@@ -389,7 +389,7 @@
     }
 
     function actionsCard(member) {
-      var card = sectionCard("Their standing", "Role, access, and what you want to remember about them.");
+      var card = sectionCard("Their standing", "Role, permissions and private notes.");
 
       var roleRow = el("div", "row");
       var roleSelect = select(roleOptions(false), member.role);
@@ -421,7 +421,7 @@
           .then(function () { toast("Notes saved.", "good"); flare(); })
           .catch(function (error) { toast(error.message, "bad"); });
       });
-      card.appendChild(field("Notes", notes, "Only the business sees these."));
+      card.appendChild(field("Notes", notes, "Visible to staff only."));
       card.appendChild(append(el("div", "row"), [saveNotes]));
       return card;
     }
@@ -445,7 +445,7 @@
       });
       if (!identities.length) {
         var only = el("div");
-        append(only, [el("div", "primary", "Email link"), el("div", "meta", "the only way in so far")]);
+        append(only, [el("div", "primary", "Email link"), el("div", "meta", "no other sign-in method")]);
         list.appendChild(only);
       }
       card.appendChild(list);
@@ -484,7 +484,7 @@
     // top, or deny it whatever the role says. Each click is its own request,
     // which is the shape the server takes.
     function overridesCard(member, catalog, overrides) {
-      var card = sectionCard("Permission overrides", "On top of the role. Inherit means the role decides.");
+      var card = sectionCard("Permission overrides", "Overrides on top of the role. Inherit uses the role's setting.");
       if (member.role === "owner") {
         card.appendChild(el("p", "small dim", "An owner holds every permission, always. There is nothing to override."));
         return card;
@@ -586,7 +586,7 @@
   H.register("/admin/roles", function () {
     return api("/admin/roles").then(function (data) {
       var wrap = el("div", "stack");
-      wrap.appendChild(H.viewHead("Roles", "What each kind of person can do here. Overrides for one person live on their page."));
+      wrap.appendChild(H.viewHead("Roles", "Permissions by role. Per-member overrides are on the member's page."));
       var catalog = data.catalog || [];
       var roles = (data.roles || []).slice().sort(function (a, b) {
         return ROLE_ORDER.indexOf(a.name) - ROLE_ORDER.indexOf(b.name);
@@ -641,7 +641,7 @@
 
   H.register("/admin/log", function (ctx) {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Log", "Every sign-in, change and agent call, oldest hidden behind Load more."));
+    wrap.appendChild(H.viewHead("Log", "Every sign-in, change and agent call."));
 
     var eventInput = input("text", "event", "auth. or mcp.call");
     eventInput.setAttribute("list", "hearth-events");
@@ -725,7 +725,7 @@
     return api("/admin/metrics").then(function (data) {
       var totals = data.totals || {};
       var wrap = el("div", "stack");
-      wrap.appendChild(H.viewHead("Metrics", "The last " + (data.days || 30) + " days of the room."));
+      wrap.appendChild(H.viewHead("Metrics", "The last " + (data.days || 30) + " days."));
 
       var tiles = el("div", "grid3 rise");
       var index = 0;
@@ -778,7 +778,7 @@
       hereCard.appendChild(el("p", "label", "Here now"));
       var presence = data.presence || [];
       if (!presence.length) {
-        hereCard.appendChild(el("p", "small dim", "The room is empty."));
+        hereCard.appendChild(el("p", "small dim", "Nobody is online."));
       } else {
         var hereList = el("div", "list");
         presence.forEach(function (person) {
@@ -820,7 +820,7 @@
     return api("/admin/settings").then(function (data) {
       var settings = data.settings || {};
       var wrap = el("div", "stack");
-      wrap.appendChild(H.viewHead("Settings", "How the room behaves: sessions, booking, referrals, and what is open to the public."));
+      wrap.appendChild(H.viewHead("Settings", "Sessions, booking, referrals and public access."));
 
       var form = el("form", "stack");
       var errorLine = el("p", "form-error");
@@ -834,10 +834,10 @@
       [sessionMinutes, minNotice, horizon, cancelNotice].forEach(function (node) { node.min = "0"; node.step = "1"; });
       var meetingUrl = input("url", "meeting_url", "https://meet.google.com/...", settings.meeting_url);
       append(booking, [
-        field("Session length in minutes", sessionMinutes),
-        field("Least notice in hours", minNotice, "How far ahead someone has to book."),
-        field("How far ahead in days", horizon, "The last day the calendar offers."),
-        field("Cancellation notice in hours", cancelNotice),
+        field("Session length (minutes)", sessionMinutes),
+        field("Minimum notice (hours)", minNotice, "How far in advance a session must be booked."),
+        field("Booking horizon (days)", horizon, "The last day the calendar offers."),
+        field("Cancellation notice (hours)", cancelNotice),
         field("Meeting link", meetingUrl, "A standing video link, for example a personal Google Meet room")
       ]);
       form.appendChild(booking);

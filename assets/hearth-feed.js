@@ -94,7 +94,7 @@
     var body = el("textarea", "textarea");
     body.name = "body";
     body.rows = 8;
-    body.placeholder = "What is worth writing down?";
+    body.placeholder = "Title";
     body.value = post ? post.body || "" : "";
     var url = H.input("url", "url", "https://", post && post.url ? post.url : "");
     var kind = select(KINDS, post ? post.kind : "note");
@@ -242,7 +242,7 @@
       }
 
       function remove() {
-        if (!window.confirm("Delete this post? It goes for good.")) return;
+        if (!window.confirm("Delete this post? This cannot be undone.")) return;
         var buttons = card.querySelectorAll("button");
         for (var b = 0; b < buttons.length; b += 1) buttons[b].disabled = true;
         api("/feed/" + encodeURIComponent(p.id), { method: "DELETE" }).then(function () {
@@ -274,14 +274,14 @@
         });
         actions = [write];
       }
-      wrap.appendChild(H.viewHead("What Elliot is looking at", "Notes, links and briefs as they happen. Your agent can read this too.", actions));
+      wrap.appendChild(H.viewHead("Feed", "Notes, links and briefs from Elliot.", actions));
       wrap.appendChild(composeHost);
       wrap.appendChild(emptyHost);
       wrap.appendChild(list);
       wrap.appendChild(moreRow);
       return wrap;
     });
-  }, { perm: "feed.read", title: "Feed", nav: { group: "Room", label: "Feed", order: 6 } });
+  }, { perm: "feed.read", title: "Feed", nav: { group: "Member", label: "Feed", order: 6 } });
 
   /* ---------- one post, on paper ---------- */
 

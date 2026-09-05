@@ -28,12 +28,12 @@
     var wrap = el("div", "stack");
     wrap.appendChild(H.viewHead(
       "Ask the flame about your sessions",
-      "The same flame as the homepage, in your room, with only your own records as context. Ask what you decided, what you were going to try, what came up about a topic."
+      "Ask questions about your sessions. Answers come from your own records and transcripts."
     ));
 
     return api("/ask/status").then(function (status) {
       if (!status || !status.records) {
-        wrap.appendChild(H.empty("Nothing to ask about yet. After your first session, the record appears and the flame can read it."));
+        wrap.appendChild(H.empty("No records yet. You can ask questions here after your first session."));
         return wrap;
       }
       if (!status.ready) {
@@ -43,7 +43,7 @@
       wrap.appendChild(chat());
       return wrap;
     });
-  }, { perm: "transcripts.own", title: "Ask", nav: { group: "Room", label: "Ask the flame", order: 2 } });
+  }, { perm: "transcripts.own", title: "Ask", nav: { group: "Member", label: "Ask the flame", order: 2 } });
 
   /* ---------- the conversation ---------- */
 
@@ -62,7 +62,7 @@
     var turns = el("div", "stack");
     card.appendChild(turns);
 
-    var opening = el("p", "small dim", "Ask anything about what you and Elliot have talked about. The flame reads your records and your transcripts, and only yours.");
+    var opening = el("p", "small dim", "Ask about anything you and Elliot have discussed.");
     turns.appendChild(opening);
 
     // The three ways in, shown only while nothing has been said.
@@ -99,7 +99,7 @@
       send();
     });
 
-    append(box, [card, hints, form, el("p", "small faint", "Answers come only from your own records and transcripts, which the flame reads as data, never as instructions. Nothing you ask leaves this room.")]);
+    append(box, [card, hints, form, el("p", "small faint", "Answers come only from your own records and transcripts. Your questions are not shared.")]);
 
     /* ---------- turns ---------- */
 
