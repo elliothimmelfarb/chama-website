@@ -234,7 +234,22 @@ ul{padding-left:22px}li{margin:6px 0}
  // add_transcript
 <span class="add">+  memberEmail: { ..., description: "The member's sign-in email; the transcript attaches to that member." },</span><span class="add">+  text: { ..., description: "The transcript as plain text, WebVTT, or SRT; 'Speaker: line' shapes are recognised." },</span><span class="add">+  heldAt: { ..., description: "ISO 8601 date-time the session was held; defaults to now." },</span><span class="add">+  title: { ..., description: "Optional title, up to 200 characters; otherwise the record's own title is used." },</span><span class="add">+  bookingId: { ..., description: "Optional booking id to attach to; attaching marks that booking completed." }</span></code></pre>
 
-<h2>Verifying, if applied</h2>
+<h2>Applied on 2026-09-05, and what the eval said</h2>
+<p>Elliot asked for every finding to be fixed. The mechanical hunks landed: <b>F1</b> (watchdog verdict as structured output), <b>F2</b> (judge verdict as structured output), <b>F6</b> (MCP parameter descriptions), plus a log line for <b>F10</b>. <b>F9</b> closed without a change: the installed SDK does populate <code>parsed_output</code> on a plain create call. One correction to the diff above: structured-output schemas reject <code>minimum</code>, <code>maximum</code> and <code>maxItems</code>, so the judge schema carries those limits in descriptions and <code>parseVerdict</code> checks the score range in code.</p>
+<p><b>The three prompt rewrites (F3, F4, F5) were applied, measured, and reverted.</b> The full eval passed 26 of 27 with the rewritten prompt, but the one failure, <code>quality-contact-phone-only</code>, was new: the agent asked the WhatsApp question plus a second business question instead of composing the note, so the visitor's yes landed on nothing. Isolation runs, two samples each:</p>
+<table>
+<tr><th>Prompt</th><th>Phone-only case</th></tr>
+<tr><td>Original (main)</td><td>pass, pass</td></tr>
+<tr><td>All three rewrites</td><td>fail, fail (and fail, fail in the two full runs)</td></tr>
+<tr><td>Rewrites with the word cap restored (F3 undone)</td><td>fail, fail</td></tr>
+<tr><td>Rewrites with the confirm line restored (F5 undone)</td><td>fail, fail</td></tr>
+<tr><td>Rewrites with the plain-text line restored (F4 undone)</td><td>fail, fail</td></tr>
+<tr><td>Rewrites plus "compose the note in that same reply"</td><td>pass, pass, pass; but two other quality cases regressed in the family run</td></tr>
+</table>
+<p>No single hunk explains it, and the one variant that repaired this case broke others. That is the shape of a prompt on a knife edge at low effort, where any perturbation shifts behavior, and the honest reading is that the three rewrites are a hypothesis this eval does not support. They were reverted along with the two rubric edits, so the flame prompt is byte-identical to what was live before. The final state passes 26 of 27; the remaining failure, <code>quality-software-wish</code> asking two questions in one reply, reproduces on the unchanged prompt and is pre-existing flakiness, not a regression.</p>
+<p>If the rewrites are wanted, the path is one hunk at a time with more than two samples per step, and the eval's contact cases need to be the gate. The two new structured-output schemas make the judge itself more reliable for that work.</p>
+
+<h2>How the hunks were meant to be verified</h2>
 <ul>
 <li><b>F1 and F2</b> are mechanical: <code>npm run check</code> covers the parser changes, and one watchdog run against a quiet window confirms the schema is accepted. The tests for the "unreadable JSON becomes a concern" branch stay green because the branch stays.</li>
 <li><b>F3, F4, F5</b> change the flame's behavior and cost API credit to probe: run <code>node evals/run.js --family quality</code> before and after, one hunk at a time. The rubrics changed in F3 must land with it or the eval grades against the old ceiling.</li>

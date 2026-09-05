@@ -233,6 +233,7 @@ export function parseVerdict(text) {
     const parsed = JSON.parse(text);
     if (typeof parsed !== "object" || parsed === null) return null;
     if (typeof parsed.pass !== "boolean") return null;
+    if (!Number.isInteger(parsed.score) || parsed.score < 0 || parsed.score > 10) return null;
     return parsed;
   } catch {
     return null;
