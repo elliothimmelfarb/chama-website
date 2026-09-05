@@ -35,7 +35,7 @@ export const MESSAGES = {
   unreadable: "That conversation could not be read. Please reload the page and try again.",
   tooLong:
     "This conversation has gone on longer than the agent allows in one sitting. Reload the page to start fresh, or email contact@chamainteligente.com.",
-  overwhelmed: "The agent is a little overwhelmed right now. Please try again in a minute.",
+  overwhelmed: "The agent is busy right now. Please try again in a minute.",
   failed: "Something went wrong on our side. Please try again, or email contact@chamainteligente.com.",
   notSaved: "The note could not be saved.",
   savedNotEmailed:

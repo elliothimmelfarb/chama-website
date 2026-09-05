@@ -408,7 +408,7 @@
   function notFound() {
     var wrap = el("div", "view empty");
     wrap.appendChild(mark("mark"));
-    wrap.appendChild(el("p", null, "There is no room here."));
+    wrap.appendChild(el("p", null, "Page not found."));
     var back = button("Back to the Hearth", "btn mt", function () { navigate("/"); });
     wrap.appendChild(back);
     return wrap;
@@ -417,7 +417,7 @@
   function forbidden() {
     var wrap = el("div", "view empty");
     wrap.appendChild(mark("mark"));
-    wrap.appendChild(el("p", null, "That room is not open to you."));
+    wrap.appendChild(el("p", null, "You do not have access to this page."));
     return wrap;
   }
 
@@ -529,7 +529,7 @@
     var forgot = button("Forgot it?", "btn ghost sm", function () {
       if (!email.value) { email.focus(); return; }
       api("/auth/password/forgot", { method: "POST", body: { email: email.value } }).then(function () {
-        status.textContent = "If that address has a password, a reset link is on its way.";
+        status.textContent = "If that address has a password, a reset link has been emailed to it.";
       }).catch(function (e) { status.textContent = e.message; });
     });
     append(form, [field("Email", email), pwField, submit, append(el("div", "row"), [toggle, forgot]), status]);
@@ -545,7 +545,7 @@
         if (usePassword) { afterSignIn(result); return; }
         clear(card);
         var sent = el("div", "gate-sent");
-        append(sent, [mark("mark"), el("h2", null, "Check your email"), el("p", "dim", "A sign-in link is on its way to " + email.value + ". It works once and expires in 15 minutes."), button("Use another way", "btn ghost", function () { renderGate(); })]);
+        append(sent, [mark("mark"), el("h2", null, "Check your email"), el("p", "dim", "A sign-in link has been emailed to " + email.value + ". It works once and expires in 15 minutes."), button("Use another way", "btn ghost", function () { renderGate(); })]);
         card.appendChild(sent);
       }).catch(function (err) {
         status.textContent = err.message;
@@ -556,7 +556,7 @@
     add(form);
 
     var fine = el("p", "fineprint");
-    fine.appendChild(document.createTextNode("Signing in creates a place for you if you do not have one yet. Sessions, transcripts and sign-ins are recorded so you can see them; nothing here is sold or shared. "));
+    fine.appendChild(document.createTextNode("Signing in creates an account if you do not have one. Sessions, transcripts and sign-ins are recorded and visible to you. Nothing is sold or shared. "));
     fine.appendChild(link("Privacy", "/privacy"));
     fine.appendChild(document.createTextNode(" · "));
     fine.appendChild(link("Back to the site", "/"));
@@ -673,13 +673,13 @@
         quick.appendChild(c);
       }
       q("Account", "Your name, timezone and referral link.", "/account");
-      q("Security", "Where you are signed in, your password, your ways in.", "/security");
-      if (can("members.read")) q("Members", "Who is here, their roles, and who is online.", "/admin/members");
+      q("Security", "Sign-in methods, password and active sessions.", "/security");
+      if (can("members.read")) q("Members", "Members, roles and who is online.", "/admin/members");
       if (can("audit.read")) q("Log", "Every sign-in, change and agent call.", "/admin/log");
       wrap.appendChild(quick);
       return wrap;
     });
-  }, { title: "", nav: { group: "Room", label: "Home", order: 0 } });
+  }, { title: "", nav: { group: "Member", label: "Home", order: 0 } });
 
   // Other files can add tiles and sections to the home view.
   var homeHooks = [];
@@ -687,17 +687,17 @@
 
   function roleLede() {
     switch (state.user.role) {
-      case "owner": return "This is your company's room. Everything that happens in it is in the log.";
-      case "staff": return "You are part of the business here. Members, sessions and the feed are yours to see.";
-      case "client": return "Your sessions, your transcripts and your follow-ups live here, and your agents can read them.";
-      default: return "You have a place here. The feed is open to you, and a first conversation is one message away.";
+      case "owner": return "Members, sessions, transcripts, the feed and the audit log.";
+      case "staff": return "Members, sessions and the feed.";
+      case "client": return "Your sessions, records and follow-ups. Connected agents can read them.";
+      default: return "The feed, and sessions once you have credits.";
     }
   }
 
   register("/account", function () {
     var user = state.user;
     var wrap = el("div", "stack");
-    wrap.appendChild(viewHead("Account", "Who you are here."));
+    wrap.appendChild(viewHead("Account", "Your name, timezone and referral link."));
 
     var card = el("div", "card stack");
     var top = el("div", "row");
@@ -730,7 +730,7 @@
 
     var refCard = el("div", "card stack tight");
     refCard.appendChild(el("p", "label", "Your referral link"));
-    refCard.appendChild(el("p", "small dim", "When someone you send here becomes a client, you get the reward Elliot has set. It is theirs to use as a way in, not a marketing list."));
+    refCard.appendChild(el("p", "small dim", "When someone who signs up with this link becomes a client, you receive the referral reward."));
     var url = location.origin + BASE + "?ref=" + user.referralCode;
     var code = el("div", "code", url);
     refCard.appendChild(code);
@@ -750,7 +750,7 @@
 
   register("/security", function () {
     var wrap = el("div", "stack");
-    wrap.appendChild(viewHead("Security", "Where you are signed in, and your ways in."));
+    wrap.appendChild(viewHead("Security", "Sign-in methods, password and active sessions."));
     return Promise.all([api("/sessions"), api("/security")]).then(function (results) {
       var sessions = results[0];
       var sec = results[1];
@@ -771,7 +771,7 @@
 
       var pw = el("div", "card stack tight");
       pw.appendChild(el("p", "label", sec.hasPassword ? "Password" : "Add a password"));
-      pw.appendChild(el("p", "small dim", sec.hasPassword ? "You can sign in with your email and password. Setting a new one replaces it." : "Optional. A sign-in link by email always works; a password is for when you would rather not wait for one."));
+      pw.appendChild(el("p", "small dim", sec.hasPassword ? "You can sign in with your email and password. Setting a new one replaces it." : "Optional. Email sign-in links always work; a password lets you sign in without waiting for one."));
       var form = el("form", "row");
       var current = null;
       if (sec.hasPassword) {

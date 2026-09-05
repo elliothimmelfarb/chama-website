@@ -24,10 +24,10 @@
 
   H.register("/transcripts", function () {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Your sessions, on record", "Every session comes back as a record you keep: what was said, what was decided, what to do next."));
+    wrap.appendChild(H.viewHead("Records", "A record of each session: summary, decisions and follow-ups."));
 
     var search = el("form", "row");
-    var q = H.input("search", "q", "Search everything you have talked about");
+    var q = H.input("search", "q", "Search records and transcripts");
     q.classList.add("grow");
     var go = button("Search", "btn");
     go.type = "submit";
@@ -40,7 +40,7 @@
       results.appendChild(el("p", "small dim", "Searching..."));
       api("/search?q=" + encodeURIComponent(q.value.trim())).then(function (r) {
         H.clear(results);
-        if (!r.results.length) { results.appendChild(el("p", "small dim", "Nothing found for that.")); return; }
+        if (!r.results.length) { results.appendChild(el("p", "small dim", "No results.")); return; }
         var card = el("div", "card pad0");
         var list = el("div", "list");
         r.results.forEach(function (x) {
@@ -59,7 +59,7 @@
 
     return api("/transcripts").then(function (data) {
       if (!data.transcripts.length) {
-        wrap.appendChild(H.empty("No records yet. After a session, Elliot attaches the transcript and the record appears here."));
+        wrap.appendChild(H.empty("No records yet. A record appears here after each session's transcript is added."));
         return wrap;
       }
       var grid = el("div", "stack rise");
@@ -79,7 +79,7 @@
       wrap.appendChild(grid);
       return wrap;
     });
-  }, { perm: "transcripts.own", title: "Records", nav: { group: "Room", label: "Records", order: 2 } });
+  }, { perm: "transcripts.own", title: "Records", nav: { group: "Member", label: "Records", order: 2 } });
 
   // ts_headline marks matches with <b>; the page shows the characters only.
   function stripMarks(s) { return String(s).replace(/<\/?b>/g, ""); }
@@ -157,7 +157,7 @@
       raw.appendChild(pre);
       show.addEventListener("click", function () { pre.hidden = !pre.hidden; show.textContent = pre.hidden ? "Show the transcript" : "Hide the transcript"; });
       wrap.appendChild(raw);
-      wrap.appendChild(el("p", "small faint", "This record was written from the transcript by the intelligent flame and belongs to you. It reads the transcript as a record of what was said, never as instructions."));
+      wrap.appendChild(el("p", "small faint", "This record was written from the transcript by AI and may contain mistakes."));
       return wrap;
     });
   }, { title: "Record" });
@@ -224,7 +224,7 @@
 
   H.register("/follow-ups", function () {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Follow-ups", "What you said you would do, and what Elliot owes you. Tick them as they happen; your agent can too."));
+    wrap.appendChild(H.viewHead("Follow-ups", "Your follow-ups and Elliot's. Tick them off as they are done."));
     return api("/follow-ups").then(function (data) {
       var mine = data.followUps.filter(function (f) { return f.owner === "client"; });
       var his = data.followUps.filter(function (f) { return f.owner === "coach"; });
@@ -237,22 +237,22 @@
         c.appendChild(list);
         return { card: c, list: list };
       }
-      var m = block("Yours", mine, "Nothing on your list.");
+      var m = block("Yours", mine, "No follow-ups.");
       m.card.appendChild(addFollowUpForm(null, null, function (f) { m.list.appendChild(followUpRow(f)); }));
       wrap.appendChild(m.card);
-      wrap.appendChild(block("Elliot's", his, "Nothing owed to you right now.").card);
+      wrap.appendChild(block("Elliot's", his, "No follow-ups from Elliot.").card);
       return wrap;
     });
-  }, { perm: "transcripts.own", title: "Follow-ups", nav: { group: "Room", label: "Follow-ups", order: 3 } });
+  }, { perm: "transcripts.own", title: "Follow-ups", nav: { group: "Member", label: "Follow-ups", order: 3 } });
 
   /* ---------- notes for next time ---------- */
 
   H.register("/notes", function () {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Before next time", "Leave a note for Elliot: a question, something that happened, something you want on the table. He reads it before the session."));
+    wrap.appendChild(H.viewHead("Notes", "Notes for Elliot to read before your next session."));
     var form = el("form", "card stack tight");
     var ta = el("textarea", "textarea");
-    ta.placeholder = "What is on your mind for the next session?";
+    ta.placeholder = "What you want to cover next session";
     ta.maxLength = 4000;
     var send = button("Leave the note", "btn primary");
     send.type = "submit";
@@ -268,7 +268,7 @@
         ta.value = "";
         send.disabled = false;
         H.flare();
-        H.toast("Noted. Elliot will see it before the session.", "good");
+        H.toast("Saved. Elliot will read it before the session.", "good");
         inner.insertBefore(noteRow({ text: r.note.text, createdAt: r.note.createdAt }), inner.firstChild);
       }).catch(function (err) { H.toast(err.message, "bad"); send.disabled = false; });
     });
@@ -280,7 +280,7 @@
       }
       return wrap;
     });
-  }, { perm: "sessions.own", title: "Notes", nav: { group: "Room", label: "Notes", order: 4 } });
+  }, { perm: "sessions.own", title: "Notes", nav: { group: "Member", label: "Notes", order: 4 } });
 
   function noteRow(n) {
     var row = el("div");
@@ -288,7 +288,7 @@
     text.style.whiteSpace = "pre-wrap";
     text.style.overflow = "visible";
     text.style.textOverflow = "clip";
-    append(row, [append(el("div"), [text, el("div", "secondary", n.readAt ? "read by Elliot" : "waiting for the next session")]), el("div", "meta", H.fmtDate(n.createdAt, { dateStyle: "medium" }))]);
+    append(row, [append(el("div"), [text, el("div", "secondary", n.readAt ? "read by Elliot" : "unread")]), el("div", "meta", H.fmtDate(n.createdAt, { dateStyle: "medium" }))]);
     return row;
   }
 

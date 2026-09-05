@@ -121,7 +121,7 @@
       node.appendChild(label);
     });
     var caption = svg("text", { x: W - 12, y: 40, "font-size": 10, "letter-spacing": 1, "text-anchor": "end", fill: "currentColor", "fill-opacity": ".55", class: "fade" });
-    caption.textContent = completed === 0 ? "the first conversation is the first point" : "each conversation reaches further";
+    caption.textContent = completed === 0 ? "no sessions yet" : completed + (completed === 1 ? " session" : " sessions") + " completed";
     caption.style.setProperty("--d", (t0 + 1000) + "ms");
     node.appendChild(caption);
     return node;
@@ -140,7 +140,7 @@
       var actions = [];
       if (data.balance > 0) actions.push(button("Book a session", "btn primary", function () { H.navigate("/sessions/book"); }));
       actions.push(button(data.balance > 0 ? "Packs and credits" : "Get sessions", data.balance > 0 ? "btn" : "btn primary", function () { H.navigate("/sessions/packs"); }));
-      wrap.appendChild(H.viewHead("Sessions", completed ? "Every conversation builds on the last." : "Your first conversation is the first point on the line.", actions));
+      wrap.appendChild(H.viewHead("Sessions", "Your upcoming and past sessions.", actions));
 
       var figCard = el("div", "card");
       var fig = hopsFigure(completed, upcoming.length > 0);
@@ -170,7 +170,7 @@
       if (!upcoming.length) {
         var e = el("div", "empty");
         e.style.border = "0";
-        e.appendChild(el("p", null, data.balance > 0 ? "Nothing booked. Pick a time." : "Nothing booked yet."));
+        e.appendChild(el("p", null, "No sessions booked."));
         up.appendChild(e);
       } else {
         var list = el("div", "list");
@@ -199,7 +199,7 @@
       wrap.appendChild(tzNote);
       return wrap;
     });
-  }, { perm: "sessions.own", title: "Sessions", nav: { group: "Room", label: "Sessions", order: 1 } });
+  }, { perm: "sessions.own", title: "Sessions", nav: { group: "Member", label: "Sessions", order: 1 } });
 
   function upcomingRow(b, data) {
     var row = el("div");
@@ -224,7 +224,7 @@
       var msg = canMove ? "Cancel this session? The credit comes back to you." : "Cancel this session? It is inside the " + data.cancelNoticeHours + "-hour notice, so the credit is not returned.";
       if (!window.confirm(msg)) return;
       api("/bookings/" + b.id + "/cancel", { method: "POST", body: {} }).then(function (r) {
-        H.toast(r.refund ? "Cancelled. Your credit is back." : "Cancelled.", "good");
+        H.toast(r.refund ? "Cancelled. The credit has been returned." : "Cancelled.", "good");
         H.render();
       }).catch(function (err) { H.toast(err.message, "bad"); });
     }));
@@ -285,7 +285,7 @@
         append(nav, [prev, range, next]);
         card.appendChild(nav);
         if (!days.length) {
-          card.appendChild(H.empty("No free times in these two weeks. Try later, or write to Elliot."));
+          card.appendChild(H.empty("No free times in the next two weeks. Try again later, or email Elliot."));
           return;
         }
         var chips = el("div", "row");
@@ -320,7 +320,7 @@
       var noteInput = null;
       if (!opts.except) {
         noteInput = el("textarea", "textarea");
-        noteInput.placeholder = "Anything you want on the table when we start? Optional.";
+        noteInput.placeholder = "What you want to work on (optional)";
         noteInput.maxLength = 2000;
         card.appendChild(H.field("Note for Elliot", noteInput));
       }
@@ -331,7 +331,7 @@
         if (noteInput) body.note = noteInput.value;
         var req = opts.except ? api("/bookings/" + opts.except + "/move", { method: "POST", body: body }) : api("/bookings", { method: "POST", body: body });
         req.then(function () {
-          H.toast(opts.except ? "Moved. A new calendar file is on its way." : "Booked. A calendar file is on its way to your email.", "good");
+          H.toast(opts.except ? "Moved. A new calendar invitation has been emailed to you." : "Booked. A calendar invitation has been emailed to you.", "good");
           H.flare();
           H.navigate("/sessions");
         }).catch(function (err) { H.toast(err.message, "bad"); ok.disabled = false; if (err.status === 409) load(); });
@@ -357,14 +357,14 @@
   }, { perm: "sessions.own", title: "Book" });
 
   H.register("/sessions/move/:id", function (ctx) {
-    return picker({ title: "Move a session", lede: "Pick the new time. Your credit stays with it.", except: ctx.params.id });
+    return picker({ title: "Move a session", lede: "Pick the new time. The credit stays with the session.", except: ctx.params.id });
   }, { perm: "sessions.own", title: "Move" });
 
   /* ---------- packs and credits ---------- */
 
   H.register("/sessions/packs", function () {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Packs and credits", "A pack is a number of sessions. Ask for one, Elliot sends the invoice, and the credits appear here when it is paid."));
+    wrap.appendChild(H.viewHead("Packs and credits", "A pack is a set of sessions. Request one, and the credits are added when the invoice is paid."));
     return Promise.all([api("/packs").catch(function () { return { packs: [] }; }), api("/credits")]).then(function (r) {
       var packs = r[0].packs, credits = r[1];
       var bal = el("div", "card row between");
@@ -379,7 +379,7 @@
         var oc = el("div", "card stack tight");
         oc.appendChild(el("p", "label", "In progress"));
         open.forEach(function (p) {
-          oc.appendChild(el("p", "small", p.packName + ", " + p.sessions + " sessions: " + (p.status === "requested" ? "requested, invoice on its way" : "invoiced, credits land when it is paid")));
+          oc.appendChild(el("p", "small", p.packName + ", " + p.sessions + " sessions: " + (p.status === "requested" ? "requested" : "invoiced, awaiting payment")));
         });
         wrap.appendChild(oc);
       }
@@ -392,7 +392,7 @@
           var ask = button("Ask for this pack", "btn", function () {
             ask.disabled = true;
             api("/purchases", { method: "POST", body: { packId: p.id } }).then(function () {
-              H.toast("Asked. Elliot will send the invoice.", "good");
+              H.toast("Requested. Elliot will send the invoice.", "good");
               H.flare();
               H.render();
             }).catch(function (err) { H.toast(err.message, "bad"); ask.disabled = false; });
@@ -402,7 +402,7 @@
         });
         wrap.appendChild(grid);
       } else {
-        wrap.appendChild(H.empty("No packs are on offer right now. Ask Elliot directly."));
+        wrap.appendChild(H.empty("No packs available. Contact Elliot directly."));
       }
       if (credits.ledger.length) {
         var lc = el("div", "card pad0");

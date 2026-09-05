@@ -57,7 +57,7 @@ const NOTIFICATION = {
 
 const SUBJECTS = {
   malicious: "The flame has been shut down",
-  concern: "Flame watchdog: worth a look"
+  concern: "Flame watchdog: review needed"
 };
 
 // What the reviewer is told. The agent's own rules are summarised rather than
@@ -278,7 +278,7 @@ export function buildWatchdogEmail(report, { at, reviewed, capped }) {
   const lines = [
     report.verdict === "malicious"
       ? "The watchdog shut the flame down. It stays down until you relight it by hand."
-      : "The watchdog saw something worth a look. The flame is still burning.",
+      : "The watchdog flagged something for review. The flame is still online.",
     "",
     `Run: ${at}`,
     `Conversations reviewed: ${reviewed}${capped ? " (capped, the window held more)" : ""}`,
