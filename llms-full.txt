@@ -6,7 +6,7 @@
 
 This file is the complete visible text of https://chamainteligente.com, in reading
 order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing
-the pages do not say. Last updated 2026-09-03.
+the pages do not say. Last updated 2026-09-09.
 
 Chama Inteligente, Lda. is a Portuguese company (NIPC 519425235) based in Lisbon.
 "Chama Inteligente" is Portuguese for "intelligent flame". It is written "Chama"
@@ -62,24 +62,23 @@ Then we build a first version and you use it. Keep it, change it, or stop there.
 
 ### Software
 
-Your software is your culture.
+The software you run on sets how you work.
 
-The software your company runs on decides what you can and cannot do. It gives you
-the words you use for your work. It sets the process everyone follows, whether
-anyone chose it or not.
+It decides what you can and cannot do, the words you use for your work, and the
+process everyone follows, whether anyone chose it or not.
 
-Most companies rent that culture off the shelf and bend themselves to fit it.
+Most companies buy it off the shelf and change how they work to fit it.
 
 ### Owning it
 
 Software that only your company uses.
 
-Owning your software used to mean hiring an engineering team and carrying it for
-years. AI-native development has changed the cost of both. Software shaped to one
-company is now something that company can afford to own.
+Owning your software used to mean hiring an engineering team and keeping it for
+years. Building with AI has cut the cost of both. A company can now afford
+software made for it alone.
 
-We build it with you and maintain it. It bakes in how you work: your vocabulary,
-your process, your rules.
+We build it with you and maintain it. It is built around how you work: your
+vocabulary, your process, your rules.
 
 When you want to work differently, tell us how. The software changes with you.
 
