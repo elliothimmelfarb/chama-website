@@ -132,7 +132,6 @@ body {
 
 .masthead-notes {
   display: grid;
-  grid-template-columns: repeat(2, auto);
   gap: clamp(1.3rem, 3vw, 3.4rem);
   color: var(--quiet);
   font-size: 0.75rem;
@@ -666,7 +665,6 @@ footer {
 
   .masthead-notes {
     grid-column: 1 / -1;
-    grid-template-columns: 1fr 1fr;
   }
 
   .hero {
@@ -744,11 +742,6 @@ footer {
 }
 
 @media (max-width: 380px) {
-  .masthead-notes {
-    grid-template-columns: 1fr;
-    gap: 0.7rem;
-  }
-
   .hero {
     min-height: auto;
   }
