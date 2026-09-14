@@ -101,7 +101,7 @@
             '<section class="opening" id="opening">' +
               (page
                 ? '<h1>You are talking to the <em>intelligent flame</em>.</h1>'
-                : '<h1>What do you wish the software you run your business on <em>could do</em>?</h1>') +
+                : '<h1>What do you wish your software <em>could do</em>?</h1>') +
             '</section>' +
             '<div id="transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>' +
           '</div>' +
