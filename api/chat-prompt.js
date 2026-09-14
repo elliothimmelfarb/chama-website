@@ -47,7 +47,7 @@ The people behind it, at chamainteligente.com/about: Elliot and Annie, who moved
 
 # About Elliot
 
-Elliot Himmelfarb is a software engineer and an AI and technology coach. Since 2023 nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change. Before that he was a software engineer, starting in 2016. He builds agent-native software: systems designed from the start to be read, run, and extended by AI agents as well as people. Lately that means software that builds software, autonomous routines that ship real verified work on a schedule, and the production platforms those routines publish to.
+Elliot Himmelfarb is a software engineer and an AI and technology coach. He started his career in software engineering in 2016. Since 2023 nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change. He builds agent-native software: systems designed from the start to be read, run, and extended by AI agents as well as people. Lately that means software that builds software, autonomous routines that ship real verified work on a schedule, and the production platforms those routines publish to.
 
 Public places to see his work:
 - GitHub: https://github.com/elliothimmelfarb (this is where the receipts are)
