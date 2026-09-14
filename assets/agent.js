@@ -22,22 +22,6 @@
 
   var MARK_SVG = '<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>';
 
-  var CHIPS = [
-    "Orders get retyped into three places.",
-    "Our monthly reports are assembled by hand.",
-    "Half our work is tracked outside the system.",
-    "What would this cost?",
-    "Leave my contact details."
-  ];
-
-  function chipMarkup() {
-    var out = "";
-    for (var i = 0; i < CHIPS.length; i++) {
-      out += '<button type="button" class="chip">' + CHIPS[i] + "</button>";
-    }
-    return out;
-  }
-
   function template(mode) {
     var page = mode === "page";
     var brand = page
@@ -118,8 +102,6 @@
               (page
                 ? '<h1>You are talking to the <em>intelligent flame</em>.</h1>'
                 : '<h1>What do you wish the software you run your business on <em>could do</em>?</h1>') +
-              '<p>Say it plainly. We ask a question or two, and when you are ready we take a name and a way to reach you.</p>' +
-              '<div class="chips" id="chips">' + chipMarkup() + '</div>' +
             '</section>' +
             '<div id="transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>' +
           '</div>' +
@@ -127,9 +109,6 @@
 
         '<div class="composer">' +
           '<div class="composer-inner">' +
-            '<div class="suggest" id="suggest" hidden>' +
-              '<div class="suggest-track" id="suggest-track" role="list" aria-label="Suggested prompts"></div>' +
-            '</div>' +
             '<form class="bar" id="bar" autocomplete="off">' +
               '<label class="visually-hidden" for="composer-input">Your message to the agent</label>' +
               '<textarea id="composer-input" rows="1" maxlength="4000" placeholder="Tell us what gets in your way" enterkeyhint="send"></textarea>' +
@@ -501,7 +480,6 @@
       resizeTimer = setTimeout(function () {
         layout();
         placeScrim();
-        updateFades();
         // a narrower box rewraps what is already typed
         if (input) autoGrow();
       }, 140);
@@ -536,7 +514,6 @@
     var stage = pick("stage");
     var transcript = pick("transcript");
     var opening = pick("opening");
-    var chips = pick("chips");
     var form = pick("bar");
     var input = pick("composer-input");
     var sendBtn = pick("send");
@@ -550,8 +527,6 @@
       effort: pick("hud-effort")
     };
 
-    var suggest = pick("suggest");
-    var suggestTrack = pick("suggest-track");
     var scrim = pick("scrim");
     var tuneBtn = pick("tune-btn");
     var tunePop = pick("tune-pop");
@@ -572,83 +547,6 @@
 
     var GENERIC = "Something went wrong. Please try again.";
 
-    /* ---- the suggestion row -------------------------------------------- */
-    // The opening chips are the single source of truth for the prompts. Once
-    // the conversation starts they continue as a slim row above the composer,
-    // minus whatever the visitor has already used.
-    var PROMPTS = (function () {
-      var out = [];
-      var nodes = chips.querySelectorAll(".chip");
-      for (var i = 0; i < nodes.length; i++) out.push(nodes[i].textContent);
-      return out;
-    })();
-    var usedPrompts = {};
-
-    function updateFades() {
-      var over = suggestTrack.scrollWidth - suggestTrack.clientWidth;
-      var left = suggestTrack.scrollLeft;
-      suggest.style.setProperty("--fade-l", (over > 2 && left > 2) ? "18px" : "0px");
-      suggest.style.setProperty("--fade-r", (over > 2 && left < over - 2) ? "22px" : "0px");
-    }
-
-    function renderSuggestions() {
-      var talking = transcript.childNodes.length > 0;
-      var left = [];
-      for (var i = 0; i < PROMPTS.length; i++) {
-        if (!usedPrompts[PROMPTS[i]]) left.push(PROMPTS[i]);
-      }
-
-      if (!talking || busy || !left.length) {
-        if (!suggest.hasAttribute("hidden")) {
-          suggest.setAttribute("hidden", "");
-          suggest.classList.remove("in");
-        }
-        return;
-      }
-
-      var same = suggestTrack.children.length === left.length;
-      if (same) {
-        for (var j = 0; j < left.length; j++) {
-          if (suggestTrack.children[j].textContent !== left[j]) { same = false; break; }
-        }
-      }
-      if (!same) {
-        suggestTrack.textContent = "";
-        for (var k = 0; k < left.length; k++) {
-          var b = document.createElement("button");
-          b.type = "button";
-          b.className = "pill";
-          b.setAttribute("role", "listitem");
-          b.textContent = left[k];
-          suggestTrack.appendChild(b);
-        }
-      }
-
-      if (suggest.hasAttribute("hidden")) {
-        suggest.removeAttribute("hidden");
-        if (!reduceMotion) {
-          suggest.classList.remove("in");
-          void suggest.offsetWidth;
-          suggest.classList.add("in");
-        }
-      }
-      updateFades();
-    }
-
-    suggestTrack.addEventListener("scroll", updateFades, { passive: true });
-
-    suggestTrack.addEventListener("click", function (ev) {
-      var b = ev.target.closest ? ev.target.closest(".pill") : null;
-      if (b) send(b.textContent);
-    });
-
-    suggestTrack.addEventListener("keydown", function (ev) {
-      if (ev.key === "Escape") {
-        ev.preventDefault();
-        input.focus();
-      }
-    });
-
     /* ---- legibility: auto dim plus the readability scrim ---------------- */
 
     function placeScrim() {
@@ -666,7 +564,6 @@
       flame.setDim(busyTalking ? 0.62 : 1);
       scrim.classList.toggle("on", busyTalking);
       placeScrim();
-      renderSuggestions();
       if (reduceMotion) staticRepaint();
     }
 
@@ -1187,7 +1084,6 @@
       sendBtn.classList.toggle("busy", on);
       sendBtn.disabled = on;
       sendBtn.setAttribute("aria-label", on ? "The agent is replying" : "Send message");
-      renderSuggestions();
     }
 
     /* ---- links in agent replies ------------------------------------------
@@ -1397,7 +1293,6 @@
       var message = (text || "").replace(/\s+$/, "");
       if (!message || busy) return;
 
-      usedPrompts[message] = true;
       dissolveOpening();
       addTurn("you", message);
       history.push({ role: "user", content: message });
@@ -1579,13 +1474,6 @@
       send(input.value);
     });
 
-    chips.addEventListener("click", function (ev) {
-      var target = ev.target;
-      if (!target || !target.classList || !target.classList.contains("chip")) return;
-      send(target.textContent);
-      input.focus();
-    });
-
     document.addEventListener("visibilitychange", function () {
       if (!document.hidden) flame.wake();
       syncWisp();
@@ -1618,22 +1506,27 @@
       startLoop();
     }
 
-    /* ---- the room and the soft keyboard ------------------------------------
-       A phone keyboard does not take space from the page, it takes space from
-       the screen. On iOS the layout viewport keeps its full height and the
-       browser scrolls the document until the focused field is visible, which
-       walks the top bar and most of the transcript off the top; embedded, the
-       seat magnet then re-seated the room against the shrunken visual
-       viewport and yanked the page a second time.
+    /* ---- the room on a phone: a piece of the page, or the screen ----------
+       A phone has one finger and one scroll. Two scrollers stacked, a page
+       with a room in it and a transcript inside the room, fight for that
+       finger: iOS never hands a gesture from an inner scroller back to the
+       page, a flick can land on a half open room, a keyboard walks the
+       whole layout off the top. Every rule that tried to referee that (a
+       seat, a snap point, a magnet, a hand routed chain out) added a moment
+       where the page moved under a thumb that had not asked for it.
 
-       So the moment the composer takes focus on a touch device the room stops
-       being a piece of the page: it is pinned to the visual viewport, exactly
-       the visible rectangle, and every band of chrome tightens so what the
-       keyboard left goes to the conversation. Nothing scrolls it, so nothing
-       can move it, and the transcript keeps its place at the bottom across
-       the keyboard opening, the keyboard closing and the rotation between.
+       So on a touch device the room is never both. Sitting in the page it
+       is a panel like any other: the page scrolls, the transcript does not.
+       The moment the visitor engages (the composer takes focus, or a tap
+       lands on a conversation already under way) the room leaves the page
+       and becomes a sheet pinned to the visual viewport, exactly the visible
+       rectangle, and the transcript is the only thing there is to scroll.
+       The keyboard opening and closing only resizes the sheet; the sheet
+       stays until Back to page, which hands the page back exactly where the
+       visitor left it.
 
-       On blur the page is handed back exactly where the visitor left it.   */
+       Full screen (page mode) is the sheet by construction, so there the pin
+       only rides the keyboard: on focus, off on blur.                     */
 
     var vv = window.visualViewport || null;
     var kbPinned = false;
@@ -1643,6 +1536,7 @@
     var kbLastH = 0;
     var kbLastTop = 0;
     var stageNear = true;
+    var embedTouch = touchDevice && mode !== "page";
 
     stage.addEventListener("scroll", function () {
       stageNear = nearBottom();
@@ -1687,6 +1581,9 @@
       kbLastH = kbLastTop = 0;
       writeViewport();
       rootEl.classList.add("kb-pin");
+      // embedded, the page behind the sheet is parked: nothing it does can
+      // show, and a scroll it takes would only have to be undone on the way out
+      if (embedTouch) document.documentElement.classList.add("room-pinned");
       window.requestAnimationFrame(function () {
         writeViewport();
         markKeyboard();
@@ -1701,15 +1598,16 @@
       rootEl.classList.remove("kb-open");
       rootEl.style.removeProperty("--vv-height");
       rootEl.style.removeProperty("--vv-top");
+      document.documentElement.classList.remove("room-pinned");
       window.scrollTo(0, mode === "page" ? 0 : kbSavedY);
       window.requestAnimationFrame(function () {
         if (stageNear) toBottom();
       });
     }
 
-    // a tap on send or on a pill blurs the field a moment before its own
-    // click lands: releasing the pin on that blur would move the button out
-    // from under the finger, so the release waits to see whether focus is
+    // page mode only: a tap on send blurs the field a moment before its own
+    // click lands, and releasing the pin on that blur would move the button
+    // out from under the finger, so the release waits to see whether focus is
     // coming straight back
     function releaseViewport() {
       window.clearTimeout(kbRelease);
@@ -1726,7 +1624,7 @@
 
     if (touchDevice) {
       input.addEventListener("focus", pinToViewport);
-      input.addEventListener("blur", releaseViewport);
+      if (!embedTouch) input.addEventListener("blur", releaseViewport);
       if (vv) {
         vv.addEventListener("resize", syncViewport, { passive: true });
         vv.addEventListener("scroll", syncViewport, { passive: true });
@@ -1738,33 +1636,75 @@
       window.addEventListener("orientationchange", function () {
         if (kbPinned) window.setTimeout(syncViewport, 320);
       });
+
+      // a decisive pull down at the top of the transcript is the universal
+      // "put the keyboard away" gesture; and with no keyboard up, a pull past
+      // the transcript's edge has nowhere to go and must not reach the page
+      var pullY = null;
+      stage.addEventListener("touchstart", function (ev) {
+        var t0 = ev.touches && ev.touches[0];
+        pullY = t0 ? t0.clientY : null;
+      }, { passive: true });
+      stage.addEventListener("touchmove", function (ev) {
+        var t1 = ev.touches && ev.touches[0];
+        if (!kbPinned || pullY === null || !t1) return;
+        var dy = t1.clientY - pullY;
+        var atTop = stage.scrollTop <= 0;
+        var atEnd = stage.scrollTop >= stage.scrollHeight - stage.clientHeight - 1;
+        if (atTop && dy > 48 && document.activeElement === input) input.blur();
+        if (((atTop && dy > 0) || (atEnd && dy < 0)) && ev.cancelable) ev.preventDefault();
+      }, { passive: false });
+      stage.addEventListener("touchend", function () { pullY = null; }, { passive: true });
+
+      // embedded, the sheet's chrome (top bar, composer, fine print) is not a
+      // scroller, and a drag on it would pan the page parked behind the sheet
+      rootEl.addEventListener("touchmove", function (ev) {
+        if (!kbPinned || !embedTouch || !ev.cancelable) return;
+        var t = ev.target;
+        if (t && t.closest && t.closest(".stage, textarea, .tune-pop")) return;
+        ev.preventDefault();
+      }, { passive: false });
     }
 
-    /* ---- seating the room (embedded only) ----------------------------------
-       Embedded, the room is one screenful at the end of a long page, and the
-       transcript inside it is a scroller of its own. Two scrollers stacked
-       like that fight each other: a wheel over a half-visible room moves the
-       conversation when the visitor is still trying to reach the room.
+    if (embedTouch) {
+      // sitting in the page the transcript is a panel, not a scroller; a tap
+      // on a conversation already under way opens the sheet, without the
+      // keyboard, so it can be read
+      rootEl.classList.add("seat-pending");
+      stage.addEventListener("click", function (ev) {
+        if (kbPinned || !openingGone) return;
+        if (ev.target && ev.target.closest && ev.target.closest("a, button")) return;
+        pinToViewport();
+      });
+
+      var leaveBtn = rootEl.querySelector("#leave-room");
+      if (leaveBtn) {
+        leaveBtn.addEventListener("click", function () {
+          window.clearTimeout(kbRelease);
+          if (input) input.blur();
+          unpin();
+        });
+      }
+    }
+
+    /* ---- seating the room (embedded, pointer devices) --------------------
+       On a laptop the room is one screenful at the end of a long page, and
+       the transcript inside it is a scroller of its own. Two scrollers
+       stacked like that fight each other: a wheel over a half-visible room
+       moves the conversation when the visitor is still trying to reach the
+       room.
 
        So the transcript only accepts a gesture once the room is seated: its
        bottom edge resting on the bottom of the viewport. Until then the stage
-       is not a scroll target at all (overflow hidden), which is what makes
-       touch and the keyboard behave without a single prevented event. The
-       wheel is routed by hand so one gesture can seat the room, or fill the
-       transcript and hand the remainder back to the page, without the pause
-       the browser's own scroll latching would put in the middle.        */
+       is not a scroll target at all (overflow hidden). The wheel is routed by
+       hand so one gesture can seat the room, or fill the transcript and hand
+       the remainder back to the page, without the pause the browser's own
+       scroll latching would put in the middle.                            */
 
-    if (mode !== "page") {
-      // a finger cannot stop on a pixel, and the room being one thumb's width
-      // off its seat is no reason to hold the transcript shut
-      var SEAT_EPS = touchDevice ? 14 : 2;
+    if (mode !== "page" && !touchDevice) {
+      var SEAT_EPS = 2;
       var seatPending = null;
-      var touchLately = 0;
-      var settleTimer = 0;
       var seatTicking = false;
-      var chainingOut = false;
-      var lastY = window.pageYOffset || 0;
-      var lastDir = 0;
 
       function viewportH() {
         var vv = window.visualViewport;
@@ -1789,153 +1729,19 @@
         window.scrollTo({ top: (window.pageYOffset || 0) + px, behavior: "auto" });
       }
 
-      /* ---- the seat, on a phone ------------------------------------------
-         Touch gets its seat stop from the document's own scroll snapping
-         (index.html, touch pointers only): a proximity snap point at the
-         room's bottom edge, which brings a flick to rest on the seat the
-         way the wheel handler brings a wheel to rest on it, with the
-         browser's physics rather than a fight over touchmove.
-
-         The snap has to know how to stand aside. Every deliberate move away
-         from the seat turns it off, and it is armed again only from a place
-         where arming it cannot move anything under the reader: seated
-         already, or far enough out that the snap has no claim on the page.
-         A phone's URL bar collapsing counts as a scroll, so the arming can
-         never be a pull of its own.                                      */
-      function snapOff() {
-        if (touchDevice) document.documentElement.classList.add("room-unsnapped");
-      }
-
-      function snapArm() {
-        // never mid gesture: a finger is still carrying the page out of the
-        // room, and re-arming under it is exactly the yank this avoids
-        if (!touchDevice || kbPinned || chainingOut) return;
-        var cl = document.documentElement.classList;
-        if (!cl.contains("room-unsnapped")) return;
-        var d = Math.abs(seatDelta());
-        if (d <= SEAT_EPS || d > viewportH() * 0.5) cl.remove("room-unsnapped");
-      }
-
       function markSeat() {
-        if (kbPinned) snapOff(); else snapArm();
-        // pinned to the viewport, the room is the screen: it is seated by
-        // definition and the transcript is the only thing there is to scroll
-        if (kbPinned) {
-          if (seatPending !== false) {
-            seatPending = false;
-            rootEl.classList.remove("seat-pending");
-          }
-          return;
-        }
         var pending = Math.abs(seatDelta()) > SEAT_EPS;
         if (pending === seatPending) return;
         seatPending = pending;
         rootEl.classList.toggle("seat-pending", pending);
       }
 
-      // touch cannot be clamped mid-flick without prevented events, so a
-      // finger that comes to rest near the seat is pulled the last few pixels
-      // in. Armed by touch only: a wheel clamps itself, and the keyboard must
-      // never be pulled back to a place it just left.
-      function magnet() {
-        // On a phone the pull is the jump: a keyboard opening, a URL bar
-        // collapsing or a thumb resting anywhere near the seat would drag the
-        // page under the reader. Touch gets the forgiving epsilon above
-        // instead, and the magnet stays for pointer devices, where a trackpad
-        // flick really does need the last few pixels closed for it.
-        if (touchDevice || kbPinned) return;
-        var d = seatDelta();
-        if (Math.abs(d) <= SEAT_EPS) return;
-        if (Math.abs(d) > viewportH() * 0.22) return;
-        // never pull the visitor back the way they came: a finger travelling
-        // past the room toward the footer is going where it meant to go
-        if (lastDir > 0 && d < 0) return;
-        if (lastDir < 0 && d > 0) return;
-        pageBy(d);
-        markSeat();
-      }
-
       function onPageScroll() {
-        var y = window.pageYOffset || 0;
-        if (y !== lastY) { lastDir = y > lastY ? 1 : -1; lastY = y; }
         if (!seatTicking) {
           seatTicking = true;
           window.requestAnimationFrame(function () { seatTicking = false; markSeat(); });
         }
-        if (touchLately && Date.now() - touchLately < 2600) {
-          touchLately = Date.now();            // ride the momentum out
-          window.clearTimeout(settleTimer);
-          settleTimer = window.setTimeout(magnet, 120);
-        }
       }
-
-      /* ---- the way out, on a phone -------------------------------------
-         Seated, the room is the whole screen and the transcript owns every
-         touch; iOS never hands a gesture from an inner scroller back to the
-         page, it rubber-bands, so a visitor who scrolled into the room had
-         no way to scroll back out of it. Two answers, both explicit:
-
-         a pull past the transcript's edge is routed to the page by hand,
-         which is the chaining the browser refused to do; and the top bar
-         carries a "Back to page" button (touch only, in CSS) that unpins,
-         closes the keyboard and carries the page back above the room.    */
-
-      var leaveBtn = rootEl.querySelector("#leave-room");
-      if (leaveBtn) {
-        leaveBtn.addEventListener("click", function () {
-          window.clearTimeout(kbRelease);
-          if (input) input.blur();
-          unpin();
-          // this one carries the page a whole screen above the room, and the
-          // seat has no business catching it on the way out
-          snapOff();
-          var top = (window.pageYOffset || 0) + rootEl.getBoundingClientRect().top;
-          window.scrollTo({ top: Math.max(0, top - viewportH()), behavior: "smooth" });
-        });
-      }
-
-      if (touchDevice) {
-        var chainY = null;
-        var chainStartY = 0;
-        var chaining = false;
-        stage.addEventListener("touchstart", function (ev) {
-          var t0 = ev.touches && ev.touches[0];
-          if (!t0) return;
-          chainY = chainStartY = t0.clientY;
-          chaining = chainingOut = false;
-        }, { passive: true });
-        stage.addEventListener("touchmove", function (ev) {
-          var t1 = ev.touches && ev.touches[0];
-          if (chainY === null || !t1) return;
-          var y = t1.clientY;
-          var dy = y - chainY;
-          if (kbPinned) {
-            // a decisive pull down at the top of the transcript is the
-            // universal "put the keyboard away" gesture
-            if (y - chainStartY > 48 && stage.scrollTop <= 0 && input) input.blur();
-            chainY = y;
-            return;
-          }
-          if (!chaining) {
-            var atTop = stage.scrollTop <= 0;
-            var atEnd = stage.scrollTop >= stage.scrollHeight - stage.clientHeight - 1;
-            if ((atTop && dy > 0) || (atEnd && dy < 0)) { chaining = chainingOut = true; snapOff(); }
-            else { chainY = y; return; }
-          }
-          // like native chaining, the gesture belongs to the page from here on
-          if (ev.cancelable) ev.preventDefault();
-          window.scrollBy(0, -dy);
-          chainY = y;
-        }, { passive: false });
-        stage.addEventListener("touchend", function () {
-          chainY = null;
-          chaining = chainingOut = false;
-        }, { passive: true });
-      }
-
-      function touched() { touchLately = Date.now(); }
-      rootEl.addEventListener("touchstart", touched, { passive: true });
-      rootEl.addEventListener("touchend", touched, { passive: true });
 
       window.addEventListener("scroll", onPageScroll, { passive: true });
       window.addEventListener("resize", markSeat, { passive: true });
