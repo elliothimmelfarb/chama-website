@@ -1,0 +1,177 @@
+<title>Flame Room Sheet</title>
+<style>
+  :root {
+    --ground: #f3f0e8;
+    --ground-2: #e9e4d8;
+    --ink: #141412;
+    --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14);
+    --ember: #d9481a;
+    --ember-soft: rgba(217, 72, 26, 0.12);
+    --ok: #2f7a4f;
+    --ok-soft: rgba(47, 122, 79, 0.12);
+    --cut: #a63a22;
+    --cut-soft: rgba(166, 58, 34, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a;
+      --ground-2: #171412;
+      --ink: #ece7dc;
+      --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14);
+      --ember: #f4581f;
+      --ember-soft: rgba(244, 88, 31, 0.14);
+      --ok: #7fcf9a;
+      --ok-soft: rgba(127, 207, 154, 0.12);
+      --cut: #e88a6a;
+      --cut-soft: rgba(232, 138, 106, 0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a;
+    --ground-2: #171412;
+    --ink: #ece7dc;
+    --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14);
+    --ember: #f4581f;
+    --ember-soft: rgba(244, 88, 31, 0.14);
+    --ok: #7fcf9a;
+    --ok-soft: rgba(127, 207, 154, 0.12);
+    --cut: #e88a6a;
+    --cut-soft: rgba(232, 138, 106, 0.12);
+  }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    padding-block: 2.5rem 4rem;
+    padding-inline: clamp(1rem, 5vw, 3rem);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 46rem; margin-inline: auto; }
+  .eyebrow {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ember); margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem); font-weight: 500; letter-spacing: -0.045em; line-height: 0.98;
+    margin: 0 0 1rem; text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--ember); }
+  .lede { font-size: 1.08rem; color: var(--ink-dim); margin: 0 0 2.2rem; max-width: 36rem; }
+  h2 {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-dim); margin: 2.6rem 0 0.9rem; padding-top: 1rem; border-top: 1px solid var(--line);
+  }
+  p { margin: 0 0 0.9rem; max-width: 38rem; }
+  .status {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 2rem; padding: 0; list-style: none;
+  }
+  .status li {
+    font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 99px;
+    background: var(--ok-soft); color: var(--ok); border: 1px solid transparent;
+  }
+  .status li a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; }
+
+  .diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0 0 1rem; }
+  @media (max-width: 560px) { .diagram { grid-template-columns: 1fr; } }
+  .diagram figure { margin: 0; }
+  .diagram figcaption { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.5rem; font-weight: 700; }
+  .diagram svg { width: 100%; height: auto; display: block; max-width: 100%; }
+  .diagram .note { font-size: 0.85rem; color: var(--ink-dim); margin-top: 0.5rem; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.6rem 0.55rem 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+  td:first-child { white-space: nowrap; }
+  .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 4px; }
+  .tag.cut { background: var(--cut-soft); color: var(--cut); }
+  .tag.new { background: var(--ember-soft); color: var(--ember); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.86em; background: var(--ground-2); padding: 0.05em 0.3em; border-radius: 3px; }
+  .verify { margin: 0; padding-left: 1.2rem; max-width: 38rem; }
+  .verify li { margin-bottom: 0.4rem; }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">chamainteligente.com · shipped 2026-09-14</p>
+  <h1>The room is a panel <em>or</em> a sheet, never both</h1>
+  <p class="lede">Two things shipped: the flame room now opens with just the question and the message box, and on phones the nested-scroller model that caused the scroll reports is gone.</p>
+
+  <ul class="status">
+    <li>Live on production</li>
+    <li><a href="https://github.com/elliothimmelfarb/chama-website/pull/46">PR #46 merged</a></li>
+    <li><a href="https://github.com/elliothimmelfarb/chama-website/issues/45">Issue #45 closed</a></li>
+    <li>362 tests pass</li>
+    <li>Brain wiki updated</li>
+  </ul>
+
+  <h2>Copy</h2>
+  <p>Removed under the headline: the line "Say it plainly. We ask a question or two…" and the five starter chips ("Orders get retyped into three places." and the rest). The row of the same prompts that appeared above the composer mid-conversation went with them. The placeholder "Tell us what gets in your way" is the only prompt left. Same change on <code>/agent</code>, which shares the app.</p>
+
+  <h2>What was wrong on phones</h2>
+  <p>The room sat at the end of a long page with the transcript as a second scroller inside it. Four referees tried to decide which one a thumb meant: a document scroll snap at the room's bottom edge, a "seat" that opened the transcript only once the room sat flush, a hand-routed chain that scrolled the page from inside the transcript with <code>preventDefault</code>, and a keyboard pin that released on blur. Each one could move the page under a finger that had not asked for it, and iOS's URL bar collapse counted as a scroll to all of them.</p>
+
+  <div class="diagram">
+    <figure>
+      <figcaption>Before</figcaption>
+      <svg viewBox="0 0 300 220" role="img" aria-label="A page with a room inside it, and a transcript scroller inside the room, with four referees between them">
+        <rect x="20" y="10" width="120" height="200" rx="6" fill="none" stroke="var(--ink-dim)" stroke-width="1.5"/>
+        <text x="80" y="30" font-size="10" fill="var(--ink-dim)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">page scrolls</text>
+        <rect x="32" y="80" width="96" height="100" rx="4" fill="var(--ember-soft)" stroke="var(--ember)" stroke-width="1.5"/>
+        <text x="80" y="98" font-size="10" fill="var(--ember)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">room</text>
+        <rect x="44" y="108" width="72" height="60" rx="3" fill="none" stroke="var(--ember)" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <text x="80" y="142" font-size="9" fill="var(--ember)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">transcript scrolls</text>
+        <g font-size="10" fill="var(--cut)" font-family="Helvetica, Arial, sans-serif">
+          <text x="160" y="70">✕ scroll snap</text>
+          <text x="160" y="95">✕ seat magnet</text>
+          <text x="160" y="120">✕ chain by hand</text>
+          <text x="160" y="145">✕ pin off on blur</text>
+        </g>
+      </svg>
+      <p class="note">Two scrollers, four rules deciding which one wins.</p>
+    </figure>
+    <figure>
+      <figcaption>After</figcaption>
+      <svg viewBox="0 0 300 220" role="img" aria-label="Two states: the room as a static panel in a scrolling page, and the room as a sheet covering the screen with only the transcript scrolling">
+        <rect x="20" y="10" width="110" height="200" rx="6" fill="none" stroke="var(--ink-dim)" stroke-width="1.5"/>
+        <text x="75" y="30" font-size="10" fill="var(--ink-dim)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">page scrolls</text>
+        <rect x="32" y="80" width="86" height="100" rx="4" fill="var(--ember-soft)" stroke="var(--ember)" stroke-width="1.5"/>
+        <text x="75" y="134" font-size="10" fill="var(--ember)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">panel</text>
+        <text x="150" y="115" font-size="14" fill="var(--ink-dim)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">⇄</text>
+        <rect x="170" y="10" width="110" height="200" rx="6" fill="var(--ember-soft)" stroke="var(--ember)" stroke-width="1.5"/>
+        <text x="225" y="30" font-size="10" fill="var(--ember)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">sheet</text>
+        <rect x="182" y="45" width="86" height="120" rx="3" fill="none" stroke="var(--ember)" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <text x="225" y="110" font-size="9" fill="var(--ember)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">transcript scrolls</text>
+        <text x="225" y="195" font-size="9" fill="var(--ink-dim)" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Back to page ↑</text>
+      </svg>
+      <p class="note">One scroller at a time. Tapping the composer, or a conversation under way, opens the sheet.</p>
+    </figure>
+  </div>
+
+  <h2>The change, in code</h2>
+  <table>
+    <thead><tr><th>Piece</th><th>Now</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag cut">cut</span> scroll snap</td><td><code>scroll-snap-type</code> on <code>html</code> and the <code>room-unsnapped</code> arming logic, gone from <code>site.css</code> and <code>agent.js</code>.</td></tr>
+      <tr><td><span class="tag cut">cut</span> seat on touch</td><td>Seat detection, magnet and settle timers run only on pointer devices. The laptop wheel path is untouched.</td></tr>
+      <tr><td><span class="tag cut">cut</span> chaining</td><td>The touchmove handler that scrolled the page from inside the transcript is gone.</td></tr>
+      <tr><td><span class="tag new">new</span> sheet</td><td>Embedded on touch, the pin (<code>kb-pin</code>) stays up for the whole conversation. <code>html.room-pinned</code> parks the document; a pull past the transcript's edge or a drag on the sheet's chrome is prevented so nothing behind moves.</td></tr>
+      <tr><td><span class="tag new">new</span> ways in</td><td>Focus the composer, or tap a transcript already under way (no keyboard). Links and buttons inside it still do their own thing.</td></tr>
+      <tr><td><span class="tag new">new</span> way out</td><td>Back to page unpins and returns the page to the exact scroll position it left.</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:1rem">Net: 123 lines added, 429 removed across <code>agent.js</code>, <code>agent.css</code>, <code>site.css</code>, README.</p>
+
+  <h2>Verified</h2>
+  <ul class="verify">
+    <li>Headless Playwright, iPhone 13 emulation, against the live site: touch flicks carry the page through the room without the transcript catching; focus pins the sheet at the top of the screen; send and blur keep it; a flick on the sheet leaves the page's scroll position untouched; Back to page restores it; tapping the transcript reopens the sheet without raising the keyboard.</li>
+    <li>Desktop wheel seat and the <code>/agent</code> keyboard pin behave as before. No console errors.</li>
+    <li>Removed strings are absent from the deployed <code>agent.js</code> and <code>site.css</code>.</li>
+  </ul>
+
+  <h2>Worth a real thumb</h2>
+  <p>The emulator cannot reproduce iOS's own keyboard animation or the URL bar collapse. The two moments to try on a phone: tap the composer and watch the sheet ride the keyboard in, and close the keyboard and scroll a long reply. If either stutters, the visual viewport tracking in <code>writeViewport</code> is where to look.</p>
+</div>
