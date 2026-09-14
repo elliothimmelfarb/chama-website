@@ -1,0 +1,152 @@
+<title>One Footer</title>
+<style>
+  :root {
+    --ground: #f3f0e8;
+    --ground-2: #e9e4d8;
+    --ink: #141412;
+    --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14);
+    --ember: #d9481a;
+    --ember-soft: rgba(217, 72, 26, 0.12);
+    --ok: #2f7a4f;
+    --ok-soft: rgba(47, 122, 79, 0.12);
+    --cut: #a63a22;
+    --cut-soft: rgba(166, 58, 34, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a;
+      --ground-2: #171412;
+      --ink: #ece7dc;
+      --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14);
+      --ember: #f4581f;
+      --ember-soft: rgba(244, 88, 31, 0.14);
+      --ok: #7fcf9a;
+      --ok-soft: rgba(127, 207, 154, 0.12);
+      --cut: #e88a6a;
+      --cut-soft: rgba(232, 138, 106, 0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a;
+    --ground-2: #171412;
+    --ink: #ece7dc;
+    --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14);
+    --ember: #f4581f;
+    --ember-soft: rgba(244, 88, 31, 0.14);
+    --ok: #7fcf9a;
+    --ok-soft: rgba(127, 207, 154, 0.12);
+    --cut: #e88a6a;
+    --cut-soft: rgba(232, 138, 106, 0.12);
+  }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    padding-block: 2.5rem 4rem;
+    padding-inline: clamp(1rem, 5vw, 3rem);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 46rem; margin-inline: auto; }
+  .eyebrow {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ember); margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem); font-weight: 500; letter-spacing: -0.045em; line-height: 0.98;
+    margin: 0 0 1rem; text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--ember); }
+  .lede { font-size: 1.08rem; color: var(--ink-dim); margin: 0 0 2.2rem; max-width: 36rem; }
+  h2 {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-dim); margin: 2.6rem 0 0.9rem; padding-top: 1rem; border-top: 1px solid var(--line);
+  }
+  p { margin: 0 0 0.9rem; max-width: 38rem; }
+  .status {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 2rem; padding: 0; list-style: none;
+  }
+  .status li {
+    font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 99px;
+    background: var(--ok-soft); color: var(--ok); border: 1px solid transparent;
+  }
+  .status li a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; }
+
+  .diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0 0 1rem; }
+  @media (max-width: 560px) { .diagram { grid-template-columns: 1fr; } }
+  .diagram figure { margin: 0; }
+  .diagram figcaption { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.5rem; font-weight: 700; }
+  .diagram svg { width: 100%; height: auto; display: block; max-width: 100%; }
+  .diagram .note { font-size: 0.85rem; color: var(--ink-dim); margin-top: 0.5rem; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.6rem 0.55rem 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+  td:first-child { white-space: nowrap; }
+  .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 4px; }
+  .tag.cut { background: var(--cut-soft); color: var(--cut); }
+  .tag.new { background: var(--ember-soft); color: var(--ember); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.86em; background: var(--ground-2); padding: 0.05em 0.3em; border-radius: 3px; }
+  .verify { margin: 0; padding-left: 1.2rem; max-width: 38rem; }
+  .verify li { margin-bottom: 0.4rem; }
+</style>
+<style>
+  .grid { display: grid; grid-template-columns: 9rem 1fr 1fr; gap: 0.6rem 1rem; font-size: 0.9rem; margin: 0 0 1rem; }
+  .grid .h { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); }
+  .grid .pg { font-weight: 600; }
+  .grid .before { color: var(--ink-dim); }
+  .grid .after { color: var(--ok); }
+  .grid .before.cut { color: var(--cut); }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } .grid .h { display: none; } .grid .pg { margin-top: 0.6rem; } }
+  .footer-demo {
+    margin: 0 0 1rem; padding: 1.4rem 1.2rem; background: #0e0c0a; color: #8d867c; font-size: 0.75rem;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem 2rem; border-radius: 4px;
+  }
+  .footer-demo span { white-space: nowrap; }
+  .footer-demo .now { color: #ece7dc; }
+  .footer-demo u { text-underline-offset: 0.18em; }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">chamainteligente.com · shipped 2026-09-14</p>
+  <h1>One footer, <em>five</em> pages</h1>
+  <p class="lede">Every public page now ends the same way: the company line, the company LinkedIn, and a site map of the four public pages with the current page marked. Before, three pages had three different footers and two had none.</p>
+
+  <ul class="status">
+    <li>Live on production</li>
+    <li><a href="https://github.com/elliothimmelfarb/chama-website/pull/50">PR #50 merged</a></li>
+    <li>362 tests pass</li>
+    <li>Checked live with curl on all five URLs</li>
+  </ul>
+
+  <h2>What the footer says now</h2>
+  <div class="footer-demo" aria-label="The footer as it renders on the About page">
+    <span>Chama Inteligente, Lda. · Lisbon, Portugal</span>
+    <span>in</span>
+    <span><u>Software</u> · <u>Training and coaching</u> · <span class="now">About</span> · <u>Privacy</u></span>
+  </div>
+  <p>The current page is named but not underlined, so the reader can see where they stand. On phones the three parts stack.</p>
+
+  <h2>Page by page</h2>
+  <div class="grid">
+    <div class="h">Page</div><div class="h">Before</div><div class="h">After</div>
+    <div class="pg">/</div><div class="before">Tagline as plain text, then Training, About, Privacy. LinkedIn only.</div><div class="after">Site map with Software marked current. LinkedIn.</div>
+    <div class="pg">/training</div><div class="before">Same line, plus a GitHub icon.</div><div class="after">Same footer, Training marked current. GitHub icon removed.</div>
+    <div class="pg">/about</div><div class="before">Same line, plus a GitHub icon.</div><div class="after">Same footer, About marked current. GitHub icon removed.</div>
+    <div class="pg">/privacy</div><div class="before cut">No footer.</div><div class="after">Same footer, Privacy marked current.</div>
+    <div class="pg">404</div><div class="before cut">No footer.</div><div class="after">Same footer, nothing marked.</div>
+  </div>
+
+  <h2>Decisions</h2>
+  <p><strong>The home page is "Software".</strong> The old list opened with the tagline "Software crafted for your company, and only yours" as unlinked text, so the one page you could not reach from the footer was the home page. The site has two offers, software and training, so the map names them side by side. If you would rather it said "Home", that is a one-word change in five files.</p>
+  <p><strong>Company only.</strong> The GitHub icon was removed from the home footer on 2026-09-03 ("no name, no instruments") but survived on About and Training. The footer is the company's, so it is LinkedIn everywhere; your GitHub stays in the founder pill on /about.</p>
+  <p><strong>Members stays off.</strong> The README records that the Members pill lives only on /training, beside the coaching it belongs to. The footer respects that.</p>
+  <p><strong>No include step.</strong> Privacy and 404 keep their own inline styles, so the footer rules are copied into them. The README now says to change all five files together.</p>
+
+  <h2>Not done</h2>
+  <p>IndexNow was not pushed: a footer change is not a content change worth announcing, and the sitemap dates are unchanged.</p>
+</div>
