@@ -112,6 +112,79 @@
       border-bottom: 1px solid rgba(20, 20, 18, 0.28);
       font-size: clamp(1.08rem, 2vw, 1.3rem);
     }
+
+    /* The footer, the same on every page. Mirrors site.css, which this
+       page does not load. */
+    .page-end {
+      padding-top: clamp(2.6rem, 5vw, 4.4rem);
+      padding-bottom: 2rem;
+      background: #0e0c0a;
+      color: #8d867c;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .footer-inner p {
+      margin: 0;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    .footer-inner a {
+      color: inherit;
+      text-underline-offset: 0.18em;
+    }
+
+    .footer-inner a:hover,
+    .footer-inner a:focus-visible { color: var(--ember); }
+
+    .footer-map a[aria-current="page"] {
+      text-decoration: none;
+      color: #ece7dc;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.6rem;
+      border: 1px solid rgba(20, 20, 18, 0.24);
+      border-radius: 999px;
+      color: #8d867c;
+      line-height: 1;
+      text-decoration: none;
+    }
+
+    .social-link svg {
+      width: 0.9rem;
+      height: 0.9rem;
+      fill: currentColor;
+      display: block;
+    }
+
+    .social-link:hover,
+    .social-link:focus-visible {
+      border-color: var(--ember);
+      color: var(--ember);
+    }
+
+    @media (max-width: 760px) {
+      .footer-inner {
+        display: grid;
+        gap: 0.3rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -130,6 +203,17 @@
       </ul>
     </div>
   </main>
+  <footer class="page-end">
+    <div class="frame footer-inner">
+      <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
+      <div class="footer-social">
+        <a class="social-link" href="https://www.linkedin.com/company/chama-inteligente/" rel="noopener" target="_blank" aria-label="Chama Inteligente on LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </a>
+      </div>
+      <nav class="footer-map" aria-label="Site"><a href="/">Software</a> &middot; <a href="/training">Training and coaching</a> &middot; <a href="/about">About</a> &middot; <a href="/privacy">Privacy</a></nav>
+    </div>
+  </footer>
   <script type="speculationrules">
   {
     "prefetch": [

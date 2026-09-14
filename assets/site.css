@@ -584,6 +584,13 @@ footer {
   margin: 0;
 }
 
+/* The site map: the same four links on every page, the current page
+   named but not underlined, so the reader can see where they stand. */
+.footer-map a[aria-current="page"] {
+  text-decoration: none;
+  color: #ece7dc;
+}
+
 /* The About photo sits beside its copy only when the copy column is
    wide enough to keep a readable measure next to a 21rem picture. On a
    tablet the two columns of the section already take most of the width,
