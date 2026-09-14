@@ -132,7 +132,6 @@ body {
 
 .masthead-notes {
   display: grid;
-  grid-template-columns: repeat(2, auto);
   gap: clamp(1.3rem, 3vw, 3.4rem);
   color: var(--quiet);
   font-size: 0.75rem;
@@ -515,38 +514,17 @@ body {
   overflow: hidden;
 }
 
-/* The seat, on a phone.
+/* The room as a sheet, on a phone.
 
-   A wheel can be clamped in the middle of a gesture, which is how the
-   room seats itself on a laptop (agent.js routes the wheel by hand). A
-   flick cannot: stopping one would mean preventing touchmove across the
-   whole room, and that takes the page's own scrolling away from it. So
-   the seat is handed to the browser instead. The document carries a
-   single proximity snap point at the room's bottom edge, so a flick
-   toward the room comes to rest with the room resting on the bottom of
-   the screen, and only then does the transcript inside it open. One
-   snap area, and proximity rather than mandatory, so everything above
-   and below the room still scrolls exactly as it always did.
+   A touch device never stacks two scrollers: sitting in the page the room
+   is a panel and only the page scrolls; engaged, agent.js pins the room to
+   the visual viewport as a sheet (.kb-pin) and parks the document behind
+   it (.room-pinned), so a pull past the transcript's edge has nowhere to
+   go. The pin ends with Back to page, which restores the scroll position. */
 
-   Touch pointers only: a laptop keeps the hand routed wheel, untouched.
-
-   agent.js takes the snap off the document (.room-unsnapped) for the
-   three moments where a pull is deliberately away from the seat and a
-   snap back would fight it: the keyboard pin, the chaining out of the
-   transcript, and the Back to page button. */
-
-@media (hover: none) and (pointer: coarse) {
-  html {
-    scroll-snap-type: y proximity;
-  }
-
-  .flame-room {
-    scroll-snap-align: end;
-  }
-
-  html.room-unsnapped {
-    scroll-snap-type: none;
-  }
+html.room-pinned {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* The mounted room sizes itself (agent.css owns .chama-agent-mode-embed),
@@ -666,7 +644,6 @@ footer {
 
   .masthead-notes {
     grid-column: 1 / -1;
-    grid-template-columns: 1fr 1fr;
   }
 
   .hero {
@@ -744,11 +721,6 @@ footer {
 }
 
 @media (max-width: 380px) {
-  .masthead-notes {
-    grid-template-columns: 1fr;
-    gap: 0.7rem;
-  }
-
   .hero {
     min-height: auto;
   }

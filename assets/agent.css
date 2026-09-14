@@ -80,18 +80,20 @@ body.chama-agent-page {
   overflow: hidden;
 }
 
-/* ---- the room while a phone keyboard is up ----------------------------
+/* ---- the room as a sheet ------------------------------------------------
    A soft keyboard does not shrink the layout viewport on iOS: the browser
    keeps the page its full height and scrolls it so the focused field is
    visible, which walks the top bar and most of the transcript off the top
-   of the screen. So the moment the composer takes focus on a touch device
-   the room stops being a piece of the page and becomes a sheet pinned to
-   the visual viewport: agent.js writes --vv-height and --vv-top from
-   window.visualViewport, and the room is exactly the visible area, never
-   larger, never offset. Nothing scrolls it, so nothing can move it.
+   of the screen. So on a touch device the engaged room stops being a piece
+   of the page and becomes a sheet pinned to the visual viewport: agent.js
+   writes --vv-height and --vv-top from window.visualViewport, and the room
+   is exactly the visible area, never larger, never offset. Nothing scrolls
+   it, so nothing can move it.
 
-   Embedded, the host box keeps its own height in the flow, so the page
-   behind the sheet does not reflow and comes back untouched on blur. */
+   Embedded, the sheet stays up for the whole conversation (Back to page
+   takes it down), and the host box keeps its own height in the flow, so
+   the page behind the sheet does not reflow and comes back untouched.
+   Full screen, the pin only rides the keyboard. */
 
 .chama-agent.kb-pin {
   top: var(--vv-top, 0px);
@@ -104,10 +106,9 @@ body.chama-agent-page {
   z-index: 60;
 }
 
-/* pinned, the transcript is the only scroller that matters: it is open
-   whatever the seat says, since the room is the whole screen and there is
-   nothing else a finger could mean, and an overscroll at either end must
-   not reach the page sitting behind the sheet */
+/* pinned, the transcript is the only scroller there is: it is open whatever
+   the seat says, since the room is the whole screen, and an overscroll at
+   either end must not reach the page sitting behind the sheet */
 .chama-agent-mode-page .stage,
 .chama-agent.kb-pin .stage {
   overscroll-behavior-y: contain;
@@ -131,7 +132,6 @@ body.chama-agent-page {
   padding-top: 1rem;
   padding-bottom: 1.2rem;
 }
-.chama-agent.kb-open .suggest { margin-bottom: 0.4rem; }
 
 .chama-agent * { box-sizing: border-box; }
 
@@ -206,8 +206,8 @@ body.chama-agent-page {
   z-index: 2;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  /* grid items default to min-width auto, which would let the suggestion
-     row's intrinsic width push the whole column past the container */
+  /* grid items default to min-width auto, which would let a wide child
+     push the whole column past the container */
   grid-template-columns: minmax(0, 1fr);
 }
 .chama-agent .shell > * { min-width: 0; }
@@ -353,9 +353,9 @@ body.chama-agent-page {
   border-bottom-color: var(--ember-soft);
 }
 
-/* the way back up, for a thumb: on a phone the seated room owns every
-   gesture, so the bar states the exit in words. Shown by the touch media
-   block below; a mouse leaves with the wheel and never needs it. */
+/* the way back up, for a thumb: on a phone the engaged room is a sheet
+   over the page, so the bar states the exit in words. Shown by the touch
+   media block below; a mouse leaves with the wheel and never needs it. */
 .chama-agent .leave-link {
   display: none;
   flex: none;
@@ -604,8 +604,9 @@ body.chama-agent-page {
   -webkit-overflow-scrolling: touch;
 }
 /* embedded, the transcript is only a scroll target once the room is seated:
-   its bottom edge resting on the bottom of the viewport. Until then a wheel or
-   a finger over the room belongs to the page. */
+   its bottom edge resting on the bottom of the viewport (pointer devices),
+   or pinned as a sheet (touch). Until then a wheel or a finger over the room
+   belongs to the page. */
 .chama-agent.seat-pending .stage {
   overflow-y: hidden;
 }
@@ -647,40 +648,6 @@ body.chama-agent-page {
   color: var(--ember);
   text-shadow: 0 0 34px rgba(244, 88, 31, 0.4);
 }
-.chama-agent .opening p {
-  margin: 0 0 1.9rem;
-  max-width: 34rem;
-  color: var(--text-dim);
-  font-size: 0.95rem;
-  line-height: 1.55;
-}
-.chama-agent .chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--line);
-}
-.chama-agent .chip {
-  appearance: none;
-  background: rgba(243, 240, 232, 0.03);
-  border: 1px solid var(--line);
-  color: var(--text-dim);
-  font-family: inherit;
-  font-size: 0.79rem;
-  letter-spacing: -0.005em;
-  padding: 0.5rem 0.8rem;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
-}
-.chama-agent .chip:hover {
-  color: var(--paper);
-  border-color: var(--ember-soft);
-  background: rgba(244, 88, 31, 0.09);
-  transform: translateY(-1px);
-}
-
 .chama-agent .opening.dissolving {
   animation: chama-dissolve 480ms ease forwards;
 }
@@ -820,62 +787,6 @@ body.chama-agent-page {
     margin-left: max(0px, min(calc(50% - 2rem), calc(100% - var(--col))));
     margin-right: 0;
   }
-}
-
-/* the starters stay reachable for the whole conversation: one quiet line
-   of glass pills riding just above the composer */
-.chama-agent .suggest {
-  position: relative;
-  margin: 0 0.15rem 0.5rem;
-  -webkit-mask-image: linear-gradient(90deg,
-    transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
-  mask-image: linear-gradient(90deg,
-    transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
-}
-.chama-agent .suggest[hidden] { display: none; }
-.chama-agent .suggest.in { animation: chama-suggestin 460ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-@keyframes chama-suggestin {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
-}
-
-.chama-agent .suggest-track {
-  display: flex;
-  max-width: 100%;
-  gap: 0.4rem;
-  padding: 0.2rem 0.1rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-}
-.chama-agent .suggest-track::-webkit-scrollbar { display: none; }
-
-.chama-agent .pill {
-  flex: none;
-  appearance: none;
-  border: 1px solid var(--line);
-  border-radius: 99px;
-  padding: 0.36rem 0.72rem;
-  background: rgba(16, 14, 12, 0.55);
-  backdrop-filter: blur(14px) saturate(1.1);
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
-  color: var(--text-dim);
-  font-family: inherit;
-  font-size: 0.72rem;
-  letter-spacing: -0.005em;
-  line-height: 1.25;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
-}
-.chama-agent .pill:hover {
-  color: var(--paper);
-  border-color: var(--ember-soft);
-  background: rgba(244, 88, 31, 0.12);
-  transform: translateY(-1px);
 }
 
 .chama-agent .bar {
@@ -1052,7 +963,6 @@ body.chama-agent-page {
 
   .chama-agent .topbar,
   .chama-agent .bar,
-  .chama-agent .pill,
   .chama-agent .tune-pop {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -1064,7 +974,6 @@ body.chama-agent-page {
     background: linear-gradient(180deg, var(--ground) 58%, rgba(14, 12, 10, 0));
   }
   .chama-agent .bar { background: rgba(16, 14, 12, 0.88); }
-  .chama-agent .pill { background: rgba(16, 14, 12, 0.8); }
   .chama-agent .tune-pop { background: rgba(16, 14, 12, 0.96); }
 
   /* A held finger belongs to the fire, not to the text. Long pressing the
