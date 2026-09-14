@@ -162,8 +162,9 @@ Prefer to build your own software?
 We also build alongside individuals and small teams, and teach them to develop
 software the AI-native way.
 
-And if you would rather have it built and run for you, that is the main thing we
-do: software crafted for one company, yours (https://chamainteligente.com/).
+Whichever suits you, we would be glad to help. See the software we build for
+companies (https://chamainteligente.com/), or start a conversation
+(https://chamainteligente.com/agent) and tell us what you have in mind.
 
 ### The outcome
 
