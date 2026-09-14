@@ -24,7 +24,7 @@ Written "Chama." Pronounced "Shama."
 ### Software crafted for one company. Yours.
 
 Your process, your words, your rules. Buy it once, and a monthly subscription
-keeps us hosting it, running it, and changing it whenever you ask.
+keeps it hosted, running, and changing whenever you ask.
 
 Start here. The second panel of the page is the conversation: a live Claude agent
 that opens with the question "What do you wish the software you run your business
