@@ -213,7 +213,7 @@ body {
 .hero h1 {
   align-self: center;
   margin: 0;
-  max-width: 12ch;
+  max-width: 20ch;
   font-size: clamp(3.3rem, 8.2vw, 7.6rem);
   font-weight: 500;
   letter-spacing: -0.075em;
