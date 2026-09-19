@@ -1478,6 +1478,9 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     });
 
     input.addEventListener("keydown", function (ev) {
+      // an Enter that closes an IME candidate list is not a send: while a
+      // composition is running the key belongs to the input method
+      if (ev.isComposing || ev.keyCode === 229) return;
       if (ev.key === "Enter" && !ev.shiftKey) {
         ev.preventDefault();
         send(input.value);
