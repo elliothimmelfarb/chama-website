@@ -313,6 +313,22 @@ test("settings refuse a value out of shape and accept one in shape", async () =>
   assert.deepEqual(inserts[0].values, ["session_minutes", "45", "actor-1"]);
 });
 
+test("a timezone the calculator cannot resolve is refused", async () => {
+  const db = signedIn({ role: "owner", permissions: [] });
+  useClient(db);
+  const refused = await handleHearth(
+    hearth("/admin/settings", { method: "PUT", cookie: "t", body: JSON.stringify({ owner_timezone: "Mars/Olympus" }) })
+  );
+  assert.equal(refused.status, 400);
+  assert.equal(db.count(/insert into settings/), 0);
+
+  const accepted = await handleHearth(
+    hearth("/admin/settings", { method: "PUT", cookie: "t", body: JSON.stringify({ owner_timezone: "Europe/Berlin" }) })
+  );
+  assert.equal(accepted.status, 200);
+  assert.equal(db.count(/insert into settings/), 1);
+});
+
 test("the audit log needs audit.read", async () => {
   useClient(signedIn({ role: "client", permissions: ["hearth.enter"] }));
   const refused = await handleHearth(hearth("/admin/audit", { cookie: "t" }));

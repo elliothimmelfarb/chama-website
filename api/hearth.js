@@ -26,6 +26,7 @@ import {
   publicUser, countOwners, promoteIfAdmin
 } from "../lib/hearth/users.js";
 import { PERMISSIONS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
+import { isValidZone } from "../lib/hearth/time.js";
 import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
 import * as mail from "../lib/hearth/mail.js";
 import { registerSessionRoutes } from "../lib/hearth/routes/sessions.js";
@@ -112,7 +113,9 @@ function validSetting(key, value) {
     case "open_signup":
       return typeof value === "boolean";
     case "owner_timezone":
-      return typeof value === "string" && value.length <= 64;
+      // The slot calculator does date arithmetic in this zone; a name it
+      // cannot resolve would break every booking.
+      return typeof value === "string" && value.length <= 64 && isValidZone(value);
     default:
       return false;
   }
