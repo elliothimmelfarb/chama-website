@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildNotification, buildRecord, sendNotification, validate } from "./intake.js";
+import intake, { buildNotification, buildRecord, sendNotification, validate } from "./intake.js";
 
 test("accepts the approved required fields and optional WhatsApp number", () => {
   const result = validate({
@@ -190,3 +190,24 @@ test("treats a provider error as a failed notification", async () => {
 
   await assert.rejects(() => sendNotification(record, client), /EmailDeliveryError/);
 });
+
+// A JSON body that is not an object is not a form. It used to reach the
+// automation check as a bare value and throw, which the platform turned into
+// a 500; it now fails validation like any empty submission.
+function postJson(body) {
+  return new Request("https://chamainteligente.com/api/intake", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body
+  });
+}
+
+for (const [label, body] of [["null", "null"], ["an array", "[]"], ["a string", '"x"'], ["a number", "7"]]) {
+  test(`answers 400 when the JSON body is ${label}`, async () => {
+    const response = await intake.fetch(postJson(body));
+
+    assert.equal(response.status, 400);
+    const payload = await response.json();
+    assert.match(payload.error, /include your name/);
+  });
+}
