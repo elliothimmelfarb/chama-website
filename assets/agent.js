@@ -96,16 +96,20 @@
           '</div>' +
         '</header>' +
 
-        '<main class="stage" id="stage">' +
+        // Full screen the room is the page, so the stage is its main landmark
+        // and the opening line its h1. Embedded it sits inside the home page's
+        // own main, under the page's own h1, so it is a plain div and an h2:
+        // one main landmark and one h1 per document, either way.
+        (page ? '<main class="stage" id="stage">' : '<div class="stage" id="stage">') +
           '<div class="column">' +
             '<section class="opening" id="opening">' +
               (page
                 ? '<h1>You are talking to the <em>intelligent flame</em>.</h1>'
-                : '<h1>What do you wish your software <em>could do</em>?</h1>') +
+                : '<h2>What do you wish your software <em>could do</em>?</h2>') +
             '</section>' +
             '<div id="transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>' +
           '</div>' +
-        '</main>' +
+        (page ? '</main>' : '</div>') +
 
         '<div class="composer">' +
           '<div class="composer-inner">' +

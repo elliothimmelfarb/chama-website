@@ -305,7 +305,7 @@ body.chama-agent-page {
    readout and the tune button are instruments for the full screen room;
    the panel on the home page is for the visitor's business, so they stay
    out of sight (the agent can still tune the flame when asked). */
-.chama-agent-mode-embed .opening h1 {
+.chama-agent-mode-embed .opening h2 {
   font-size: clamp(1.9rem, 5cqw, 3.4rem);
   letter-spacing: -0.05em;
   line-height: 0.98;
@@ -635,7 +635,8 @@ body.chama-agent-page {
 
 /* empty state */
 
-.chama-agent .opening h1 {
+.chama-agent .opening h1,
+.chama-agent .opening h2 {
   margin: 0 0 1.25rem;
   font-size: clamp(2.5rem, 7.2cqw, 4.6rem);
   font-weight: 500;
@@ -643,7 +644,8 @@ body.chama-agent-page {
   line-height: 0.9;
   text-wrap: balance;
 }
-.chama-agent .opening h1 em {
+.chama-agent .opening h1 em,
+.chama-agent .opening h2 em {
   font-style: normal;
   color: var(--ember);
   text-shadow: 0 0 34px rgba(244, 88, 31, 0.4);
