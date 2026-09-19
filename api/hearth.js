@@ -388,6 +388,9 @@ route("DELETE", "/auth/password", async (context) => {
   const body = await readJson(context.request);
   const existing = await sql()`select password_hash from credentials where user_id = ${user.id}`;
   if (existing[0]?.password_hash && !verifyPassword(body.current, existing[0].password_hash)) throw new HttpError(403, "Your current password is needed to remove it.");
+  // Taking a password away changes how the account is reached, the same as
+  // setting one, so the other devices end here too.
+  await revokeAllSessions(user.id, context.session ? context.session.id : null);
   await sql()`update credentials set password_hash = null, updated_at = now() where user_id = ${user.id}`;
   await auditor(context, user)(EVENTS.passwordSet, user.id, { removed: true });
   return json({ ok: true });

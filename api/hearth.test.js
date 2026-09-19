@@ -343,6 +343,15 @@ test("a member search treats % and _ as text, not as a pattern", async () => {
   assert.ok(select.text.includes("escape '\\'"), "the pattern says which character escapes");
 });
 
+test("removing a password ends the other sessions, the way setting one does", async () => {
+  const db = signedIn({ extra: [[/select password_hash from credentials/, [{ password_hash: null }]]] });
+  useClient(db);
+  const response = await handleHearth(hearth("/auth/password", { method: "DELETE", cookie: "t", body: JSON.stringify({}) }));
+  assert.equal(response.status, 200);
+  assert.equal(db.count(/update login_sessions set revoked_at/), 1);
+  assert.equal(db.count(/update credentials set password_hash = null/), 1);
+});
+
 test("the audit log needs audit.read", async () => {
   useClient(signedIn({ role: "client", permissions: ["hearth.enter"] }));
   const refused = await handleHearth(hearth("/admin/audit", { cookie: "t" }));
