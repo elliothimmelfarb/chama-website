@@ -1094,7 +1094,10 @@
     var TRAILING = /[.,;:!?)\]]+$/;
     var ABS_URL = /^https?:\/\/\S+$/i;
     var BARE_HOST = /^(?:[a-z0-9][-a-z0-9]*\.)+[a-z]{2,6}(?:\/\S*)?$/i;
-    var SITE_PATH = /^\/(?:privacy|agent)?\/?$/i;
+    // "/" on its own, "/privacy" and "/agent", each with an optional trailing
+// slash. The bare token "//" is not a path on this site: it is the start of
+// a protocol relative URL and must stay plain text.
+var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
 
     function linkFor(token) {
       var text = token.replace(TRAILING, "");
