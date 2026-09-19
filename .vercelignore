@@ -1,0 +1,9 @@
+# Files kept in the repository but never deployed to chamainteligente.com.
+# Semantics match .gitignore. Nothing public links into either directory, and
+# no function under api/ or lib/ imports from them.
+
+# Internal reports and plans. They stay on GitHub, not on the customer domain.
+docs/
+
+# Agent evals. Run locally with `npm run evals`; they spend API credit.
+evals/

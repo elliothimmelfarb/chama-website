@@ -203,6 +203,8 @@ The site deploys with the CLI, never through git:
 cd /Users/elliothimmelfarb/claude/chama-website && vercel deploy --prod
 ```
 
+**`docs/` and `evals/` are excluded from the deploy.** A `.vercelignore` at the repository root (same semantics as `.gitignore`) keeps both directories out of every deployment, so the internal reports and plans under `docs/reports/` live on GitHub and never on the customer-facing domain, and the evals never ship. Nothing public links into either, and no function under `api/` or `lib/` imports from them. As belt and braces for anything already cached or linked from outside, `vercel.json` sends `X-Robots-Tag: noindex, nofollow, noarchive` on `/docs/(.*)` and `robots.txt` disallows `/docs`. A report that is meant for the public is a new public surface, so it goes through the owner queue rather than into `docs/`.
+
 The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`. The Resend integration is named `chama-inteligente-email` and connects through Vercel's managed `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN`. Those values belong in Vercel, never in this repository.
 
 **One thing this repo's rule and Vercel's own failure mode agree on.** On 2026-07-27 a GitHub push of a personal repository failed to deploy here ("not a member of the team"), through the very **GitHub integration** the rule above forbids. Deploying with `vercel deploy --prod` avoids that path entirely.
@@ -229,6 +231,8 @@ Vercel issued auto-renewing HTTPS certificates for both hostnames. Both names se
 ## Search presence
 
 **Google Search Console:** a **Domain** property for `chamainteligente.com` on the company account **elliot@chamainteligente.com** (not Elliot's personal Gmail), created 2026-08-20. It verified automatically through the Google Workspace domain ownership Google already held, so **no DNS record was added at Namecheap for it**. The sitemap is submitted. Both pages were already indexed.
+
+**`sitemap.xml` lastmod is part of the deploy routine.** Bump the `<lastmod>` of every page the change touched to the deploy's ISO date before running `vercel deploy --prod`; a stale `lastmod` tells crawlers not to bother re-reading a page that did change.
 
 **IndexNow:** the key file at the site root lets any URL change be pushed straight to Bing, Yandex, Naver and Seznam without waiting for a crawl. After a content change worth announcing:
 
