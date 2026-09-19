@@ -192,6 +192,11 @@
 
   // A datetime-local value is a wall clock with no zone, so the browser's
   // zone is what it means. One place converts it to an instant.
+  // The zone the browser is in, which is what a datetime-local field means.
+  function browserZone() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { return ""; }
+  }
+
   function localToInstant(value) {
     if (!value) return null;
     var d = new Date(value);
@@ -217,6 +222,7 @@
     var chosen = el("p", "small dim");
     var picked = null;
     var timer = null;
+    var stopped = false;
     var searchable = can("members.read");
 
     var idInput = input("text", "userId", "Member id");
@@ -247,8 +253,10 @@
         if (!q) { clear(results); return; }
         timer = setTimeout(function () {
           api("/admin/members?q=" + encodeURIComponent(q) + "&role=").then(function (data) {
+            if (stopped) return;
             draw(data.members || []);
           }, function () {
+            if (stopped) return;
             clear(results);
             results.appendChild(el("p", "small dim", "The member search did not answer. Paste an id instead."));
             idInput.hidden = false;
@@ -263,6 +271,13 @@
 
     return {
       node: wrap,
+      // The view calls this on its way out: the pending keystroke never
+      // fires and a search already in flight is dropped.
+      stop: function () {
+        stopped = true;
+        if (timer) clearTimeout(timer);
+        timer = null;
+      },
       userId: function () {
         if (picked) return picked.id;
         var typed = idInput.value.trim();
@@ -279,7 +294,7 @@
 
   /* ---------- the owner's calendar ---------- */
 
-  H.register("/admin/sessions", function () {
+  H.register("/admin/sessions", function (ctx) {
     var wrap = el("div", "stack");
     var zone = ownerZone();
     var sessionMinutes = defaultMinutes();
@@ -288,12 +303,24 @@
     var bookForm = el("div");
     bookForm.hidden = true;
     var bookBuilt = false;
+    var picker = null;
 
     var newButton = button("Book for a member", "btn primary", function () {
       if (!bookBuilt) { bookForm.appendChild(bookCard()); bookBuilt = true; }
       bookForm.hidden = !bookForm.hidden;
     });
-    wrap.appendChild(H.viewHead("Sessions", "Every booking, in " + zone + ".", [newButton]));
+    var head = H.viewHead("Sessions", "Every booking.", [newButton]);
+    var ledeNode = head.querySelector(".lede");
+
+    // The rows are drawn in the owner's zone, so the lede names that zone,
+    // and it is written again once /admin/availability has answered with it.
+    function paintLede() {
+      if (ledeNode) ledeNode.textContent = "Every booking, in " + zone + ".";
+    }
+    paintLede();
+    wrap.appendChild(head);
+
+    if (ctx && ctx.onCleanup) ctx.onCleanup(function () { if (picker) picker.stop(); });
     wrap.appendChild(bookForm);
 
     var stats = el("div", "grid3 rise");
@@ -465,7 +492,7 @@
       var card = el("div", "card stack tight");
       card.appendChild(el("p", "label", "Book for a member"));
       card.appendChild(el("p", "small dim", "Books the time regardless of availability and emails the invitation to both of you."));
-      var picker = memberPicker("Search name or email");
+      picker = memberPicker("Search name or email");
       var when = input("datetime-local", "startsAt", "");
       var minutes = input("number", "minutes", String(sessionMinutes), sessionMinutes);
       minutes.min = "15";
@@ -533,6 +560,7 @@
         ? api("/admin/availability").then(function (data) {
           if (data.timezone) zone = data.timezone;
           if (data.sessionMinutes) sessionMinutes = data.sessionMinutes;
+          paintLede();
         }, function () { /* the owner's own zone will do */ })
         : Promise.resolve(null)
     ]);
@@ -692,9 +720,11 @@
 
   /* ---------- purchases ---------- */
 
-  H.register("/admin/purchases", function () {
+  H.register("/admin/purchases", function (ctx) {
     var wrap = el("div", "stack");
     var status = "requested";
+    var grantPicker = null;
+    if (ctx && ctx.onCleanup) ctx.onCleanup(function () { if (grantPicker) grantPicker.stop(); });
 
     wrap.appendChild(H.viewHead("Purchases", "Pack requests. Invoice by hand, then mark paid here to add the credits."));
 
@@ -824,6 +854,7 @@
       card.appendChild(el("p", "label", "Grant credits"));
       card.appendChild(el("p", "small dim", "Add or remove credits. Every adjustment is recorded in the log."));
       var picker = memberPicker("Search name or email");
+      grantPicker = picker;
       var delta = input("number", "delta", "1");
       delta.step = "1";
       delta.min = "-100";
@@ -1007,9 +1038,11 @@
             toast(error.message, "bad");
           });
       });
+      var localZone = browserZone();
+      var blockHint = "In your timezone" + (localZone ? " (" + localZone + ")" : "") + ", not " + zone + ".";
       append(blocksCard, [
-        field("From", from),
-        field("To", to),
+        field("From", from, blockHint),
+        field("To", to, blockHint),
         field("Reason", reason),
         append(el("div", "row"), [addBlock]),
         blockLine
