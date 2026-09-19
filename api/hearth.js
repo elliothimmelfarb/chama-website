@@ -493,6 +493,16 @@ route("PATCH", "/profile", async (context) => {
 
 /* ---------- the business: members, roles, settings, log, metrics ---------- */
 
+// Only grant what you hold: true when the role carries a permission the
+// actor does not have. The owner role carries all of them.
+async function roleOutranks(context, roleName) {
+  if (context.actor.user.role === "owner") return false;
+  if (roleName === "owner") return true;
+  const rows = await sql()`select permissions from roles where name = ${roleName}`;
+  const permissions = Array.isArray(rows[0]?.permissions) ? rows[0].permissions : [];
+  return permissions.some((p) => !context.actor.permissions.has(p));
+}
+
 route("GET", "/admin/permissions", async (context) => {
   needs(context, "members.read");
   return json({ permissions: PERMISSIONS, roles: ROLE_NAMES });
@@ -552,8 +562,11 @@ route("PATCH", "/admin/members/:id", async (context, params) => {
   const log = auditor(context, actor);
   if (typeof body.role === "string" && body.role !== target.role) {
     if (!ROLE_NAMES.includes(body.role)) throw new HttpError(400, "Unknown role.");
+    // Nobody promotes themselves, and nobody hands out more than they hold.
+    if (target.id === actor.id) throw new HttpError(400, "You cannot change your own role.");
     // Only an owner hands out or takes away ownership, and never the last one.
     if ((body.role === "owner" || target.role === "owner") && actor.role !== "owner") throw new HttpError(403, MESSAGES.forbidden);
+    if (await roleOutranks(context, body.role)) throw new HttpError(403, "You can only grant what you hold yourself.");
     if (target.role === "owner" && (await countOwners()) <= 1) throw new HttpError(400, "There must always be one owner.");
     await sql()`update users set role = ${body.role} where id = ${target.id}`;
     await log(EVENTS.roleChanged, target.id, { from: target.role, to: body.role });
@@ -601,11 +614,15 @@ route("POST", "/admin/invite", async (context) => {
   if (!isEmail(email)) throw new HttpError(400, "That does not look like an email address.");
   const role = ROLE_NAMES.includes(body.role) ? body.role : "client";
   if (role === "owner" && context.actor.user.role !== "owner") throw new HttpError(403, MESSAGES.forbidden);
+  if (await roleOutranks(context, role)) throw new HttpError(403, "You can only grant what you hold yourself.");
   let user = await findUserByEmail(email);
   let created = false;
   if (!user) {
     user = await createUser({ email, name: typeof body.name === "string" ? clampText(body.name, 120) : "", role });
     created = true;
+  } else if (user.id === context.actor.user.id) {
+    // An invitation is not a way to hand yourself a different role.
+    throw new HttpError(400, "You cannot change your own role.");
   } else if (user.role !== role && user.role !== "owner") {
     await sql()`update users set role = ${role} where id = ${user.id}`;
   }

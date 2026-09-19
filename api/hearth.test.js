@@ -242,6 +242,49 @@ test("only an owner touches an owner's role, and never the last one", async () =
   assert.equal(ownerDb.count(/update users set role/), 0);
 });
 
+test("nobody changes their own role or hands out more than they hold", async () => {
+  const self = signedIn({ role: "staff", permissions: ["hearth.enter", "members.read", "members.manage"] });
+  useClient(self);
+  const own = await handleHearth(
+    hearth("/admin/members/actor-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "owner" }) })
+  );
+  assert.equal(own.status, 400);
+  assert.equal((await body(own)).error, "You cannot change your own role.");
+  assert.equal(self.count(/update users set role/), 0);
+
+  // The staff role here holds two permissions; promoting someone to a role
+  // that holds a third is refused.
+  const higher = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read", "members.manage"],
+    users: { "member-1": userRow({ id: "member-1", email: "member@example.com", role: "client" }) },
+    extra: [[/select permissions from roles where name/, [{ permissions: ["members.read", "members.manage", "settings.manage"] }]]]
+  });
+  useClient(higher);
+  const refused = await handleHearth(
+    hearth("/admin/members/member-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "staff" }) })
+  );
+  assert.equal(refused.status, 403);
+  assert.equal((await body(refused)).error, "You can only grant what you hold yourself.");
+  assert.equal(higher.count(/update users set role/), 0);
+});
+
+test("an invitation cannot hand out a role the inviter does not hold", async () => {
+  const db = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read", "members.manage"],
+    extra: [[/select permissions from roles where name/, [{ permissions: ["settings.manage"] }]]]
+  });
+  useClient(db);
+  const response = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "staff" }) })
+  );
+  assert.equal(response.status, 403);
+  assert.equal((await body(response)).error, "You can only grant what you hold yourself.");
+  assert.equal(db.count(/insert into users/), 0);
+  assert.equal(db.count(/insert into email_tokens/), 0);
+});
+
 test("the owner role cannot be edited into a lockout", async () => {
   useClient(signedIn({ role: "owner", permissions: [] }));
   const response = await handleHearth(
