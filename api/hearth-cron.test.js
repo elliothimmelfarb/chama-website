@@ -55,6 +55,8 @@ test("the job is nobody's to run without the shared secret", async () => {
   useClient(fakeDb());
   assert.equal((await handleCron(cron())).status, 401);
   assert.equal((await handleCron(cron("not-the-secret"))).status, 401);
+  // The secret is checked before the method, so a stranger gets 401, not 405.
+  assert.equal((await handleCron(cron(null, { method: "PUT" }))).status, 401);
 });
 
 test("with no database the job says so rather than failing", async () => {

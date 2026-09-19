@@ -142,11 +142,13 @@ export async function sweep() {
 }
 
 export async function handleCron(request) {
+  // The secret comes first: an unauthenticated caller learns nothing about
+  // which methods this endpoint answers.
+  if (!authorized(request)) return json({ error: "Unauthorized." }, 401);
   // Vercel Cron calls this with GET; a manual run posts. Nothing else.
   if (request.method !== "GET" && request.method !== "POST") {
     return json({ error: "Method not allowed." }, 405, { Allow: "GET, POST" });
   }
-  if (!authorized(request)) return json({ error: "Unauthorized." }, 401);
   if (!configured()) return json({ ok: false, reason: "unconfigured" }, 503);
   try {
     await ready();

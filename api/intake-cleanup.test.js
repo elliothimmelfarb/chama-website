@@ -94,6 +94,8 @@ test("refuses a request without the cron secret", async () => {
 
   assert.equal((await cleanup.fetch(request())).status, 401);
   assert.equal((await cleanup.fetch(request("GET", { authorization: "Bearer wrong" }))).status, 401);
+  // The secret is checked before the method, so a stranger gets 401, not 405.
+  assert.equal((await cleanup.fetch(request("PUT"))).status, 401);
 });
 
 test("refuses every method but GET and POST, and says which are allowed", async () => {

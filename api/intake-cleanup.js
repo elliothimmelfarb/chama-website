@@ -70,18 +70,20 @@ export async function runCleanup(dependencies = {}) {
 
 export default {
   async fetch(request) {
-    if (request.method !== "GET" && request.method !== "POST") {
-      return new Response("Method not allowed.", {
-        status: 405,
-        headers: { Allow: "GET, POST", "Cache-Control": "no-store" }
-      });
-    }
-
+    // The secret comes first: an unauthenticated caller learns nothing about
+    // which methods this endpoint answers.
     const authorization = request.headers.get("authorization");
     const secret = process.env.CRON_SECRET;
 
     if (!secret || authorization !== `Bearer ${secret}`) {
       return new Response("Unauthorized", { status: 401 });
+    }
+
+    if (request.method !== "GET" && request.method !== "POST") {
+      return new Response("Method not allowed.", {
+        status: 405,
+        headers: { Allow: "GET, POST", "Cache-Control": "no-store" }
+      });
     }
 
     const outcome = await runCleanup();
