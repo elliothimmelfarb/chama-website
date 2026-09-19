@@ -1,0 +1,120 @@
+<title>Quality Campaign</title>
+<style>
+  :root {
+    --ground: #f3f0e8;
+    --ground-2: #e9e4d8;
+    --ink: #141412;
+    --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14);
+    --ember: #d9481a;
+    --ember-soft: rgba(217, 72, 26, 0.12);
+    --ok: #2f7a4f;
+    --ok-soft: rgba(47, 122, 79, 0.12);
+    --cut: #a63a22;
+    --cut-soft: rgba(166, 58, 34, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ember-soft: rgba(244, 88, 31, 0.14);
+      --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12); --cut: #e88a6a; --cut-soft: rgba(232, 138, 106, 0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ember-soft: rgba(244, 88, 31, 0.14);
+    --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12); --cut: #e88a6a; --cut-soft: rgba(232, 138, 106, 0.12);
+  }
+  body {
+    background: var(--ground); color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5;
+    padding-block: 2.5rem 4rem; padding-inline: clamp(1rem, 5vw, 3rem); -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 46rem; margin-inline: auto; }
+  .eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ember); margin: 0 0 0.6rem; }
+  h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 500; letter-spacing: -0.045em; line-height: 0.98; margin: 0 0 0.8rem; text-wrap: balance; }
+  .lede { font-size: 1.1rem; color: var(--ink-dim); margin: 0 0 2rem; max-width: 40rem; }
+  h2 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); margin: 2.6rem 0 0.9rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 0.75rem; margin: 0 0 0.5rem; }
+  .tile { background: var(--ground-2); padding: 0.9rem 1rem; }
+  .tile b { display: block; font-size: 1.9rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .tile span { font-size: 0.78rem; color: var(--ink-dim); }
+  .tile.ok b { color: var(--ok); }
+  .bars { display: grid; grid-template-columns: max-content 1fr max-content; gap: 0.45rem 0.8rem; align-items: center; font-size: 0.92rem; }
+  .bars .name { color: var(--ink-dim); }
+  .bars .track { height: 0.7rem; background: var(--ground-2); position: relative; }
+  .bars .fill { position: absolute; inset: 0 auto 0 0; background: var(--ember); }
+  .bars .n { font-variant-numeric: tabular-nums; color: var(--ink-dim); }
+  ol, ul { padding-left: 1.2rem; margin: 0; }
+  li { margin: 0 0 0.55rem; }
+  li b { font-weight: 600; }
+  .tag { display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.1rem 0.4rem; margin-right: 0.35rem; vertical-align: 0.1em; }
+  .tag.high { background: var(--cut-soft); color: var(--cut); }
+  .tag.fixed { background: var(--ok-soft); color: var(--ok); }
+  .tag.open { background: var(--ember-soft); color: var(--ember); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em; background: var(--ground-2); padding: 0.05rem 0.3rem; }
+  p { margin: 0 0 0.8rem; }
+  .muted { color: var(--ink-dim); }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">chamainteligente.com, 2026-09-19</p>
+  <h1>Quality campaign: 83 defects found, 83 fixed</h1>
+  <p class="lede">Five auditors swept the whole repo in parallel, five implementers fixed what they found on disjoint files, two adversarial reviewers then caught twelve mistakes in the fixes, and those were fixed too. Merged and deployed.</p>
+
+  <div class="tiles">
+    <div class="tile"><b>71</b><span>findings from the audit</span></div>
+    <div class="tile"><b>12</b><span>more from reviewing the fixes</span></div>
+    <div class="tile ok"><b>78</b><span>fixed on this branch</span></div>
+    <div class="tile"><b>5</b><span>deferred as design work</span></div>
+    <div class="tile ok"><b>400</b><span>tests, up from 362</span></div>
+  </div>
+  <p class="muted" style="font-size:0.85rem">53 commits, 58 files, 14 test files touched. Zero em dashes, zero external requests, zero console errors on every public page at 1280 and 375.</p>
+
+  <h2>Where the defects were</h2>
+  <div class="bars">
+    <span class="name">Public agent backend</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="n">15</span>
+    <span class="name">Public front end</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="n">15</span>
+    <span class="name">Hearth front end</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="n">15</span>
+    <span class="name">Hearth backend</span><span class="track"><span class="fill" style="width:93%"></span></span><span class="n">14</span>
+    <span class="name">Pages, config, live site</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="n">12</span>
+  </div>
+
+  <h2>The ones that mattered</h2>
+  <ol>
+    <li><span class="tag high">high</span><b>Free session credits.</b> Two concurrent cancels of one booking each minted a refund. Both cancel paths are now compare-and-set on the row's status. Same fix on referral rewards.</li>
+    <li><span class="tag high">high</span><b>Self-promotion.</b> Anyone delegated <code>members.manage</code> could set their own role to staff. Refused now, and roles are granted by rank, not by permission set.</li>
+    <li><span class="tag high">high</span><b>Watchdog fence escape.</b> Visitor text was pasted raw into the reviewer prompt, so a closing tag in a chat message could steer the verdict, including to a 24-hour shutdown. Turn content is now encoded before it reaches the reviewer.</li>
+    <li><span class="tag high">high</span><b>Retention promise was false.</b> The privacy page says conversations are deleted within 12 months; the cleanup only ever swept intake notes. It sweeps chat transcripts too now, with tests.</li>
+    <li><span class="tag high">high</span><b>Internal reports on the public domain.</b> The Hearth pentest and prompt audit were live at <code>/docs/reports/...</code> with no noindex. <code>docs/</code> and <code>evals/</code> are excluded from deploys, plus a noindex header and a robots rule.</li>
+    <li><span class="tag high">high</span><b>Erased reply.</b> After a note was sent to Elliot, the agent's last words vanished from the visitor's screen. One-line painter fix.</li>
+    <li><span class="tag high">high</span><b>Wrong timezone on the owner's calendar.</b> The lede named the viewer's zone over rows drawn in the owner's. Fixed, and the time-off form now says which zone it is in.</li>
+  </ol>
+
+  <h2>Also fixed, by layer</h2>
+  <ul>
+    <li><b>Public agent.</b> Null JSON body crashed intake (now 400). Stream close after a visitor leaves no longer rejects unhandled. A hung request times out and lets the visitor retry. Browser-internal error text no longer reaches the transcript. The flame worker proves itself before the canvas is handed over, with an inline fallback. Reduced-motion changes mid-session are honoured. The tab hiding stops the fire. Nested <code>main</code> and double <code>h1</code> on the homepage gone. History and SSE buffer capped. Tools kept but disabled on the final model call so a turn never ends silent.</li>
+    <li><b>Feed.</b> Double URL decode that could 500, double-escaped RSS, unchecked link scheme, dead code, missing 405. First tests ever, and <code>api/feed.js</code> is finally in <code>npm run check</code>, along with every <code>assets/*.js</code> file.</li>
+    <li><b>Hearth backend.</b> Control characters stripped from every text field (with a multiline option where newlines belong). One transcript per booking enforced by the database. Booking horizon enforced on booking, not just listing. OAuth deny bound to the session like approve. Timezone setting validated. Cron gated by method after auth. LIKE wildcards escaped in member search. Revoke rate-limited. Removing a password ends other sessions. ICS folds by octets, never inside a code point.</li>
+    <li><b>Hearth front end.</b> Fire canvas survives a rebuild instead of leaking a loop. Sign-out failures surface a toast. IME-safe Enter. Views clean up their timers on navigation. Scroll resets only on a path change. 404 and forbidden pages get titles. Remove-password confirms and disables. Cancel disables during the request. Google-connected toast fires once. Future times read "in 2 d" not "just now". IDs URL-encoded.</li>
+    <li><b>Pages.</b> Sitemap lastmod current. <code>llms.txt</code> and <code>llms-full.txt</code> match the pages again (stale opener, duplicated About section, wrong footer). Training equation readable to screen readers. Figures replayable from the keyboard. Missing <code>&lt;/body&gt;</code> on the homepage. Noindex on <code>/mcp</code> and the well-known endpoints.</li>
+  </ul>
+
+  <h2>What the reviewers caught in the fixes</h2>
+  <p>Twelve problems, all fixed before merge. The two that would have hurt: dropping <code>tools</code> on the final model call would have made that call an API 400 every time (now <code>tool_choice: none</code> instead), and the new feed headers would have noindexed the public feed (removed). Also: the owner had been locked out of stepping down, role checks compared permission sets instead of rank, a referral could be marked rewarded and never paid, and an orphaned flame worker in one failure path.</p>
+
+  <h2>Deferred, deliberately</h2>
+  <ul>
+    <li><span class="tag open">open</span><b>Rate limiting on <code>/api/chat</code>.</b> A curl loop with no Origin header can spend model calls without limit. Needs a token bucket keyed on address, probably reusing the Hearth limiter. Design work, not a patch.</li>
+    <li><span class="tag open">open</span><b>Transcript blob overwrite.</b> A conversation is one blob keyed by the client's id, so an attacker can shrink their own transcript before the watchdog reads it. Needs a per-turn key or an append-only record.</li>
+    <li><span class="tag open">open</span><b>Agent mount/destroy lifecycle</b> (global listeners are never removed; harmless today with one mount per page).</li>
+    <li><span class="tag open">open</span><b>Live-region churn</b> during animated text for screen readers, and skeleton tiles on the Hearth home.</li>
+  </ul>
+
+  <h2>Notes for Elliot</h2>
+  <ul>
+    <li><b>Unpushed commit on your local main.</b> <code>7355ae3</code> "Reframe homepage hero around a way of working" (2026-09-17) sits on local main, not on GitHub and not deployed. This campaign was rebased off it so the PR stays clean. Push it or open a PR when you want it live.</li>
+    <li><b>Migration 004</b> adds a unique index on transcripts per booking. If production already had a duplicate the index was skipped rather than fail every cold start; the README says how to check and repair by hand.</li>
+    <li><b>Copy stays canonical in the brain.</b> No public claim changed; the <code>llms</code> files were brought back into line with the pages, not the other way round.</li>
+  </ul>
+</div>
