@@ -704,12 +704,12 @@
       if (changed.length === 1 && changed[0] === "text animation") {
         return "The agent changed the text animation.";
       }
-      var flame = [], other = [];
+      var flameWords = [], other = [];
       for (var i = 0; i < changed.length; i++) {
-        if (changed[i] === "text animation") other.push(changed[i]); else flame.push(changed[i]);
+        if (changed[i] === "text animation") other.push(changed[i]); else flameWords.push(changed[i]);
       }
-      if (!flame.length) return "The agent changed the " + joinWords(other) + ".";
-      var line = "The agent changed the flame's " + joinWords(flame);
+      if (!flameWords.length) return "The agent changed the " + joinWords(other) + ".";
+      var line = "The agent changed the flame's " + joinWords(flameWords);
       if (other.length) line += ", and the " + joinWords(other);
       return line + ".";
     }
