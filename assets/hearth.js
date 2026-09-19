@@ -430,8 +430,11 @@
     state.mast.textContent = title;
     document.title = (title ? title + " | " : "") + "Hearth | Chama Inteligente";
     clear(host);
-    if (!found) { host.appendChild(notFound()); return; }
-    if (!allowed) { host.appendChild(forbidden()); return; }
+    if (!found || !allowed) {
+      host.appendChild(found ? forbidden() : notFound());
+      if (path !== lastScrolled) { lastScrolled = path; window.scrollTo(0, 0); }
+      return;
+    }
     var ctx = {
       params: params,
       query: query(),

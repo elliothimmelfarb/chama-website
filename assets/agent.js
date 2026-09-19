@@ -332,8 +332,9 @@
 
     function makeFlame() {
       if (workerEligible()) {
+        var w = null;
         try {
-          var w = new Worker("/assets/flame-worker.js");
+          w = new Worker("/assets/flame-worker.js");
           w.onmessage = function (ev) {
             var m = ev.data;
             if (!m || !m.type) return;
@@ -374,9 +375,14 @@
           };
         } catch (e) {
           // the constructor or the handover was refused: the canvas is
-          // untouched, so the inline path below still has one to draw on
+          // untouched, so the inline path below still has one to draw on.
+          // The worker, if it got as far as existing, is let go here so it
+          // neither runs on nor reports an error later and builds a second
+          // fire on top of the inline one
           window.clearTimeout(workerAckTimer);
           workerAckTimer = 0;
+          workerGaveUp = true;
+          if (w) { try { w.terminate(); } catch (e2) {} }
         }
       }
       return inlineFlame();
