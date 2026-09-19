@@ -112,6 +112,7 @@ export async function handleOauth(request) {
     }
 
     if (path === "/revoke" && request.method === "POST") {
+      if (!(await allow(`oauth:revoke:${addressKey(request)}`, 120, 900))) return oauthError({ error: "too_many_requests" }, 429);
       const body = await readParams(request);
       const ok = await revokeToken({ token: body.token, clientId: body.client_id, clientSecret: body.client_secret });
       if (!ok) return oauthError({ error: "invalid_client" }, 401);

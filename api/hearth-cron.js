@@ -7,7 +7,7 @@
 // writing the record from them; and sweeping expired tokens, states and
 // rate-limit windows so the small tables stay small.
 
-import { configured, ready, sql } from "../lib/hearth/db.js";
+import { configured, isUniqueViolation, ready, sql } from "../lib/hearth/db.js";
 import { json } from "../lib/hearth/http.js";
 import { constantTimeEqual } from "../lib/hearth/auth.js";
 import * as mail from "../lib/hearth/mail.js";
@@ -71,8 +71,9 @@ export async function sendReminders(now = new Date()) {
 // Each booking is tried once an hour for two days after it ends; Meet
 // usually has the transcript within the hour, and a meeting that was never
 // transcribed simply runs out of attempts.
-export async function pullMeetTranscripts(now = new Date()) {
-  if (!(await google.isConnected())) return { pulled: 0, checked: 0 };
+export async function pullMeetTranscripts(now = new Date(), dependencies = {}) {
+  const meet = dependencies.google || google;
+  if (!(await meet.isConnected())) return { pulled: 0, checked: 0 };
   const owner = await sql()`select id from users where role = 'owner' and status = 'active' order by created_at limit 1`;
   if (!owner[0]) return { pulled: 0, checked: 0 };
   const rows = await sql()`
@@ -91,17 +92,26 @@ export async function pullMeetTranscripts(now = new Date()) {
     await sql()`update bookings set meet_attempts = meet_attempts + 1, meet_checked_at = now() where id = ${b.id}`;
     let found = null;
     try {
-      found = await google.fetchTranscript({ meetingCode: b.meeting_code });
+      found = await meet.fetchTranscript({ meetingCode: b.meeting_code });
     } catch (error) {
       console.error("Meet transcript fetch failed", error instanceof Error ? `${error.name}: ${error.detail || error.message}` : "UnknownError");
       continue;
     }
     if (!found) continue;
-    const inserted = await sql()`
-      insert into transcripts (booking_id, user_id, title, held_at, source, raw, status, created_by)
-      values (${b.id}, ${b.user_id}, ${b.title || ""}, ${b.starts_at}, 'meet', ${found.text}, 'new', ${owner[0].id})
-      returning id
-    `;
+    // One record per session: the unique index is the referee, so a second
+    // instance that got here first simply ends this one's turn.
+    let inserted;
+    try {
+      inserted = await sql()`
+        insert into transcripts (booking_id, user_id, title, held_at, source, raw, status, created_by)
+        values (${b.id}, ${b.user_id}, ${b.title || ""}, ${b.starts_at}, 'meet', ${found.text}, 'new', ${owner[0].id})
+        returning id
+      `;
+    } catch (error) {
+      if (isUniqueViolation(error)) continue;
+      throw error;
+    }
+    if (!inserted[0]) continue;
     const transcriptId = inserted[0].id;
     await audit({ actor: owner[0].id, actorKind: "system", actorRef: "cron", event: "google.transcript_pulled", target: transcriptId, meta: { booking: b.id, chars: found.text.length }, device: "cron" });
     const derived = await deriveAndStore(transcriptId, context);
@@ -132,7 +142,13 @@ export async function sweep() {
 }
 
 export async function handleCron(request) {
+  // The secret comes first: an unauthenticated caller learns nothing about
+  // which methods this endpoint answers.
   if (!authorized(request)) return json({ error: "Unauthorized." }, 401);
+  // Vercel Cron calls this with GET; a manual run posts. Nothing else.
+  if (request.method !== "GET" && request.method !== "POST") {
+    return json({ error: "Method not allowed." }, 405, { Allow: "GET, POST" });
+  }
   if (!configured()) return json({ ok: false, reason: "unconfigured" }, 503);
   try {
     await ready();

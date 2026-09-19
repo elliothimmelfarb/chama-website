@@ -50,10 +50,19 @@ function isSameOrigin(request) {
   }
 }
 
+// Always a plain object. A JSON body of `null`, an array, a string or a
+// number is not a form, and everything downstream reads named fields off it,
+// so anything that is not a plain object becomes an empty submission and
+// fails validation with a 400 instead of throwing.
+function asFields(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return {};
+  return body;
+}
+
 async function readFields(request) {
   const contentType = request.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
-    return await request.json();
+    return asFields(await request.json());
   }
 
   const form = await request.formData();

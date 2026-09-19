@@ -7,7 +7,7 @@
 
 This file is the complete visible text of https://chamainteligente.com, in reading
 order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing
-the pages do not say. Last updated 2026-09-10.
+the pages do not say. Last updated 2026-09-19.
 
 Chama Inteligente, Lda. is a Portuguese company (NIPC 519425235) based in Lisbon.
 "Chama Inteligente" is Portuguese for "intelligent flame". It is written "Chama"
@@ -27,10 +27,9 @@ Your process, your words, your rules. Buy it once, and a monthly subscription
 keeps it hosted, running, and changing whenever you ask.
 
 Start here. The second panel of the page is the conversation: a live Claude agent
-that opens with the question "What do you wish the software you run your business
-on could do?" Say it plainly. It asks a question or two, and when you are ready it
-takes a name and a way to reach you. Your contact details are sent only when you
-confirm them.
+that opens with the question "What do you wish your software could do?" Say it
+plainly. It asks a question or two, and when you are ready it takes a name and a
+way to reach you. Your contact details are sent only when you confirm them.
 
 ### The offer
 
@@ -98,7 +97,7 @@ Decide how you want to work. Then run on software that works that way.
 We also train engineering teams and coach individuals (https://chamainteligente.com/training).
 About Chama (https://chamainteligente.com/about).
 
-### Getting in touch
+### The conversation and the notes it sends
 
 A note carries a name, one way to reach you (email, or a WhatsApp or phone
 number), and what you would like to be able to do, and is sent only after the
@@ -108,8 +107,8 @@ treated as instructions to an automated system. Conversations with the agent are
 saved to improve it. The full-screen version lives at
 https://chamainteligente.com/agent.
 
-Footer: Chama Inteligente, Lda. Lisbon, Portugal. Software crafted for your
-company, and only yours. Training and coaching. About. Privacy.
+Footer: Chama Inteligente, Lda. Lisbon, Portugal. Software. Training and
+coaching. About. Privacy.
 
 ---
 
@@ -186,42 +185,6 @@ Want to talk it through? Start a conversation and ask Elliot to get in touch
 Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the
 two of us who keep it lit.
 
-### Elliot Himmelfarb
-
-AI and technology coach and consultant.
-
-Elliot started his career in software engineering in 2016. Since 2023, nearly all of
-his work has been devoted to learning what the most capable AI systems can do, applying
-them to real work, teaching others, and keeping pace as those capabilities change.
-
-You get the benefit of that accumulated judgment and experience when you spend time
-with him.
-
-### Get in touch
-
-Want to talk it through? Start a conversation and ask Elliot to get in touch
-(https://chamainteligente.com/agent).
-
----
-
-## About (https://chamainteligente.com/about)
-
-### A small company in Lisbon, working in English.
-
-Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the
-two of us who keep it lit.
-
-### Elliot Himmelfarb
-
-AI and technology coach and consultant.
-
-Elliot started his career in software engineering in 2016. Since 2023, nearly all of
-his work has been devoted to learning what the most capable AI systems can do, applying
-them to real work, teaching others, and keeping pace as those capabilities change.
-
-You get the benefit of that accumulated judgment and experience when you spend time
-with him.
-
 ### About us
 
 We are Elliot and Annie. We moved to Portugal in the fall of 2023, sight unseen, to
@@ -231,6 +194,17 @@ Our daughter, Rozalie, was born in November 2025.
 We are growing our business together, and we want to help people become AI-native,
 so they can adapt and take advantage of the incredible potential of this rapidly
 changing world.
+
+### Elliot Himmelfarb
+
+AI and technology coach and consultant. Links to his LinkedIn and GitHub.
+
+Elliot started his career in software engineering in 2016. Since 2023, nearly all of
+his work has been devoted to learning what the most capable AI systems can do, applying
+them to real work, teaching others, and keeping pace as those capabilities change.
+
+You get the benefit of that accumulated judgment and experience when you spend time
+with him.
 
 ### Get in touch
 

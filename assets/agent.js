@@ -96,16 +96,20 @@
           '</div>' +
         '</header>' +
 
-        '<main class="stage" id="stage">' +
+        // Full screen the room is the page, so the stage is its main landmark
+        // and the opening line its h1. Embedded it sits inside the home page's
+        // own main, under the page's own h1, so it is a plain div and an h2:
+        // one main landmark and one h1 per document, either way.
+        (page ? '<main class="stage" id="stage">' : '<div class="stage" id="stage">') +
           '<div class="column">' +
             '<section class="opening" id="opening">' +
               (page
                 ? '<h1>You are talking to the <em>intelligent flame</em>.</h1>'
-                : '<h1>What do you wish your software <em>could do</em>?</h1>') +
+                : '<h2>What do you wish your software <em>could do</em>?</h2>') +
             '</section>' +
             '<div id="transcript" role="log" aria-live="polite" aria-label="Conversation with the agent"></div>' +
           '</div>' +
-        '</main>' +
+        (page ? '</main>' : '</div>') +
 
         '<div class="composer">' +
           '<div class="composer-inner">' +
@@ -288,15 +292,62 @@
     }
 
     var flameWorker = null;
+    var workerReady = false;
+    var workerGaveUp = false;
+    var workerAckTimer = 0;
+    var WORKER_ACK_MS = 5000;
+
+    function inlineFlame() {
+      return window.ChamaFlame.create({
+        canvas: canvas, touchDevice: touchDevice,
+        reduceMotion: reduceMotion, settings: settings, emit: onEmit
+      });
+    }
+
+    /* The canvas can only be given away once, so a worker that fails to load
+       leaves a room with nothing in it. The handover is therefore provisional
+       until the worker says it is alive: if it errors, or says nothing at all,
+       the worker is terminated, a fresh canvas replaces the one it was handed,
+       and the fire runs on this thread after all. */
+    function abandonWorker() {
+      if (workerGaveUp || workerReady) return;
+      workerGaveUp = true;
+      window.clearTimeout(workerAckTimer);
+      if (flameWorker) {
+        try { flameWorker.terminate(); } catch (e) { /* already gone */ }
+        flameWorker = null;
+      }
+      var fresh = document.createElement("canvas");
+      fresh.className = canvas.className;
+      fresh.id = canvas.id;
+      fresh.setAttribute("aria-hidden", "true");
+      if (canvas.parentNode) canvas.parentNode.replaceChild(fresh, canvas);
+      canvas = fresh;
+      flame = inlineFlame();
+      pushSettings();
+      layout();
+      if (reduceMotion) staticRepaint();
+      else if (flameRunning) flame.start();
+    }
 
     function makeFlame() {
       if (workerEligible()) {
+        var w = null;
         try {
-          var w = new Worker("/assets/flame-worker.js");
+          w = new Worker("/assets/flame-worker.js");
           w.onmessage = function (ev) {
             var m = ev.data;
-            if (m && m.type) onEmit(m.type, m.payload);
+            if (!m || !m.type) return;
+            if (m.type === "ready") {
+              workerReady = true;
+              window.clearTimeout(workerAckTimer);
+              return;
+            }
+            onEmit(m.type, m.payload);
           };
+          w.onerror = abandonWorker;
+          w.onmessageerror = abandonWorker;
+          workerAckTimer = window.setTimeout(abandonWorker, WORKER_ACK_MS);
           var off = canvas.transferControlToOffscreen();
           w.postMessage({
             type: "init", canvas: off, touchDevice: touchDevice,
@@ -322,12 +373,19 @@
             // wanted and the host never calls it.
             noteScroll: function () {}
           };
-        } catch (e) { /* no worker: the canvas is untouched, fall through */ }
+        } catch (e) {
+          // the constructor or the handover was refused: the canvas is
+          // untouched, so the inline path below still has one to draw on.
+          // The worker, if it got as far as existing, is let go here so it
+          // neither runs on nor reports an error later and builds a second
+          // fire on top of the inline one
+          window.clearTimeout(workerAckTimer);
+          workerAckTimer = 0;
+          workerGaveUp = true;
+          if (w) { try { w.terminate(); } catch (e2) {} }
+        }
       }
-      return window.ChamaFlame.create({
-        canvas: canvas, touchDevice: touchDevice,
-        reduceMotion: reduceMotion, settings: settings, emit: onEmit
-      });
+      return inlineFlame();
     }
 
     var flame = makeFlame();
@@ -547,6 +605,16 @@
 
     var GENERIC = "Something went wrong. Please try again.";
 
+    /* Only a line this code wrote is ever read out to a visitor. A browser
+       error ("Failed to fetch", "The operation was aborted") is a fact about
+       the network, not something anyone can act on, so anything untagged
+       comes out as the generic line instead. */
+    function saidError(message) {
+      var e = new Error(typeof message === "string" && message ? message : GENERIC);
+      e.said = true;
+      return e;
+    }
+
     /* ---- legibility: auto dim plus the readability scrim ---------------- */
 
     function placeScrim() {
@@ -704,12 +772,12 @@
       if (changed.length === 1 && changed[0] === "text animation") {
         return "The agent changed the text animation.";
       }
-      var flame = [], other = [];
+      var flameWords = [], other = [];
       for (var i = 0; i < changed.length; i++) {
-        if (changed[i] === "text animation") other.push(changed[i]); else flame.push(changed[i]);
+        if (changed[i] === "text animation") other.push(changed[i]); else flameWords.push(changed[i]);
       }
-      if (!flame.length) return "The agent changed the " + joinWords(other) + ".";
-      var line = "The agent changed the flame's " + joinWords(flame);
+      if (!flameWords.length) return "The agent changed the " + joinWords(other) + ".";
+      var line = "The agent changed the flame's " + joinWords(flameWords);
       if (other.length) line += ", and the " + joinWords(other);
       return line + ".";
     }
@@ -1070,6 +1138,17 @@
       }
     }
 
+    /* Every turn is remembered, but a long conversation must not grow the
+       array without end, so the tail is kept and the head is dropped. The
+       request only ever carries the last 40 entries, so a ceiling of 60
+       changes nothing the server sees. */
+    var HISTORY_MAX = 60;
+
+    function remember(entry) {
+      history.push(entry);
+      if (history.length > HISTORY_MAX) history.splice(0, history.length - HISTORY_MAX);
+    }
+
     // history is capped to the last 40 entries and must open and close on a
     // user turn, so trim any assistant entry that ends up leading.
     function payloadMessages() {
@@ -1094,7 +1173,10 @@
     var TRAILING = /[.,;:!?)\]]+$/;
     var ABS_URL = /^https?:\/\/\S+$/i;
     var BARE_HOST = /^(?:[a-z0-9][-a-z0-9]*\.)+[a-z]{2,6}(?:\/\S*)?$/i;
-    var SITE_PATH = /^\/(?:privacy|agent)?\/?$/i;
+    // "/" on its own, "/privacy" and "/agent", each with an optional trailing
+// slash. The bare token "//" is not a path on this site: it is the start of
+// a protocol relative URL and must stay plain text.
+var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
 
     function linkFor(token) {
       var text = token.replace(TRAILING, "");
@@ -1295,7 +1377,7 @@
 
       dissolveOpening();
       addTurn("you", message);
-      history.push({ role: "user", content: message });
+      remember({ role: "user", content: message });
       turns += 1;
       setHudNumber(hud.turns, String(turns));
 
@@ -1320,7 +1402,35 @@
         }
       }
 
+      /* A connection that hangs must not leave the composer disabled for the
+         rest of the visit. Two clocks: one on the answer arriving at all, and
+         one on the gap between chunks once it is under way. Either one aborts
+         the request into fail(), so the visitor gets the room back. */
+      var FIRST_BYTE_MS = 30000;
+      var IDLE_MS = 60000;
+      var TIMED_OUT = "The agent did not answer in time. Please try again.";
+
+      var controller = null;
+      try { controller = new AbortController(); } catch (e) { controller = null; }
+      var stallTimer = 0;
+      var timedOut = false;
+
+      function armStall(ms) {
+        if (!controller) return;
+        window.clearTimeout(stallTimer);
+        stallTimer = window.setTimeout(function () {
+          timedOut = true;
+          try { controller.abort(); } catch (e) { /* already gone */ }
+        }, ms);
+      }
+
+      function disarmStall() {
+        window.clearTimeout(stallTimer);
+        stallTimer = 0;
+      }
+
       function fail(msg) {
+        disarmStall();
         if (finished) return;
         finished = true;
         hideThinking();
@@ -1333,26 +1443,34 @@
 
       function done() {
         setBusy(false);
-        if (reply) history.push({ role: "assistant", content: reply });
+        if (reply) remember({ role: "assistant", content: reply });
       }
+
+      armStall(FIRST_BYTE_MS);
 
       fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId: conversationId, messages: payloadMessages() })
+        body: JSON.stringify({ conversationId: conversationId, messages: payloadMessages() }),
+        signal: controller ? controller.signal : undefined
       }).then(function (res) {
+        armStall(IDLE_MS);
         if (!res.ok) {
           return res.json().then(function (data) {
-            throw new Error((data && data.error) || GENERIC);
+            throw saidError(data && data.error);
           }, function () {
-            throw new Error(GENERIC);
+            throw saidError(GENERIC);
           });
         }
-        if (!res.body) throw new Error(GENERIC);
+        if (!res.body) throw saidError(GENERIC);
 
         var reader = res.body.getReader();
         var decoder = new TextDecoder();
         var buffer = "";
+        /* A frame ends at a blank line. A stream that never sends one is not
+           a stream this page can read, and holding it in memory helps nobody,
+           so past the ceiling the request fails and the visitor can retry. */
+        var BUFFER_MAX = 256 * 1024;
 
         function handle(event) {
           if (!event || typeof event !== "object") return;
@@ -1370,7 +1488,8 @@
             if (event.ok) {
               if (painter) painter.end(reply);
               body = null;
-              if (reply) { history.push({ role: "assistant", content: reply }); reply = ""; }
+              painter = null;
+              if (reply) { remember({ role: "assistant", content: reply }); reply = ""; }
               launchSpark();
               addSystem("Sent. We will get back to you.", true);
               showThinking();   // whatever it says next is still on its way
@@ -1391,12 +1510,18 @@
         function pump() {
           return reader.read().then(function (chunk) {
             if (chunk.done) {
+              disarmStall();
               buffer += decoder.decode();
               drain(true);
               return;
             }
+            armStall(IDLE_MS);
             buffer += decoder.decode(chunk.value, { stream: true });
             drain(false);
+            if (buffer.length > BUFFER_MAX) {
+              try { reader.cancel(); } catch (e) { /* already closed */ }
+              throw saidError(GENERIC);
+            }
             return pump();
           });
         }
@@ -1417,6 +1542,7 @@
         }
 
         return pump().then(function () {
+          disarmStall();
           if (finished) return;
           finished = true;
           hideThinking();
@@ -1425,7 +1551,8 @@
           setState(input === document.activeElement ? "listening" : "idle");
         });
       }).catch(function (err) {
-        fail(err && err.message ? err.message : GENERIC);
+        if (timedOut) { fail(TIMED_OUT); return; }
+        fail(err && err.said ? err.message : GENERIC);
       });
     }
 
@@ -1463,6 +1590,9 @@
     });
 
     input.addEventListener("keydown", function (ev) {
+      // an Enter that closes an IME candidate list is not a send: while a
+      // composition is running the key belongs to the input method
+      if (ev.isComposing || ev.keyCode === 229) return;
       if (ev.key === "Enter" && !ev.shiftKey) {
         ev.preventDefault();
         send(input.value);
@@ -1474,8 +1604,16 @@
       send(input.value);
     });
 
+    /* A hidden tab has nothing to paint. The loop stops with the tab and
+       starts again on the way back, from a fresh clock, so the fire never
+       burns behind a tab nobody is looking at. */
     document.addEventListener("visibilitychange", function () {
-      if (!document.hidden) flame.wake();
+      if (document.hidden) {
+        stopLoop();
+      } else if (stageLive) {
+        flame.wake();
+        startLoop();
+      }
       syncWisp();
     });
 
@@ -1497,14 +1635,41 @@
     } else if (mode === "embed" && window.IntersectionObserver) {
       var io = new IntersectionObserver(function (entries) {
         var e = entries[entries.length - 1];
-        if (e && e.isIntersecting) startLoop(); else stopLoop();
         stageLive = !!(e && e.isIntersecting);
+        if (stageLive && !document.hidden) startLoop(); else stopLoop();
         syncWisp();
       }, { threshold: 0 });
       io.observe(rootEl);
     } else {
       startLoop();
     }
+
+    /* The setting can change while the page is open: a visitor turning
+       reduced motion on mid conversation should see the fire settle into its
+       still frame there and then, and turning it off again should light it. */
+    (function watchReduceMotion() {
+      var mq;
+      try { mq = window.matchMedia("(prefers-reduced-motion: reduce)"); } catch (e) { return; }
+      if (!mq) return;
+
+      function onChange(ev) {
+        var next = !!(ev && typeof ev.matches === "boolean" ? ev.matches : mq.matches);
+        if (next === reduceMotion) return;
+        reduceMotion = next;
+        flame.setReduceMotion(next);
+        if (next) {
+          stopLoop();
+          staticRepaint();
+        } else if (stageLive) {
+          flame.wake();
+          startLoop();
+        }
+        syncWisp();
+      }
+
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    })();
 
     /* ---- the room on a phone: a piece of the page, or the screen ----------
        A phone has one finger and one scroll. Two scrollers stacked, a page

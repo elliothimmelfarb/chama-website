@@ -206,10 +206,11 @@
 
   /* ---------- members ---------- */
 
-  H.register("/admin/members", function () {
+  H.register("/admin/members", function (ctx) {
     var wrap = el("div", "stack");
     var q = "";
     var role = "";
+    var stale = false;
 
     var invite = el("div");
     invite.hidden = true;
@@ -239,6 +240,13 @@
       if (timer) clearTimeout(timer);
       timer = setTimeout(function () { q = search.value; load(); }, 250);
     });
+    if (ctx && ctx.onCleanup) {
+      ctx.onCleanup(function () {
+        stale = true;
+        if (timer) clearTimeout(timer);
+        timer = null;
+      });
+    }
 
     var stats = el("div", "grid3 rise");
     wrap.appendChild(stats);
@@ -327,7 +335,11 @@
 
     function load() {
       var path = "/admin/members?q=" + encodeURIComponent(q) + "&role=" + encodeURIComponent(role);
-      return api(path).then(function (data) { draw(data.members || []); }, function (error) {
+      return api(path).then(function (data) {
+        if (stale) return;
+        draw(data.members || []);
+      }, function (error) {
+        if (stale) return;
         clear(listCard);
         listCard.appendChild(H.empty(error.message));
       });
@@ -898,9 +910,17 @@
         }
       }).catch(function () { meetLine.textContent = "Could not read the Google connection."; });
       form.appendChild(meet);
-      var googleResult = new URLSearchParams(location.search).get("google");
+      // The result of the Google round trip is said once: the parameter is
+      // taken out of the URL so a later render of Settings stays quiet.
+      var params = new URLSearchParams(location.search);
+      var googleResult = params.get("google");
       if (googleResult === "connected") toast("Google connected.", "good");
       if (googleResult === "failed") toast("Google could not be connected. Try again.", "bad");
+      if (googleResult) {
+        params.delete("google");
+        var rest = params.toString();
+        history.replaceState(null, "", location.pathname + (rest ? "?" + rest : ""));
+      }
 
       var save = button("Save settings", "btn primary");
       save.type = "submit";

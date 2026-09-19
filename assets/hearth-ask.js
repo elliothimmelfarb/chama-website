@@ -89,7 +89,9 @@
     append(form, [ta, actions]);
 
     ta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && !e.shiftKey) {
+      // While an input method is composing, Enter belongs to the composition:
+      // it picks a candidate rather than sending the question.
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
         e.preventDefault();
         send();
       }

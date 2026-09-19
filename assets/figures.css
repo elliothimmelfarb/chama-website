@@ -15,6 +15,17 @@
   max-width: 36rem;
 }
 
+/* A figure that can be replayed is a keyboard stop; its focus ring is the
+   page's ember, not the browser's blue. */
+.figure[role="button"] {
+  cursor: pointer;
+  border-radius: 0.5rem;
+}
+.figure[role="button"]:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 0.5rem;
+}
+
 /* Each figure draws itself the first time it is seen: strokes trace in
    (a normalized dash slides off the path), labels fade, points pop, and
    a few motion-only parts ride along: a comet head that sits on the

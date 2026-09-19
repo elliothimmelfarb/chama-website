@@ -19,7 +19,10 @@
   <div id="agent-root"></div>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      window.ChamaAgent.mount(document.getElementById("agent-root"), { mode: "page" });
+      var host = document.getElementById("agent-root");
+      if (host && window.ChamaAgent) {
+        window.ChamaAgent.mount(host, { mode: "page" });
+      }
     });
   </script>
 </body>

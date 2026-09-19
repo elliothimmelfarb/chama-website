@@ -45,8 +45,8 @@
         var list = el("div", "list");
         r.results.forEach(function (x) {
           var row = el("a");
-          row.href = H.BASE + "/transcripts/" + x.id;
-          row.addEventListener("click", function (ev) { ev.preventDefault(); H.navigate("/transcripts/" + x.id); });
+          row.href = H.BASE + "/transcripts/" + encodeURIComponent(x.id);
+          row.addEventListener("click", function (ev) { ev.preventDefault(); H.navigate("/transcripts/" + encodeURIComponent(x.id)); });
           append(row, [append(el("div"), [el("div", "primary", x.title || "Untitled session"), el("div", "secondary", stripMarks(x.snippet || ""))]), el("div", "meta", fmtHeld(x.heldAt))]);
           list.appendChild(row);
         });
@@ -65,10 +65,10 @@
       var grid = el("div", "stack rise");
       data.transcripts.forEach(function (t, i) {
         var c = el("a", "card stack tight");
-        c.href = H.BASE + "/transcripts/" + t.id;
+        c.href = H.BASE + "/transcripts/" + encodeURIComponent(t.id);
         c.style.setProperty("--i", String(Math.min(i, 8)));
         c.style.textDecoration = "none";
-        c.addEventListener("click", function (ev) { ev.preventDefault(); H.navigate("/transcripts/" + t.id); });
+        c.addEventListener("click", function (ev) { ev.preventDefault(); H.navigate("/transcripts/" + encodeURIComponent(t.id)); });
         var head = el("div", "row between");
         append(head, [el("h3", null, t.title || "Untitled session"), statusPill(t.status)]);
         c.appendChild(head);
@@ -160,7 +160,7 @@
       wrap.appendChild(el("p", "small faint", "This record was written from the transcript by AI and may contain mistakes."));
       return wrap;
     });
-  }, { title: "Record" });
+  }, { perm: "transcripts.own", title: "Record" });
 
   function section(sheet, title, items, emphasize) {
     if (!items || !items.length) return;

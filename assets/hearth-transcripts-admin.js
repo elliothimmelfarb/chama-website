@@ -144,6 +144,7 @@
     var chosen = el("div", "row");
     var picked = null;
     var timer = null;
+    var stopped = false;
     var searchable = can("members.read");
 
     var idInput = input("text", "userId", "Member id");
@@ -196,8 +197,10 @@
         if (!q) { clear(results); return; }
         timer = setTimeout(function () {
           api("/admin/members?q=" + encodeURIComponent(q) + "&role=").then(function (data) {
+            if (stopped) return;
             draw(data.members || []);
           }, function () {
+            if (stopped) return;
             clear(results);
             results.appendChild(el("p", "small dim", "The member search did not answer. Paste an id instead."));
             idInput.hidden = false;
@@ -214,6 +217,13 @@
 
     return {
       node: wrap,
+      // The view calls this on its way out: the pending keystroke never
+      // fires and a search already in flight is dropped.
+      stop: function () {
+        stopped = true;
+        if (timer) clearTimeout(timer);
+        timer = null;
+      },
       userId: function () {
         if (picked) return picked.id;
         return idInput.value.trim();
@@ -231,9 +241,12 @@
 
   /* ---------- the owner's transcripts ---------- */
 
-  H.register("/admin/transcripts", function () {
+  H.register("/admin/transcripts", function (ctx) {
     var wrap = el("div", "stack");
     wrap.appendChild(H.viewHead("Transcripts", "Session transcripts and the records written from them."));
+
+    var pickers = [];
+    if (ctx && ctx.onCleanup) ctx.onCleanup(function () { pickers.forEach(function (p) { p.stop(); }); });
 
     /* ---------- adding one ---------- */
 
@@ -289,6 +302,7 @@
       if (!member || !member.id) return;
       loadSessions(member.id);
     });
+    pickers.push(picker);
 
     function loadSessions(userId) {
       if (!can("sessions.manage")) return;
@@ -390,6 +404,7 @@
       memberId = member && member.id ? member.id : "";
       load();
     });
+    pickers.push(filter);
     filterCard.appendChild(filter.node);
     wrap.appendChild(filterCard);
 
@@ -456,9 +471,12 @@
 
   /* ---------- notes and what Elliot owes ---------- */
 
-  H.register("/admin/notes", function () {
+  H.register("/admin/notes", function (ctx) {
     var wrap = el("div", "stack");
     wrap.appendChild(H.viewHead("Notes", "Notes from clients and your open follow-ups."));
+
+    var pickers = [];
+    if (ctx && ctx.onCleanup) ctx.onCleanup(function () { pickers.forEach(function (p) { p.stop(); }); });
 
     /* ---------- follow-ups the coach owes ---------- */
 
@@ -522,6 +540,7 @@
       memberId = member && member.id ? member.id : "";
       loadNotes();
     });
+    pickers.push(filter);
     filterCard.appendChild(filter.node);
     wrap.appendChild(filterCard);
 

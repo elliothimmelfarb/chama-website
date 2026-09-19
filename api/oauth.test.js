@@ -180,6 +180,22 @@ test("revoking without a client that checks out is a 401", async () => {
   assert.equal((await body(response)).error, "invalid_client");
 });
 
+test("revoking is rate limited like the other endpoints", async () => {
+  const db = fakeDb([
+    [/insert into rate_limits/, [{ count: 1000 }]],
+    [/from oauth_clients where id/, []]
+  ]);
+  useClient(db);
+  const response = await handleOauth(oauth("/revoke", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: "token=t&client_id=chama_abc"
+  }));
+  assert.equal(response.status, 429);
+  assert.equal((await body(response)).error, "too_many_requests");
+  assert.equal(db.count(/from oauth_tokens/), 0, "nothing is looked up past the limit");
+});
+
 test("an unknown path under the authorization server is a plain not found", async () => {
   useClient(fakeDb());
   const response = await handleOauth(oauth("/nonsense"));
