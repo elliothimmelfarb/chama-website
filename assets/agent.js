@@ -547,6 +547,16 @@
 
     var GENERIC = "Something went wrong. Please try again.";
 
+    /* Only a line this code wrote is ever read out to a visitor. A browser
+       error ("Failed to fetch", "The operation was aborted") is a fact about
+       the network, not something anyone can act on, so anything untagged
+       comes out as the generic line instead. */
+    function saidError(message) {
+      var e = new Error(typeof message === "string" && message ? message : GENERIC);
+      e.said = true;
+      return e;
+    }
+
     /* ---- legibility: auto dim plus the readability scrim ---------------- */
 
     function placeScrim() {
@@ -1357,12 +1367,12 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       }).then(function (res) {
         if (!res.ok) {
           return res.json().then(function (data) {
-            throw new Error((data && data.error) || GENERIC);
+            throw saidError(data && data.error);
           }, function () {
-            throw new Error(GENERIC);
+            throw saidError(GENERIC);
           });
         }
-        if (!res.body) throw new Error(GENERIC);
+        if (!res.body) throw saidError(GENERIC);
 
         var reader = res.body.getReader();
         var decoder = new TextDecoder();
@@ -1440,7 +1450,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
           setState(input === document.activeElement ? "listening" : "idle");
         });
       }).catch(function (err) {
-        fail(err && err.message ? err.message : GENERIC);
+        fail(err && err.said ? err.message : GENERIC);
       });
     }
 
