@@ -847,7 +847,7 @@
       pw.appendChild(form);
       if (sec.hasPassword) {
         var drop = button("Remove password", "btn ghost sm", function () {
-          if (!window.confirm("Remove your password? You will sign in with an email link until you set a new one.")) return;
+          if (!window.confirm("Remove your password? Your other signed-in devices are ended, and you will sign in with an email link until you set a new one.")) return;
           drop.disabled = true;
           api("/auth/password", { method: "DELETE", body: { current: current ? current.value : undefined } })
             .then(function () { toast("Password removed.", "good"); render(); })
