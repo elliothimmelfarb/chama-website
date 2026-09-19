@@ -138,7 +138,17 @@
 
   function fmtRelative(iso) {
     if (!iso) return "";
-    var diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    var then = new Date(iso).getTime();
+    if (isNaN(then)) return "";
+    var diff = (Date.now() - then) / 1000;
+    if (diff < 0) {
+      var ahead = -diff;
+      if (ahead < 60) return "in a moment";
+      if (ahead < 3600) return "in " + Math.floor(ahead / 60) + " min";
+      if (ahead < 86400) return "in " + Math.floor(ahead / 3600) + " h";
+      if (ahead < 86400 * 14) return "in " + Math.floor(ahead / 86400) + " d";
+      return fmtDate(iso, { dateStyle: "medium" });
+    }
     if (diff < 60) return "just now";
     if (diff < 3600) return Math.floor(diff / 60) + " min ago";
     if (diff < 86400) return Math.floor(diff / 3600) + " h ago";
@@ -213,10 +223,30 @@
 
   // The homepage's particle engine, burning low behind the masthead. It is
   // only decoration here, so any failure leaves a plain dark bar.
+  // The canvas and the container it hangs in, kept across frame rebuilds:
+  // renderFrame clears the root, which detaches the canvas, and the engine
+  // would otherwise keep painting a node that is no longer on the page.
+  var fireCanvas = null;
+  var fireContainer = null;
+
+  function fireSize() {
+    if (!state.fire || !fireContainer) return;
+    var r = fireContainer.getBoundingClientRect();
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    state.fire.resize(Math.max(1, r.width), Math.max(1, r.height), dpr);
+  }
+
   function mountFire(container) {
-    if (!window.ChamaFlame || state.fire) return;
+    if (!window.ChamaFlame) return;
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
+    fireContainer = container;
+    if (state.fire) {
+      if (fireCanvas) container.appendChild(fireCanvas);
+      fireSize();
+      state.fire.start();
+      return;
+    }
     var canvas = el("canvas");
     container.appendChild(canvas);
     var engine;
@@ -229,20 +259,17 @@
         emit: function () {}
       });
     } catch (e) {
+      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
       return;
     }
-    function size() {
-      var r = container.getBoundingClientRect();
-      var dpr = Math.min(2, window.devicePixelRatio || 1);
-      engine.resize(Math.max(1, r.width), Math.max(1, r.height), dpr);
-    }
-    size();
+    fireCanvas = canvas;
+    state.fire = engine;
+    fireSize();
     engine.start();
-    window.addEventListener("resize", size);
+    window.addEventListener("resize", fireSize);
     document.addEventListener("visibilitychange", function () {
       if (document.hidden) engine.stop(); else engine.start();
     });
-    state.fire = engine;
   }
 
   // Something good happened: the fire notices.
@@ -372,7 +399,20 @@
 
   /* ---------- rendering a view ---------- */
 
+  // A view may register a teardown through ctx.onCleanup(fn): the router
+  // runs it before the next view replaces it, so debounce timers stop and a
+  // late response knows it is stale.
+  var viewCleanup = null;
+  var lastScrolled = null;
+
+  function runViewCleanup() {
+    var fn = viewCleanup;
+    viewCleanup = null;
+    if (fn) { try { fn(); } catch (e) { /* a teardown never breaks a render */ } }
+  }
+
   function render() {
+    runViewCleanup();
     if (!state.user) { renderGate(); return; }
     if (!state.view) renderFrame();
     renderNav();
@@ -385,19 +425,27 @@
       if (params) { found = routes[i]; break; }
     }
     var host = state.view;
+    var allowed = found && (!found.perm || can(found.perm));
+    var title = found ? (allowed ? found.title || "" : "No access") : "Page not found";
+    state.mast.textContent = title;
+    document.title = (title ? title + " | " : "") + "Hearth | Chama Inteligente";
     clear(host);
     if (!found) { host.appendChild(notFound()); return; }
-    if (found.perm && !can(found.perm)) { host.appendChild(forbidden()); return; }
-    state.mast.textContent = found.title || "";
-    document.title = (found.title ? found.title + " | " : "") + "Hearth | Chama Inteligente";
-    var ctx = { params: params, query: query(), user: state.user };
+    if (!allowed) { host.appendChild(forbidden()); return; }
+    var ctx = {
+      params: params,
+      query: query(),
+      user: state.user,
+      onCleanup: function (fn) { if (id === state.renderId) viewCleanup = fn; }
+    };
     var result;
     try { result = found.view(ctx); } catch (e) { host.appendChild(errorView(e)); return; }
     Promise.resolve(result).then(function (node) {
       if (id !== state.renderId) return;
       clear(host);
       if (node) { node.classList.add("view"); host.appendChild(node); }
-      window.scrollTo(0, 0);
+      // A re-render of the same page keeps the reader where they were.
+      if (path !== lastScrolled) { lastScrolled = path; window.scrollTo(0, 0); }
     }).catch(function (e) {
       if (id !== state.renderId) return;
       clear(host);
@@ -731,7 +779,7 @@
     var refCard = el("div", "card stack tight");
     refCard.appendChild(el("p", "label", "Your referral link"));
     refCard.appendChild(el("p", "small dim", "When someone who signs up with this link becomes a client, you receive the referral reward."));
-    var url = location.origin + BASE + "?ref=" + user.referralCode;
+    var url = location.origin + BASE + "?ref=" + encodeURIComponent(user.referralCode);
     var code = el("div", "code", url);
     refCard.appendChild(code);
     var copy = button("Copy link", "btn sm", function () {
@@ -742,7 +790,8 @@
 
     var out = el("div", "row");
     out.appendChild(button("Sign out", "btn", function () {
-      api("/auth/signout", { method: "POST" }).then(function () { location.assign("/"); });
+      api("/auth/signout", { method: "POST" }).then(function () { location.assign("/"); })
+        .catch(function (e) { toast(e.message, "bad"); });
     }));
     wrap.appendChild(out);
     return wrap;
@@ -797,9 +846,14 @@
       });
       pw.appendChild(form);
       if (sec.hasPassword) {
-        pw.appendChild(append(el("div", "row"), [button("Remove password", "btn ghost sm", function () {
-          api("/auth/password", { method: "DELETE", body: { current: current ? current.value : undefined } }).then(function () { toast("Password removed.", "good"); render(); }).catch(function (err) { toast(err.message, "bad"); });
-        })]));
+        var drop = button("Remove password", "btn ghost sm", function () {
+          if (!window.confirm("Remove your password? You will sign in with an email link until you set a new one.")) return;
+          drop.disabled = true;
+          api("/auth/password", { method: "DELETE", body: { current: current ? current.value : undefined } })
+            .then(function () { toast("Password removed.", "good"); render(); })
+            .catch(function (err) { drop.disabled = false; toast(err.message, "bad"); });
+        });
+        pw.appendChild(append(el("div", "row"), [drop]));
       }
       wrap.appendChild(pw);
 
@@ -807,7 +861,8 @@
       var head = el("div", "row between");
       head.style.padding = "0.9rem 1.1rem";
       append(head, [el("p", "label", "Signed-in devices"), button("Sign out everywhere", "btn danger sm", function () {
-        api("/auth/signout-all", { method: "POST" }).then(function () { location.assign(BASE); });
+        api("/auth/signout-all", { method: "POST" }).then(function () { location.assign(BASE); })
+          .catch(function (e) { toast(e.message, "bad"); });
       })]);
       sess.appendChild(head);
       var slist = el("div", "list");
@@ -816,7 +871,11 @@
         var isThis = s.id === sessions.current;
         var left = append(el("div"), [el("div", "primary", (s.device || "unknown device") + (s.country ? " · " + s.country : "")), el("div", "secondary", "since " + fmtDate(s.createdAt) + " · last seen " + fmtRelative(s.lastSeenAt))]);
         var right = isThis ? pill("this one", "live") : button("Sign out", "btn ghost sm", function () {
-          api("/sessions/" + encodeURIComponent(s.id), { method: "DELETE" }).then(function () { toast("Signed out there.", "good"); render(); });
+          var end = this;
+          end.disabled = true;
+          api("/sessions/" + encodeURIComponent(s.id), { method: "DELETE" })
+            .then(function () { toast("Signed out there.", "good"); render(); })
+            .catch(function (e) { end.disabled = false; toast(e.message, "bad"); });
         });
         append(row, [left, right]);
         slist.appendChild(row);
