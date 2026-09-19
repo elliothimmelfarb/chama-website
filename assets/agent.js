@@ -1070,6 +1070,17 @@
       }
     }
 
+    /* Every turn is remembered, but a long conversation must not grow the
+       array without end, so the tail is kept and the head is dropped. The
+       request only ever carries the last 40 entries, so a ceiling of 60
+       changes nothing the server sees. */
+    var HISTORY_MAX = 60;
+
+    function remember(entry) {
+      history.push(entry);
+      if (history.length > HISTORY_MAX) history.splice(0, history.length - HISTORY_MAX);
+    }
+
     // history is capped to the last 40 entries and must open and close on a
     // user turn, so trim any assistant entry that ends up leading.
     function payloadMessages() {
@@ -1298,7 +1309,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
 
       dissolveOpening();
       addTurn("you", message);
-      history.push({ role: "user", content: message });
+      remember({ role: "user", content: message });
       turns += 1;
       setHudNumber(hud.turns, String(turns));
 
@@ -1336,7 +1347,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
 
       function done() {
         setBusy(false);
-        if (reply) history.push({ role: "assistant", content: reply });
+        if (reply) remember({ role: "assistant", content: reply });
       }
 
       fetch("/api/chat", {
@@ -1374,7 +1385,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
               if (painter) painter.end(reply);
               body = null;
               painter = null;
-              if (reply) { history.push({ role: "assistant", content: reply }); reply = ""; }
+              if (reply) { remember({ role: "assistant", content: reply }); reply = ""; }
               launchSpark();
               addSystem("Sent. We will get back to you.", true);
               showThinking();   // whatever it says next is still on its way
