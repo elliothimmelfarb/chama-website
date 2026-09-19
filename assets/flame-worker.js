@@ -36,6 +36,10 @@ onmessage = function (ev) {
       settings: m.settings,
       emit: emit
     });
+    // the host waits for this before it trusts the handover: a worker that
+    // never loads never answers, and the page puts the fire back on its own
+    // thread instead of keeping a canvas nobody is painting
+    emit("ready");
     return;
   }
 

@@ -288,6 +288,43 @@
     }
 
     var flameWorker = null;
+    var workerReady = false;
+    var workerGaveUp = false;
+    var workerAckTimer = 0;
+    var WORKER_ACK_MS = 5000;
+
+    function inlineFlame() {
+      return window.ChamaFlame.create({
+        canvas: canvas, touchDevice: touchDevice,
+        reduceMotion: reduceMotion, settings: settings, emit: onEmit
+      });
+    }
+
+    /* The canvas can only be given away once, so a worker that fails to load
+       leaves a room with nothing in it. The handover is therefore provisional
+       until the worker says it is alive: if it errors, or says nothing at all,
+       the worker is terminated, a fresh canvas replaces the one it was handed,
+       and the fire runs on this thread after all. */
+    function abandonWorker() {
+      if (workerGaveUp || workerReady) return;
+      workerGaveUp = true;
+      window.clearTimeout(workerAckTimer);
+      if (flameWorker) {
+        try { flameWorker.terminate(); } catch (e) { /* already gone */ }
+        flameWorker = null;
+      }
+      var fresh = document.createElement("canvas");
+      fresh.className = canvas.className;
+      fresh.id = canvas.id;
+      fresh.setAttribute("aria-hidden", "true");
+      if (canvas.parentNode) canvas.parentNode.replaceChild(fresh, canvas);
+      canvas = fresh;
+      flame = inlineFlame();
+      pushSettings();
+      layout();
+      if (reduceMotion) staticRepaint();
+      else if (flameRunning) flame.start();
+    }
 
     function makeFlame() {
       if (workerEligible()) {
@@ -295,8 +332,17 @@
           var w = new Worker("/assets/flame-worker.js");
           w.onmessage = function (ev) {
             var m = ev.data;
-            if (m && m.type) onEmit(m.type, m.payload);
+            if (!m || !m.type) return;
+            if (m.type === "ready") {
+              workerReady = true;
+              window.clearTimeout(workerAckTimer);
+              return;
+            }
+            onEmit(m.type, m.payload);
           };
+          w.onerror = abandonWorker;
+          w.onmessageerror = abandonWorker;
+          workerAckTimer = window.setTimeout(abandonWorker, WORKER_ACK_MS);
           var off = canvas.transferControlToOffscreen();
           w.postMessage({
             type: "init", canvas: off, touchDevice: touchDevice,
@@ -322,12 +368,14 @@
             // wanted and the host never calls it.
             noteScroll: function () {}
           };
-        } catch (e) { /* no worker: the canvas is untouched, fall through */ }
+        } catch (e) {
+          // the constructor or the handover was refused: the canvas is
+          // untouched, so the inline path below still has one to draw on
+          window.clearTimeout(workerAckTimer);
+          workerAckTimer = 0;
+        }
       }
-      return window.ChamaFlame.create({
-        canvas: canvas, touchDevice: touchDevice,
-        reduceMotion: reduceMotion, settings: settings, emit: onEmit
-      });
+      return inlineFlame();
     }
 
     var flame = makeFlame();
