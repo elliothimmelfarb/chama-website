@@ -1524,6 +1524,33 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       startLoop();
     }
 
+    /* The setting can change while the page is open: a visitor turning
+       reduced motion on mid conversation should see the fire settle into its
+       still frame there and then, and turning it off again should light it. */
+    (function watchReduceMotion() {
+      var mq;
+      try { mq = window.matchMedia("(prefers-reduced-motion: reduce)"); } catch (e) { return; }
+      if (!mq) return;
+
+      function onChange(ev) {
+        var next = !!(ev && typeof ev.matches === "boolean" ? ev.matches : mq.matches);
+        if (next === reduceMotion) return;
+        reduceMotion = next;
+        flame.setReduceMotion(next);
+        if (next) {
+          stopLoop();
+          staticRepaint();
+        } else if (stageLive) {
+          flame.wake();
+          startLoop();
+        }
+        syncWisp();
+      }
+
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    })();
+
     /* ---- the room on a phone: a piece of the page, or the screen ----------
        A phone has one finger and one scroll. Two scrollers stacked, a page
        with a room in it and a transcript inside the room, fight for that
