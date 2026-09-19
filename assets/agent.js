@@ -1370,6 +1370,7 @@
             if (event.ok) {
               if (painter) painter.end(reply);
               body = null;
+              painter = null;
               if (reply) { history.push({ role: "assistant", content: reply }); reply = ""; }
               launchSpark();
               addSystem("Sent. We will get back to you.", true);
