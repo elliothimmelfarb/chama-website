@@ -515,11 +515,13 @@ route("GET", "/admin/members", async (context) => {
   needs(context, "members.read");
   const url = new URL(context.request.url);
   const q = clampText(url.searchParams.get("q") || "", 100).toLowerCase();
+  // A search is a search, not a pattern: % and _ from the box stay literal.
+  const pattern = "%" + q.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
   const role = url.searchParams.get("role") || "";
   const rows = await sql()`
     select u.*, (select count(*)::int from login_sessions s where s.user_id = u.id and s.revoked_at is null and s.expires_at > now()) as live_sessions
     from users u
-    where (${q} = '' or lower(u.email) like ${"%" + q + "%"} or lower(u.name) like ${"%" + q + "%"})
+    where (${q} = '' or lower(u.email) like ${pattern} escape '\\' or lower(u.name) like ${pattern} escape '\\')
       and (${role} = '' or u.role = ${role})
     order by coalesce(u.last_seen_at, u.created_at) desc
     limit 500

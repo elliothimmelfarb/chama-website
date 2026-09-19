@@ -329,6 +329,20 @@ test("a timezone the calculator cannot resolve is refused", async () => {
   assert.equal(db.count(/insert into settings/), 1);
 });
 
+test("a member search treats % and _ as text, not as a pattern", async () => {
+  const db = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read"],
+    extra: [[/as live_sessions/, []]]
+  });
+  useClient(db);
+  const response = await handleHearth(hearth("/admin/members?q=100%25_off", { cookie: "t" }));
+  assert.equal(response.status, 200);
+  const select = db.matching(/as live_sessions/)[0];
+  assert.equal(select.values[1], "%100\\%\\_off%");
+  assert.ok(select.text.includes("escape '\\'"), "the pattern says which character escapes");
+});
+
 test("the audit log needs audit.read", async () => {
   useClient(signedIn({ role: "client", permissions: ["hearth.enter"] }));
   const refused = await handleHearth(hearth("/admin/audit", { cookie: "t" }));
