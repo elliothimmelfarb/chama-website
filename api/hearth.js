@@ -25,7 +25,7 @@ import {
   ensureRoles, findUserByEmail, findUserById, createUser, userForIdentity, loadActor,
   publicUser, countOwners, promoteIfAdmin
 } from "../lib/hearth/users.js";
-import { PERMISSIONS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
+import { PERMISSIONS, ROLE_DEFAULTS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
 import { isValidZone } from "../lib/hearth/time.js";
 import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
 import * as mail from "../lib/hearth/mail.js";
@@ -499,14 +499,29 @@ route("PATCH", "/profile", async (context) => {
 
 /* ---------- the business: members, roles, settings, log, metrics ---------- */
 
-// Only grant what you hold: true when the role carries a permission the
-// actor does not have. The owner role carries all of them.
+// Only grant what you hold: rank comes from the roles table's `position`, where
+// the owner sits at 0 and every other role below it. A delegated admin may hand
+// out their own role or one under it, never one over it; the owner hands out
+// anything. Comparing permission sets instead would refuse a role that merely
+// holds a different permission, such as staff inviting a client.
+const DEFAULT_ROLE_POSITIONS = new Map(ROLE_DEFAULTS.map((role) => [role.name, role.position]));
+
+function rolePosition(positions, name) {
+  const at = positions.has(name) ? positions.get(name) : DEFAULT_ROLE_POSITIONS.get(name);
+  return Number.isInteger(at) ? at : null;
+}
+
 async function roleOutranks(context, roleName) {
-  if (context.actor.user.role === "owner") return false;
+  const actorRole = context.actor.user.role;
+  if (actorRole === "owner") return false;
   if (roleName === "owner") return true;
-  const rows = await sql()`select permissions from roles where name = ${roleName}`;
-  const permissions = Array.isArray(rows[0]?.permissions) ? rows[0].permissions : [];
-  return permissions.some((p) => !context.actor.permissions.has(p));
+  const rows = await sql()`select name, position from roles where name in (${actorRole}, ${roleName})`;
+  const positions = new Map((rows || []).map((row) => [row.name, row.position]));
+  const actorAt = rolePosition(positions, actorRole);
+  const targetAt = rolePosition(positions, roleName);
+  // An unknown role on either side is refused rather than guessed at.
+  if (actorAt === null || targetAt === null) return true;
+  return targetAt < actorAt;
 }
 
 route("GET", "/admin/permissions", async (context) => {
@@ -570,8 +585,12 @@ route("PATCH", "/admin/members/:id", async (context, params) => {
   const log = auditor(context, actor);
   if (typeof body.role === "string" && body.role !== target.role) {
     if (!ROLE_NAMES.includes(body.role)) throw new HttpError(400, "Unknown role.");
-    // Nobody promotes themselves, and nobody hands out more than they hold.
-    if (target.id === actor.id) throw new HttpError(400, "You cannot change your own role.");
+    // Nobody promotes themselves, and nobody hands out more than they hold. An
+    // owner is the exception: stepping down is theirs to do, and the last-owner
+    // check below is what keeps the room from ending up without one.
+    if (target.id === actor.id && actor.role !== "owner") {
+      throw new HttpError(400, "You cannot change your own role.");
+    }
     // Only an owner hands out or takes away ownership, and never the last one.
     if ((body.role === "owner" || target.role === "owner") && actor.role !== "owner") throw new HttpError(403, MESSAGES.forbidden);
     if (await roleOutranks(context, body.role)) throw new HttpError(403, "You can only grant what you hold yourself.");

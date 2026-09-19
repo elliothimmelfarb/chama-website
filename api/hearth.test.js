@@ -242,7 +242,7 @@ test("only an owner touches an owner's role, and never the last one", async () =
   assert.equal(ownerDb.count(/update users set role/), 0);
 });
 
-test("nobody changes their own role or hands out more than they hold", async () => {
+test("a delegated admin cannot change their own role, and an owner can step down", async () => {
   const self = signedIn({ role: "staff", permissions: ["hearth.enter", "members.read", "members.manage"] });
   useClient(self);
   const own = await handleHearth(
@@ -252,32 +252,104 @@ test("nobody changes their own role or hands out more than they hold", async () 
   assert.equal((await body(own)).error, "You cannot change your own role.");
   assert.equal(self.count(/update users set role/), 0);
 
-  // The staff role here holds two permissions; promoting someone to a role
-  // that holds a third is refused.
-  const higher = signedIn({
+  // An owner with a second owner behind them may hand their own role back.
+  const stepping = signedIn({
+    role: "owner",
+    permissions: [],
+    extra: [[/count\(\*\)::int as n from users/, [{ n: 2 }]]]
+  });
+  useClient(stepping);
+  const down = await handleHearth(
+    hearth("/admin/members/actor-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "staff" }) })
+  );
+  assert.equal(down.status, 200);
+  assert.equal(stepping.count(/update users set role/), 1);
+});
+
+test("a role is granted by rank, not by whichever permissions it happens to hold", async () => {
+  const members = {
+    "member-1": userRow({ id: "member-1", email: "member@example.com", role: "guest" })
+  };
+
+  // A client holds packs.buy, which staff does not. That is a different
+  // permission, not a higher rank, so staff may still hand out the client role.
+  const sideways = signedIn({
     role: "staff",
     permissions: ["hearth.enter", "members.read", "members.manage"],
-    users: { "member-1": userRow({ id: "member-1", email: "member@example.com", role: "client" }) },
-    extra: [[/select permissions from roles where name/, [{ permissions: ["members.read", "members.manage", "settings.manage"] }]]]
+    users: members
   });
-  useClient(higher);
+  useClient(sideways);
+  const allowed = await handleHearth(
+    hearth("/admin/members/member-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "client" }) })
+  );
+  assert.equal(allowed.status, 200);
+  assert.equal(sideways.count(/update users set role/), 1);
+
+  // A role placed above the actor's own is refused.
+  const above = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read", "members.manage"],
+    users: members,
+    extra: [[/select name, position from roles where name in/, [{ name: "staff", position: 2 }, { name: "client", position: 1 }]]]
+  });
+  useClient(above);
   const refused = await handleHearth(
-    hearth("/admin/members/member-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "staff" }) })
+    hearth("/admin/members/member-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "client" }) })
   );
   assert.equal(refused.status, 403);
   assert.equal((await body(refused)).error, "You can only grant what you hold yourself.");
-  assert.equal(higher.count(/update users set role/), 0);
+  assert.equal(above.count(/update users set role/), 0);
 });
 
-test("an invitation cannot hand out a role the inviter does not hold", async () => {
+// An invitation gets as far as the mail, which is unconfigured in the tests, so
+// a permitted one ends in 503 with the user written. Refusal happens earlier.
+function inviteDb({ role, permissions, extra = [] }) {
+  return signedIn({
+    role,
+    permissions,
+    extra: [
+      ...extra,
+      [/insert into users/, [userRow({ id: "new-1", email: "new@example.com", role: "guest" })]]
+    ]
+  });
+}
+
+test("an invitation ranks the role, so staff may invite a client but never an owner", async () => {
+  const toClient = inviteDb({ role: "staff", permissions: ["hearth.enter", "members.read", "members.manage"] });
+  useClient(toClient);
+  const invited = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "client" }) })
+  );
+  assert.equal(invited.status, 503, "the role passed and only the unconfigured mail stopped it");
+  assert.equal(toClient.count(/insert into users/), 1);
+
+  const toOwner = inviteDb({ role: "staff", permissions: ["hearth.enter", "members.read", "members.manage"] });
+  useClient(toOwner);
+  const refused = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "owner" }) })
+  );
+  assert.equal(refused.status, 403);
+  assert.equal((await body(refused)).error, MESSAGES.forbidden);
+  assert.equal(toOwner.count(/insert into users/), 0);
+
+  const owner = inviteDb({ role: "owner", permissions: [] });
+  useClient(owner);
+  const byOwner = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "staff" }) })
+  );
+  assert.equal(byOwner.status, 503);
+  assert.equal(owner.count(/insert into users/), 1);
+});
+
+test("an invitation cannot hand out a role above the inviter's own", async () => {
   const db = signedIn({
     role: "staff",
     permissions: ["hearth.enter", "members.read", "members.manage"],
-    extra: [[/select permissions from roles where name/, [{ permissions: ["settings.manage"] }]]]
+    extra: [[/select name, position from roles where name in/, [{ name: "staff", position: 2 }, { name: "client", position: 1 }]]]
   });
   useClient(db);
   const response = await handleHearth(
-    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "staff" }) })
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "client" }) })
   );
   assert.equal(response.status, 403);
   assert.equal((await body(response)).error, "You can only grant what you hold yourself.");
