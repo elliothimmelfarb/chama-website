@@ -220,14 +220,16 @@
     }
     var canMove = away >= data.cancelNoticeHours;
     right.appendChild(button("Move", "btn ghost sm", function () { H.navigate("/sessions/move/" + b.id); }));
-    right.appendChild(button("Cancel", "btn ghost sm", function () {
+    var cancel = button("Cancel", "btn ghost sm", function () {
       var msg = canMove ? "Cancel this session? The credit comes back to you." : "Cancel this session? It is inside the " + data.cancelNoticeHours + "-hour notice, so the credit is not returned.";
       if (!window.confirm(msg)) return;
-      api("/bookings/" + b.id + "/cancel", { method: "POST", body: {} }).then(function (r) {
+      cancel.disabled = true;
+      api("/bookings/" + encodeURIComponent(b.id) + "/cancel", { method: "POST", body: {} }).then(function (r) {
         H.toast(r.refund ? "Cancelled. The credit has been returned." : "Cancelled.", "good");
         H.render();
-      }).catch(function (err) { H.toast(err.message, "bad"); });
-    }));
+      }).catch(function (err) { cancel.disabled = false; H.toast(err.message, "bad"); });
+    });
+    right.appendChild(cancel);
     append(row, [left, right]);
     return row;
   }
