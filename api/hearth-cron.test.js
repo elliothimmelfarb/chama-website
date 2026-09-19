@@ -15,10 +15,10 @@ process.env.CRON_SECRET = "the-cron-secret";
 
 const HOST = "chamainteligente.com";
 
-function cron(secret) {
+function cron(secret, options = {}) {
   const headers = {};
   if (secret) headers.authorization = `Bearer ${secret}`;
-  return makeRequest(`https://${HOST}/api/hearth-cron`, { headers });
+  return makeRequest(`https://${HOST}/api/hearth-cron`, { ...options, headers });
 }
 
 async function body(response) {
@@ -127,4 +127,11 @@ test("a transcript another instance already wrote is not written twice", async (
   assert.deepEqual(result, { pulled: 0, checked: 1 });
   assert.equal(db.count(/insert into audit_log/), 0, "nothing is logged for a record this run did not write");
   assert.equal(db.count(/update transcripts/), 0, "and nothing is derived from it");
+});
+
+test("the job answers only GET and POST", async () => {
+  useClient(fakeDb());
+  const response = await handleCron(cron("the-cron-secret", { method: "DELETE" }));
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get("Allow"), "GET, POST");
 });
