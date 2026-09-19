@@ -148,6 +148,8 @@ Neon Postgres, provisioned through the Vercel Marketplace (`chama-hearth`, free 
 - **One person per email**, whatever they signed in with. Providers link by verified email; an unverified email is refused.
 - **Balances are sums.** `credit_ledger` is append-only; a pack marked paid adds, a booking spends, a cancellation in time returns, the owner can grant.
 - **Double bookings are refused by the database** (an exclusion constraint on scheduled bookings), not by code that checks first.
+- **One transcript per booking is refused by the database too** (`transcripts_booking_idx`, migration 004). If a duplicate already existed when the migration ran, the index was skipped rather than fail every cold start; the writers still check first. To repair: `select booking_id, count(*) from transcripts where booking_id is not null group by 1 having count(*) > 1`, remove the extras by hand, then `create unique index transcripts_booking_idx on transcripts(booking_id) where booking_id is not null`.
+- **Every cancel and every referral reward is a compare-and-set** (`update ... where status = ... returning id`); a second concurrent call gets 409, never a second refund credit.
 - **The audit log is append-only** and holds who, what, when, the country Vercel resolved and a device family. Never an IP address, never a raw user agent, never visitor text.
 - **Transcripts are data.** Shown only through `textContent`, handed to the model as marked untrusted text, never logged.
 
@@ -189,7 +191,7 @@ Beyond the ones the site already has (`ADMIN_EMAILS` doubles as the owner list; 
 
 ### Checking it works
 
-`npm run check` runs every unit test against a fake database. For the routing and the pages without a database, `vercel dev --listen 4990` serves the site locally (the API answers 503 "not open yet", which proves the rewrites and functions resolve; the well-known documents answer 200). For the look of the room with sample data there is a mock API in the session scratchpad (not in the repo); the real check is the live page after a deploy, signed in as the owner.
+`npm run check` syntax-checks every shipped script (`api/`, `lib/`, `evals/`, and all of `assets/`) and runs every unit test against a fake database. For the routing and the pages without a database, `vercel dev --listen 4990` serves the site locally (the API answers 503 "not open yet", which proves the rewrites and functions resolve; the well-known documents answer 200). For the look of the room with sample data there is a mock API in the session scratchpad (not in the repo); the real check is the live page after a deploy, signed in as the owner.
 
 ## Deploying it
 
