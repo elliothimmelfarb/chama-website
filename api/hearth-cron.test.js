@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { useClient } from "../lib/hearth/db.js";
 import { fakeDb, makeRequest } from "../lib/hearth/test-helpers.js";
-import { handleCron, sendReminders, sweep } from "./hearth-cron.js";
+import { handleCron, pullMeetTranscripts, sendReminders, sweep } from "./hearth-cron.js";
 
 // A dummy connection string is enough: useClient means neon() is never
 // called, and with no RESEND_* the mailer refuses before it can reach
@@ -101,4 +101,30 @@ test("a run with the right secret sweeps and reports what it sent", async () => 
   assert.equal(response.status, 200);
   assert.deepEqual(await body(response), { ok: true, reminders: 0, meet: { pulled: 0, checked: 0 } });
   assert.equal(db.matching(/^\s*delete from/).length, 6);
+});
+
+// The select already skips bookings that have a transcript; the unique index
+// catches the pair of instances that both read "none" in the same minute.
+test("a transcript another instance already wrote is not written twice", async () => {
+  const db = fakeDb([
+    [/from users where role = 'owner'/, [{ id: "owner-1" }]],
+    [
+      /from bookings b join users u on u.id = b.user_id left join transcripts t/,
+      [{ id: "booking-1", user_id: "member-1", meeting_code: "abc-defg-hij", starts_at: "2026-09-01T10:00:00.000Z", ends_at: "2026-09-01T11:00:00.000Z", title: "", email: "member@example.com", name: "Member" }]
+    ],
+    [
+      /insert into transcripts/,
+      () => {
+        const error = new Error("duplicate key value violates unique constraint");
+        error.code = "23505";
+        throw error;
+      }
+    ]
+  ]);
+  useClient(db);
+  const google = { isConnected: async () => true, fetchTranscript: async () => ({ text: "Someone: hello" }) };
+  const result = await quiet(() => pullMeetTranscripts(new Date("2026-09-02T10:00:00.000Z"), { google }));
+  assert.deepEqual(result, { pulled: 0, checked: 1 });
+  assert.equal(db.count(/insert into audit_log/), 0, "nothing is logged for a record this run did not write");
+  assert.equal(db.count(/update transcripts/), 0, "and nothing is derived from it");
 });
