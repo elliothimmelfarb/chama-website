@@ -1039,7 +1039,9 @@
           });
       });
       var localZone = browserZone();
-      var blockHint = "In your timezone" + (localZone ? " (" + localZone + ")" : "") + ", not " + zone + ".";
+      var blockHint = localZone && localZone !== zone
+        ? "In your timezone (" + localZone + "), not " + zone + "."
+        : "In your timezone.";
       append(blocksCard, [
         field("From", from, blockHint),
         field("To", to, blockHint),

@@ -144,9 +144,9 @@
     if (diff < 0) {
       var ahead = -diff;
       if (ahead < 60) return "in a moment";
-      if (ahead < 3600) return "in " + Math.floor(ahead / 60) + " min";
-      if (ahead < 86400) return "in " + Math.floor(ahead / 3600) + " h";
-      if (ahead < 86400 * 14) return "in " + Math.floor(ahead / 86400) + " d";
+      if (ahead < 3600) return "in " + Math.round(ahead / 60) + " min";
+      if (ahead < 86400) return "in " + Math.round(ahead / 3600) + " h";
+      if (ahead < 86400 * 14) return "in " + Math.round(ahead / 86400) + " d";
       return fmtDate(iso, { dateStyle: "medium" });
     }
     if (diff < 60) return "just now";
