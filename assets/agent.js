@@ -1409,6 +1409,10 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         var reader = res.body.getReader();
         var decoder = new TextDecoder();
         var buffer = "";
+        /* A frame ends at a blank line. A stream that never sends one is not
+           a stream this page can read, and holding it in memory helps nobody,
+           so past the ceiling the request fails and the visitor can retry. */
+        var BUFFER_MAX = 256 * 1024;
 
         function handle(event) {
           if (!event || typeof event !== "object") return;
@@ -1456,6 +1460,10 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
             armStall(IDLE_MS);
             buffer += decoder.decode(chunk.value, { stream: true });
             drain(false);
+            if (buffer.length > BUFFER_MAX) {
+              try { reader.cancel(); } catch (e) { /* already closed */ }
+              throw saidError(GENERIC);
+            }
             return pump();
           });
         }
