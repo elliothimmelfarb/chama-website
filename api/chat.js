@@ -357,7 +357,9 @@ export async function isFlameKilled(dependencies = {}) {
 // the test is on the wording rather than on a type.
 export function isClosedStream(error) {
   const message = error instanceof Error ? error.message : String(error ?? "");
-  return /closed|Invalid state|ERR_INVALID_STATE/i.test(message);
+  return /Controller is already closed|The stream is closed|Invalid state|ERR_INVALID_STATE/i.test(
+    message
+  );
 }
 
 export function describeError(error) {
@@ -412,9 +414,11 @@ export async function runAgent(client, history, emit) {
   let reply = "";
 
   for (let call = 0; call < LIMITS.modelCalls; call += 1) {
-    // On the last permitted call the tools are withheld, so the model has to
-    // answer in words. Offered them, it could spend the turn on another tool
-    // call and the visitor would get a done event with nothing in it.
+    // On the last permitted call the model is told not to use a tool, so it has
+    // to answer in words. Left free, it could spend the turn on another tool
+    // call and the visitor would get a done event with nothing in it. The tool
+    // definitions still go with every call: once the history holds tool_use and
+    // tool_result blocks, the API rejects a request that omits them.
     const lastCall = call === LIMITS.modelCalls - 1;
     const stream = client.messages.stream({
       model: MODEL,
@@ -423,7 +427,8 @@ export async function runAgent(client, history, emit) {
       system: [
         { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }
       ],
-      ...(lastCall ? {} : { tools: TOOLS }),
+      tools: TOOLS,
+      ...(lastCall ? { tool_choice: { type: "none" } } : {}),
       messages
     });
 

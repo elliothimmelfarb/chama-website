@@ -716,7 +716,7 @@ function fakeClient(turns) {
   };
 }
 
-test("withholds the tools on the last permitted call so the visitor always gets words", async () => {
+test("forbids a tool on the last permitted call so the visitor always gets words", async () => {
   // A model that asks for a tool every time it is offered one.
   const client = fakeClient([
     { tool: "adjust_experience" },
@@ -727,9 +727,14 @@ test("withholds the tools on the last permitted call so the visitor always gets 
   const outcome = await runAgent(client, history(["user", "Hello"]), () => {});
 
   assert.equal(client.sent.length, 3);
+  // The tool definitions go with every call: the history carries tool_use and
+  // tool_result blocks by then, and the API refuses those without `tools`.
   assert.ok(client.sent[0].tools, "the tools are offered on the first call");
   assert.ok(client.sent[1].tools);
-  assert.equal("tools" in client.sent[2], false, "and withheld on the last");
+  assert.ok(client.sent[2].tools, "and still declared on the last");
+  assert.equal(client.sent[0].tool_choice, undefined, "the model is free to use one at first");
+  assert.equal(client.sent[1].tool_choice, undefined);
+  assert.equal(client.sent[2].tool_choice.type, "none", "and forbidden one on the last");
   assert.equal(outcome.reply, "Here is the answer.");
 });
 
@@ -737,4 +742,9 @@ test("a visitor who closed the tab is not an error worth logging", () => {
   assert.equal(isClosedStream(new TypeError("Invalid state: Controller is already closed")), true);
   assert.equal(isClosedStream(new Error("The stream is closed")), true);
   assert.equal(isClosedStream(new Error("boom")), false);
+});
+
+test("a genuine failure that mentions closing is still an error", () => {
+  assert.equal(isClosedStream(new Error("The upstream connection closed unexpectedly")), false);
+  assert.equal(isClosedStream(new Error("Database pool closed")), false);
 });
