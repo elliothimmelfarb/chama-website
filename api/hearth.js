@@ -580,7 +580,7 @@ route("PATCH", "/admin/members/:id", async (context, params) => {
     await log(EVENTS.statusChanged, target.id, { to: body.status });
   }
   if (typeof body.notes === "string") {
-    await sql()`update users set notes = ${clampText(body.notes, 4000)} where id = ${target.id}`;
+    await sql()`update users set notes = ${clampText(body.notes, 4000, { multiline: true })} where id = ${target.id}`;
   }
   return json({ ok: true });
 });
