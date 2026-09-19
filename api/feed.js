@@ -73,16 +73,21 @@ ${body}
 </html>`;
 }
 
+// A post's url is authored in the Hearth and validated there, but it is put in
+// an href here, so it is checked again: only http and https are ever linked.
+function linkable(value) {
+  return typeof value === "string" && /^https?:\/\//i.test(value.trim());
+}
+
 function article(p, { standalone = false } = {}) {
-  const url = `${SITE}/feed/${encodeURIComponent(p.slug)}`;
   const heading = standalone ? `<h1>${esc(p.title)}</h1>` : `<h2><a href="/feed/${encodeURIComponent(p.slug)}">${esc(p.title)}</a></h2>`;
   return `<article>
 <p class="kicker"><time datetime="${esc(p.published_at)}">${date(p.published_at)}</time>${p.pinned ? " · <b>pinned</b>" : ""}${p.kind !== "note" ? ` · ${esc(p.kind)}` : ""}</p>
 ${heading}
 ${paragraphs(p.body)}
-${p.url ? `<a class="link" href="${esc(p.url)}" rel="noopener">${esc(p.url)}</a>` : ""}
+${linkable(p.url) ? `<a class="link" href="${esc(p.url.trim())}" rel="noopener">${esc(p.url.trim())}</a>` : ""}
 ${standalone ? "" : `<p class="kicker" style="margin-top:.6rem"><a href="/feed/${encodeURIComponent(p.slug)}" style="text-decoration:none">permanent link</a></p>`}
-</article>`.replace(/\$\{url\}/g, url);
+</article>`;
 }
 
 async function feedPublic() {
@@ -111,7 +116,7 @@ function rss(posts) {
 <link>${SITE}/feed/${encodeURIComponent(p.slug)}</link>
 <guid isPermaLink="true">${SITE}/feed/${encodeURIComponent(p.slug)}</guid>
 <pubDate>${new Date(p.published_at).toUTCString()}</pubDate>
-<description>${esc(paragraphs(p.body) + (p.url ? `<p><a href="${esc(p.url)}">${esc(p.url)}</a></p>` : ""))}</description>
+<description><![CDATA[${paragraphs(p.body)}${linkable(p.url) ? `<p><a href="${esc(p.url.trim())}">${esc(p.url.trim())}</a></p>` : ""}]]></description>
 </item>`).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -126,14 +131,51 @@ ${items}
 </rss>`;
 }
 
-export async function handleFeed(request) {
-  const url = new URL(request.url);
-  let path = url.pathname;
-  if (path === "/api/feed") {
+function notFound() {
+  return html(page({
+    title: "Not found | Chama Inteligente",
+    description: "",
+    canonical: `${SITE}/feed`,
+    noindex: true,
+    body: `<h1>Not here</h1><p class="lede">There is no post at that address. <a href="/feed">The feed</a>.</p>`
+  }), 404, "no-store");
+}
+
+// The slug reaches this handler two ways and only one of them is encoded.
+// Behind the rewrite it arrives as ?path=, which URLSearchParams has already
+// decoded; called directly it is still in the pathname. Decoding both would
+// decode the first one twice, and a lone "%" would throw a URIError.
+export function routeFor(url) {
+  if (url.pathname === "/api/feed") {
+    if (url.searchParams.get("format") === "xml") return { path: "/feed.xml" };
     const segments = url.searchParams.getAll("path");
-    path = "/feed" + (segments.length ? "/" + segments.join("/") : "");
-    if (url.searchParams.get("format") === "xml") path = "/feed.xml";
+    const slug = segments.join("/");
+    return slug ? { path: "/feed/" + slug, slug } : { path: "/feed" };
   }
+  if (url.pathname === "/feed.xml" || url.pathname === "/feed" || url.pathname === "/feed/") {
+    return { path: url.pathname };
+  }
+  if (url.pathname.startsWith("/feed/")) {
+    try {
+      return { path: url.pathname, slug: decodeURIComponent(url.pathname.slice("/feed/".length)) };
+    } catch {
+      return { path: url.pathname, bad: true };
+    }
+  }
+  return { path: url.pathname };
+}
+
+export async function handleFeed(request) {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response("Method not allowed.", {
+      status: 405,
+      headers: { Allow: "GET, HEAD", "Cache-Control": "no-store" }
+    });
+  }
+
+  const url = new URL(request.url);
+  const route = routeFor(url);
+  const path = route.path;
   if (!configured()) return html(closed(), 503, "no-store");
   try {
     await ready();
@@ -149,9 +191,10 @@ export async function handleFeed(request) {
         (posts.length ? posts.map((p) => article(p)).join("\n") : `<p class="empty">Nothing yet.</p>`);
       return html(page({ title: "The feed | Chama Inteligente", description: "What Elliot Himmelfarb is looking at: AI, coaching, and what has changed this week.", canonical: `${SITE}/feed`, body }));
     }
-    const slug = decodeURIComponent(path.replace(/^\/feed\//, "")).slice(0, 120);
-    const post = await publicPost(slug);
-    if (!post) return html(page({ title: "Not found | Chama Inteligente", description: "", canonical: `${SITE}/feed`, noindex: true, body: `<h1>Not here</h1><p class="lede">There is no post at that address. <a href="/feed">The feed</a>.</p>` }), 404, "no-store");
+    if (route.bad) return notFound();
+    const slug = String(route.slug || "").slice(0, 120);
+    const post = slug ? await publicPost(slug) : null;
+    if (!post) return notFound();
     const summary = String(post.body || "").split(/\n\s*\n/)[0].slice(0, 200) || post.title;
     return html(page({ title: `${post.title} | Chama Inteligente`, description: summary, canonical: `${SITE}/feed/${encodeURIComponent(post.slug)}`, body: article(post, { standalone: true }) + `<p class="kicker" style="margin-top:2rem"><a href="/feed" style="text-decoration:none">All posts</a></p>` }));
   } catch (error) {
