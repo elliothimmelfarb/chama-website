@@ -149,7 +149,7 @@ Neon Postgres, provisioned through the Vercel Marketplace (`chama-hearth`, free 
 - **Balances are sums.** `credit_ledger` is append-only; a pack marked paid adds, a booking spends, a cancellation in time returns, the owner can grant.
 - **Double bookings are refused by the database** (an exclusion constraint on scheduled bookings), not by code that checks first.
 - **One transcript per booking is refused by the database too** (`transcripts_booking_idx`, migration 004). If a duplicate already existed when the migration ran, the index was skipped rather than fail every cold start; the writers still check first. To repair: `select booking_id, count(*) from transcripts where booking_id is not null group by 1 having count(*) > 1`, remove the extras by hand, then `create unique index transcripts_booking_idx on transcripts(booking_id) where booking_id is not null`.
-- **Every cancel and every referral reward is a compare-and-set** (`update ... where status = ... returning id`); a second concurrent call gets 409, never a second refund credit.
+- **Every cancel and every referral reward is a compare-and-set** (`update ... where status = ... returning id`), so a second concurrent call changes nothing: never a second refund credit, never a second referral reward. The refusal reads differently by route: a member cancelling a session that is no longer scheduled gets 400, and the owner's session PATCH, which stakes the row it read, gets 409.
 - **The audit log is append-only** and holds who, what, when, the country Vercel resolved and a device family. Never an IP address, never a raw user agent, never visitor text.
 - **Transcripts are data.** Shown only through `textContent`, handed to the model as marked untrusted text, never logged.
 
