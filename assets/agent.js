@@ -1492,8 +1492,16 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       send(input.value);
     });
 
+    /* A hidden tab has nothing to paint. The loop stops with the tab and
+       starts again on the way back, from a fresh clock, so the fire never
+       burns behind a tab nobody is looking at. */
     document.addEventListener("visibilitychange", function () {
-      if (!document.hidden) flame.wake();
+      if (document.hidden) {
+        stopLoop();
+      } else if (stageLive) {
+        flame.wake();
+        startLoop();
+      }
       syncWisp();
     });
 
@@ -1515,8 +1523,8 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     } else if (mode === "embed" && window.IntersectionObserver) {
       var io = new IntersectionObserver(function (entries) {
         var e = entries[entries.length - 1];
-        if (e && e.isIntersecting) startLoop(); else stopLoop();
         stageLive = !!(e && e.isIntersecting);
+        if (stageLive && !document.hidden) startLoop(); else stopLoop();
         syncWisp();
       }, { threshold: 0 });
       io.observe(rootEl);
