@@ -352,6 +352,14 @@ export async function isFlameKilled(dependencies = {}) {
 // The SDK's error classes never set `name`, so every API failure used to log as
 // a bare "Error". This says what actually happened: the class, the HTTP status
 // and the API's own error type. None of it contains visitor text.
+// A visitor closing the tab is not a fault. The runtimes phrase it differently
+// ("Invalid state: Controller is already closed", "The stream is closed"), so
+// the test is on the wording rather than on a type.
+export function isClosedStream(error) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /closed|Invalid state|ERR_INVALID_STATE/i.test(message);
+}
+
 export function describeError(error) {
   if (error instanceof Anthropic.APIError) {
     const type = error.error && error.error.error && error.error.error.type;
@@ -397,13 +405,17 @@ function eventLine(payload) {
 
 // The agent loop. Streams text deltas out as they arrive, runs a tool when
 // the model asks for it, and stops after at most LIMITS.modelCalls turns.
-async function runAgent(client, history, emit) {
+export async function runAgent(client, history, emit) {
   const messages = history.map((entry) => ({ role: entry.role, content: entry.content }));
   const usage = { model: MODEL, effort: EFFORT, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
   const toolEvents = [];
   let reply = "";
 
   for (let call = 0; call < LIMITS.modelCalls; call += 1) {
+    // On the last permitted call the tools are withheld, so the model has to
+    // answer in words. Offered them, it could spend the turn on another tool
+    // call and the visitor would get a done event with nothing in it.
+    const lastCall = call === LIMITS.modelCalls - 1;
     const stream = client.messages.stream({
       model: MODEL,
       max_tokens: LIMITS.maxTokens,
@@ -411,7 +423,7 @@ async function runAgent(client, history, emit) {
       system: [
         { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }
       ],
-      tools: TOOLS,
+      ...(lastCall ? {} : { tools: TOOLS }),
       messages
     });
 
@@ -529,8 +541,21 @@ export default {
 
     const stream = new ReadableStream({
       async start(controller) {
+        // The visitor can close the tab at any point, which closes the
+        // controller under us. Writing to a closed controller throws, and this
+        // start() runs detached, so an unguarded write becomes an unhandled
+        // rejection. A closed stream is ordinary; anything else is logged.
+        let closed = false;
         const emit = (payload) => {
-          controller.enqueue(encoder.encode(eventLine(payload)));
+          if (closed) return;
+          try {
+            controller.enqueue(encoder.encode(eventLine(payload)));
+          } catch (error) {
+            closed = true;
+            if (!isClosedStream(error)) {
+              console.error("Chat stream write failed", describeError(error));
+            }
+          }
         };
 
         let usage = null;
@@ -555,7 +580,14 @@ export default {
         await persistConversation({ conversationId, turns, toolEvents });
 
         emit(usage ? { type: "done", usage } : { type: "done" });
-        controller.close();
+
+        try {
+          if (!closed) controller.close();
+        } catch (error) {
+          if (!isClosedStream(error)) {
+            console.error("Chat stream close failed", describeError(error));
+          }
+        }
       }
     });
 
