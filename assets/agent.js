@@ -1344,7 +1344,35 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         }
       }
 
+      /* A connection that hangs must not leave the composer disabled for the
+         rest of the visit. Two clocks: one on the answer arriving at all, and
+         one on the gap between chunks once it is under way. Either one aborts
+         the request into fail(), so the visitor gets the room back. */
+      var FIRST_BYTE_MS = 30000;
+      var IDLE_MS = 60000;
+      var TIMED_OUT = "The agent did not answer in time. Please try again.";
+
+      var controller = null;
+      try { controller = new AbortController(); } catch (e) { controller = null; }
+      var stallTimer = 0;
+      var timedOut = false;
+
+      function armStall(ms) {
+        if (!controller) return;
+        window.clearTimeout(stallTimer);
+        stallTimer = window.setTimeout(function () {
+          timedOut = true;
+          try { controller.abort(); } catch (e) { /* already gone */ }
+        }, ms);
+      }
+
+      function disarmStall() {
+        window.clearTimeout(stallTimer);
+        stallTimer = 0;
+      }
+
       function fail(msg) {
+        disarmStall();
         if (finished) return;
         finished = true;
         hideThinking();
@@ -1360,11 +1388,15 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         if (reply) remember({ role: "assistant", content: reply });
       }
 
+      armStall(FIRST_BYTE_MS);
+
       fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId: conversationId, messages: payloadMessages() })
+        body: JSON.stringify({ conversationId: conversationId, messages: payloadMessages() }),
+        signal: controller ? controller.signal : undefined
       }).then(function (res) {
+        armStall(IDLE_MS);
         if (!res.ok) {
           return res.json().then(function (data) {
             throw saidError(data && data.error);
@@ -1416,10 +1448,12 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         function pump() {
           return reader.read().then(function (chunk) {
             if (chunk.done) {
+              disarmStall();
               buffer += decoder.decode();
               drain(true);
               return;
             }
+            armStall(IDLE_MS);
             buffer += decoder.decode(chunk.value, { stream: true });
             drain(false);
             return pump();
@@ -1442,6 +1476,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         }
 
         return pump().then(function () {
+          disarmStall();
           if (finished) return;
           finished = true;
           hideThinking();
@@ -1450,6 +1485,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
           setState(input === document.activeElement ? "listening" : "idle");
         });
       }).catch(function (err) {
+        if (timedOut) { fail(TIMED_OUT); return; }
         fail(err && err.said ? err.message : GENERIC);
       });
     }
