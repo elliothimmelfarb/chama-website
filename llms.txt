@@ -10,7 +10,10 @@ Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounc
 - [Training and coaching](https://chamainteligente.com/training): AI coaching for individuals and small teams, and agentic engineering training for engineering teams
 - [About](https://chamainteligente.com/about): the two people behind Chama
 - [Privacy](https://chamainteligente.com/privacy): how conversations and notes are handled
-- [Members](https://chamainteligente.com/hearth): the Hearth, the members' room, where clients book sessions, keep their session records, and connect their own agents
+
+Not in this list, and closed to crawlers in robots.txt: the Hearth, the members'
+room at /hearth, where clients book sessions, keep their session records, and
+connect their own agents. It needs an account, so there is nothing there to crawl.
 
 ## Optional
 

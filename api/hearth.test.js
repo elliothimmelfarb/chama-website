@@ -242,6 +242,121 @@ test("only an owner touches an owner's role, and never the last one", async () =
   assert.equal(ownerDb.count(/update users set role/), 0);
 });
 
+test("a delegated admin cannot change their own role, and an owner can step down", async () => {
+  const self = signedIn({ role: "staff", permissions: ["hearth.enter", "members.read", "members.manage"] });
+  useClient(self);
+  const own = await handleHearth(
+    hearth("/admin/members/actor-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "owner" }) })
+  );
+  assert.equal(own.status, 400);
+  assert.equal((await body(own)).error, "You cannot change your own role.");
+  assert.equal(self.count(/update users set role/), 0);
+
+  // An owner with a second owner behind them may hand their own role back.
+  const stepping = signedIn({
+    role: "owner",
+    permissions: [],
+    extra: [[/count\(\*\)::int as n from users/, [{ n: 2 }]]]
+  });
+  useClient(stepping);
+  const down = await handleHearth(
+    hearth("/admin/members/actor-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "staff" }) })
+  );
+  assert.equal(down.status, 200);
+  assert.equal(stepping.count(/update users set role/), 1);
+});
+
+test("a role is granted by rank, not by whichever permissions it happens to hold", async () => {
+  const members = {
+    "member-1": userRow({ id: "member-1", email: "member@example.com", role: "guest" })
+  };
+
+  // A client holds packs.buy, which staff does not. That is a different
+  // permission, not a higher rank, so staff may still hand out the client role.
+  const sideways = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read", "members.manage"],
+    users: members
+  });
+  useClient(sideways);
+  const allowed = await handleHearth(
+    hearth("/admin/members/member-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "client" }) })
+  );
+  assert.equal(allowed.status, 200);
+  assert.equal(sideways.count(/update users set role/), 1);
+
+  // A role placed above the actor's own is refused.
+  const above = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read", "members.manage"],
+    users: members,
+    extra: [[/select name, position from roles where name in/, [{ name: "staff", position: 2 }, { name: "client", position: 1 }]]]
+  });
+  useClient(above);
+  const refused = await handleHearth(
+    hearth("/admin/members/member-1", { method: "PATCH", cookie: "t", body: JSON.stringify({ role: "client" }) })
+  );
+  assert.equal(refused.status, 403);
+  assert.equal((await body(refused)).error, "You can only grant what you hold yourself.");
+  assert.equal(above.count(/update users set role/), 0);
+});
+
+// An invitation gets as far as the mail, which is unconfigured in the tests, so
+// a permitted one ends in 503 with the user written. Refusal happens earlier.
+function inviteDb({ role, permissions, extra = [] }) {
+  return signedIn({
+    role,
+    permissions,
+    extra: [
+      ...extra,
+      [/insert into users/, [userRow({ id: "new-1", email: "new@example.com", role: "guest" })]]
+    ]
+  });
+}
+
+test("an invitation ranks the role, so staff may invite a client but never an owner", async () => {
+  const toClient = inviteDb({ role: "staff", permissions: ["hearth.enter", "members.read", "members.manage"] });
+  useClient(toClient);
+  const invited = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "client" }) })
+  );
+  assert.equal(invited.status, 503, "the role passed and only the unconfigured mail stopped it");
+  assert.equal(toClient.count(/insert into users/), 1);
+
+  const toOwner = inviteDb({ role: "staff", permissions: ["hearth.enter", "members.read", "members.manage"] });
+  useClient(toOwner);
+  const refused = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "owner" }) })
+  );
+  assert.equal(refused.status, 403);
+  assert.equal((await body(refused)).error, MESSAGES.forbidden);
+  assert.equal(toOwner.count(/insert into users/), 0);
+
+  const owner = inviteDb({ role: "owner", permissions: [] });
+  useClient(owner);
+  const byOwner = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "staff" }) })
+  );
+  assert.equal(byOwner.status, 503);
+  assert.equal(owner.count(/insert into users/), 1);
+});
+
+test("an invitation cannot hand out a role above the inviter's own", async () => {
+  const db = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read", "members.manage"],
+    extra: [[/select name, position from roles where name in/, [{ name: "staff", position: 2 }, { name: "client", position: 1 }]]]
+  });
+  useClient(db);
+  const response = await handleHearth(
+    hearth("/admin/invite", { method: "POST", cookie: "t", body: JSON.stringify({ email: "new@example.com", role: "client" }) })
+  );
+  assert.equal(response.status, 403);
+  assert.equal((await body(response)).error, "You can only grant what you hold yourself.");
+  assert.equal(db.count(/insert into users/), 0);
+  assert.equal(db.count(/insert into email_tokens/), 0);
+});
+
 test("the owner role cannot be edited into a lockout", async () => {
   useClient(signedIn({ role: "owner", permissions: [] }));
   const response = await handleHearth(
@@ -268,6 +383,45 @@ test("settings refuse a value out of shape and accept one in shape", async () =>
   const inserts = db.matching(/insert into settings/);
   assert.equal(inserts.length, 1);
   assert.deepEqual(inserts[0].values, ["session_minutes", "45", "actor-1"]);
+});
+
+test("a timezone the calculator cannot resolve is refused", async () => {
+  const db = signedIn({ role: "owner", permissions: [] });
+  useClient(db);
+  const refused = await handleHearth(
+    hearth("/admin/settings", { method: "PUT", cookie: "t", body: JSON.stringify({ owner_timezone: "Mars/Olympus" }) })
+  );
+  assert.equal(refused.status, 400);
+  assert.equal(db.count(/insert into settings/), 0);
+
+  const accepted = await handleHearth(
+    hearth("/admin/settings", { method: "PUT", cookie: "t", body: JSON.stringify({ owner_timezone: "Europe/Berlin" }) })
+  );
+  assert.equal(accepted.status, 200);
+  assert.equal(db.count(/insert into settings/), 1);
+});
+
+test("a member search treats % and _ as text, not as a pattern", async () => {
+  const db = signedIn({
+    role: "staff",
+    permissions: ["hearth.enter", "members.read"],
+    extra: [[/as live_sessions/, []]]
+  });
+  useClient(db);
+  const response = await handleHearth(hearth("/admin/members?q=100%25_off", { cookie: "t" }));
+  assert.equal(response.status, 200);
+  const select = db.matching(/as live_sessions/)[0];
+  assert.equal(select.values[1], "%100\\%\\_off%");
+  assert.ok(select.text.includes("escape '\\'"), "the pattern says which character escapes");
+});
+
+test("removing a password ends the other sessions, the way setting one does", async () => {
+  const db = signedIn({ extra: [[/select password_hash from credentials/, [{ password_hash: null }]]] });
+  useClient(db);
+  const response = await handleHearth(hearth("/auth/password", { method: "DELETE", cookie: "t", body: JSON.stringify({}) }));
+  assert.equal(response.status, 200);
+  assert.equal(db.count(/update login_sessions set revoked_at/), 1);
+  assert.equal(db.count(/update credentials set password_hash = null/), 1);
 });
 
 test("the audit log needs audit.read", async () => {

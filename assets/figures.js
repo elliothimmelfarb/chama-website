@@ -18,12 +18,34 @@
     });
   }, { threshold: 0.35 });
 
+  /* Replaying a figure is a control, so it is reachable from the keyboard
+     as well as the pointer: role="button" and tabindex, with the figure's
+     own aria-labelledby description left in place, so a screen reader still
+     reads the whole picture and then hears that it can be activated.
+
+     Under reduced motion nothing animates and a replay would do nothing, so
+     there is no control to offer and the figures stay plain images. */
+  const stillness = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+
+  const replay = (figure) => {
+    figure.classList.remove("in");
+    void figure.getBoundingClientRect();
+    figure.classList.add("in");
+  };
+
   figures.forEach((figure) => {
     seen.observe(figure);
-    figure.addEventListener("click", () => {
-      figure.classList.remove("in");
-      void figure.getBoundingClientRect();
-      figure.classList.add("in");
+    if (stillness) return;
+    figure.setAttribute("role", "button");
+    figure.setAttribute("tabindex", "0");
+    figure.addEventListener("click", () => replay(figure));
+    figure.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " " || ev.key === "Spacebar") {
+        ev.preventDefault();
+        replay(figure);
+      }
     });
   });
 })();

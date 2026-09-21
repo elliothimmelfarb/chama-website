@@ -98,7 +98,7 @@ You decide how your business works, and the software follows.
 We also train engineering teams and coach individuals (https://chamainteligente.com/training).
 About Chama (https://chamainteligente.com/about).
 
-### Getting in touch
+### The conversation and the notes it sends
 
 A note carries a name, one way to reach you (email, or a WhatsApp or phone
 number), and what you would like to be able to do, and is sent only after the
@@ -186,42 +186,6 @@ Want to talk it through? Start a conversation and ask Elliot to get in touch
 Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the
 two of us who keep it lit.
 
-### Elliot Himmelfarb
-
-AI and technology coach and consultant.
-
-Elliot started his career in software engineering in 2016. Since 2023, nearly all of
-his work has been devoted to learning what the most capable AI systems can do, applying
-them to real work, teaching others, and keeping pace as those capabilities change.
-
-You get the benefit of that accumulated judgment and experience when you spend time
-with him.
-
-### Get in touch
-
-Want to talk it through? Start a conversation and ask Elliot to get in touch
-(https://chamainteligente.com/agent).
-
----
-
-## About (https://chamainteligente.com/about)
-
-### A small company in Lisbon, working in English.
-
-Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the
-two of us who keep it lit.
-
-### Elliot Himmelfarb
-
-AI and technology coach and consultant.
-
-Elliot started his career in software engineering in 2016. Since 2023, nearly all of
-his work has been devoted to learning what the most capable AI systems can do, applying
-them to real work, teaching others, and keeping pace as those capabilities change.
-
-You get the benefit of that accumulated judgment and experience when you spend time
-with him.
-
 ### About us
 
 We are Elliot and Annie. We moved to Portugal in the fall of 2023, sight unseen, to
@@ -231,6 +195,17 @@ Our daughter, Rozalie, was born in November 2025.
 We are growing our business together, and we want to help people become AI-native,
 so they can adapt and take advantage of the incredible potential of this rapidly
 changing world.
+
+### Elliot Himmelfarb
+
+AI and technology coach and consultant. Links to his LinkedIn and GitHub.
+
+Elliot started his career in software engineering in 2016. Since 2023, nearly all of
+his work has been devoted to learning what the most capable AI systems can do, applying
+them to real work, teaching others, and keeping pace as those capabilities change.
+
+You get the benefit of that accumulated judgment and experience when you spend time
+with him.
 
 ### Get in touch
 

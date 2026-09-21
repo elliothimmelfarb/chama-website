@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { useClient } from "../lib/hearth/db.js";
 import { fakeDb, makeRequest } from "../lib/hearth/test-helpers.js";
-import { handleCron, sendReminders, sweep } from "./hearth-cron.js";
+import { handleCron, pullMeetTranscripts, sendReminders, sweep } from "./hearth-cron.js";
 
 // A dummy connection string is enough: useClient means neon() is never
 // called, and with no RESEND_* the mailer refuses before it can reach
@@ -15,10 +15,10 @@ process.env.CRON_SECRET = "the-cron-secret";
 
 const HOST = "chamainteligente.com";
 
-function cron(secret) {
+function cron(secret, options = {}) {
   const headers = {};
   if (secret) headers.authorization = `Bearer ${secret}`;
-  return makeRequest(`https://${HOST}/api/hearth-cron`, { headers });
+  return makeRequest(`https://${HOST}/api/hearth-cron`, { ...options, headers });
 }
 
 async function body(response) {
@@ -55,6 +55,8 @@ test("the job is nobody's to run without the shared secret", async () => {
   useClient(fakeDb());
   assert.equal((await handleCron(cron())).status, 401);
   assert.equal((await handleCron(cron("not-the-secret"))).status, 401);
+  // The secret is checked before the method, so a stranger gets 401, not 405.
+  assert.equal((await handleCron(cron(null, { method: "PUT" }))).status, 401);
 });
 
 test("with no database the job says so rather than failing", async () => {
@@ -101,4 +103,37 @@ test("a run with the right secret sweeps and reports what it sent", async () => 
   assert.equal(response.status, 200);
   assert.deepEqual(await body(response), { ok: true, reminders: 0, meet: { pulled: 0, checked: 0 } });
   assert.equal(db.matching(/^\s*delete from/).length, 6);
+});
+
+// The select already skips bookings that have a transcript; the unique index
+// catches the pair of instances that both read "none" in the same minute.
+test("a transcript another instance already wrote is not written twice", async () => {
+  const db = fakeDb([
+    [/from users where role = 'owner'/, [{ id: "owner-1" }]],
+    [
+      /from bookings b join users u on u.id = b.user_id left join transcripts t/,
+      [{ id: "booking-1", user_id: "member-1", meeting_code: "abc-defg-hij", starts_at: "2026-09-01T10:00:00.000Z", ends_at: "2026-09-01T11:00:00.000Z", title: "", email: "member@example.com", name: "Member" }]
+    ],
+    [
+      /insert into transcripts/,
+      () => {
+        const error = new Error("duplicate key value violates unique constraint");
+        error.code = "23505";
+        throw error;
+      }
+    ]
+  ]);
+  useClient(db);
+  const google = { isConnected: async () => true, fetchTranscript: async () => ({ text: "Someone: hello" }) };
+  const result = await quiet(() => pullMeetTranscripts(new Date("2026-09-02T10:00:00.000Z"), { google }));
+  assert.deepEqual(result, { pulled: 0, checked: 1 });
+  assert.equal(db.count(/insert into audit_log/), 0, "nothing is logged for a record this run did not write");
+  assert.equal(db.count(/update transcripts/), 0, "and nothing is derived from it");
+});
+
+test("the job answers only GET and POST", async () => {
+  useClient(fakeDb());
+  const response = await handleCron(cron("the-cron-secret", { method: "DELETE" }));
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get("Allow"), "GET, POST");
 });

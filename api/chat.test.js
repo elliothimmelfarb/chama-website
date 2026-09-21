@@ -12,10 +12,12 @@ import {
   describeError,
   executeNoteTool,
   friendlyErrorFor,
+  isClosedStream,
   isFlameKilled,
   normalizeConversationId,
   persistConversation,
   resetKillSwitchCache,
+  runAgent,
   validateChatMessages
 } from "./chat.js";
 
@@ -683,4 +685,66 @@ test("an API error describes itself by class, status and type", () => {
 test("a plain error describes itself by class alone", () => {
   assert.equal(describeError(new TypeError("bad")), "TypeError");
   assert.equal(describeError("not an error"), "UnknownError");
+});
+
+// A stand-in for the SDK's streaming client. `turns` is one entry per model
+// call: text to stream, and optionally a tool_use block to ask for.
+function fakeClient(turns) {
+  const sent = [];
+  return {
+    sent,
+    messages: {
+      stream(params) {
+        sent.push(params);
+        const turn = turns[sent.length - 1] || { text: "" };
+        const content = [{ type: "text", text: turn.text || "" }];
+        if (turn.tool) content.push({ type: "tool_use", id: `t${sent.length}`, name: turn.tool, input: {} });
+        return {
+          async *[Symbol.asyncIterator]() {
+            if (turn.text) yield { type: "content_block_delta", delta: { type: "text_delta", text: turn.text } };
+          },
+          async finalMessage() {
+            return {
+              content,
+              stop_reason: turn.tool ? "tool_use" : "end_turn",
+              usage: { input_tokens: 1, output_tokens: 1, cache_read_input_tokens: 0 }
+            };
+          }
+        };
+      }
+    }
+  };
+}
+
+test("forbids a tool on the last permitted call so the visitor always gets words", async () => {
+  // A model that asks for a tool every time it is offered one.
+  const client = fakeClient([
+    { tool: "adjust_experience" },
+    { tool: "adjust_experience" },
+    { text: "Here is the answer." }
+  ]);
+
+  const outcome = await runAgent(client, history(["user", "Hello"]), () => {});
+
+  assert.equal(client.sent.length, 3);
+  // The tool definitions go with every call: the history carries tool_use and
+  // tool_result blocks by then, and the API refuses those without `tools`.
+  assert.ok(client.sent[0].tools, "the tools are offered on the first call");
+  assert.ok(client.sent[1].tools);
+  assert.ok(client.sent[2].tools, "and still declared on the last");
+  assert.equal(client.sent[0].tool_choice, undefined, "the model is free to use one at first");
+  assert.equal(client.sent[1].tool_choice, undefined);
+  assert.equal(client.sent[2].tool_choice.type, "none", "and forbidden one on the last");
+  assert.equal(outcome.reply, "Here is the answer.");
+});
+
+test("a visitor who closed the tab is not an error worth logging", () => {
+  assert.equal(isClosedStream(new TypeError("Invalid state: Controller is already closed")), true);
+  assert.equal(isClosedStream(new Error("The stream is closed")), true);
+  assert.equal(isClosedStream(new Error("boom")), false);
+});
+
+test("a genuine failure that mentions closing is still an error", () => {
+  assert.equal(isClosedStream(new Error("The upstream connection closed unexpectedly")), false);
+  assert.equal(isClosedStream(new Error("Database pool closed")), false);
 });

@@ -25,7 +25,8 @@ import {
   ensureRoles, findUserByEmail, findUserById, createUser, userForIdentity, loadActor,
   publicUser, countOwners, promoteIfAdmin
 } from "../lib/hearth/users.js";
-import { PERMISSIONS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
+import { PERMISSIONS, ROLE_DEFAULTS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
+import { isValidZone } from "../lib/hearth/time.js";
 import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
 import * as mail from "../lib/hearth/mail.js";
 import { registerSessionRoutes } from "../lib/hearth/routes/sessions.js";
@@ -112,7 +113,9 @@ function validSetting(key, value) {
     case "open_signup":
       return typeof value === "boolean";
     case "owner_timezone":
-      return typeof value === "string" && value.length <= 64;
+      // The slot calculator does date arithmetic in this zone; a name it
+      // cannot resolve would break every booking.
+      return typeof value === "string" && value.length <= 64 && isValidZone(value);
     default:
       return false;
   }
@@ -385,6 +388,9 @@ route("DELETE", "/auth/password", async (context) => {
   const body = await readJson(context.request);
   const existing = await sql()`select password_hash from credentials where user_id = ${user.id}`;
   if (existing[0]?.password_hash && !verifyPassword(body.current, existing[0].password_hash)) throw new HttpError(403, "Your current password is needed to remove it.");
+  // Taking a password away changes how the account is reached, the same as
+  // setting one, so the other devices end here too.
+  await revokeAllSessions(user.id, context.session ? context.session.id : null);
   await sql()`update credentials set password_hash = null, updated_at = now() where user_id = ${user.id}`;
   await auditor(context, user)(EVENTS.passwordSet, user.id, { removed: true });
   return json({ ok: true });
@@ -493,6 +499,31 @@ route("PATCH", "/profile", async (context) => {
 
 /* ---------- the business: members, roles, settings, log, metrics ---------- */
 
+// Only grant what you hold: rank comes from the roles table's `position`, where
+// the owner sits at 0 and every other role below it. A delegated admin may hand
+// out their own role or one under it, never one over it; the owner hands out
+// anything. Comparing permission sets instead would refuse a role that merely
+// holds a different permission, such as staff inviting a client.
+const DEFAULT_ROLE_POSITIONS = new Map(ROLE_DEFAULTS.map((role) => [role.name, role.position]));
+
+function rolePosition(positions, name) {
+  const at = positions.has(name) ? positions.get(name) : DEFAULT_ROLE_POSITIONS.get(name);
+  return Number.isInteger(at) ? at : null;
+}
+
+async function roleOutranks(context, roleName) {
+  const actorRole = context.actor.user.role;
+  if (actorRole === "owner") return false;
+  if (roleName === "owner") return true;
+  const rows = await sql()`select name, position from roles where name in (${actorRole}, ${roleName})`;
+  const positions = new Map((rows || []).map((row) => [row.name, row.position]));
+  const actorAt = rolePosition(positions, actorRole);
+  const targetAt = rolePosition(positions, roleName);
+  // An unknown role on either side is refused rather than guessed at.
+  if (actorAt === null || targetAt === null) return true;
+  return targetAt < actorAt;
+}
+
 route("GET", "/admin/permissions", async (context) => {
   needs(context, "members.read");
   return json({ permissions: PERMISSIONS, roles: ROLE_NAMES });
@@ -502,11 +533,13 @@ route("GET", "/admin/members", async (context) => {
   needs(context, "members.read");
   const url = new URL(context.request.url);
   const q = clampText(url.searchParams.get("q") || "", 100).toLowerCase();
+  // A search is a search, not a pattern: % and _ from the box stay literal.
+  const pattern = "%" + q.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
   const role = url.searchParams.get("role") || "";
   const rows = await sql()`
     select u.*, (select count(*)::int from login_sessions s where s.user_id = u.id and s.revoked_at is null and s.expires_at > now()) as live_sessions
     from users u
-    where (${q} = '' or lower(u.email) like ${"%" + q + "%"} or lower(u.name) like ${"%" + q + "%"})
+    where (${q} = '' or lower(u.email) like ${pattern} escape '\\' or lower(u.name) like ${pattern} escape '\\')
       and (${role} = '' or u.role = ${role})
     order by coalesce(u.last_seen_at, u.created_at) desc
     limit 500
@@ -552,8 +585,15 @@ route("PATCH", "/admin/members/:id", async (context, params) => {
   const log = auditor(context, actor);
   if (typeof body.role === "string" && body.role !== target.role) {
     if (!ROLE_NAMES.includes(body.role)) throw new HttpError(400, "Unknown role.");
+    // Nobody promotes themselves, and nobody hands out more than they hold. An
+    // owner is the exception: stepping down is theirs to do, and the last-owner
+    // check below is what keeps the room from ending up without one.
+    if (target.id === actor.id && actor.role !== "owner") {
+      throw new HttpError(400, "You cannot change your own role.");
+    }
     // Only an owner hands out or takes away ownership, and never the last one.
     if ((body.role === "owner" || target.role === "owner") && actor.role !== "owner") throw new HttpError(403, MESSAGES.forbidden);
+    if (await roleOutranks(context, body.role)) throw new HttpError(403, "You can only grant what you hold yourself.");
     if (target.role === "owner" && (await countOwners()) <= 1) throw new HttpError(400, "There must always be one owner.");
     await sql()`update users set role = ${body.role} where id = ${target.id}`;
     await log(EVENTS.roleChanged, target.id, { from: target.role, to: body.role });
@@ -567,7 +607,7 @@ route("PATCH", "/admin/members/:id", async (context, params) => {
     await log(EVENTS.statusChanged, target.id, { to: body.status });
   }
   if (typeof body.notes === "string") {
-    await sql()`update users set notes = ${clampText(body.notes, 4000)} where id = ${target.id}`;
+    await sql()`update users set notes = ${clampText(body.notes, 4000, { multiline: true })} where id = ${target.id}`;
   }
   return json({ ok: true });
 });
@@ -601,11 +641,15 @@ route("POST", "/admin/invite", async (context) => {
   if (!isEmail(email)) throw new HttpError(400, "That does not look like an email address.");
   const role = ROLE_NAMES.includes(body.role) ? body.role : "client";
   if (role === "owner" && context.actor.user.role !== "owner") throw new HttpError(403, MESSAGES.forbidden);
+  if (await roleOutranks(context, role)) throw new HttpError(403, "You can only grant what you hold yourself.");
   let user = await findUserByEmail(email);
   let created = false;
   if (!user) {
     user = await createUser({ email, name: typeof body.name === "string" ? clampText(body.name, 120) : "", role });
     created = true;
+  } else if (user.id === context.actor.user.id) {
+    // An invitation is not a way to hand yourself a different role.
+    throw new HttpError(400, "You cannot change your own role.");
   } else if (user.role !== role && user.role !== "owner") {
     await sql()`update users set role = ${role} where id = ${user.id}`;
   }
