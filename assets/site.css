@@ -203,9 +203,10 @@ body {
 
 .hero-figure {
   width: 100%;
-  max-width: 24rem;
+  max-width: 20rem;
   margin: 0 0 0 auto;
   justify-self: end;
+  align-self: end;
 }
 
 /* The seam into the room: a small label sitting on the paper's last line. */
@@ -261,8 +262,8 @@ body {
 
 .content-section {
   display: grid;
-  grid-template-columns: minmax(9rem, 0.8fr) minmax(0, 2.6fr);
-  gap: clamp(2rem, 8vw, 10rem);
+  grid-template-columns: minmax(8rem, 0.55fr) minmax(0, 3.2fr);
+  gap: clamp(1.6rem, 5vw, 5.5rem);
   padding-top: clamp(2rem, 4vw, 3.6rem);
   padding-bottom: clamp(3.4rem, 6vw, 6rem);
   border-top: 1px solid var(--rule);
@@ -316,27 +317,27 @@ body {
 }
 
 .offer-item {
-  padding-top: 1rem;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  padding-top: 1.1rem;
   border-top: 1px solid var(--rule);
 }
 
+/* The three glyphs tell the offer in shapes: drawn, fitted, yours. They
+   ride the figure motion system, so they draw in the first time they
+   are seen. */
+.section-copy .offer-glyph {
+  width: 2.6rem;
+  max-width: none;
+  margin: 0 0 0.9rem;
+}
+
 .offer-item h3 {
-  margin: 0 0 0.7rem;
+  margin: 0 0 0.6rem;
   font-size: clamp(1.25rem, 1.7vw, 1.6rem);
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.1;
-}
-
-.offer-item h3::before {
-  content: "";
-  display: inline-block;
-  width: 0.5em;
-  height: 0.5em;
-  margin-right: 0.55em;
-  border-radius: 50%;
-  background: var(--ember);
-  vertical-align: 0.08em;
 }
 
 .section-copy .offer-item p {
@@ -348,7 +349,11 @@ body {
 
 .section-copy .offer-note {
   max-width: 52ch;
-  color: var(--quiet);
+}
+
+/* The offer is the page's main block, so it gets the most room below. */
+.content-section.offer {
+  padding-bottom: clamp(4.5rem, 8vw, 8rem);
 }
 
 .section-copy p:last-child {
@@ -486,7 +491,7 @@ body {
 }
 
 .outcome-inner {
-  min-height: min(44rem, 76svh);
+  min-height: min(26rem, 54svh);
   display: grid;
   align-content: center;
   padding-top: clamp(5rem, 11vw, 11rem);
@@ -703,21 +708,47 @@ footer {
     font-size: clamp(2.3rem, 10vw, 3.2rem);
   }
 
+  .hero-copy {
+    grid-row: 1;
+  }
+
   .hero-figure {
-    max-width: 13rem;
+    max-width: 9.5rem;
     margin: 0;
     justify-self: start;
-    grid-row: 1;
+    grid-row: 2;
   }
 
   .content-section {
     grid-template-columns: 1fr;
-    gap: 1.8rem;
+    gap: 1.1rem;
+    padding-top: 2.6rem;
+    padding-bottom: 3.2rem;
+  }
+
+  .section-copy h2,
+  .shape .shape-lead {
+    margin-bottom: 1.3rem;
   }
 
   .offer-grid {
     grid-template-columns: 1fr;
     gap: 1.4rem;
+  }
+
+  .offer-item {
+    padding-top: 0;
+    padding-left: 1rem;
+    border-top: 0;
+    border-left: 2px solid var(--ember);
+  }
+
+  .section-copy .offer-glyph {
+    width: 2.2rem;
+  }
+
+  .offer-item h3 {
+    font-size: 1.2rem;
   }
 
   .section-copy p {
@@ -747,7 +778,7 @@ footer {
   }
 
   .outcome-inner {
-    min-height: 70svh;
+    min-height: 42svh;
   }
 
   .about-photo {
