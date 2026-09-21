@@ -112,16 +112,16 @@
 </style>
 
 <div class="wrap">
-  <p class="eyebrow">chamainteligente.com · local preview, 2026-09-21</p>
+  <p class="eyebrow">chamainteligente.com · shipped 2026-09-21</p>
   <h1>The homepage, <em>rewritten</em> from your review</h1>
-  <p class="lede">Elliot and Annie reviewed the page section by section. This is what that conversation became: plainer copy, a calmer page, the shape doing the explaining, and the offer stated as "We build and support. You own." Nothing is deployed; it is on the local preview for you to react to.</p>
+  <p class="lede">Elliot and Annie reviewed the page section by section. This is what that conversation became: plainer copy, a calmer page, the shape doing the explaining, and the offer stated as "We build and support. You own." It is live; we keep iterating from here.</p>
 
   <ul class="status">
-    <li>Preview: <a href="http://localhost:4187/">localhost:4187</a></li>
-    <li>Branch <code>claude/chama-intelligente-copy-5df7f9</code>, 3 commits</li>
+    <li>Live on production</li>
+    <li><a href="https://github.com/elliothimmelfarb/chama-website/pull/56">PR #56</a> and <a href="https://github.com/elliothimmelfarb/chama-website/pull/57">#57</a> merged</li>
     <li>Copy recorded in the brain, claims table included</li>
-    <li>362 tests pass</li>
-    <li>Not deployed</li>
+    <li>400 tests pass, evals 27/27</li>
+    <li>IndexNow pushed</li>
   </ul>
 
   <h2>What I heard you ask for</h2>
@@ -156,7 +156,8 @@
   <ul class="verify">
     <li>Training and About mastheads now say "Software shaped for your business" (the old descriptor was retired wording).</li>
     <li><code>llms.txt</code> and <code>llms-full.txt</code> mirror the new copy.</li>
-    <li>The agent's prompt no longer promises changes "whenever they ask" or updates "at no extra charge", and answers the stop-the-subscription question the way Elliot described it. Evals were not run; worth a run before deploy.</li>
+    <li>The agent's prompt no longer promises changes "whenever they ask" or updates "at no extra charge", and answers the stop-the-subscription question the way Elliot described it. The evals then showed one repeatable failure, the agent asking two questions in one reply, which predates this work; the rule now says exactly one question per reply, and the run is 27/27.</li>
+    <li>Merged on top of the quality campaign (#55), which landed on main while this was in review; one small text conflict in <code>llms-full.txt</code>, resolved.</li>
     <li>The shared stylesheet changed, so <code>/training</code> and <code>/about</code> got the calmer scale too. Checked at desktop, tablet, and phone widths.</li>
   </ul>
 
@@ -164,6 +165,6 @@
   <ul class="verify">
     <li>Is "Software shaped for your business." enough on its own, or do you want the emphasis back ("...and only yours")?</li>
     <li>The buyer persona asked how long a first version takes. The page says "a few conversations" on purpose. Say so in the room, or add a sentence?</li>
-    <li>Deploy needs your yes, then a run of the evals since the agent prompt changed.</li>
+    <li>A stray hero experiment in the main checkout ("Software shaped to move one business forward. Yours.") was superseded and set aside as a patch, not lost.</li>
   </ul>
 </div>
