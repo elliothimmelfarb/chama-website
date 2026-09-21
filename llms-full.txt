@@ -1,13 +1,13 @@
 # Chama Inteligente: full site text
 
-> Software crafted for your company, and only yours. Your software engineering
-> team: shaped to how you work, bought once, then hosted, run, watched, and changed
-> whenever you ask on a monthly subscription. Based in Lisbon, Portugal. Working
-> language: English.
+> Software shaped for your business. We build it, we support it, you own it:
+> built around the way one business already works, owned by that business, and
+> hosted, run, and changed as its needs grow on a monthly subscription. Based in
+> Lisbon, Portugal. Working language: English.
 
 This file is the complete visible text of https://chamainteligente.com, in reading
 order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing
-the pages do not say. Last updated 2026-09-19.
+the pages do not say. Last updated 2026-09-21.
 
 Chama Inteligente, Lda. is a Portuguese company (NIPC 519425235) based in Lisbon.
 "Chama Inteligente" is Portuguese for "intelligent flame". It is written "Chama"
@@ -18,38 +18,35 @@ and pronounced "Shama". It is the company of Elliot Himmelfarb.
 ## Home (https://chamainteligente.com/)
 
 Chama Inteligente. Intelligent Flame.
-Software crafted for your company, and only yours. Lisbon.
 Written "Chama." Pronounced "Shama."
 
-### Software crafted for one company. Yours.
+### Software shaped for your business.
 
-Your process, your words, your rules. Buy it once, and a monthly subscription
-keeps it hosted, running, and changing whenever you ask.
+Most businesses change how they work to fit the software they buy. We build
+yours around the way you already work, then stay with it on a monthly
+subscription as your business grows.
 
 Start here. The second panel of the page is the conversation: a live Claude agent
-that opens with the question "What do you wish your software could do?" Say it
-plainly. It asks a question or two, and when you are ready it takes a name and a
-way to reach you. Your contact details are sent only when you confirm them.
+that opens with the question "What do you wish your software could do?" and a
+message box. It asks a question or two, and when you are ready it takes a name
+and a way to reach you. Your contact details are sent only when you confirm them.
 
 ### The offer
 
-Buy it once. Keep the team on subscription.
+We build and support. You own.
 
-Chama is your software engineering team. What we build is yours alone: it runs
-your business in your words, it does what you do, and nobody else uses it.
+Build. We build software for your business alone, the tools you run on day to
+day. It is made to fit you, and nobody else uses it.
 
-You buy the software once, and it is yours. A monthly subscription then keeps us
-on call: we host it, run it, watch it, and change it whenever you ask. When new
-technology makes something better possible, you get it as part of the
-subscription.
+Support. A monthly subscription keeps us on call for hosting, running, and
+changing the software as the needs of your business grow. When new technology
+makes an improvement possible, we tell you, and we work together to bring it in.
 
-It connects to whatever else you use.
+Own. Once it is built, the code belongs to your business. You own it outright,
+and we keep working on it with you.
 
-Stop the subscription whenever you like and take all your data with you. Export
-is included.
-
-AI made this affordable. Software for one company used to need a team on payroll.
-Now it needs a few conversations, a subscription, and a line of communication.
+Building with AI is what makes software for one business affordable and fast.
+Yours starts with a few conversations about what your business needs.
 
 ### How it starts
 
@@ -62,35 +59,39 @@ We meet a few times and work through four questions.
 3. Which parts of that have to stay?
 4. What would work better?
 
-Then we build a first version and you use it. Keep it, change it, or stop there.
+Then we build a first version and you start using it. The subscription carries
+on from there.
 
-### Software
+### Why it matters
 
 The software you run on sets how you work.
 
-It decides what you can and cannot do, the words you use for your work, and the
-process everyone follows, whether anyone chose it or not.
+It decides what your people can do and how their work is organised, often
+without anyone having chosen it.
 
-Most companies buy it off the shelf and change how they work to fit it.
+Software bought off the shelf makes that decision for you.
 
-### Owning it
+(Figure: a business's irregular shape, boxed by a square labelled "off the
+shelf, the software sets the process", beside the same shape with an ember
+outline that fits it, labelled "your own software, you set the process".)
 
-Software that only your company uses.
+### Over time
 
-Owning your software used to mean hiring an engineering team and keeping it for
-years. Building with AI has cut the cost of both. A company can now afford
-software made for it alone.
+Software that changes as your business does.
 
-We build it with you and maintain it. It is built around how you work: your
-vocabulary, your process, your rules.
+We stay with the software after the first version and adjust it as your
+business changes.
 
-When you want to work differently, tell us how. The software changes with you.
+You also have a specialist who follows AI closely and can tell you when
+something new is worth having.
+
+(Figure: the shape changes twice and the ember outline follows it each time:
+"how you work now, the software fits it", "you change it, the software
+follows", "and again, it still fits".)
 
 ### The outcome
 
-Your business, your rules.
-
-Decide how you want to work. Then run on software that works that way.
+You decide how your business works, and the software follows.
 
 ### Also
 

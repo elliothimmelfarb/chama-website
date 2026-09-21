@@ -1,0 +1,169 @@
+<title>Homepage Review</title>
+<style>
+  :root {
+    --ground: #f3f0e8;
+    --ground-2: #e9e4d8;
+    --ink: #141412;
+    --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14);
+    --ember: #d9481a;
+    --ember-soft: rgba(217, 72, 26, 0.12);
+    --ok: #2f7a4f;
+    --ok-soft: rgba(47, 122, 79, 0.12);
+    --cut: #a63a22;
+    --cut-soft: rgba(166, 58, 34, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a;
+      --ground-2: #171412;
+      --ink: #ece7dc;
+      --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14);
+      --ember: #f4581f;
+      --ember-soft: rgba(244, 88, 31, 0.14);
+      --ok: #7fcf9a;
+      --ok-soft: rgba(127, 207, 154, 0.12);
+      --cut: #e88a6a;
+      --cut-soft: rgba(232, 138, 106, 0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a;
+    --ground-2: #171412;
+    --ink: #ece7dc;
+    --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14);
+    --ember: #f4581f;
+    --ember-soft: rgba(244, 88, 31, 0.14);
+    --ok: #7fcf9a;
+    --ok-soft: rgba(127, 207, 154, 0.12);
+    --cut: #e88a6a;
+    --cut-soft: rgba(232, 138, 106, 0.12);
+  }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    padding-block: 2.5rem 4rem;
+    padding-inline: clamp(1rem, 5vw, 3rem);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 46rem; margin-inline: auto; }
+  .eyebrow {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ember); margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem); font-weight: 500; letter-spacing: -0.045em; line-height: 0.98;
+    margin: 0 0 1rem; text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--ember); }
+  .lede { font-size: 1.08rem; color: var(--ink-dim); margin: 0 0 2.2rem; max-width: 36rem; }
+  h2 {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-dim); margin: 2.6rem 0 0.9rem; padding-top: 1rem; border-top: 1px solid var(--line);
+  }
+  p { margin: 0 0 0.9rem; max-width: 38rem; }
+  .status {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 2rem; padding: 0; list-style: none;
+  }
+  .status li {
+    font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 99px;
+    background: var(--ok-soft); color: var(--ok); border: 1px solid transparent;
+  }
+  .status li a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; }
+
+  .diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0 0 1rem; }
+  @media (max-width: 560px) { .diagram { grid-template-columns: 1fr; } }
+  .diagram figure { margin: 0; }
+  .diagram figcaption { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.5rem; font-weight: 700; }
+  .diagram svg { width: 100%; height: auto; display: block; max-width: 100%; }
+  .diagram .note { font-size: 0.85rem; color: var(--ink-dim); margin-top: 0.5rem; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.6rem 0.55rem 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; }
+  td:first-child { white-space: nowrap; }
+  .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 4px; }
+  .tag.cut { background: var(--cut-soft); color: var(--cut); }
+  .tag.new { background: var(--ember-soft); color: var(--ember); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.86em; background: var(--ground-2); padding: 0.05em 0.3em; border-radius: 3px; }
+  .verify { margin: 0; padding-left: 1.2rem; max-width: 38rem; }
+  .verify li { margin-bottom: 0.4rem; }
+</style>
+<style>
+  .grid { display: grid; grid-template-columns: 9rem 1fr 1fr; gap: 0.6rem 1rem; font-size: 0.9rem; margin: 0 0 1rem; }
+  .grid .h { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); font-weight: 700; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); }
+  .grid .pg { font-weight: 600; }
+  .grid .before { color: var(--ink-dim); }
+  .grid .after { color: var(--ok); }
+  .grid .before.cut { color: var(--cut); }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } .grid .h { display: none; } .grid .pg { margin-top: 0.6rem; } }
+  .footer-demo {
+    margin: 0 0 1rem; padding: 1.4rem 1.2rem; background: #0e0c0a; color: #8d867c; font-size: 0.75rem;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem 2rem; border-radius: 4px;
+  }
+  .footer-demo span { white-space: nowrap; }
+  .footer-demo .now { color: #ece7dc; }
+  .footer-demo u { text-underline-offset: 0.18em; }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">chamainteligente.com · local preview, 2026-09-21</p>
+  <h1>The homepage, <em>rewritten</em> from your review</h1>
+  <p class="lede">Elliot and Annie reviewed the page section by section. This is what that conversation became: plainer copy, a calmer page, the shape doing the explaining, and the offer stated as "We build and support. You own." Nothing is deployed; it is on the local preview for you to react to.</p>
+
+  <ul class="status">
+    <li>Preview: <a href="http://localhost:4187/">localhost:4187</a></li>
+    <li>Branch <code>claude/chama-intelligente-copy-5df7f9</code>, 3 commits</li>
+    <li>Copy recorded in the brain, claims table included</li>
+    <li>362 tests pass</li>
+    <li>Not deployed</li>
+  </ul>
+
+  <h2>What I heard you ask for</h2>
+  <p>Say the one idea first: software shaped for your business, instead of the business bending to software made for everyone. State the contract in one line, Annie's line. Describe the subscription as support and never as "whenever you ask". When new technology makes an improvement possible, say so and bring it in together. Say in the present that AI makes this affordable and fast, with no stories about the old days. Explain the process so people know what they sign up for. Keep the flame's question exactly as it is. And the register: less punchy, whole sentences, diplomatic, "business" not "company", the header's second tagline gone.</p>
+
+  <h2>Before and after, block by block</h2>
+  <div class="grid">
+    <div class="h">Block</div><div class="h">Before</div><div class="h">After</div>
+    <div class="pg">Header</div><div class="before cut">Software crafted for your company, and only yours · Lisbon</div><div class="after">Just the lockup.</div>
+    <div class="pg">Hero</div><div class="before cut">Software shaped around one way of working. Yours.<br>Your process, your words, your rules. Buy it once, and a monthly subscription keeps it hosted, running, and changing whenever you ask.</div><div class="after">Software shaped for your business.<br>Most businesses change how they work to fit the software they buy. We build yours around the way you already work, then stay with it on a monthly subscription as your business grows.</div>
+    <div class="pg">Flame room</div><div class="before">What do you wish your software could do?</div><div class="after">Unchanged.</div>
+    <div class="pg">The offer</div><div class="before cut">Buy it once. Keep the team on subscription. Five paragraphs, including the export line and "used to need a team on payroll".</div><div class="after">We build and support. You own.<br>Build: software for your business alone, the tools you run on day to day; nobody else uses it.<br>Support: the subscription keeps us on call for hosting, running, and changing it as needs grow; new technology, we tell you and bring it in together.<br>Own: once built, the code belongs to your business.<br>Building with AI is what makes this affordable and fast.</div>
+    <div class="pg">How it starts</div><div class="before">Four questions, then "Keep it, change it, or stop there."</div><div class="after">Four questions, then "The subscription carries on from there."</div>
+    <div class="pg">Why it matters</div><div class="before cut">"...the words you use for your work, and the process everyone follows, whether anyone chose it or not."</div><div class="after">"It decides what your people can do and how their work is organised, often without anyone having chosen it. Software bought off the shelf makes that decision for you."</div>
+    <div class="pg">Over time</div><div class="before cut">"Owning your software used to mean hiring an engineering team... your vocabulary, your process, your rules."</div><div class="after">"We stay with the software after the first version and adjust it as your business changes. You also have a specialist who follows AI closely and can tell you when something new is worth having."</div>
+    <div class="pg">Closing band</div><div class="before cut">Your business, your rules. Decide how you want to work. Then run on software that works that way.</div><div class="after">You decide how your business works, and the software follows.</div>
+  </div>
+
+  <h2>What changed visually</h2>
+  <p>The display type came down by about a third and the letterspacing relaxed, so the page stops shouting. Ember is now an accent: one phrase in the offer headline, the outlines in the figures, the arrow after "Start here". Black rules became soft grey ones. The dark closing band is half its old height.</p>
+  <p>The shape moved to the top. In the hero, the business's irregular shape is drawn, a dashed square (software off the shelf) is tried on it and fades, and an ember outline is drawn that fits it exactly. The three parts of the offer carry small shape glyphs: drawn, fitted, filled. On a phone the headline comes first, the figure sits under the deck, and the offer stacks with an ember spine. Figure captions were enlarged so they read on a phone.</p>
+
+  <h2>The loop</h2>
+  <table>
+    <tr><th>Round</th><th>Judges</th><th>Score</th><th>What it caught</th></tr>
+    <tr><td>1</td><td>Copy judge</td><td>7</td><td>Ownership block was a stub; hero still an "instead of" inversion; process stopped before the subscription.</td></tr>
+    <tr><td>2</td><td>Copy judge, design critic, a small-business buyer reading cold</td><td>7 / calm 8, distinct 5 / got the deal right</td><td>Host-run-change triplet said four times; "it got calm by getting generic"; buyer asked what kind of software and found the AI line salesy.</td></tr>
+    <tr><td>3</td><td>Copy judge, design critic</td><td>8 / calm 8, distinct 7, phone 7, desktop 8</td><td>Refrain of "how you work"; caption sizes on phones; both said ready to show the owners. Applied, then stopped.</td></tr>
+  </table>
+
+  <h2>Also touched</h2>
+  <ul class="verify">
+    <li>Training and About mastheads now say "Software shaped for your business" (the old descriptor was retired wording).</li>
+    <li><code>llms.txt</code> and <code>llms-full.txt</code> mirror the new copy.</li>
+    <li>The agent's prompt no longer promises changes "whenever they ask" or updates "at no extra charge", and answers the stop-the-subscription question the way Elliot described it. Evals were not run; worth a run before deploy.</li>
+    <li>The shared stylesheet changed, so <code>/training</code> and <code>/about</code> got the calmer scale too. Checked at desktop, tablet, and phone widths.</li>
+  </ul>
+
+  <h2>Open for you two</h2>
+  <ul class="verify">
+    <li>Is "Software shaped for your business." enough on its own, or do you want the emphasis back ("...and only yours")?</li>
+    <li>The buyer persona asked how long a first version takes. The page says "a few conversations" on purpose. Say so in the room, or add a sentence?</li>
+    <li>Deploy needs your yes, then a run of the evals since the agent prompt changed.</li>
+  </ul>
+</div>
