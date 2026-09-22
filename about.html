@@ -6,7 +6,7 @@
   <!-- The Words / Pictures view, decided before first paint so the page
        never flashes the other one: ?view=pictures or ?view=words in the
        address wins and is remembered; otherwise the remembered choice. -->
-  <script>(function(){var r=document.documentElement,k="chama-view",v=null;try{var m=/[?&]view=(pictures|words)\b/.exec(location.search);if(m){v=m[1];if(v==="pictures")localStorage.setItem(k,v);else localStorage.removeItem(k);}else{v=localStorage.getItem(k);}}catch(e){}if(v==="pictures")r.setAttribute("data-view","pictures");})();</script>
+  <script>(function(){var r=document.documentElement,k="chama-view",v=null;r.setAttribute("data-js","");try{var m=/[?&]view=(pictures|words)\b/.exec(location.search);if(m){v=m[1];if(v==="pictures")localStorage.setItem(k,v);else localStorage.removeItem(k);}else{v=localStorage.getItem(k);}}catch(e){}if(v==="pictures")r.setAttribute("data-view","pictures");})();</script>
   <title>About | Chama Inteligente</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
@@ -102,7 +102,7 @@
     <div class="masthead-notes">
       <p><strong>Software shaped for your business</strong>Lisbon</p>
     </div>
-    <button class="view-switch" type="button" role="switch" aria-checked="false" aria-label="Pictures view: big pictures, few words" data-view-switch>
+    <button class="view-switch" type="button" role="switch" aria-checked="false" aria-label="Pictures view" title="Big pictures, few words" data-view-switch>
       <span class="view-switch-option view-switch-words">Words</span>
       <span class="view-switch-option view-switch-pictures">Pictures</span>
     </button>
