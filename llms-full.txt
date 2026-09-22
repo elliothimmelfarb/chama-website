@@ -95,7 +95,7 @@ You decide how your business works, and the software follows.
 
 ### Also
 
-We also train engineering teams and coach individuals (https://chamainteligente.com/training).
+We also train teams and coach individuals (https://chamainteligente.com/training).
 About Chama (https://chamainteligente.com/about).
 
 ### The conversation and the notes it sends
@@ -146,14 +146,15 @@ old you have not learned yet.
 
 ### Team training
 
-We train engineering teams.
+We train teams.
 
-Elliot trains engineering teams in agentic engineering: building software with AI
-agents that plan, write, and verify code.
+Elliot trains teams in agentic ways of working: getting real work done with AI
+agents that plan, act, and check their own results, whether the work is building
+software or running the business.
 
 The capabilities change every few months. Most teams learn a workflow once and let
 it age. We teach the habits that keep a team evolving with the capabilities, so you
-are always building the way today's tools allow, not the way last year's did.
+are always working the way today's tools allow, not the way last year's did.
 
 ### Building it yourselves
 
