@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The Words / Pictures view, decided before first paint so the page
+       never flashes the other one: ?view=pictures or ?view=words in the
+       address wins and is remembered; otherwise the remembered choice. -->
+  <script>(function(){var r=document.documentElement,k="chama-view",v=null;try{var m=/[?&]view=(pictures|words)\b/.exec(location.search);if(m){v=m[1];if(v==="pictures")localStorage.setItem(k,v);else localStorage.removeItem(k);}else{v=localStorage.getItem(k);}}catch(e){}if(v==="pictures")r.setAttribute("data-view","pictures");})();</script>
   <title>Coaching and training | Chama Inteligente</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
@@ -10,6 +14,7 @@
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="/assets/figures.css">
   <script src="/assets/figures.js" defer></script>
+  <script src="/assets/view.js" defer></script>
   <meta name="description" content="AI coaching for individuals and small teams, and agentic engineering training for engineering teams. Elliot Himmelfarb, Lisbon.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -71,6 +76,10 @@
       <p><strong>Software shaped for your business</strong>Lisbon</p>
     </div>
     <a class="members-link" href="/hearth">Members</a>
+    <button class="view-switch" type="button" role="switch" aria-checked="false" aria-label="Pictures view: big pictures, few words" data-view-switch>
+      <span class="view-switch-option view-switch-words">Words</span>
+      <span class="view-switch-option view-switch-pictures">Pictures</span>
+    </button>
   </header>
 
   <main id="main-content">

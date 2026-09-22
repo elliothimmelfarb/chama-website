@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The Words / Pictures view, decided before first paint so the page
+       never flashes the other one: ?view=pictures or ?view=words in the
+       address wins and is remembered; otherwise the remembered choice. -->
+  <script>(function(){var r=document.documentElement,k="chama-view",v=null;try{var m=/[?&]view=(pictures|words)\b/.exec(location.search);if(m){v=m[1];if(v==="pictures")localStorage.setItem(k,v);else localStorage.removeItem(k);}else{v=localStorage.getItem(k);}}catch(e){}if(v==="pictures")r.setAttribute("data-view","pictures");})();</script>
   <title>About | Chama Inteligente</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
@@ -10,6 +14,7 @@
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="/assets/figures.css">
   <script src="/assets/figures.js" defer></script>
+  <script src="/assets/view.js" defer></script>
   <meta name="description" content="Elliot Himmelfarb and Chama Inteligente, Lda., Lisbon: who is behind the company and how it came to be.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -97,6 +102,10 @@
     <div class="masthead-notes">
       <p><strong>Software shaped for your business</strong>Lisbon</p>
     </div>
+    <button class="view-switch" type="button" role="switch" aria-checked="false" aria-label="Pictures view: big pictures, few words" data-view-switch>
+      <span class="view-switch-option view-switch-words">Words</span>
+      <span class="view-switch-option view-switch-pictures">Pictures</span>
+    </button>
   </header>
 
   <main id="main-content">
@@ -117,6 +126,7 @@
       <div class="section-copy">
         <div class="about-grid">
           <div class="about-copy">
+            <p class="pictures-only">We are Elliot and Annie.</p>
             <p>We are Elliot and Annie. We moved to Portugal in the fall of 2023, sight unseen, to explore more of the world, enjoy more of what life has to offer, and have our baby. Our daughter, Rozalie, was born in November 2025.</p>
             <p>We are growing our business together, and we want to help people become <span class="ember-accent">AI-native</span>, so they can adapt and take advantage of the incredible potential of this rapidly changing world.</p>
           </div>

@@ -49,3 +49,21 @@
     });
   });
 })();
+
+/* The Words / Pictures switch (view.js) announces a change of view. The
+   figures that are on screen at that moment draw themselves again at
+   their new size, so the switch reads as the page redrawing. */
+document.addEventListener("chama:view", () => {
+  const stillness = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+  if (stillness || !document.documentElement.classList.contains("figs-armed")) return;
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  document.querySelectorAll(".figure").forEach((figure) => {
+    const r = figure.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > vh) return;
+    figure.classList.remove("in");
+    void figure.getBoundingClientRect();
+    figure.classList.add("in");
+  });
+});
