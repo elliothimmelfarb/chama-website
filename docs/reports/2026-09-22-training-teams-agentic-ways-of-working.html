@@ -1,0 +1,55 @@
+<title>Training for teams</title>
+<style>
+:root{--bg:#faf8f4;--ink:#1d1a16;--muted:#6b645a;--ember:#f4581f;--rule:#e4ded4;--card:#ffffff;--old:#a8a096}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--ink:#f1ece3;--muted:#a49c8f;--rule:#2d2923;--card:#1d1a15;--old:#6b645a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15130f;--ink:#f1ece3;--muted:#a49c8f;--rule:#2d2923;--card:#1d1a15;--old:#6b645a;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Georgia,"Iowan Old Style",serif;padding:32px 16px 48px;margin:0}
+main{max-width:640px;margin:0 auto}
+.kicker{font:700 11px/1 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin:0 0 12px}
+h1{font-size:34px;line-height:1.15;margin:0 0 8px;text-wrap:balance;font-weight:400}
+.sub{color:var(--muted);margin:0 0 32px}
+.diff{display:grid;gap:14px;margin:0 0 32px}
+.line{padding:16px 18px;border:1px solid var(--rule);background:var(--card);border-radius:4px}
+.line small{display:block;font:700 10px/1 system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;color:var(--muted)}
+.line.was{color:var(--old);text-decoration:line-through}
+.line.now small{color:var(--ember)}
+.line.now{border-color:var(--ember)}
+h2{font:700 12px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:32px 0 12px}
+ul{margin:0;padding-left:18px}li{margin:0 0 6px}
+.status{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.pill{font:600 12px/1 system-ui,sans-serif;padding:7px 11px;border-radius:999px;border:1px solid var(--rule)}
+.pill.ok{border-color:var(--ember);color:var(--ember)}
+a{color:var(--ember)}
+</style>
+<main>
+<p class="kicker">chamainteligente.com/training · shipped 2026-09-22</p>
+<h1>We train teams.</h1>
+<p class="sub">The team training offer widened from engineering teams to any team, and from agentic engineering to agentic ways of working.</p>
+
+<div class="diff">
+<div class="line was"><small>Was</small>We train engineering teams. Elliot trains engineering teams in agentic engineering: building software with AI agents that plan, write, and verify code.</div>
+<div class="line now"><small>Now live</small>We train teams. Elliot trains teams in agentic ways of working: getting real work done with AI agents that plan, act, and check their own results, whether the work is building software or running the business.</div>
+</div>
+
+<h2>Everywhere the offer is restated</h2>
+<ul>
+<li>Training page heading, lead, and the "always working the way today's tools allow" line.</li>
+<li>The figure: plan / act / verify, with "the work" in place of "the code".</li>
+<li>Meta and social descriptions on the training page.</li>
+<li>Homepage: the JSON-LD offer and the quiet link "We also train teams and coach individuals."</li>
+<li>The agent's system prompt (secondary offer line) and the eval that checks it.</li>
+<li>llms.txt and llms-full.txt mirrors.</li>
+<li>Brain ledger row updated and a dated addendum recorded before the site changed.</li>
+</ul>
+
+<h2>Status</h2>
+<div class="status">
+<span class="pill ok">Brain ledger committed</span>
+<span class="pill ok">PR #65 merged</span>
+<span class="pill ok">Deployed to production</span>
+<span class="pill ok">Live page verified by curl</span>
+<span class="pill ok">IndexNow 200</span>
+<span class="pill ok">npm run check passing</span>
+</div>
+<p style="margin-top:24px;color:var(--muted)">No new claim was made: no client, outcome, price, or format. The knowsAbout entry "Agentic engineering" stays, since it is still true. <a href="https://chamainteligente.com/training">See it live.</a></p>
+</main>
