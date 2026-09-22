@@ -223,11 +223,11 @@
     .fig-offer .fa2 { transform: translate(280px, 598px) rotate(90deg) scale(1.25); }
     .fig-offer .fc3 { transform: translate(280px, 752px) scale(1.25); }
 
-    .fig-own .fc1 { transform: translate(280px, 94px) scale(1.25); }
-    .fig-own .fa1 { transform: translate(280px, 264px) rotate(90deg) scale(1.25); }
-    .fig-own .fc2 { transform: translate(280px, 412px) scale(1.25); }
-    .fig-own .fa2 { transform: translate(280px, 582px) rotate(90deg) scale(1.25); }
-    .fig-own .fc3 { transform: translate(280px, 730px) scale(1.25); }
+    .fig-own .fc1 { transform: translate(280px, 102px) scale(1.35); }
+    .fig-own .fa1 { transform: translate(280px, 287px) rotate(90deg) scale(1.35); }
+    .fig-own .fc2 { transform: translate(280px, 447px) scale(1.35); }
+    .fig-own .fa2 { transform: translate(280px, 632px) rotate(90deg) scale(1.35); }
+    .fig-own .fc3 { transform: translate(280px, 792px) scale(1.35); }
 
     .fig-fit .ffl { transform: translate(77px, -32px) scale(1.4); }
     .fig-fit .ffr { transform: translate(-272px, 339px) scale(1.4); }
@@ -237,11 +237,13 @@
   }
 
   /* The sub pages' charts: larger type in place. */
-  .fig-curve text { font-size: 18px; }
-  .fig-curve .ph text { font-size: 16px; }
+  .fig-curve text { font-size: 20px; }
+  .fig-curve .ph text { font-size: 18px; }
   .fig-sess text { font-size: 18px; }
-  .fig-loop text { font-size: 13px; }
+  .fig-loop text { font-size: 16px; }
   .fig-loop text.sub { display: none; }
+  .fig-loop text[x="150"] { font-size: 13px; }
   .fig-time text { font-size: 18px; }
+  .fig-time text[x="424"][fill="#f4581f"] { font-size: 16px; }
   .fig-time .ph text { font-size: 17px; }
 }
