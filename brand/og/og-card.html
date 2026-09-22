@@ -1,0 +1,48 @@
+<!doctype html>
+<!-- Source of og.png, the link preview card (WhatsApp, iMessage, LinkedIn, X).
+     Render at exactly 1200x630 with brand/og/render.sh. Copy on this card is
+     canonical in the brain: wiki/topics/website-content-chamainteligente-com.md.
+     No external requests: system font stack, inline SVG, same tokens as site.css. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --paper:#f3f0e8; --ink:#141412; --quiet:#66635c; --ember:#f4581f; }
+  html, body { margin:0; }
+  body {
+    width:1200px; height:630px; overflow:hidden; background:var(--paper); color:var(--ink);
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;
+    position:relative;
+  }
+  .copy { position:absolute; left:84px; top:104px; width:700px; }
+  h1 { margin:0; font-size:78px; line-height:0.98; letter-spacing:-0.035em; font-weight:700; }
+  h1 .line { display:block; }
+  h1 .ember { color:var(--ember); }
+  .deck { margin:30px 0 0; font-size:27px; line-height:1.3; color:var(--quiet); font-weight:400; width:590px; letter-spacing:-0.005em; }
+  .sig { position:absolute; left:84px; bottom:68px; display:flex; align-items:center; gap:18px; }
+  .sig svg { width:48px; height:48px; }
+  .sig .name { font-size:26px; font-weight:700; letter-spacing:-0.02em; }
+  .sig .place { font-size:26px; color:var(--quiet); }
+  .sig .place::before { content:"\00b7"; margin:0 12px; }
+  .figure { position:absolute; right:48px; top:50%; transform:translateY(-50%); width:560px; height:560px; }
+</style>
+</head>
+<body>
+  <div class="copy">
+    <h1><span class="line">Software shaped</span><span class="line">for <span class="ember">your</span> business.</span></h1>
+    <p class="deck">Most businesses change how they work to fit the software they buy. Yours doesn&rsquo;t have to.</p>
+  </div>
+  <div class="sig">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>
+    <span class="name">Chama Inteligente</span><span class="place">Lisbon</span>
+  </div>
+  <!-- Final frame of the homepage hero figure: the business's shape, the
+       off-the-shelf square that did not fit (faded), and the ember outline
+       that follows the shape exactly. -->
+  <svg class="figure" viewBox="0 0 320 320" aria-hidden="true">
+    <path d="M160 66 240 138 209 249 118 264 69 169Z" fill="#141412" fill-opacity=".05" stroke="#141412" stroke-width="1.6" stroke-linejoin="round"/>
+    <rect x="104" y="108" width="122" height="122" fill="none" stroke="#141412" stroke-opacity=".28" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <path d="M160 57 247 135 213 255 113 271 62 169Z" fill="none" stroke="#f4581f" stroke-width="2.6" stroke-linejoin="round"/>
+  </svg>
+</body>
+</html>
