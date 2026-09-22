@@ -175,3 +175,71 @@
   88%     { transform: scale(1); }
 }
 
+
+/* Phones. A 560-unit figure on a 390-pixel screen renders its 13-unit
+   captions at 8 pixels, so the wide figures re-stack: each column is a
+   group, and below 760px CSS transforms set the groups one under another
+   at 1.4 times their size, arrows turned to point down. The viewBox stays
+   landscape; the box gets the stacked height from --stack-h (set inline
+   on each figure) and overflow is visible, so everything drawn below the
+   viewBox's floor still shows. preserveAspectRatio="xMidYMin meet" keeps
+   the viewBox at the top of the taller box. Without CSS transforms the
+   figure is simply the landscape one. The dense charts on the sub pages
+   keep their layout and only raise their type; a long caption there has
+   a two-line phone version (.ph) beside its one-line desktop one (.dt). */
+.figure .ph {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .figure .ph {
+    display: initial;
+  }
+
+  .figure .dt {
+    display: none;
+  }
+
+  .fig-stack {
+    overflow: visible;
+    aspect-ratio: 560 / var(--stack-h);
+  }
+
+  .fig-stack .fc,
+  .fig-stack .fa,
+  .fig-stack .ff,
+  .fig-stack .fs {
+    transform-box: view-box;
+    transform-origin: 0 0;
+  }
+
+  .fig-offer .fc1 { transform: translate(280px, 112px) scale(1.4); }
+  .fig-offer .fa1 { transform: translate(280px, 305px) rotate(90deg) scale(1.4); }
+  .fig-offer .fc2 { transform: translate(280px, 477px) scale(1.4); }
+  .fig-offer .fa2 { transform: translate(280px, 670px) rotate(90deg) scale(1.4); }
+  .fig-offer .fc3 { transform: translate(280px, 842px) scale(1.4); }
+
+  .fig-own .fc1 { transform: translate(280px, 105px) scale(1.4); }
+  .fig-own .fa1 { transform: translate(280px, 296px) rotate(90deg) scale(1.4); }
+  .fig-own .fc2 { transform: translate(280px, 461px) scale(1.4); }
+  .fig-own .fa2 { transform: translate(280px, 652px) rotate(90deg) scale(1.4); }
+  .fig-own .fc3 { transform: translate(280px, 817px) scale(1.4); }
+
+  .fig-fit .ffl { transform: translate(77px, -32px) scale(1.4); }
+  .fig-fit .ffr { transform: translate(-272px, 339px) scale(1.4); }
+
+  .fig-start .fsq { transform: translate(28px, -85px) scale(1.4); }
+  .fig-start .fsa { transform: translate(280px, 175px) rotate(90deg) scale(1.4); }
+  .fig-start .fsv { transform: translate(280px, 336px) scale(1.4); }
+
+  /* The sub pages' charts: larger type in place; the loop, which sits
+     in the middle of its box, grows to the box's width. */
+  .fig-curve text { font-size: 14px; }
+  .fig-curve .ph text { font-size: 13px; }
+  .fig-sess text { font-size: 14px; }
+  .fig-loop .fl { transform-box: view-box; transform-origin: 0 0; transform: translate(-22px, 0) scale(1.25); }
+  .fig-loop text { font-size: 13px; }
+  .fig-loop text.sub { display: none; }
+  .fig-time text { font-size: 13px; }
+  .fig-time .ph text { font-size: 12px; }
+}
