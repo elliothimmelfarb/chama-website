@@ -73,7 +73,9 @@ body {
 
 .masthead {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: auto;
   gap: 2rem;
   align-items: start;
   padding-top: clamp(1.2rem, 2.4vw, 2.3rem);
@@ -671,6 +673,7 @@ footer {
      it always stops short of the pill. The notes take the row below. */
   .masthead {
     grid-template-columns: minmax(0, 1fr) auto;
+    grid-auto-flow: row;
     column-gap: clamp(0.9rem, 3vw, 1.5rem);
     row-gap: 1.15rem;
     align-items: center;
@@ -954,4 +957,257 @@ footer {
 .talk-band .also-links a {
   color: #ece7dc;
   border-color: rgba(236, 231, 220, 0.3);
+}
+
+/* Big pictures, few words.
+
+   The page has two views of the same copy. Words is the page as written.
+   Pictures keeps the headlines, the figures, the four questions, and the
+   links, drops the explanatory paragraphs, and sets each section as a
+   poster: one headline, one picture the width of the page. Nothing is
+   added in Pictures that is not already on the page (two figures and a
+   caption are marked .pictures-only and exist for this view; their words
+   are quoted from the copy they stand in for), so the claims ledger is
+   unchanged. The view is html[data-view="pictures"], set before first
+   paint by the inline script in each page's head; view.js wires the
+   switch. It is a reading preference, like light and dark, so it is
+   remembered on this device and never sent anywhere. */
+
+html:not([data-view="pictures"]) .pictures-only {
+  display: none;
+}
+
+/* The switch: two words in a pill, the chosen one filled with ink. It
+   reads as a control at a glance because both states are visible at
+   once, the way a light/dark segmented switch is. It only exists once
+   the head script has run (html[data-js]); without JavaScript there is
+   nothing for it to do, so it is not shown. */
+.view-switch {
+  display: none;
+  align-self: start;
+  padding: 2px;
+  margin: 0;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--quiet);
+  font: inherit;
+  cursor: pointer;
+}
+
+html[data-js] .view-switch {
+  display: inline-flex;
+}
+
+.view-switch-option {
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.view-switch[aria-checked="false"] .view-switch-words,
+.view-switch[aria-checked="true"] .view-switch-pictures {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.view-switch:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.view-switch:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 3px;
+}
+
+.masthead .view-switch {
+  justify-self: end;
+}
+
+/* Pictures view: the words that go. Hidden means hidden from a screen
+   reader too, which is the point: each figure's own title tells its
+   story. */
+html[data-view="pictures"] .hero-copy .hero-deck,
+html[data-view="pictures"] .content-section > .section-label,
+html[data-view="pictures"] .section-copy > p:not(.shape-lead):not(.pictures-only),
+html[data-view="pictures"] .shape-details > p:not(.pictures-only),
+html[data-view="pictures"] .offer-grid,
+html[data-view="pictures"] .offer-note,
+html[data-view="pictures"] .about-copy p:not(.pictures-only) {
+  display: none;
+}
+
+/* The home hero: the fit story becomes the panel, the headline sits
+   beside it. The sub pages' heroes keep their one-line decks. */
+html[data-view="pictures"] .hero:has(.hero-figure) {
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 1fr);
+  align-items: start;
+}
+
+html[data-view="pictures"] .hero-figure {
+  max-width: 40rem;
+  align-self: start;
+}
+
+/* Each section is a poster: the headline, then the picture at the width
+   of the page. The label column goes with the labels. */
+html[data-view="pictures"] .content-section {
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding-bottom: clamp(3rem, 5vw, 5rem);
+}
+
+html[data-view="pictures"] .content-section.offer {
+  padding-bottom: clamp(3rem, 5vw, 5rem);
+}
+
+html[data-view="pictures"] .section-copy,
+html[data-view="pictures"] .shape .section-copy,
+html[data-view="pictures"] .shape-details {
+  max-width: none;
+}
+
+html[data-view="pictures"] .section-copy h2,
+html[data-view="pictures"] .shape .shape-lead {
+  max-width: 22ch;
+  margin-bottom: clamp(1.2rem, 2vw, 1.8rem);
+}
+
+html[data-view="pictures"] .section-copy h2:has(+ .figure) {
+  margin-bottom: 0;
+}
+
+html[data-view="pictures"] .section-copy h2:last-child {
+  margin-bottom: 0;
+}
+
+html[data-view="pictures"] .shape-details {
+  margin-top: 0;
+}
+
+html[data-view="pictures"] .section-copy .figure,
+html[data-view="pictures"] .shape-details .figure {
+  max-width: none;
+  margin-top: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+/* The four questions, on their own, sit larger. */
+html[data-view="pictures"] .steps {
+  margin: clamp(1.4rem, 2.4vw, 2rem) 0 0;
+}
+
+html[data-view="pictures"] .steps li {
+  font-size: clamp(1.3rem, 2vw, 1.9rem);
+  margin-bottom: 0.5rem;
+}
+
+/* A line that is only links, in the deck's size. */
+html[data-view="pictures"] .shape-details > p.pictures-only {
+  max-width: 34ch;
+  margin: clamp(1.4rem, 2.4vw, 2rem) 0 0;
+  font-size: clamp(1.2rem, 1.75vw, 1.6rem);
+  line-height: 1.3;
+}
+
+/* About: the photographs are the page, each with a caption in the
+   headline's voice. */
+html[data-view="pictures"] .about-grid {
+  grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+}
+
+html[data-view="pictures"] .about-photo {
+  max-width: 32rem;
+  order: -1;
+}
+
+html[data-view="pictures"] .about-copy p.pictures-only {
+  margin: 0;
+  max-width: 14ch;
+  font-size: clamp(2rem, 3.9vw, 3.5rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+html[data-view="pictures"] .founder .section-copy > .figure:first-child {
+  margin-top: 0.4rem;
+}
+
+html[data-view="pictures"] .founder-photo {
+  width: min(100%, 26rem);
+}
+
+@media (max-width: 760px) {
+  /* The switch shares the first row with the lockup. On the training
+     page the Members pill already holds that corner, so the switch
+     takes the end of the notes row instead. */
+  .view-switch-option {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
+
+  .masthead {
+    column-gap: 0.75rem;
+  }
+
+  .masthead .view-switch {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: center;
+  }
+
+  .masthead-members .masthead-notes {
+    grid-column: 1;
+    font-size: 0.7rem;
+  }
+
+  .masthead-members .view-switch {
+    grid-row: 2;
+  }
+
+  .masthead-members .view-switch-option {
+    padding-inline: 0.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  html[data-view="pictures"] .about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-view="pictures"] .hero:has(.hero-figure) {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-view="pictures"] .hero-figure {
+    max-width: 18rem;
+  }
+
+  /* Wide figures bleed to the screen's edges: on a phone the picture
+     is the section, so it takes every pixel there is. */
+  html[data-view="pictures"] .section-copy .figure,
+  html[data-view="pictures"] .shape-details .figure {
+    width: calc(100% + 2 * var(--pad));
+    max-width: none;
+    margin-inline: calc(-1 * var(--pad));
+  }
+}
+
+/* The switch is a crossfade of the whole page, and only for people who
+   have not asked for stillness. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 260ms;
+  }
 }

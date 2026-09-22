@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The Words / Pictures view, decided before first paint so the page
+       never flashes the other one: ?view=pictures or ?view=words in the
+       address wins and is remembered; otherwise the remembered choice. -->
+  <script>(function(){var r=document.documentElement,k="chama-view",v=null;r.setAttribute("data-js","");try{var m=/[?&]view=(pictures|words)\b/.exec(location.search);if(m){v=m[1];if(v==="pictures")localStorage.setItem(k,v);else localStorage.removeItem(k);}else{v=localStorage.getItem(k);}}catch(e){}if(v==="pictures")r.setAttribute("data-view","pictures");})();</script>
   <title>Coaching and training | Chama Inteligente</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
@@ -10,6 +14,7 @@
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="/assets/figures.css">
   <script src="/assets/figures.js" defer></script>
+  <script src="/assets/view.js" defer></script>
   <meta name="description" content="AI coaching for individuals and small teams, and agentic engineering training for engineering teams. Elliot Himmelfarb, Lisbon.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -62,7 +67,7 @@
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
-  <header class="frame masthead">
+  <header class="frame masthead masthead-members">
     <div class="masthead-name">
       <a href="/"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg><p class="wordmark">Chama Inteligente</p></a>
       <p class="wordmark-translation">Intelligent Flame</p>
@@ -71,6 +76,10 @@
       <p><strong>Software shaped for your business</strong>Lisbon</p>
     </div>
     <a class="members-link" href="/hearth">Members</a>
+    <button class="view-switch" type="button" role="switch" aria-checked="false" aria-label="Pictures view" title="Big pictures, few words" data-view-switch>
+      <span class="view-switch-option view-switch-words">Words</span>
+      <span class="view-switch-option view-switch-pictures">Pictures</span>
+    </button>
   </header>
 
   <main id="main-content">
@@ -127,6 +136,7 @@
         <div class="shape-details">
           <p>We also build alongside individuals and small teams, and teach them to develop software the AI-native way.</p>
           <p>Whichever suits you, we would be glad to help. See <a href="/">the software we build for businesses</a>, or <a href="/agent">start a conversation</a> and tell us what you have in mind.</p>
+          <p class="pictures-only">See <a href="/">the software we build for businesses</a>, or <a href="/agent">start a conversation</a>.</p>
         </div>
       </div>
     </section>
