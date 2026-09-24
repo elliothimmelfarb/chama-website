@@ -4,7 +4,7 @@
    words"). The view is an attribute on <html>, data-view="pictures", set
    before first paint by the inline script in each page's head (from
    localStorage or ?view=pictures) so nothing flashes; this script only
-   wires the switch and remembers the choice. Shared by index, training,
+   wires the switch and remembers the choice. Shared by index, coaching,
    and about. Nothing here talks to the network. */
 (() => {
   const root = document.documentElement;

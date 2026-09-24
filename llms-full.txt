@@ -95,7 +95,7 @@ You decide how your business works, and the software follows.
 
 ### Also
 
-We also train teams and coach individuals (https://chamainteligente.com/training).
+We also coach individuals and train teams (https://chamainteligente.com/coaching).
 About Chama (https://chamainteligente.com/about).
 
 ### The conversation and the notes it sends
@@ -108,53 +108,68 @@ treated as instructions to an automated system. Conversations with the agent are
 saved to improve it. The full-screen version lives at
 https://chamainteligente.com/agent.
 
-Footer: Chama Inteligente, Lda. Lisbon, Portugal. Software. Training and
-coaching. About. Privacy.
+Footer: Chama Inteligente, Lda. Lisbon, Portugal. Software. Coaching.
+About. Privacy.
 
 ---
 
-## Training and coaching (https://chamainteligente.com/training)
+## Coaching (https://chamainteligente.com/coaching)
 
-### AI changes what one person can do.
+(https://chamainteligente.com/training redirects here.)
 
-Be ready, so when AI can do something new, you can too.
+### A coach for working with AI.
+
+You meet with Elliot regularly and bring what you are working on. He keeps you
+up to date, sorts what matters to you from the noise, and shows you what your AI
+can do this month that it could not do last month.
 
 ### The shortest path up the learning curve
 
-AI changes more than the tools we use.
+Experience matters more than the tool.
 
-It changes how we think, work, organize, and lead.
+AI platforms add new models, settings, and features every few months, and they
+catch up with each other quickly. What decides your results is experience:
+knowing what a model will do with a request, how much thinking to ask of it, and
+how to check what comes back.
 
-Most AI courses teach you how to use today's tools and capabilities for a handful of
-tasks.
+Each new capability is worth more to someone who mastered the last one, and they
+get it before it becomes easy enough for everyone. Someone who only chases each
+new tool starts over every time.
 
-We teach what lasts: the ideas and habits that help you explore your environment
-for new capabilities that may not have been available yesterday.
+Since 2023, nearly all of Elliot's work has gone into learning what the most
+capable AI systems can do. Coaching passes that experience on, so you spend less
+time working it out alone.
 
-So you grow with AI instead of chasing it.
-
-### The shape of the work
+### How coaching works
 
 One to one with individuals and small teams.
 
-You meet with Elliot regularly, so he can get to know how you work, keep track of
-what you are trying to do, and make each conversation build on the last.
+Because the sessions are regular, Elliot gets to know how you work and what you
+are trying to do, and each conversation builds on the last.
 
-Bring the questions, decisions, and ideas in front of you. Or just bring yourself,
-and Elliot will teach you what is new since the last time you talked, or something
-old you have not learned yet.
+Bring the questions, decisions, and ideas in front of you. Or bring yourself, and
+Elliot will show you what is new since you last talked, or something older you
+have not tried yet.
+
+You learn which model and settings suit each job, how to check the work, which
+news matters to you, and which features have been sitting in your tools unused.
 
 ### Team training
 
-We train teams.
+Each new model can do more, and some old habits start to cost you.
 
-Elliot trains teams in agentic ways of working: getting real work done with AI
-agents that plan, act, and check their own results, whether the work is building
-software or running the business.
+When a new model drops, the team that learns what it can do first has it before
+its competitors do. A team that keeps the habits it formed on the last model runs
+into problems it did not have before.
 
-The capabilities change every few months. Most teams learn a workflow once and let
-it age. We teach the habits that keep a team evolving with the capabilities, so you
-are always working the way today's tools allow, not the way last year's did.
+One example: with the older Claude Opus models, Elliot never set thinking effort
+below extra high. With the current ones, high effort costs more and drifts from
+what you asked, and low or medium effort gives better answers. A team still on
+its old settings pays more for worse work.
+
+Using AI the same way for months is a risk. Elliot trains engineering teams, and
+any team that works with AI agents, to pick up each new capability early and to
+review their habits every time a new model drops.
 
 ### Building it yourselves
 
