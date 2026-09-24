@@ -34,6 +34,11 @@
       "permanent": true
     },
     {
+      "source": "/training.html",
+      "destination": "/coaching",
+      "permanent": true
+    },
+    {
       "source": "/elliot-rozalie.webp",
       "destination": "/assets/elliot-rozalie.webp",
       "permanent": true

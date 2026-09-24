@@ -1159,6 +1159,10 @@ html[data-view="pictures"] .shape-details .figure {
   html[data-view="pictures"] .figure-wide text[font-size="13"] {
     font-size: 10.5px;
   }
+
+  html[data-view="pictures"] .figure-wide text[font-size="12"] {
+    font-size: 9.5px;
+  }
 }
 
 /* The four questions are the poster of their section: beside the
@@ -1352,7 +1356,7 @@ html[data-view="pictures"] .founder .figure {
   /* The stacked figures bleed to the screen's edges: on a phone the
      picture is the section, so it takes every pixel there is. The
      charts keep a gutter for their axes. */
-  html[data-view="pictures"] .section-copy .figure:not(.fig-curve):not(.fig-sess):not(.fig-time),
+  html[data-view="pictures"] .section-copy .figure:not(.fig-curve):not(.fig-sess):not(.fig-time):not(.fig-release),
   html[data-view="pictures"] .shape-details .figure {
     width: calc(100% + 2 * var(--pad));
     max-width: none;

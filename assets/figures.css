@@ -235,19 +235,17 @@
     /* The loop sits in the middle of its box, so it grows to the box. */
     .fig-loop .fl { transform: translate(0, 0) scale(1.25); }
 
-    /* Arrive, session, leave: one under another. */
-    .fig-session .fc1 { transform: translate(66px, -118px) scale(1.6); }
-    .fig-session .fc2 { transform: translate(-168px, 105px) scale(1.6); }
-    .fig-session .fc3 { transform: translate(-402px, 260px) scale(1.6); }
   }
 
   /* The sub pages' charts: larger type in place. */
   .fig-curve text { font-size: 20px; }
-  .fig-curve .ph text { font-size: 18px; }
+  .fig-curve .ph text { font-size: 19.5px; }
   .fig-sess text { font-size: 18px; }
   .fig-loop text { font-size: 16px; }
   .fig-release text { font-size: 19px; }
-  .fig-release text[font-size="10"][fill-opacity=".6"] { font-size: 18px; }
+  .fig-release text[font-size="10"][fill-opacity=".65"] { font-size: 19.5px; }
+  .fig-session text { font-size: 20px; }
+  .fig-session text[font-size="12"] { font-size: 19.5px; }
   .fig-loop text.sub { display: none; }
   .fig-loop text[x="150"] { font-size: 13px; }
   .fig-time text { font-size: 18px; }
