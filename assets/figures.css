@@ -252,3 +252,16 @@
   .fig-time text[x="424"][fill="#f4581f"] { font-size: 16px; }
   .fig-time .ph text { font-size: 17px; }
 }
+
+/* The narrowest phones (320px) draw these charts at half size, so the
+   labels go up again to stay at 11px or more. */
+@media (max-width: 340px) {
+  .fig-curve text,
+  .fig-curve .ph text,
+  .fig-session text,
+  .fig-session text[font-size="12"],
+  .fig-release text,
+  .fig-release text[font-size="10"][fill-opacity=".65"] {
+    font-size: 22.5px;
+  }
+}
