@@ -1,4 +1,4 @@
-/* The public pages' shared stylesheet: index, training, about.
+/* The public pages' shared stylesheet: index, coaching, about.
    Extracted from index.html on 2026-09-03 so the three pages share one
    design. The agent room keeps its own sheet (agent.css); the section
    figures keep theirs (figures.css). */
@@ -1281,7 +1281,7 @@ html[data-view="pictures"] .founder .figure {
 
 @media (max-width: 760px) {
   /* The switch shares the first row with the lockup on every page. On
-     the training page the Members pill moves to the end of the notes
+     the coaching page the Members pill moves to the end of the notes
      row, so the switch is in the same corner everywhere. */
   .masthead {
     column-gap: 0.75rem;
