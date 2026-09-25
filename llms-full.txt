@@ -95,7 +95,7 @@ You decide how your business works, and the software follows.
 
 ### Also
 
-We also coach individuals and train teams (https://chamainteligente.com/coaching).
+We also coach individuals and train engineering teams (https://chamainteligente.com/coaching).
 About Chama (https://chamainteligente.com/about).
 
 ### The conversation and the notes it sends
@@ -117,46 +117,44 @@ About. Privacy.
 
 (https://chamainteligente.com/training redirects here.)
 
-### A coach for working with AI.
+### AI changes what one person can do.
 
-You meet with Elliot regularly and bring what you are working on. He keeps you
-up to date, sorts what matters to you from the noise, and shows you what your AI
-can do this month that it could not do last month.
+Be ready, so when AI can do something new, you can too.
 
 ### The shortest path up the learning curve
 
-Experience matters more than the tool.
+AI changes more than the tools we use.
 
-AI platforms add new models, settings, and features every few months, and they
-catch up with each other quickly. What decides your results is experience:
-knowing what a model will do with a request, how much thinking to ask of it, and
-how to check what comes back.
+It changes how we think, work, organize, and lead.
 
-Each new capability is worth more to someone who mastered the last one, and they
-get it before it becomes easy enough for everyone. Someone who only chases each
-new tool starts over every time.
+Most AI courses teach you how to use today's tools and capabilities for a handful of
+tasks.
 
-Since 2023, nearly all of Elliot's work has gone into learning what the most
-capable AI systems can do. Coaching passes that experience on, so you spend less
-time working it out alone.
+We teach what lasts: the ideas and habits that help you explore your environment
+for new capabilities that may not have been available yesterday.
 
-### How coaching works
+So you grow with AI instead of chasing it.
+
+### Coaching for individuals
 
 One to one with individuals and small teams.
 
-Because the sessions are regular, Elliot gets to know how you work and what you
-are trying to do, and each conversation builds on the last.
+You do not need a technical background. The coaching starts from the work you
+already do, whatever your role.
 
-Bring the questions, decisions, and ideas in front of you. Or bring yourself, and
-Elliot will show you what is new since you last talked, or something older you
-have not tried yet.
+You meet with Elliot regularly, so he can get to know how you work, keep track of
+what you are trying to do, and make each conversation build on the last.
 
-You learn which model and settings suit each job, how to check the work, which
-news matters to you, and which features have been sitting in your tools unused.
+Bring the questions, decisions, and ideas in front of you. Or just bring yourself,
+and Elliot will teach you what is new since the last time you talked, or something
+old you have not learned yet.
 
-### Team training
+### Training for engineering teams
 
 Each new model can do more, and some old habits start to cost you.
+
+Elliot trains engineering teams in agentic engineering: building software with AI
+agents that plan, write, and verify code.
 
 When a new model drops, the team that learns what it can do first has it before
 its competitors do. A team that keeps the habits it formed on the last model runs
@@ -167,9 +165,9 @@ below extra high. With the current ones, high effort costs more and drifts from
 what you asked, and low or medium effort gives better answers. A team still on
 its old settings pays more for worse work.
 
-Using AI the same way for months is a risk. Elliot trains engineering teams, and
-any team that works with AI agents, to pick up each new capability early and to
-review their habits every time a new model drops.
+Using AI the same way for months is a risk. We teach the habits that keep a team
+current: picking up each new capability early, and reviewing how you work every
+time a new model drops.
 
 ### Building it yourselves
 
