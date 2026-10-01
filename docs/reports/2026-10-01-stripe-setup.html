@@ -1,0 +1,121 @@
+<title>Stripe Live Account Audit</title>
+<style>
+/* Layout: one reading column; a status strip, then three short lists (done, yours, decisions). Brand: the flame room's ground and ember. */
+:root {
+  --bg: #f3f0e8; --surface: #fbf9f4; --fg: #141412; --dim: #66635c; --line: #dcd6c8;
+  --ember: #c9441a; --good: #2f7a3f; --warn: #9a6a00;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e0c0a; --surface: #171411; --fg: #ece7dc; --dim: #9a938a; --line: #2c2722;
+  --ember: #f4581f; --good: #7fc47f; --warn: #e4b84a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e0c0a; --surface: #171411; --fg: #ece7dc; --dim: #9a938a; --line: #2c2722;
+  --ember: #f4581f; --good: #7fc47f; --warn: #e4b84a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--sans); }
+main { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 64px; display: grid; gap: 36px; }
+h1 { font-size: 28px; line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); margin: 0 0 12px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--dim); margin-top: 8px; max-width: 62ch; }
+.date { font-family: var(--mono); font-size: 12px; color: var(--ember); }
+.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.cell { background: var(--surface); padding: 14px; display: grid; gap: 4px; }
+.cell b { font-size: 12px; color: var(--dim); font-weight: 500; }
+.pill { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.ok { color: var(--good); } .wait { color: var(--warn); } .off { color: var(--ember); }
+ul, ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+li { padding-left: 4px; }
+li small { display: block; color: var(--dim); font-size: 13px; }
+ol.yours li::marker { color: var(--ember); font-weight: 700; }
+.path { font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
+.decision { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 6px; }
+.decision:first-of-type { border-top: 0; padding-top: 0; }
+.decision h3 { font-size: 16px; margin: 0; }
+.call { font-weight: 600; }
+.call::before { content: "My call: "; color: var(--ember); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--dim); font-weight: 500; }
+.scroll { overflow-x: auto; }
+</style>
+
+<main>
+  <header>
+    <p class="date">2026-10-01</p>
+    <h1>Stripe live account: audit and setup</h1>
+    <p class="lede">Chama Inteligente's live account is verified and can take payments. It is not wired to either site yet. Below: what I changed, the clicks only you can make, and three decisions.</p>
+  </header>
+
+  <section>
+    <h2>Where it stands</h2>
+    <div class="strip">
+      <div class="cell"><b>Verification</b><span class="pill ok">Verified</span></div>
+      <div class="cell"><b>Payments</b><span class="pill ok">Active</span></div>
+      <div class="cell"><b>Payouts</b><span class="pill wait">Paused by Stripe</span></div>
+      <div class="cell"><b>Bank</b><span class="pill ok">Millennium, EUR</span></div>
+      <div class="cell"><b>Keys in Vercel</b><span class="pill off">None yet</span></div>
+      <div class="cell"><b>Webhooks</b><span class="pill off">None yet</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What I changed</h2>
+    <ul>
+      <li>Enabled <b>SEPA Direct Debit</b> and <b>ACH Direct Debit</b>.<small>The cheapest way to collect monthly EU and US subscriptions. SEPA is pending Stripe's approval, with a €20,000 weekly limit to start.</small></li>
+      <li>Enabled <b>Bank transfers</b>.<small>Each customer gets their own EUR, GBP or USD account number to pay into, with automatic matching and no chargebacks. Suited to the $2,500 setup fee, and a partial answer to the open USD-account question.</small></li>
+      <li>Enabled <b>iDEAL | Wero</b> (one-off and recurring) and <b>Revolut Pay</b>.</li>
+      <li>Set <b>branding</b>: the mark as the icon, ground <span class="path">#0e0c0a</span>, ember <span class="path">#f4581f</span>. This applies to Checkout, invoices, receipts and the customer portal.</li>
+      <li>Left the regional wallets (Korea, Brazil) on.<small>They only appear when a price is shown in that country's currency, so they cost nothing.</small></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Yours to click (the permission guard stopped me here)</h2>
+    <ol class="yours">
+      <li><b>Verify the phone number by SMS.</b> <span class="path">Settings → Business → Account details → Verify now</span><small>Required to take payments from the Dashboard.</small></li>
+      <li><b>Turn on automatic payouts, weekly on Monday.</b> <span class="path">Settings → Linked accounts and payouts → Payout schedule</span><small>Payouts are set to manual, so money would sit in Stripe until someone pays it out. Weekly gives the accountant one transfer a week to match.</small></li>
+      <li><b>Turn on three customer emails:</b> Successful payments, Refunds, and Bank transfers' payment instructions. <span class="path">Settings → Customer emails</span><small>Without the last one, a customer who picks bank transfer never receives the account details.</small></li>
+      <li><b>Enable Google Pay.</b> This means accepting Google's API terms, which I won't do without your yes. <span class="path">Settings → Payment methods</span></li>
+      <li><b>Stripe Tax: add the origin address and the Portugal registration.</b> <span class="path">Tax → Locations</span><small>The company is on IVA regime normal, so this records a fact rather than starting a new filing. It lets Checkout add 23% for Portuguese consumers and apply reverse charge for EU businesses.</small></li>
+      <li><b>Authorize the Stripe MCP for the live account</b> from an interactive <span class="path">claude</span> terminal with <span class="path">/mcp</span>.<small>Now that the account is verified, Live appears in the environment picker.</small></li>
+      <li><b>Later, once the code is deployed:</b> create a restricted key (Checkout Sessions, Customers, Products and Prices, Invoices: write; Webhook endpoints: read) and one webhook endpoint per site. Then put each secret straight into Vercel with <span class="path">vercel env add</span>. I'll give you the exact URLs and event lists.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Decisions</h2>
+    <div class="decision">
+      <h3>Managed Payments (you switched it on)</h3>
+      <p>With Managed Payments, Stripe, through Link, becomes the seller of record: it charges VAT and sales tax worldwide and sends the customer's invoice. It covers ShopIntake's subscriptions but none of the human-delivered work. Stripe's rules exclude consulting and name "live 1-1 coaching" as ineligible, so the coaching, the Hearth packs and the done-for-you setup all stay on standard Checkout.</p>
+      <div class="scroll"><table>
+        <tr><th>ShopIntake "Shop", $599/mo, US card</th><th>Standard</th><th>Managed Payments</th></tr>
+        <tr><td>Stripe fees</td><td>3.15% + €0.25 ≈ $19</td><td>+3.5% ≈ +$21</td></tr>
+        <tr><td>Tax we owe on it</td><td>None (business-to-business export)</td><td>Same</td></tr>
+        <tr><td>Fatura</td><td>One per payment, to the customer</td><td>Periodic, to Stripe (accountant to confirm)</td></tr>
+        <tr><td>Customer's statement</td><td>CHAMA INTELIGENTE</td><td>LINK.COM* CHAMA…</td></tr>
+      </table></div>
+      <p class="call">Leave it on, don't use it yet.</p>
+      <p>It is a per-checkout switch. Turn it on for ShopIntake when it starts selling self-serve to consumers abroad. Today ShopIntake's buyers are US businesses, so we owe no tax on those sales and the 3.5% would mostly buy the Link name on their statements.</p>
+    </div>
+    <div class="decision">
+      <h3>One Stripe account or two</h3>
+      <p class="call">One account for now.</p>
+      <p>The descriptor and revenue lines can be separated by product and metadata. Add a second account in the Stripe organization once ShopIntake has its own brand and you want its own checkout look; it reuses this verification.</p>
+    </div>
+    <div class="decision">
+      <h3>Certified faturas</h3>
+      <p class="call">Have the webhook issue each fatura through Moloni or InvoiceXpress.</p>
+      <p>Every card payment already emails you the details the accountant needs. The next step is to send each payment straight to a certified invoicing API, which needs the accountant's agreement on the software. The Terms and refund-policy pages Stripe expects are also still to write: I'll draft them in the brain for your approval before anything is published.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Code</h2>
+    <ul>
+      <li><b>Hearth</b> (chama-website issue #70): the webhook grants credits from a paid Checkout once. Replayed, forged, stale and unpaid deliveries grant nothing, and each guard is tested. Next: the pay-by-card endpoint and button, then deploy.</li>
+      <li><b>ShopIntake</b> (shop-intake PR #2): signed webhook, billing address and tax ID collection, USD/CAD/EUR prices. The CAD and EUR figures are placeholders for you to confirm. The webhook also needs a Vercel Blob store linked to the project.</li>
+    </ul>
+  </section>
+</main>
