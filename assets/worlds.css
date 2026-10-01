@@ -1,0 +1,572 @@
+/* ==========================================================================
+   Worlds: the public pages as one scroll through animated worlds.
+
+   The Worlds version of /, /coaching and /about (at /worlds, /worlds/coaching
+   and /worlds/about). Same copy as the Words pages, set as a sequence of
+   pinned worlds (paper, the grid, the forge, the night, the tides, the
+   flame) that burn into each other as the page scrolls. worlds.js paints
+   the worlds and the figures; this sheet sets the words over them.
+
+   Each <section class="world"> is several screens tall and its .pin sticks
+   to the viewport while the section passes. worlds.js writes one number on
+   each section, --u: -1 while the world is arriving, 0..1 while it is held
+   on screen, 2 once it has gone. Every .r element shows while --u sits
+   between its own --in and --out, so the choreography lives in the markup.
+   ========================================================================== */
+
+:root {
+  --ember: #f4581f;
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --pad: clamp(16px, 4.6vw, 4.5rem);
+}
+
+[data-theme="paper"] { --fg: #141412; --fg2: #57544d; --accent: #f4581f; --scrim: rgba(243, 240, 232, 0); --bg: #f3f0e8; --track: rgba(20, 20, 18, 0.1); }
+[data-theme="grid"]  { --fg: #0f1b26; --fg2: #3f4e5b; --accent: #2b6c9b; --scrim: rgba(228, 233, 238, 0.82); --bg: #e3e8ec; --track: rgba(15, 27, 38, 0.1); }
+[data-theme="forge"] { --fg: #f6f0e6; --fg2: #c2b5a4; --accent: #ff7a3d; --scrim: rgba(14, 12, 10, 0.55); --bg: #0e0c0a; --track: rgba(246, 240, 230, 0.14); }
+[data-theme="night"] { --fg: #eff1ff; --fg2: #aab0d8; --accent: #ffb07a; --scrim: rgba(6, 7, 24, 0.5); --bg: #070a1f; --track: rgba(239, 241, 255, 0.14); }
+[data-theme="tides"] { --fg: #f2fcf9; --fg2: #b7ded6; --accent: #ff9466; --scrim: rgba(3, 32, 36, 0.62); --bg: #06343a; --track: rgba(242, 252, 249, 0.16); }
+[data-theme="flame"] { --fg: #fff5ea; --fg2: #cdb9a5; --accent: #ff7a3d; --scrim: rgba(8, 5, 3, 0.5); --bg: #0a0705; --track: rgba(255, 245, 234, 0.14); }
+
+* { box-sizing: border-box; }
+
+html {
+  background: #0a0705;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: #f3f0e8;
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.gl body { background: transparent; }
+html:not(.gl) .world { background: var(--bg); }
+
+::selection { background: var(--ember); color: #fff; }
+
+.skip-link {
+  position: fixed;
+  z-index: 20;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  transform: translateY(-180%);
+  background: #141412;
+  color: #fff;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+.skip-link:focus { transform: translateY(0); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The two painted layers: the sky (WebGL) and the figures (2D) above it. */
+canvas.layer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  display: block;
+  pointer-events: none;
+}
+#sky { z-index: 0; }
+#actors { z-index: 1; }
+html:not(.gl) #sky { display: none; }
+
+/* ---- the masthead: the lockup, the switch, and the world index ------- */
+.mast,
+.worlds-switch,
+.worlds-members,
+.worlds {
+  transition: color 0.6s ease, opacity 0.4s ease;
+}
+
+.mast {
+  position: fixed;
+  z-index: 6;
+  top: calc(16px + env(safe-area-inset-top));
+  left: var(--pad);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--fg);
+  text-decoration: none;
+}
+.mast svg { width: 30px; height: 30px; flex: none; }
+.mast b { display: block; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.035em; line-height: 1; }
+.mast small { display: block; margin-top: 3px; color: var(--fg2); font-size: 0.66rem; letter-spacing: 0.02em; transition: color 0.6s ease; }
+
+.worlds-top {
+  position: fixed;
+  z-index: 6;
+  top: calc(18px + env(safe-area-inset-top));
+  right: var(--pad);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* The same switch as the Words pages: two links, the current one raised. */
+.view-switch {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--track);
+  color: var(--fg);
+  transition: background 0.6s ease, color 0.6s ease;
+}
+.view-switch-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.65rem 0.32rem 0.55rem;
+  border-radius: 999px;
+  color: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background 160ms ease, color 160ms ease;
+}
+.view-switch-option svg { width: 0.85em; height: 0.85em; display: block; }
+.view-switch-option[aria-current="page"] { background: var(--fg); color: var(--bg); }
+.view-switch-option:not([aria-current="page"]):hover { color: var(--ember); }
+.view-switch-option:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+/* The way into the Hearth lives only beside the coaching, as on /coaching. */
+.worlds-members {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.7rem;
+  border: 1px solid var(--track);
+  border-radius: 999px;
+  color: var(--fg);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.worlds-members::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ember); }
+.worlds-members:hover { color: var(--ember); }
+.worlds-members:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+/* The index of worlds, down the right edge. worlds.js builds it from the
+   sections' data-label. */
+.worlds {
+  position: fixed;
+  z-index: 6;
+  right: calc(14px + env(safe-area-inset-right));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--fg);
+}
+.worlds button {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  min-height: 24px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.worlds i {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.5;
+  transition: transform 0.35s ease, background 0.35s ease, border-color 0.35s ease, opacity 0.35s ease;
+}
+.worlds span {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.worlds:hover span,
+.worlds button:focus-visible span { opacity: 0.85; transform: none; }
+.worlds button[aria-current="true"] i { background: var(--ember); border-color: var(--ember); opacity: 1; transform: scale(1.35); }
+.worlds button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; border-radius: 4px; }
+
+/* Inside the flame room the room's own bar takes the top of the screen. */
+html.in-room .mast,
+html.in-room .worlds-top,
+html.in-room .worlds {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- the worlds ------------------------------------------------------ */
+main { position: relative; z-index: 2; }
+
+.world {
+  --u: 0.5;
+  position: relative;
+  height: calc(var(--h) * 1vh);
+  color: var(--fg);
+}
+
+.pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* A soft shade behind the words, so they read on any part of a world. */
+.pin::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: -25%;
+  width: 85%;
+  background: radial-gradient(closest-side, var(--scrim), transparent);
+  opacity: calc(clamp(0, (var(--u) + 0.45) * 4, 1) * clamp(0, (1.45 - var(--u)) * 4, 1));
+  pointer-events: none;
+}
+
+.r {
+  --in: -0.3;
+  --out: 1.35;
+  --k: 6;
+  --a: clamp(0, (var(--u) - var(--in)) * var(--k), 1);
+  --b: clamp(0, (var(--out) - var(--u)) * var(--k), 1);
+  opacity: calc(var(--a) * var(--b));
+  transform: translate3d(0, calc((1 - var(--a)) * 26px - (1 - var(--b)) * 16px), 0);
+}
+html:not(.js) .r { opacity: 1; transform: none; }
+
+.copy {
+  position: absolute;
+  left: var(--pad);
+  top: 50%;
+  width: min(40vw, 35rem);
+  transform: translateY(-50%);
+}
+.hero .copy { width: min(52vw, 46rem); }
+
+h1, h2, .lead {
+  margin: 0 0 0.4em;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+h1 { max-width: 11ch; font-size: clamp(2.8rem, 6.6vw, 6.7rem); }
+h1 span { display: block; }
+h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
+.copy .lead { max-width: 15ch; margin-bottom: 0.45em; color: var(--fg); line-height: 0.94; }
+.copy .h2-long { max-width: 19ch; font-size: clamp(1.9rem, 3.2vw, 3.3rem); }
+.copy p { max-width: 35ch; margin: 0 0 0.85em; color: var(--fg2); font-size: clamp(1.02rem, 1.22vw, 1.24rem); line-height: 1.45; }
+.copy p.deck { max-width: 38ch; font-size: clamp(1.08rem, 1.45vw, 1.42rem); }
+.copy a { color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.18em; }
+.copy a:hover { color: var(--accent); }
+.kicker {
+  max-width: none !important;
+  margin: 0 0 1.2rem !important;
+  color: var(--accent) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+  line-height: 1.3 !important;
+  text-transform: uppercase;
+}
+.accent { color: var(--accent); }
+
+.hero .copy { animation: arrive 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
+@keyframes arrive { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: none; } }
+
+.cue {
+  position: absolute;
+  left: var(--pad);
+  bottom: calc(26px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: var(--fg2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+.cue i { position: relative; display: block; width: 1px; height: 44px; background: currentColor; opacity: 0.45; }
+.cue i::after {
+  content: "";
+  position: absolute;
+  left: -2.5px;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ember);
+  animation: drip 2.2s cubic-bezier(0.5, 0, 0.3, 1) infinite;
+}
+@keyframes drip { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(40px); opacity: 0; } }
+
+/* Captions under a figure; worlds.js places them at the figure. */
+.cap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.cap .r { display: block; }
+.cap-stack { display: grid; }
+.cap-stack > * { grid-area: 1 / 1; }
+.cap strong { display: block; color: var(--fg); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.cap em { display: block; margin-top: 4px; color: var(--fg2); font-size: 0.82rem; font-style: normal; }
+.cap .ember strong { color: var(--accent); }
+
+/* Several paragraphs that take turns in one place, with a tick for each. */
+.beats { margin-top: 1.4rem; }
+.ticks { display: flex; gap: 6px; margin-bottom: 1.1rem; }
+.ticks b {
+  --t: clamp(0, (var(--u) - var(--at)) * 9, 1);
+  position: relative;
+  width: 44px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--track);
+  overflow: hidden;
+}
+.ticks b::after { content: ""; position: absolute; inset: 0; background: var(--ember); transform-origin: left; transform: scaleX(var(--t)); }
+.slot { display: grid; }
+.slot > * { grid-area: 1 / 1; }
+.beat h3 { margin: 0 0 0.45rem; color: var(--fg); font-size: clamp(1.25rem, 1.8vw, 1.7rem); font-weight: 600; letter-spacing: -0.03em; }
+html:not(.js) .slot { display: block; }
+
+/* How it starts: four questions, one star each. */
+.qs { margin: 0.2rem 0 1.1rem; padding: 0; list-style: none; counter-reset: q; }
+.qs li {
+  --t: clamp(0, (var(--u) - var(--at)) * 12, 1);
+  position: relative;
+  padding: 0.28rem 0 0.28rem 2rem;
+  color: var(--fg);
+  font-size: clamp(1.02rem, 1.3vw, 1.3rem);
+  letter-spacing: -0.015em;
+  opacity: calc(0.22 + var(--t) * 0.78);
+  transform: translateX(calc((1 - var(--t)) * 8px));
+  counter-increment: q;
+}
+.qs li::before {
+  content: counter(q);
+  position: absolute;
+  left: 0;
+  top: 0.42rem;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Photographs, set into a world like prints. */
+.card {
+  position: absolute;
+  margin: 0;
+  padding: 8px 8px 8px;
+  background: #fbf8f2;
+  border-radius: 3px;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  rotate: var(--tilt, -2deg);
+}
+.card img { display: block; width: 100%; height: auto; border-radius: 1px; }
+.card-family { --tilt: 2.2deg; right: 13vw; top: 50%; width: min(24vw, 21rem); translate: 0 -50%; }
+.card-founder { --tilt: -2.4deg; right: 17vw; top: 12vh; width: min(17vw, 14.5rem); }
+
+/* The founder's identity, as on /about. */
+.role { margin-top: -0.4rem !important; color: var(--fg) !important; }
+.links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.2rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.8rem;
+  border: 1px solid var(--track);
+  border-radius: 999px;
+  color: var(--fg);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.links a:hover { border-color: var(--accent); color: var(--accent); }
+.links svg { width: 14px; height: 14px; fill: currentColor; }
+
+/* ---- the last world: the mark lit, the words under it ---------------- */
+.flame .copy {
+  left: 50%;
+  top: 57%;
+  width: min(94vw, 62rem);
+  transform: translateX(-50%);
+  text-align: center;
+}
+.flame.tall .copy { top: 46%; }
+.flame .copy p,
+.flame .copy h2 { margin-inline: auto; }
+.flame .copy p { max-width: 44rem; }
+.flame .kicker { margin-inline: auto !important; }
+.flame .copy h2 { max-width: 20ch; font-size: clamp(1.9rem, 3.4vw, 3.4rem); }
+.badge { margin: 0 auto 0.9rem !important; color: var(--accent) !important; font-size: 0.78rem !important; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.equation {
+  margin: 0 auto 1.4rem !important;
+  max-width: none !important;
+  color: var(--fg) !important;
+  font-size: clamp(1.9rem, 3.7vw, 3.7rem) !important;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.98 !important;
+}
+.equation > span { display: block; text-wrap: balance; }
+.equation em { color: var(--accent); font-style: normal; }
+.equation .op { color: var(--accent); }
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.5rem;
+  border-radius: 999px;
+  background: var(--ember);
+  color: #1a0a03 !important;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-align: left;
+  text-decoration: none;
+  box-shadow: 0 10px 40px -8px rgba(244, 88, 31, 0.7);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.cta:hover { transform: translateY(-2px); box-shadow: 0 0 0 6px rgba(244, 88, 31, 0.18), 0 16px 50px -8px rgba(244, 88, 31, 0.85); }
+.cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.cta svg { width: 16px; height: 16px; flex: none; }
+
+/* ---- the flame room, after the last world on /worlds ------------------ */
+.flame-room {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: max(36rem, min(100svh, 58rem));
+  background: #0e0c0a;
+  overflow: hidden;
+}
+html.room-pinned { overflow: hidden; overscroll-behavior: none; }
+.flame-noscript { margin: 0; padding: clamp(2rem, 6vw, 4rem); color: #ece7dc; font-size: 1.05rem; line-height: 1.5; }
+
+footer {
+  position: relative;
+  z-index: 2;
+  padding: 3rem var(--pad) calc(2.2rem + env(safe-area-inset-bottom));
+  color: #b9a795;
+  font-size: 0.82rem;
+}
+.flame-room + footer { background: #0e0c0a; padding-top: 1.5rem; }
+footer .row { display: flex; flex-wrap: wrap; gap: 0.6rem 2rem; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 240, 225, 0.14); padding-top: 1.3rem; }
+footer p { margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+footer svg { width: 18px; height: 18px; }
+footer a { color: #f1e6d9; text-decoration: none; }
+footer a:hover { color: var(--ember); }
+footer a[aria-current="page"] { color: var(--ember); }
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+
+/* ---- phones and portrait screens -------------------------------------- */
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  .worlds { display: none; }
+  .worlds-top { top: calc(16px + env(safe-area-inset-top)); right: 12px; flex-direction: column; align-items: flex-end; gap: 0.45rem; }
+  .view-switch-option { gap: 0; padding: 0.32rem 0.5rem; font-size: 0.62rem; letter-spacing: 0.08em; }
+  .view-switch-option svg { display: none; }
+  .worlds-members { padding: 0.28rem 0.55rem; font-size: 0.6rem; }
+  .mast b { font-size: 0.98rem; }
+  .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
+  .copy,
+  .hero .copy {
+    left: 16px;
+    right: 16px;
+    top: auto;
+    bottom: calc(22px + env(safe-area-inset-bottom));
+    width: auto;
+    transform: none;
+  }
+  h1 { font-size: clamp(2.35rem, 11vw, 3.6rem); }
+  h2, .copy .lead { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
+  .copy .lead { max-width: 14ch; }
+  .copy .h2-long { font-size: clamp(1.55rem, 6.6vw, 2.2rem); }
+  .copy p, .copy p.deck { font-size: 1rem; }
+  .kicker { margin-bottom: 0.8rem !important; }
+  .cue { display: none; }
+  .beats { margin-top: 0.9rem; }
+  .ticks { margin-bottom: 0.7rem; }
+  .qs li { padding-block: 0.16rem; font-size: 1rem; }
+  .qs li::before { top: 0.28rem; }
+  .flame .copy,
+  .flame.tall .copy { left: 16px; right: 16px; top: auto; bottom: calc(26px + env(safe-area-inset-bottom)); width: auto; transform: none; }
+  .equation { font-size: clamp(1.7rem, 7.6vw, 2.4rem) !important; }
+  .flame .copy h2 { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+  .cta { padding: 0.85rem 1.2rem; font-size: 0.95rem; }
+  .cap strong { font-size: 0.7rem; }
+  .cap em { font-size: 0.74rem; }
+  .card-family { right: auto; left: 50%; top: calc(74px + env(safe-area-inset-top)); width: min(46vw, 13rem); translate: -50% 0; }
+  .card-founder { right: auto; left: 50%; top: calc(74px + env(safe-area-inset-top)); width: min(36vw, 9.5rem); translate: -50% 0; }
+  .card { padding: 5px; }
+  /* On a phone the founder's photograph and the timeline share the top
+     of the screen, one after the other. */
+  .card-founder.r { --out: 0.42; }
+}
+
+@media (max-height: 700px) and (max-width: 759px) {
+  h1 { font-size: 2.2rem; }
+  h2, .copy .lead { font-size: 1.7rem; }
+  .copy .h2-long { font-size: 1.45rem; }
+  .copy p, .copy p.deck { font-size: 0.92rem; margin-bottom: 0.6em; }
+  .qs li { font-size: 0.92rem; }
+  .card-family { width: min(38vw, 10rem); }
+}
