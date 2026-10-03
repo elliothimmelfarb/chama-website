@@ -296,18 +296,20 @@
     var H = pins[k] || AH, ch = copy ? copy.offsetHeight : 0;
     var foot = k === NW - 1 && !room && footer ? footer.offsetHeight : 0;
     var base = P ? 22 : 30, gap = P ? 26 : 22;
-    var top = headBottom() + (P ? 12 : 20), avail = H - base - foot - gap - ch - top;
+    var top = headBottom() + 20, avail = H - base - foot - gap - ch - top;
     var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
     var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
     if (scene.box) { up = 0; down = AH * (P ? 0.34 : 0.62); }
     else if (card) { up = 0; down = Math.max(card.offsetHeight, 120); fixed = true; }
     else {
-      var e = scene.ext || [1.3, 1.3];
+      // the drawn reach of the figure above and below its centre, in radii;
+      // the hero shape reaches 1.2 up and 0.95 down with its outline
+      var e = scene.ext || [1.2, 0.95];
       up = e[0] * R0;
-      down = scene.cap ? (scene.cap * R0 + 38) : e[1] * R0;
+      down = sec.querySelector(".cap") ? Math.max(e[1] * R0, (scene.cap || 1.45) * R0 + 38) : e[1] * R0;
     }
-    var need = up + down, g = fixed ? 1 : clamp(avail / need, 0.7, 1.15);
+    var need = up + down, g = fixed ? 1 : clamp(avail / need, 0.7, P ? 1.3 : 1.15);
     var extra = Math.max(0, avail - need * g), figTop = top + extra * 0.45;
     return {
       cx: AW * tl[0], cy: figTop + up * g, R: R0 * g, top: figTop, h: need * g,
@@ -386,7 +388,7 @@
       s.attract = sm(0, 0.06, l) * (1 - sm(0.2, 0.34, l)); s.heat = 0.25 * sup + 0.75 * own;
     } },
     // four questions, four stars, then the first version closes the shape
-    questions: { kind: "shape", at: [0.69, 0.5, 1.28], tall: [0.5, 0.27, 1.12], state: function (s, l) {
+    questions: { kind: "shape", at: [0.69, 0.5, 1.28], tall: [0.5, 0.27, 1.12], ext: [1.25, 1.0], state: function (s, l) {
       s.inkA = 0; s.fill = STAR; s.fillA = 0.07 * sm(0.8, 0.92, l); s.constA = 1;
       s.stars = STAR_AT.map(function (a) { return sm(a, a + 0.07, l); });
       s.edges = sm(0.19, 0.26, l) + sm(0.33, 0.4, l) + sm(0.47, 0.54, l) + sm(0.64, 0.71, l) + sm(0.72, 0.8, l);
@@ -415,7 +417,7 @@
       s.spark = sm(0.24, 0.36, l); s.glow = 16 + 22 * s.spark; s.flame = sm(0.26, 0.56, l); s.heat = 1;
     } },
 
-    coil: { kind: "draw", at: [0.71, 0.5, 1.1], tall: [0.5, 0.27, 1.05], ext: [1.9, 1.3], parallax: true, draw: drawCoil },
+    coil: { kind: "draw", at: [0.71, 0.5, 1.1], tall: [0.5, 0.27, 1.05], ext: [1.6, 1.05], parallax: true, draw: drawCoil },
     curve: { kind: "draw", box: true, draw: drawCurve },
     session: { kind: "draw", box: true, draw: drawSession },
     releases: { kind: "draw", box: true, draw: drawReleases },
@@ -951,7 +953,7 @@
   function drawTimeline(c, l, t, L, a) {
     var P = L.portrait, p = P ? sm(0.42, 0.92, l) : sm(0.1, 0.72, l);
     var x0, x1, y;
-    if (P) { x0 = 34; x1 = AW - 30; y = L.top + Math.max(L.h * 0.6, 84); }
+    if (P) { x0 = 34; x1 = AW - 30; y = L.top + Math.max(L.h - 34, 96); }
     else { x0 = AW * 0.5; x1 = AW * 0.9; y = AH * 0.8; }
     var xNow = x0 + (x1 - x0) * 0.86, step = (xNow - x0) / 10, x23 = x0 + step * 7;
     var silver = [214, 222, 255], show = a * (P ? sm(0.36, 0.44, l) : 1);
@@ -1179,7 +1181,7 @@
   var themeMeta = document.querySelector('meta[name="theme-color"]');
 
   // ---- the loop --------------------------------------------------------------------------
-  var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false;
+  var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false, lastEnd = false;
 
   function focusOf(scene, s, L) {
     if (s) return { cx: s.cx, cy: s.cy, R: s.R, heat: s.heat, flame: s.flame };
@@ -1201,6 +1203,9 @@
       hidden = rr.top <= 0;
       if (inRoom !== lastRoom) { root.classList.toggle("in-room", inRoom); lastRoom = inRoom; }
     }
+    // once the footer is on screen its nav is the one to use
+    var atEnd = !!footer && footer.getBoundingClientRect().top < AH - 8;
+    if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
 
     var wt = b < 0.8 ? i : i + 1, wd = inRoom ? NW - 1 : b < 0.5 ? i : i + 1;
     if (wt !== lastTheme) {
