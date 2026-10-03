@@ -270,7 +270,9 @@
   var worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
   var room = document.querySelector(".flame-room");
 
-  function portrait() { return AW < 760 || AW / AH < 0.9; }
+  // the same test as the phone block in worlds.css, so the two always agree
+  var PQ = window.matchMedia("(max-width: 759px), (max-aspect-ratio: 9/10)");
+  function portrait() { return PQ.matches; }
 
   // ---- stacking: the figure above the words, as one group ----------------------
   // On a phone every world stacks its figure over its words, and the last
@@ -301,7 +303,7 @@
     var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
     if (scene.box) { up = 0; down = AH * (P ? 0.34 : 0.62); }
-    else if (card) { up = 0; down = Math.max(card.offsetHeight, 120); fixed = true; }
+    else if (card) { up = 0; down = Math.min(Math.max(card.offsetHeight, 120), Math.max(avail, 110)); fixed = true; }
     else {
       // the drawn reach of the figure above and below its centre, in radii;
       // the hero shape reaches 1.2 up and 0.95 down with its outline
@@ -309,7 +311,7 @@
       up = e[0] * R0;
       down = sec.querySelector(".cap") ? Math.max(e[1] * R0, (scene.cap || 1.45) * R0 + 38) : e[1] * R0;
     }
-    var need = up + down, g = fixed ? 1 : clamp(avail / need, 0.7, P ? 1.3 : 1.15);
+    var need = up + down, g = fixed ? 1 : clamp(avail / need, 0.4, P ? 1.3 : 1.15);
     var extra = Math.max(0, avail - need * g), figTop = top + extra * 0.45;
     return {
       cx: AW * tl[0], cy: figTop + up * g, R: R0 * g, top: figTop, h: need * g,
@@ -1119,6 +1121,7 @@
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
+    root.classList.toggle("foot-over", !room && !!footer);
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
     sections.forEach(function (s, k) {
       var S = stacks[k];
@@ -1127,7 +1130,6 @@
       s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
     });
     if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
-    root.classList.toggle("foot-over", !room && !!footer);
   }
   function scrollState() {
     var y = window.scrollY, i = 0;
@@ -1199,7 +1201,9 @@
     var inRoom = false, hidden = false;
     if (room) {
       var rr = room.getBoundingClientRect();
-      inRoom = rr.top < 80 && rr.bottom > 80;
+      // at the very end of the page the room is the screen, even where a
+      // phone's toolbars leave it short of the top
+      inRoom = (rr.top < 80 && rr.bottom > 80) || window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
       hidden = rr.top <= 0;
       if (inRoom !== lastRoom) { root.classList.toggle("in-room", inRoom); lastRoom = inRoom; }
     }

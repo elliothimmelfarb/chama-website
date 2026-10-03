@@ -245,15 +245,18 @@ html:not(.gl) #sky { display: none; }
 .worlds button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; border-radius: 4px; }
 
 /* Inside the flame room the room's own bar takes the top of the screen. */
+/* Hidden things also leave the tab order, once they have faded. */
 html.in-room .top,
 html.in-room .worlds {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
 }
 html.in-room .top > * { pointer-events: none; }
 /* At the bottom of the page the footer's nav takes over from the header's. */
 .top .site-nav { transition: opacity 0.3s ease; }
-html.at-end .top .site-nav { opacity: 0; pointer-events: none; }
+html.at-end .top .site-nav { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
 
 /* ---- the worlds ------------------------------------------------------ */
 main { position: relative; z-index: 2; }
@@ -527,6 +530,8 @@ footer {
   padding: 14px var(--pad) max(16px, calc(env(safe-area-inset-bottom) + 10px));
   color: var(--fg2);
   font-size: 0.78rem;
+  background: #0e0c0a;
+  box-shadow: 0 -28px 28px -4px #0e0c0a;
 }
 .end-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
 .end-small { display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px; margin: 6px 0 0; }
@@ -536,7 +541,6 @@ footer {
 .end-small a { color: var(--fg); text-decoration: none; }
 .end-small a:hover { color: var(--ember); }
 .end-small a:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
-.flame-room + footer { background: #0e0c0a; box-shadow: 0 -28px 28px -4px #0e0c0a; }
 /* After the last world the footer lies over the bottom of it (worlds.js
    measures it as --foot), so the page ends on that world, not one footer
    past it. */
@@ -544,6 +548,7 @@ html.foot-over body > footer {
   margin-top: calc(-1 * var(--foot, 0px));
   padding-top: 30px;
   background: linear-gradient(to top, rgba(10, 7, 5, 0.92) 50%, rgba(10, 7, 5, 0));
+  box-shadow: none;
 }
 @media (min-width: 760px) and (min-aspect-ratio: 9/10) {
   footer { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
@@ -591,8 +596,8 @@ html.foot-over body > footer {
   .cta { padding: 0.85rem 1.2rem; font-size: 0.95rem; }
   .cap strong { font-size: 0.7rem; }
   .cap em { font-size: 0.74rem; }
-  .card-family { right: auto; left: 50%; top: var(--fig-top, calc(74px + env(safe-area-inset-top))); width: min(46vw, 13rem); translate: -50% 0; }
-  .card-founder { right: auto; left: 50%; top: var(--fig-top, calc(74px + env(safe-area-inset-top))); width: min(36vw, 9.5rem); translate: -50% 0; }
+  .card-family { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(46vw, 13rem); translate: -50% 0; }
+  .card-founder { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(36vw, 9.5rem); translate: -50% 0; }
   .card { padding: 5px; }
   /* On a phone the founder's photograph and the timeline share the top
      of the screen, one after the other. */
