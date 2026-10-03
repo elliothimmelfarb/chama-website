@@ -178,8 +178,7 @@ html:not(.gl) #sky { display: none; }
 .worlds-members:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 
 /* The simple version, offered under each page's opening words. */
-.copy p.alt-version { margin-top: 1.1rem; font-size: 0.875rem; }
-.copy p.alt-version { max-width: none; }
+.copy p.alt-version { max-width: none; margin-top: 1.1rem; font-size: 0.875rem; }
 .alt-version a { color: var(--fg); text-decoration-color: var(--accent); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) {
   .alt-version a { font-weight: 600; }
