@@ -92,22 +92,32 @@ canvas.layer {
 #actors { z-index: 1; }
 html:not(.gl) #sky { display: none; }
 
-/* ---- the masthead: the lockup, the switch, and the world index ------- */
-.mast,
-.worlds-switch,
-.worlds-members,
-.worlds {
-  transition: color 0.6s ease, opacity 0.4s ease;
-}
-
-.mast {
+/* ---- the masthead: the lockup, the pages, and the world index ------- */
+/* One header carries the theme of the world on screen (worlds.js sets its
+   data-theme). On a wide screen it is one row: the lockup, then the switch
+   between the two offers, About, and on coaching the way into the Hearth.
+   On a phone the pages take a second row under the lockup. */
+.top {
   position: fixed;
   z-index: 6;
   top: calc(16px + env(safe-area-inset-top));
   left: var(--pad);
+  right: var(--pad);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--fg);
+  pointer-events: none;
+  transition: color 0.6s ease, opacity 0.4s ease;
+}
+.top > * { pointer-events: auto; }
+.worlds { transition: color 0.6s ease, opacity 0.4s ease; }
+
+.mast {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  margin-right: auto;
   color: var(--fg);
   text-decoration: none;
 }
@@ -115,64 +125,70 @@ html:not(.gl) #sky { display: none; }
 .mast b { display: block; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.035em; line-height: 1; }
 .mast small { display: block; margin-top: 3px; color: var(--fg2); font-size: 0.66rem; letter-spacing: 0.02em; transition: color 0.6s ease; }
 
-.worlds-top {
-  position: fixed;
-  z-index: 6;
-  top: calc(18px + env(safe-area-inset-top));
-  right: var(--pad);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-/* The same switch as the Words pages: two links, the current one raised. */
-.view-switch {
+/* Software and Coaching are the two offers, so they share one switch;
+   About stands beside it. The current page is filled. */
+.site-nav { display: flex; align-items: center; gap: 10px; }
+.offer-switch {
   display: inline-flex;
   padding: 2px;
   border-radius: 999px;
   background: var(--track);
-  color: var(--fg);
-  transition: background 0.6s ease, color 0.6s ease;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  box-shadow: inset 0 0 0 1px var(--track);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: background 0.6s ease;
 }
-.view-switch-option {
+.nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.32rem 0.65rem 0.32rem 0.55rem;
+  min-height: 32px;
+  padding: 0 0.85rem;
   border-radius: 999px;
-  color: inherit;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  color: var(--fg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1;
   text-decoration: none;
-  text-transform: uppercase;
+  white-space: nowrap;
   transition: background 160ms ease, color 160ms ease;
 }
-.view-switch-option svg { width: 0.85em; height: 0.85em; display: block; }
-.view-switch-option[aria-current="page"] { background: var(--fg); color: var(--bg); }
-.view-switch-option:not([aria-current="page"]):hover { color: var(--ember); }
-.view-switch-option:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.nav-link[aria-current="page"] { background: var(--fg); color: var(--bg); }
+/* About is not one of the two offers, so it is marked, not filled. */
+.nav-about[aria-current="page"] { background: none; color: var(--fg); text-decoration: underline 2px var(--ember); text-underline-offset: 0.45em; }
+/* Coaching is the offer a software visitor may not know about: an ember
+   dot draws the eye to it wherever it is not the page in view. */
+.offer-switch a[href="/worlds/coaching"]:not([aria-current="page"]) { box-shadow: inset 0 0 0 1px rgba(244, 88, 31, 0.6); }
+.offer-switch a[href="/worlds/coaching"]:not([aria-current="page"])::before { content: ""; width: 6px; height: 6px; margin-right: 0.45rem; border-radius: 50%; background: var(--ember); }
+.nav-link:not([aria-current="page"]):hover { color: var(--ember); }
+.nav-link:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 
 /* The way into the Hearth lives only beside the coaching, as on /coaching. */
 .worlds-members {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.32rem 0.7rem;
+  min-height: 32px;
+  padding: 0 0.8rem;
   border: 1px solid var(--track);
   border-radius: 999px;
   color: var(--fg);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: 0.8125rem;
+  font-weight: 600;
   line-height: 1;
   text-decoration: none;
-  text-transform: uppercase;
 }
 .worlds-members::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ember); }
 .worlds-members:hover { color: var(--ember); }
 .worlds-members:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+/* The simple version, offered under each page's opening words. */
+.copy p.alt-version { max-width: none; margin-top: 1.1rem; font-size: 0.875rem; }
+.alt-version a { color: var(--fg); text-decoration-color: var(--accent); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  .alt-version a { font-weight: 600; }
+}
 
 /* The index of worlds, down the right edge. worlds.js builds it from the
    sections' data-label. */
@@ -230,12 +246,18 @@ html:not(.gl) #sky { display: none; }
 .worlds button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; border-radius: 4px; }
 
 /* Inside the flame room the room's own bar takes the top of the screen. */
-html.in-room .mast,
-html.in-room .worlds-top,
+/* Hidden things also leave the tab order, once they have faded. */
+html.in-room .top,
 html.in-room .worlds {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
 }
+html.in-room .top > * { pointer-events: none; }
+/* At the bottom of the page the footer's nav takes over from the header's. */
+.top .site-nav { transition: opacity 0.3s ease; }
+html.at-end .top .site-nav { position: absolute; right: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
 
 /* ---- the worlds ------------------------------------------------------ */
 main { position: relative; z-index: 2; }
@@ -442,12 +464,12 @@ html:not(.js) .slot { display: block; }
 /* ---- the last world: the mark lit, the words under it ---------------- */
 .flame .copy {
   left: 50%;
-  top: 57%;
+  top: var(--copy-t, 57%);
   width: min(94vw, 62rem);
   transform: translateX(-50%);
   text-align: center;
 }
-.flame.tall .copy { top: 46%; }
+.flame.tall .copy { top: var(--copy-t, 46%); }
 .flame .copy p,
 .flame .copy h2 { margin-inline: auto; }
 .flame .copy p { max-width: 44rem; }
@@ -486,33 +508,53 @@ html:not(.js) .slot { display: block; }
 .cta:hover { transform: translateY(-2px); box-shadow: 0 0 0 6px rgba(244, 88, 31, 0.18), 0 16px 50px -8px rgba(244, 88, 31, 0.85); }
 .cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .cta svg { width: 16px; height: 16px; flex: none; }
+.cta { text-wrap: balance; }
 
 /* ---- the flame room, after the last world on /worlds ------------------ */
 .flame-room {
   position: relative;
   z-index: 2;
   width: 100%;
-  height: max(36rem, min(100svh, 58rem));
+  /* the room and the footer under it fill the last screen together */
+  height: max(32rem, calc(100svh - var(--foot, 0px)));
   background: #0e0c0a;
   overflow: hidden;
 }
 html.room-pinned { overflow: hidden; overscroll-behavior: none; }
 .flame-noscript { margin: 0; padding: clamp(2rem, 6vw, 4rem); color: #ece7dc; font-size: 1.05rem; line-height: 1.5; }
 
+/* The footer: the same pages again, then the small print. Every page ends
+   in a dark world, so it always wears the flame theme. */
 footer {
   position: relative;
-  z-index: 2;
-  padding: 3rem var(--pad) calc(2.2rem + env(safe-area-inset-bottom));
-  color: #b9a795;
-  font-size: 0.82rem;
+  z-index: 3;
+  padding: 14px var(--pad) max(16px, calc(env(safe-area-inset-bottom) + 10px));
+  color: var(--fg2);
+  font-size: 0.78rem;
+  background: #0e0c0a;
+  box-shadow: 0 -28px 28px -4px #0e0c0a;
 }
-.flame-room + footer { background: #0e0c0a; padding-top: 1.5rem; }
-footer .row { display: flex; flex-wrap: wrap; gap: 0.6rem 2rem; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 240, 225, 0.14); padding-top: 1.3rem; }
-footer p { margin: 0; display: flex; align-items: center; gap: 0.5rem; }
-footer svg { width: 18px; height: 18px; }
-footer a { color: #f1e6d9; text-decoration: none; }
-footer a:hover { color: var(--ember); }
-footer a[aria-current="page"] { color: var(--ember); }
+.end-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.end-small { display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px; margin: 6px 0 0; }
+.end-small a { display: inline-flex; align-items: center; min-height: 36px; }
+.end-small span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.end-small svg { width: 16px; height: 16px; }
+.end-small a { color: var(--fg); text-decoration: none; }
+.end-small a:hover { color: var(--ember); }
+.end-small a:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+/* After the last world the footer lies over the bottom of it (worlds.js
+   measures it as --foot), so the page ends on that world, not one footer
+   past it. */
+html.foot-over body > footer {
+  margin-top: calc(-1 * var(--foot, 0px));
+  padding-top: 30px;
+  background: linear-gradient(to top, rgba(10, 7, 5, 0.92) 50%, rgba(10, 7, 5, 0));
+  box-shadow: none;
+}
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
+  footer { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+  .end-small { margin: 0; }
+}
 
 @media (prefers-reduced-motion: no-preference) {
   @view-transition { navigation: auto; }
@@ -521,22 +563,23 @@ footer a[aria-current="page"] { color: var(--ember); }
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   .worlds { display: none; }
-  .worlds-top { top: calc(16px + env(safe-area-inset-top)); right: 12px; flex-direction: column; align-items: flex-end; gap: 0.45rem; }
-  .view-switch-option { gap: 0; padding: 0.32rem 0.5rem; font-size: 0.62rem; letter-spacing: 0.08em; }
-  .view-switch-option svg { display: none; }
-  .worlds-members { padding: 0.28rem 0.55rem; font-size: 0.6rem; }
+  .top { top: calc(12px + env(safe-area-inset-top)); left: 16px; right: 16px; flex-wrap: wrap; row-gap: 10px; }
+  .top .site-nav { order: 2; flex-basis: 100%; }
+  .nav-link { min-height: 34px; padding: 0 0.75rem; font-size: 0.8125rem; }
+  .worlds-members { min-height: 30px; padding: 0 0.65rem; font-size: 0.75rem; }
   .mast b { font-size: 0.98rem; }
+  .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
   .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
   .copy,
   .hero .copy {
     left: 16px;
     right: 16px;
     top: auto;
-    bottom: calc(22px + env(safe-area-inset-bottom));
+    bottom: calc(var(--copy-b, 22px) + env(safe-area-inset-bottom));
     width: auto;
     transform: none;
   }
-  h1 { font-size: clamp(2.35rem, 11vw, 3.6rem); }
+  h1 { max-width: 13ch; font-size: clamp(2.35rem, 11vw, 3.6rem); }
   h2, .copy .lead { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
   .copy .lead { max-width: 14ch; }
   .copy .h2-long { font-size: clamp(1.55rem, 6.6vw, 2.2rem); }
@@ -548,14 +591,14 @@ footer a[aria-current="page"] { color: var(--ember); }
   .qs li { padding-block: 0.16rem; font-size: 1rem; }
   .qs li::before { top: 0.28rem; }
   .flame .copy,
-  .flame.tall .copy { left: 16px; right: 16px; top: auto; bottom: calc(26px + env(safe-area-inset-bottom)); width: auto; transform: none; }
+  .flame.tall .copy { left: 16px; right: 16px; top: auto; bottom: calc(var(--copy-b, 26px) + env(safe-area-inset-bottom)); width: auto; transform: none; }
   .equation { font-size: clamp(1.7rem, 7.6vw, 2.4rem) !important; }
   .flame .copy h2 { font-size: clamp(1.6rem, 7vw, 2.2rem); }
   .cta { padding: 0.85rem 1.2rem; font-size: 0.95rem; }
   .cap strong { font-size: 0.7rem; }
   .cap em { font-size: 0.74rem; }
-  .card-family { right: auto; left: 50%; top: calc(74px + env(safe-area-inset-top)); width: min(46vw, 13rem); translate: -50% 0; }
-  .card-founder { right: auto; left: 50%; top: calc(74px + env(safe-area-inset-top)); width: min(36vw, 9.5rem); translate: -50% 0; }
+  .card-family { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(46vw, 13rem); translate: -50% 0; }
+  .card-founder { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(36vw, 9.5rem); translate: -50% 0; }
   .card { padding: 5px; }
   /* On a phone the founder's photograph and the timeline share the top
      of the screen, one after the other. */

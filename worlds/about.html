@@ -28,16 +28,16 @@
   <canvas id="sky" class="layer" aria-hidden="true"></canvas>
   <canvas id="actors" class="layer" aria-hidden="true"></canvas>
 
-  <a class="mast" data-theme="paper" href="/worlds">
-    <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>
-    <span><b>Chama Inteligente</b><small>Intelligent Flame</small></span>
-  </a>
-  <div class="worlds-top" data-theme="paper">
-    <nav class="view-switch" aria-label="Version of this page" data-view-switch>
-      <a class="view-switch-option" href="/about"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3.5h12M2 8h12M2 12.5h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Words</a>
-      <a class="view-switch-option" href="/worlds/about" aria-current="page" title="The same page as a scroll through animated worlds"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M1.2 10.6C3 12.4 13.4 8.6 14.8 5.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Worlds</a>
+  <header class="top" data-theme="paper">
+    <a class="mast" href="/worlds">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>
+      <span><b>Chama Inteligente</b><small>Intelligent Flame</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Pages" data-site-nav>
+      <span class="offer-switch"><a class="nav-link" href="/worlds">Software</a><a class="nav-link" href="/worlds/coaching">Coaching</a></span>
+      <a class="nav-link nav-about" href="/worlds/about" aria-current="page">About</a>
     </nav>
-  </div>
+  </header>
 
   <main id="main-content">
     <!-- 1. Paper: the flame, and the two who keep it lit -->
@@ -46,6 +46,7 @@
         <div class="copy">
           <h1 id="t-hero" class="r" style="--in:-3"><span>A small company</span> <span>in Lisbon,</span> <span>working in English.</span></h1>
           <p class="deck r" style="--in:-3">Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the two of us who keep it lit.</p>
+          <p class="alt-version r" style="--in:-3">Prefer this page without animation? <a href="/about" data-simple-version>Read the simple version.</a></p>
         </div>
         <p class="cue r" style="--in:-3;--out:0.3;--k:5" aria-hidden="true"><i></i></p>
       </div>
@@ -97,11 +98,14 @@
     </section>
   </main>
 
-  <footer>
-    <div class="row">
-      <p><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
-      <nav aria-label="Site"><a href="/worlds">Software</a> &middot; <a href="/worlds/coaching">Coaching</a> &middot; <a href="/worlds/about" aria-current="page">About</a> &middot; <a href="/privacy">Privacy</a></nav>
+  <footer data-theme="flame">
+    <div class="end-row">
+      <nav class="site-nav" aria-label="Site" data-site-nav>
+        <span class="offer-switch"><a class="nav-link" href="/worlds">Software</a><a class="nav-link" href="/worlds/coaching">Coaching</a></span>
+        <a class="nav-link nav-about" href="/worlds/about" aria-current="page">About</a>
+      </nav>
     </div>
+    <p class="end-small"><a href="/about" data-simple-version>Simple version</a><a href="/privacy">Privacy</a><span><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</span></p>
   </footer>
   <script type="speculationrules">
   {

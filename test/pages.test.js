@@ -1,8 +1,11 @@
-// The public pages come in two parallel versions, Words (the page as
-// written) and Worlds (the same copy as a scroll through animated worlds).
-// These tests guard the seams between them: each page's switch reaches its
-// counterpart, a Worlds page never drops a reader back into Words by any
-// other link, and no public page asks another host for anything.
+// The public pages come in two parallel versions: the simple version (/,
+// /coaching, /about: the page as written) and the animated version (under
+// /worlds: the same copy as a scroll through animated worlds). These tests
+// guard the seams between them: each simple page's switch reaches its
+// animated counterpart, each animated page offers its simple counterpart
+// and otherwise never drops a reader back into the simple version, the
+// animated pages' navigation reaches all three of them from the top and the
+// bottom, and no public page asks another host for anything.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -47,24 +50,68 @@ function switchLink(html, label) {
   return m[1];
 }
 
+const SITE = [
+  { label: "Software", url: "/worlds" },
+  { label: "Coaching", url: "/worlds/coaching" },
+  { label: "About", url: "/worlds/about" },
+];
+
+function siteNavs(html) {
+  return [...html.matchAll(/<nav\b[^>]*\bdata-site-nav\b[^>]*>[\s\S]*?<\/nav>/g)].map((m) => m[0]);
+}
+
+function links(html) {
+  return [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
+    href: (/\bhref="([^"]*)"/.exec(m[1]) || [])[1],
+    current: /\baria-current="page"/.test(m[1]),
+    simple: /\bdata-simple-version\b/.test(m[1]),
+    text: m[2].replace(/<[^>]+>/g, "").trim(),
+  }));
+}
+
 for (const { words, worlds } of PAIRS) {
   test(`${words} switches to ${worlds}`, () => {
-    assert.equal(switchLink(read(words), "Worlds"), worlds);
+    assert.equal(switchLink(read(words), "Animated"), worlds);
   });
 
-  test(`${worlds} switches back to ${words}`, () => {
-    assert.equal(switchLink(read(worlds), "Words"), words);
+  test(`${worlds} offers ${words} as its simple version, in the hero and the footer`, () => {
+    const html = read(worlds);
+    const simple = links(html).filter((a) => a.simple);
+    assert.ok(simple.length >= 2, "expected a simple-version link in the hero and in the footer");
+    for (const a of simple) assert.equal(a.href, words);
+    const footer = /<footer\b[\s\S]*<\/footer>/.exec(html);
+    assert.ok(footer && links(footer[0]).some((a) => a.simple), "the footer has no simple-version link");
   });
 
-  test(`${worlds} links only to Worlds pages outside its switch`, () => {
-    const html = read(worlds).replace(viewSwitch(read(worlds)) || "", "");
+  test(`${worlds} reaches Software, Coaching and About from the top and the bottom`, () => {
+    const html = read(worlds);
+    const navs = siteNavs(html);
+    assert.equal(navs.length, 2, "expected one site nav at the top and one in the footer");
+    const footer = /<footer\b[\s\S]*<\/footer>/.exec(html);
+    assert.ok(footer && siteNavs(footer[0]).length === 1, "the second site nav is not in the footer");
+    for (const nav of navs) {
+      const as = links(nav);
+      for (const { label, url } of SITE) {
+        const a = as.find((x) => x.text === label);
+        assert.ok(a, `the nav has no ${label} link`);
+        assert.equal(a.href, url, `${label} goes to the wrong page`);
+        assert.equal(a.current, url === worlds, `${label} ${url === worlds ? "is not" : "is wrongly"} marked as the current page`);
+      }
+    }
+  });
+
+  test(`${worlds} links into the simple version only through its simple-version links`, () => {
     const wordsUrls = new Set(PAIRS.map((p) => p.words));
-    const strays = [...html.matchAll(/<a\b[^>]*\bhref="([^"#?]*)/g)]
-      .map((m) => m[1])
-      .filter((href) => wordsUrls.has(href));
-    assert.deepEqual(strays, [], `links back into Words: ${strays.join(", ")}`);
+    const strays = links(read(worlds))
+      .filter((a) => !a.simple && wordsUrls.has((a.href || "").replace(/[#?].*$/, "")))
+      .map((a) => a.href);
+    assert.deepEqual(strays, [], `links back into the simple version: ${strays.join(", ")}`);
   });
 }
+
+test("/worlds/coaching keeps the way into the Hearth", () => {
+  assert.ok(links(read("/worlds/coaching")).some((a) => a.href === "/hearth"), "no link to /hearth");
+});
 
 const PUBLIC = ["/", "/coaching", "/about", "/privacy", "/404", "/worlds", "/worlds/coaching", "/worlds/about"];
 

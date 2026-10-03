@@ -1882,7 +1882,11 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       // answer is 0, and the transcript is never locked out of a gesture.
       function seatDelta() {
         var vh = viewportH();
-        var want = rootEl.getBoundingClientRect().bottom - vh;
+        var r = rootEl.getBoundingClientRect();
+        // a room wholly on screen is seated wherever it rests: on /worlds the
+        // room and the footer under it share the last screen
+        if (r.top >= -SEAT_EPS && r.bottom <= vh + SEAT_EPS) return 0;
+        var want = r.bottom - vh;
         var y = window.pageYOffset || document.documentElement.scrollTop || 0;
         var maxY = Math.max(0, (document.documentElement.scrollHeight || 0) - vh);
         var target = Math.min(Math.max(y + want, 0), maxY);
