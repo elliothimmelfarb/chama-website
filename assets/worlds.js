@@ -283,7 +283,7 @@
   // --fig-top.
   var stacks = [];
   var footer = document.querySelector("body > footer");
-  var head = [document.querySelector(".mast"), document.querySelector(".worlds-top")];
+  var head = [document.querySelector(".top")];
   function stacked(k) { return portrait() || sections[k].classList.contains("flame"); }
   function headBottom() {
     var b = 0;
@@ -1175,7 +1175,7 @@
     return btn;
   });
   document.body.appendChild(nav);
-  var mast = document.querySelector(".mast"), top = document.querySelector(".worlds-top");
+  var top = document.querySelector(".top");
   var themeMeta = document.querySelector('meta[name="theme-color"]');
 
   // ---- the loop --------------------------------------------------------------------------
@@ -1205,7 +1205,6 @@
     var wt = b < 0.8 ? i : i + 1, wd = inRoom ? NW - 1 : b < 0.5 ? i : i + 1;
     if (wt !== lastTheme) {
       var th = THEME[worldOf[wt]];
-      if (mast) mast.setAttribute("data-theme", th);
       if (top) top.setAttribute("data-theme", th);
       if (themeMeta) themeMeta.setAttribute("content", BG[worldOf[wt]]);
       if (!GL) document.body.style.background = BG[worldOf[wt]];
