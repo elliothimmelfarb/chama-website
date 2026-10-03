@@ -272,17 +272,65 @@
 
   function portrait() { return AW < 760 || AW / AH < 0.9; }
 
+  // ---- stacking: the figure above the words, as one group ----------------------
+  // On a phone every world stacks its figure over its words, and the last
+  // world of a page does the same at any width. The figure and the words
+  // share the band between the masthead and the bottom of the screen (less
+  // the footer, under the last world); measure() sizes the figure to the
+  // band and centres the pair in it, so a short text does not leave a hole
+  // between the two. It writes the words' place back as --copy-b (from the
+  // bottom of the screen) and --copy-t (from the top), and a photograph's as
+  // --fig-top.
+  var stacks = [];
+  var footer = document.querySelector("body > footer");
+  var head = [document.querySelector(".mast"), document.querySelector(".worlds-top")];
+  function stacked(k) { return portrait() || sections[k].classList.contains("flame"); }
+  function headBottom() {
+    var b = 0;
+    head.forEach(function (el) { if (el) b = Math.max(b, el.getBoundingClientRect().bottom); });
+    return b;
+  }
+  function stackOf(k) {
+    var P = portrait(), sec = sections[k], scene = scenes[k];
+    var copy = sec.querySelector(".copy"), card = sec.querySelector(".card");
+    var H = pins[k] || AH, ch = copy ? copy.offsetHeight : 0;
+    var foot = k === NW - 1 && !room && footer ? footer.offsetHeight : 0;
+    var base = P ? 22 : 30, gap = P ? 26 : 22;
+    var top = headBottom() + (P ? 12 : 20), avail = H - base - foot - gap - ch - top;
+    var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
+    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
+    var up, down, fixed = false;
+    if (scene.box) { up = 0; down = AH * (P ? 0.34 : 0.62); }
+    else if (card) { up = 0; down = Math.max(card.offsetHeight, 120); fixed = true; }
+    else {
+      var e = scene.ext || [1.3, 1.3];
+      up = e[0] * R0;
+      down = scene.cap ? (scene.cap * R0 + 38) : e[1] * R0;
+    }
+    var need = up + down, g = fixed ? 1 : clamp(avail / need, 0.7, 1.15);
+    var extra = Math.max(0, avail - need * g), figTop = top + extra * 0.45;
+    return {
+      cx: AW * tl[0], cy: figTop + up * g, R: R0 * g, top: figTop, h: need * g,
+      copyB: base + foot + extra * 0.55, copyT: H - base - foot - extra * 0.55 - ch
+    };
+  }
+
   function layoutOf(scene, k) {
-    var P = portrait(), L;
-    if (P) {
+    var P = portrait(), L, S = stacked(k) ? stacks[k] : null;
+    if (S) {
+      L = { cx: S.cx, cy: S.cy, R: S.R };
+    } else if (P) {
       var tl = scene.tall || [0.5, 0.26, 1], r = Math.min(AW * 0.27, AH * 0.16);
       L = { cx: AW * tl[0], cy: AH * tl[1], R: r * tl[2] };
     } else {
       var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(AW * 0.16, AH * 0.27);
       L = { cx: AW * at[0], cy: AH * at[1], R: R0 * at[2] };
     }
-    L.box = P ? { x: 16, y: AH * 0.1 + 10, w: AW - 32, h: AH * 0.34 } : { x: AW * 0.47, y: AH * 0.17, w: AW * 0.44, h: AH * 0.62 };
+    if (P) L.box = S ? { x: 16, y: S.top, w: AW - 32, h: S.h } : { x: 16, y: AH * 0.1 + 10, w: AW - 32, h: AH * 0.34 };
+    else L.box = { x: AW * 0.47, y: AH * 0.17, w: AW * 0.44, h: AH * 0.62 };
     if (scene.box) { L.cx = L.box.x + L.box.w / 2; L.cy = L.box.y + L.box.h / 2; L.R = Math.min(L.box.w, L.box.h) / 2; }
+    L.top = S ? S.top : AH * 0.31 - 60;
+    L.h = S ? S.h : 120;
     L.portrait = P;
     L.sec = sections[k];
     return L;
@@ -357,21 +405,21 @@
       s.heat = sm(0.3, 0.8, l);
     } },
     // the shape curls into the mark, and the mark lights
-    mark: { kind: "shape", at: [0.5, 0.39, 0.46], tall: [0.5, 0.31, 0.58], state: markState },
-    markhigh: { kind: "shape", at: [0.5, 0.25, 0.36], tall: [0.5, 0.24, 0.5], state: markState },
+    mark: { kind: "shape", at: [0.5, 0.39, 0.46], tall: [0.5, 0.31, 0.58], ext: [2.4, 1.2], state: markState },
+    markhigh: { kind: "shape", at: [0.5, 0.25, 0.36], tall: [0.5, 0.24, 0.5], ext: [2.4, 1.2], state: markState },
     // about: the mark was never a shape here, so it draws itself and lights
-    markring: { kind: "shape", at: [0.5, 0.33, 0.42], tall: [0.5, 0.3, 0.58], state: function (s, l) {
+    markring: { kind: "shape", at: [0.5, 0.33, 0.42], tall: [0.5, 0.3, 0.58], ext: [2.4, 1.2], state: function (s, l) {
       s.geom = G.ring; s.cx -= 1.94 * s.R / 21;
       s.ink = [255, 236, 220]; s.draw = sm(0, 0.16, l); s.fill = EMB; s.fillA = sm(0.12, 0.22, l);
       s.mark = sm(0.2, 0.28, l); s.inkA = 1 - s.mark; s.fillA *= 1 - s.mark;
       s.spark = sm(0.24, 0.36, l); s.glow = 16 + 22 * s.spark; s.flame = sm(0.26, 0.56, l); s.heat = 1;
     } },
 
-    coil: { kind: "draw", at: [0.71, 0.5, 1.1], tall: [0.5, 0.27, 1.05], parallax: true, draw: drawCoil },
+    coil: { kind: "draw", at: [0.71, 0.5, 1.1], tall: [0.5, 0.27, 1.05], ext: [1.9, 1.3], parallax: true, draw: drawCoil },
     curve: { kind: "draw", box: true, draw: drawCurve },
     session: { kind: "draw", box: true, draw: drawSession },
     releases: { kind: "draw", box: true, draw: drawReleases },
-    keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], parallax: true, draw: drawKeepers },
+    keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
     family: { kind: "draw", draw: drawFamily },
     timeline: { kind: "draw", draw: drawTimeline }
   };
@@ -903,7 +951,7 @@
   function drawTimeline(c, l, t, L, a) {
     var P = L.portrait, p = P ? sm(0.42, 0.92, l) : sm(0.1, 0.72, l);
     var x0, x1, y;
-    if (P) { x0 = 34; x1 = AW - 30; y = AH * 0.31; }
+    if (P) { x0 = 34; x1 = AW - 30; y = L.top + Math.max(L.h * 0.6, 84); }
     else { x0 = AW * 0.5; x1 = AW * 0.9; y = AH * 0.8; }
     var xNow = x0 + (x1 - x0) * 0.86, step = (xNow - x0) / 10, x23 = x0 + step * 7;
     var silver = [214, 222, 255], show = a * (P ? sm(0.36, 0.44, l) : 1);
@@ -1069,6 +1117,15 @@
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
+    stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
+    sections.forEach(function (s, k) {
+      var S = stacks[k];
+      s.style.setProperty("--copy-b", S ? Math.round(S.copyB) + "px" : "");
+      s.style.setProperty("--copy-t", S ? Math.round(S.copyT) + "px" : "");
+      s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
+    });
+    if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
+    root.classList.toggle("foot-over", !room && !!footer);
   }
   function scrollState() {
     var y = window.scrollY, i = 0;

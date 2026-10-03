@@ -442,12 +442,12 @@ html:not(.js) .slot { display: block; }
 /* ---- the last world: the mark lit, the words under it ---------------- */
 .flame .copy {
   left: 50%;
-  top: 57%;
+  top: var(--copy-t, 57%);
   width: min(94vw, 62rem);
   transform: translateX(-50%);
   text-align: center;
 }
-.flame.tall .copy { top: 46%; }
+.flame.tall .copy { top: var(--copy-t, 46%); }
 .flame .copy p,
 .flame .copy h2 { margin-inline: auto; }
 .flame .copy p { max-width: 44rem; }
@@ -492,7 +492,8 @@ html:not(.js) .slot { display: block; }
   position: relative;
   z-index: 2;
   width: 100%;
-  height: max(36rem, min(100svh, 58rem));
+  /* the room and the footer under it fill the last screen together */
+  height: max(32rem, calc(100svh - var(--foot, 0px)));
   background: #0e0c0a;
   overflow: hidden;
 }
@@ -507,6 +508,13 @@ footer {
   font-size: 0.82rem;
 }
 .flame-room + footer { background: #0e0c0a; padding-top: 1.5rem; }
+/* After the last world the footer lies over the bottom of it (worlds.js
+   measures it as --foot), so the page ends on that world, not one footer
+   past it. */
+html.foot-over body > footer {
+  margin-top: calc(-1 * var(--foot, 0px));
+  background: linear-gradient(to bottom, rgba(10, 7, 5, 0), rgba(10, 7, 5, 0.72) 45%);
+}
 footer .row { display: flex; flex-wrap: wrap; gap: 0.6rem 2rem; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 240, 225, 0.14); padding-top: 1.3rem; }
 footer p { margin: 0; display: flex; align-items: center; gap: 0.5rem; }
 footer svg { width: 18px; height: 18px; }
@@ -532,7 +540,7 @@ footer a[aria-current="page"] { color: var(--ember); }
     left: 16px;
     right: 16px;
     top: auto;
-    bottom: calc(22px + env(safe-area-inset-bottom));
+    bottom: calc(var(--copy-b, 22px) + env(safe-area-inset-bottom));
     width: auto;
     transform: none;
   }
@@ -548,14 +556,14 @@ footer a[aria-current="page"] { color: var(--ember); }
   .qs li { padding-block: 0.16rem; font-size: 1rem; }
   .qs li::before { top: 0.28rem; }
   .flame .copy,
-  .flame.tall .copy { left: 16px; right: 16px; top: auto; bottom: calc(26px + env(safe-area-inset-bottom)); width: auto; transform: none; }
+  .flame.tall .copy { left: 16px; right: 16px; top: auto; bottom: calc(var(--copy-b, 26px) + env(safe-area-inset-bottom)); width: auto; transform: none; }
   .equation { font-size: clamp(1.7rem, 7.6vw, 2.4rem) !important; }
   .flame .copy h2 { font-size: clamp(1.6rem, 7vw, 2.2rem); }
   .cta { padding: 0.85rem 1.2rem; font-size: 0.95rem; }
   .cap strong { font-size: 0.7rem; }
   .cap em { font-size: 0.74rem; }
-  .card-family { right: auto; left: 50%; top: calc(74px + env(safe-area-inset-top)); width: min(46vw, 13rem); translate: -50% 0; }
-  .card-founder { right: auto; left: 50%; top: calc(74px + env(safe-area-inset-top)); width: min(36vw, 9.5rem); translate: -50% 0; }
+  .card-family { right: auto; left: 50%; top: var(--fig-top, calc(74px + env(safe-area-inset-top))); width: min(46vw, 13rem); translate: -50% 0; }
+  .card-founder { right: auto; left: 50%; top: var(--fig-top, calc(74px + env(safe-area-inset-top))); width: min(36vw, 9.5rem); translate: -50% 0; }
   .card { padding: 5px; }
   /* On a phone the founder's photograph and the timeline share the top
      of the screen, one after the other. */
