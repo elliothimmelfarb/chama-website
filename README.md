@@ -197,21 +197,13 @@ Beyond the ones the site already has (`ADMIN_EMAILS` doubles as the owner list; 
 
 ## Deploying it
 
-**One architectural rule, and it matters more than the deploy method: never connect a git repository to Vercel's git integration - not this one, and never the brain (`../chama-inteligente/`).**
+**Merging to `main` deploys.** This repo is connected to Vercel's GitHub integration (since 2026-10-05): pushes to `main` go to production and PRs get preview URLs. Do not run `vercel deploy` by hand.
 
-The brain holds the wiki, the founders' cash position, supplier relationships, and a `.gitignore` full of deliberately-excluded identity and tax documents; wiring any repo here to a hosting provider's git integration is a class of coupling this company refuses. This repo is **public at https://github.com/elliothimmelfarb/chama-website** (since 2026-08-28); the remote is for visibility only, and deploys stay manual.
-
-The site deploys with the CLI, never through git:
-
-```bash
-cd /Users/elliothimmelfarb/claude/chama-website && vercel deploy --prod
-```
+**The brain (`../chama-inteligente/`) is never connected to a hosting provider.** It holds the wiki, the founders' cash position, supplier relationships, and a `.gitignore` full of deliberately-excluded identity and tax documents. This repo is the public surface: **public at https://github.com/elliothimmelfarb/chama-website** (since 2026-08-28), so connecting it exposes nothing that is not already published.
 
 **`docs/` and `evals/` are excluded from the deploy.** A `.vercelignore` at the repository root (same semantics as `.gitignore`) keeps both directories out of every deployment, so the internal reports and plans under `docs/reports/` live on GitHub and never on the customer-facing domain, and the evals never ship. Nothing public links into either, and no function under `api/` or `lib/` imports from them. As belt and braces for anything already cached or linked from outside, `vercel.json` sends `X-Robots-Tag: noindex, nofollow, noarchive` on `/docs/(.*)` and `robots.txt` disallows `/docs`. A report that is meant for the public is a new public surface, so it goes through the owner queue rather than into `docs/`.
 
 The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`. The Resend integration is named `chama-inteligente-email` and connects through Vercel's managed `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN`. Those values belong in Vercel, never in this repository.
-
-**One thing this repo's rule and Vercel's own failure mode agree on.** On 2026-07-27 a GitHub push of a personal repository failed to deploy here ("not a member of the team"), through the very **GitHub integration** the rule above forbids. Deploying with `vercel deploy --prod` avoids that path entirely.
 
 **The long-term shape this README used to argue for is now the shape.** On 2026-08-28 the website got its own git repository (this one), extracted from the brain with its full history. The public surface and the private brain have separate histories, which is the same permission split the [domain-unlocks page](../chama-inteligente/wiki/topics/chamainteligente-domain-unlocks.md) argues for at the content level.
 
@@ -236,7 +228,7 @@ Vercel issued auto-renewing HTTPS certificates for both hostnames. Both names se
 
 **Google Search Console:** a **Domain** property for `chamainteligente.com` on the company account **elliot@chamainteligente.com** (not Elliot's personal Gmail), created 2026-08-20. It verified automatically through the Google Workspace domain ownership Google already held, so **no DNS record was added at Namecheap for it**. The sitemap is submitted. Both pages were already indexed.
 
-**`sitemap.xml` lastmod is part of the deploy routine.** Bump the `<lastmod>` of every page the change touched to the deploy's ISO date before running `vercel deploy --prod`; a stale `lastmod` tells crawlers not to bother re-reading a page that did change.
+**`sitemap.xml` lastmod is part of the deploy routine.** Bump the `<lastmod>` of every page the change touched to the deploy's ISO date in the same PR; a stale `lastmod` tells crawlers not to bother re-reading a page that did change.
 
 **IndexNow:** the key file at the site root lets any URL change be pushed straight to Bing, Yandex, Naver and Seznam without waiting for a crawl. After a content change worth announcing:
 
