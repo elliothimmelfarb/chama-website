@@ -1,5 +1,6 @@
 /* ==========================================================================
-   Worlds: the engine behind /worlds, /worlds/coaching and /worlds/about.
+   Worlds: the engine behind /, /coaching and /about, and the router that
+   moves between them without loading a new page.
 
    Each <section class="world"> names two things in its markup:
      data-world  the ground it stands on: paper, grid, forge, night, tides
@@ -264,11 +265,10 @@
   }
 
   // ---- the sections ------------------------------------------------------------
-  var sections = [].slice.call(document.querySelectorAll(".world"));
-  var NW = sections.length;
-  if (!NW) return;
-  var worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
-  var room = document.querySelector(".flame-room");
+  // Everything the engine knows about the page in view. bind() reads it
+  // again when the router (at the end of this file) brings in another page.
+  if (!document.querySelector(".world")) return;
+  var sections = [], NW = 0, worldOf = [], room = null, scenes = [];
 
   // the same test as the phone block in worlds.css, so the two always agree
   var PQ = window.matchMedia("(max-width: 759px), (max-aspect-ratio: 9/10)");
@@ -284,7 +284,7 @@
   // bottom of the screen) and --copy-t (from the top), and a photograph's as
   // --fig-top.
   var stacks = [];
-  var footer = document.querySelector("body > footer");
+  var footer = null;
   var head = [document.querySelector(".top")];
   function stacked(k) { return portrait() || sections[k].classList.contains("flame"); }
   function headBottom() {
@@ -427,8 +427,6 @@
     family: { kind: "draw", draw: drawFamily },
     timeline: { kind: "draw", draw: drawTimeline }
   };
-  var scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
-
   function shapeState(scene, k, l, t) {
     var s = shapeBase(layoutOf(scene, k));
     scene.state(s, l, t);
@@ -1160,10 +1158,13 @@
   }
 
   // ---- the index of worlds -------------------------------------------------------------
-  var nav = document.createElement("ol");
+  var nav = null, dots = [];
+  function buildIndex() {
+  if (nav) nav.remove();
+  nav = document.createElement("ol");
   nav.className = "worlds";
   nav.setAttribute("aria-label", "Sections");
-  var dots = sections.map(function (sec, k) {
+  dots = sections.map(function (sec, k) {
     var li = document.createElement("li"), btn = document.createElement("button"), span = document.createElement("span"), dot = document.createElement("i");
     btn.type = "button";
     span.textContent = sec.getAttribute("data-label") || "";
@@ -1179,11 +1180,30 @@
     return btn;
   });
   document.body.appendChild(nav);
+  }
   var top = document.querySelector(".top");
   var themeMeta = document.querySelector('meta[name="theme-color"]');
 
   // ---- the loop --------------------------------------------------------------------------
   var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false, lastEnd = false;
+  // tBind starts each page's own clock, so its figures draw themselves in
+  // when it arrives; the sky keeps one clock for the whole visit
+  var tBind = t0;
+
+  function bind() {
+    sections = [].slice.call(document.querySelectorAll(".world"));
+    NW = sections.length;
+    worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
+    scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
+    room = document.querySelector(".flame-room");
+    footer = document.querySelector("body > footer");
+    tops = []; hs = []; pins = []; stacks = []; lastU = [];
+    hugReady = false;
+    lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastSpark = 0;
+    root.classList.remove("in-room", "at-end");
+    tBind = performance.now();
+    buildIndex();
+  }
 
   function focusOf(scene, s, L) {
     if (s) return { cx: s.cx, cy: s.cy, R: s.R, heat: s.heat, flame: s.flame };
@@ -1194,9 +1214,10 @@
     requestAnimationFrame(frame);
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    var t = RM ? 24 : (now - t0) / 1000;
+    var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
     var st = scrollState(), i = st[0], l = st[1], b = st[2];
     setU(i, l, b);
+    var pass = crossing(b);
 
     var inRoom = false, hidden = false;
     if (room) {
@@ -1212,12 +1233,14 @@
     if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
 
     var wt = b < 0.8 ? i : i + 1, wd = inRoom ? NW - 1 : b < 0.5 ? i : i + 1;
-    if (wt !== lastTheme) {
-      var th = THEME[worldOf[wt]];
-      if (top) top.setAttribute("data-theme", th);
-      if (themeMeta) themeMeta.setAttribute("content", BG[worldOf[wt]]);
-      if (!GL) document.body.style.background = BG[worldOf[wt]];
-      lastTheme = wt;
+    // arriving from another page, the header keeps the old world's colours
+    // until the fire has passed it
+    var tw = pass && pass.mix < 0.8 ? pass.from : worldOf[wt];
+    if (tw !== lastTheme) {
+      if (top) top.setAttribute("data-theme", THEME[tw]);
+      if (themeMeta) themeMeta.setAttribute("content", BG[tw]);
+      if (!GL) document.body.style.background = BG[tw];
+      lastTheme = tw;
     }
     if (wd !== lastDot) {
       nav.setAttribute("data-theme", THEME[worldOf[wd]]);
@@ -1236,8 +1259,8 @@
       if (pair[0] && (pair[0].kind === "shape" || pair[0].parallax)) { pair[1].cx += px; pair[1].cy += py; }
     });
 
-    var sA = A.kind === "shape" ? shapeState(A, i, l, t) : null;
-    var sB = B && B.kind === "shape" ? shapeState(B, i + 1, 0, t) : null;
+    var sA = A.kind === "shape" ? shapeState(A, i, l, ts) : null;
+    var sB = B && B.kind === "shape" ? shapeState(B, i + 1, 0, ts) : null;
     if (sA) { sA.cx += px; sA.cy += py; }
     if (sB) { sB.cx += px; sB.cy += py; }
     var shape = null;
@@ -1254,9 +1277,9 @@
       var gl = GL.gl, U = GL.U;
       gl.uniform2f(U.uRes, sky.width, sky.height);
       gl.uniform1f(U.uTime, t);
-      gl.uniform1f(U.uWorldA, worldOf[i]);
-      gl.uniform1f(U.uWorldB, worldOf[Math.min(i + 1, NW - 1)]);
-      gl.uniform1f(U.uMix, b);
+      gl.uniform1f(U.uWorldA, pass ? pass.from : worldOf[i]);
+      gl.uniform1f(U.uWorldB, pass ? worldOf[i] : worldOf[Math.min(i + 1, NW - 1)]);
+      gl.uniform1f(U.uMix, pass ? pass.mix : b);
       gl.uniform1f(U.uLocal, l);
       gl.uniform2f(U.uMouse, (ptr.sx - AW / 2) / AH, (AH / 2 - ptr.sy) / AH);
       gl.uniform2f(U.uFocus, (focus.cx - AW / 2) / AH, (AH / 2 - focus.cy) / AH);
@@ -1275,8 +1298,8 @@
     drawParticles(worldOf[i], 1 - b, t);
     if (b > 0) drawParticles(worldOf[i + 1], b, t);
 
-    if (A.kind === "draw") A.draw(ctx, l, t, LA, B ? 1 - eb : 1);
-    if (B && B.kind === "draw") B.draw(ctx, 0, t, LB, eb);
+    if (A.kind === "draw") A.draw(ctx, l, ts, LA, B ? 1 - eb : 1);
+    if (B && B.kind === "draw") B.draw(ctx, 0, ts, LB, eb);
     if (shape) {
       if (shape.sqA > 0.002 || shape.ghost > 0.002) drawCropped(shape); else drawShape(shape, 1);
       drawHug(shape);
@@ -1284,6 +1307,21 @@
       if (shape.mark > 0.002 || shape.spark > 0.002) drawMark(shape);
     }
     ctx.globalAlpha = 1;
+    // the figures fade with the words when the page changes (here, not in
+    // CSS: an opacity on the canvas costs a phone a frame it cannot spare)
+    var fa = figureAlpha();
+    if (fa < 1 || pass) {
+      ctx.globalCompositeOperation = "destination-in";
+      if (pass) {
+        // arriving, the figure shows behind the fire line, like the words
+        var w = -0.4 + 1.8 * pass.mix, g = ctx.createLinearGradient(0, AH * (1 - w), 0, AH * (1.16 - w));
+        g.addColorStop(0, "rgba(0,0,0,0)");
+        g.addColorStop(1, "rgba(0,0,0," + fa.toFixed(3) + ")");
+        ctx.fillStyle = g;
+      } else ctx.fillStyle = "rgba(0,0,0," + fa.toFixed(3) + ")";
+      ctx.fillRect(0, 0, AW, AH);
+      ctx.globalCompositeOperation = "source-over";
+    }
 
     // a slow machine gets a softer sky rather than a stuttering one
     ema = ema * 0.95 + dt * 1000 * 0.05;
@@ -1295,6 +1333,7 @@
     sizeSky();
     measure();
     placeCaps();
+    placeSwitches(true);
   }
   var queued = false;
   window.addEventListener("resize", function () {
@@ -1307,6 +1346,295 @@
   document.addEventListener("pointerleave", function () { ptr.on = false; });
   window.addEventListener("blur", function () { ptr.on = false; });
 
+  // ---- the switch: one thumb that slides between Software and Coaching ------------
+  // Each .offer-switch gets a thumb that sits under the current page's link
+  // (worlds.css fills the link itself when there is no JavaScript). When the
+  // page changes, the thumb first stretches to cover both links, then lets
+  // go of the old one and settles on the new.
+  function thumbOf(sw) {
+    var th = sw.querySelector(".thumb");
+    if (!th) {
+      th = document.createElement("i");
+      th.className = "thumb";
+      th.setAttribute("aria-hidden", "true");
+      th.appendChild(document.createElement("span")).className = "thumb-ink";
+      sw.insertBefore(th, sw.firstChild);
+    }
+    // The thumb carries a copy of the labels in the inverse colour, held
+    // still while the thumb moves under it, so each label turns over
+    // exactly where the thumb is and never fades out on the way.
+    var ink = th.firstChild;
+    ink.textContent = "";
+    [].forEach.call(sw.querySelectorAll(".nav-link"), function (a) {
+      var c = ink.appendChild(document.createElement("span"));
+      c.className = a.className;
+      c.setAttribute("data-href", a.getAttribute("href"));
+      if (a.hasAttribute("aria-current")) c.setAttribute("data-current", "");
+      c.textContent = a.textContent;
+    });
+    return th;
+  }
+  function placeThumb(sw, from) {
+    thumbOf(sw);
+    var cur = sw.querySelector('.nav-link[aria-current="page"]');
+    if (!cur) { sw.classList.remove("has-thumb"); return; }
+    var x = cur.offsetLeft, w = cur.offsetWidth;
+    clearTimeout(sw._settle);
+    if (from && !RM && (from.x !== x || from.w !== w)) {
+      var x0 = Math.min(x, from.x), x1 = Math.max(x + w, from.x + from.w);
+      sw.classList.add("stretch");
+      sw.style.setProperty("--tx", x0 + "px");
+      sw.style.setProperty("--tw", (x1 - x0) + "px");
+      sw._settle = setTimeout(function () {
+        sw.classList.remove("stretch");
+        sw.style.setProperty("--tx", x + "px");
+        sw.style.setProperty("--tw", w + "px");
+      }, 160);
+    } else {
+      sw.style.setProperty("--tx", x + "px");
+      sw.style.setProperty("--tw", w + "px");
+    }
+    sw.classList.add("has-thumb");
+  }
+  function placeSwitches(still) {
+    [].forEach.call(document.querySelectorAll(".offer-switch"), function (sw) {
+      if (still || !sw.classList.contains("has-thumb")) sw.classList.add("still");
+      placeThumb(sw, null);
+      void sw.offsetWidth;
+      requestAnimationFrame(function () { sw.classList.remove("still"); });
+    });
+  }
+  function setCurrent(path) {
+    [].forEach.call(document.querySelectorAll("[data-site-nav] .nav-link"), function (a) {
+      if (pathOf(new URL(a.href, location.href)) === path) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+    [].forEach.call(document.querySelectorAll(".offer-switch"), function (sw) {
+      var from = sw.classList.contains("has-thumb") ? { x: parseFloat(sw.style.getPropertyValue("--tx")) || 0, w: parseFloat(sw.style.getPropertyValue("--tw")) || 0 } : null;
+      placeThumb(sw, from);
+    });
+  }
+
+  // ---- low motion ----------------------------------------------------------------------
+  // Every way into the low motion version remembers the choice (the check
+  // at the top of each animated page honours it on the next visit). The
+  // header's switch flips before it goes, so the reader sees it take.
+  function rememberMotion(v) { try { window.localStorage.setItem("chama-motion", v); } catch (e) {} }
+
+  // ---- the router: the three pages without leaving the page -----------------------
+  // Software, Coaching and About are one place. A link between them does not
+  // load a new document: the words in view lift away, the new page is
+  // fetched (usually already, on hover or when the browser is idle) and put
+  // in place, and the sky burns from the world that was on screen into the
+  // new page's first world while the new words rise behind the fire. Any
+  // other link (the flame's own page, privacy, the Hearth, the low motion
+  // version) is an ordinary navigation.
+  var PAGES = { "/": 1, "/coaching": 1, "/about": 1 };
+  var cache = {}, navSeq = 0, burnIn = null, keptRoom = null, leaveAt = 0;
+  function pathOf(u) {
+    var p = u.pathname.replace(/\/index(\.html)?$/, "/").replace(/\.html$/, "");
+    return p.length > 1 ? p.replace(/\/$/, "") : p;
+  }
+  var here = pathOf(location);
+
+  function fetchPage(path) {
+    if (!cache[path]) {
+      cache[path] = fetch(path, { credentials: "same-origin" }).then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.text();
+      });
+      cache[path].catch(function () { delete cache[path]; });
+    }
+    return cache[path];
+  }
+
+  // the burn from the old page's world into the new one, read by the loop
+  function crossing(b) {
+    if (!burnIn) return null;
+    var p = clamp((performance.now() - burnIn.start) / burnIn.dur);
+    var m = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(2 - 2 * p, 3) / 2;
+    // the shader's fire line stands at -0.4 + 1.8 * mix of the screen's
+    // height from the bottom; the new words show just behind it
+    root.style.setProperty("--wipe", ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%");
+    if (p >= 1) {
+      burnIn = null;
+      root.classList.remove("nav-enter");
+      root.style.removeProperty("--wipe");
+      return null;
+    }
+    return b > 0.001 ? null : { from: burnIn.from, mix: m };
+  }
+
+  function figureAlpha() {
+    var now = performance.now();
+    if (leaveAt) return 1 - clamp((now - leaveAt) / 300);
+    if (burnIn) return sm(0, 1, (now - burnIn.start) / 400);
+    return 1;
+  }
+
+  function needCss(href) {
+    if (document.querySelector('link[rel="stylesheet"][href="' + href + '"]')) return Promise.resolve();
+    return new Promise(function (res) {
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = href;
+      l.onload = l.onerror = function () { res(); };
+      document.head.appendChild(l);
+    });
+  }
+  function needScript(src, ready) {
+    if (ready()) return Promise.resolve();
+    return new Promise(function (res, rej) {
+      var el = document.querySelector('script[src="' + src + '"]');
+      if (!el) {
+        el = document.createElement("script");
+        el.src = src;
+        el.async = false;
+        document.head.appendChild(el);
+      }
+      el.addEventListener("load", function () { res(); });
+      el.addEventListener("error", rej);
+    });
+  }
+  // The flame room is mounted once a visit. Leaving the home page keeps it
+  // (and any conversation in it) aside, and coming back puts it back.
+  function mountRoom(slot) {
+    var host = slot.querySelector("#agent-embed");
+    if (!host) return;
+    Promise.all([
+      needCss("/assets/agent.css"),
+      needScript("/assets/flame.js", function () { return window.ChamaFlame; })
+        .then(function () { return needScript("/assets/agent.js", function () { return window.ChamaAgent; }); })
+    ]).then(function () {
+      if (host.isConnected && !host.firstChild && window.ChamaAgent) {
+        window.ChamaAgent.mount(host, { mode: "embed" });
+        measure();
+      }
+    }, function () {});
+  }
+
+  var HEAD = 'meta[name="description"], meta[name="author"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]';
+  function swap(doc) {
+    document.title = doc.title;
+    [].forEach.call(document.head.querySelectorAll(HEAD), function (n) { n.remove(); });
+    [].forEach.call(doc.head.querySelectorAll(HEAD), function (n) { document.head.appendChild(document.importNode(n, true)); });
+    // a parsed document runs no scripts, so its <noscript> is ordinary markup
+    [].forEach.call(doc.querySelectorAll("noscript"), function (n) { n.remove(); });
+
+    // the header stays (its switch is mid-slide); only what differs changes
+    var top0 = document.querySelector(".top"), top1 = doc.querySelector(".top");
+    if (top0 && top1) {
+      var m0 = top0.querySelector(".worlds-members"), m1 = top1.querySelector(".worlds-members");
+      if (m0 && !m1) m0.remove();
+      if (m1 && !m0) {
+        var m = document.importNode(m1, true);
+        m.classList.add("arrive");
+        top0.insertBefore(m, top0.querySelector(".site-nav"));
+      }
+      var g0 = top0.querySelector(".motion-toggle"), g1 = top1.querySelector(".motion-toggle");
+      if (g0 && g1) g0.setAttribute("href", g1.getAttribute("href"));
+    }
+
+    var main0 = document.querySelector("main"), main1 = document.importNode(doc.querySelector("main"), true);
+    var room0 = main0.querySelector(".flame-room");
+    if (room0 && room0.querySelector("#agent-embed > *")) keptRoom = room0;
+    main0.replaceWith(main1);
+    var slot = main1.querySelector(".flame-room");
+    if (slot) {
+      if (keptRoom) slot.replaceWith(keptRoom);
+      else mountRoom(slot);
+    }
+    var foot0 = document.querySelector("body > footer"), foot1 = doc.querySelector("body > footer");
+    if (foot0 && foot1) foot0.replaceWith(document.importNode(foot1, true));
+    root.classList.remove("room-pinned");
+  }
+
+  function go(u, push) {
+    var path = pathOf(u), seq = ++navSeq;
+    var from = lastTheme >= 0 ? lastTheme : worldOf[0];
+    if (push) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
+    setCurrent(path);
+    root.classList.remove("nav-enter");
+    root.classList.add("nav-leave");
+    leaveAt = RM ? 0 : performance.now();
+    var lift = new Promise(function (res) { setTimeout(res, RM ? 0 : 380); });
+    Promise.all([fetchPage(path), lift]).then(function (r) {
+      if (seq !== navSeq) return;
+      var doc = new DOMParser().parseFromString(r[0], "text/html");
+      var main = doc.querySelector("main");
+      if (!main || !main.querySelector(".world")) throw new Error("not an animated page");
+      if (push) history.pushState({ y: 0 }, "", u.pathname + u.search + u.hash);
+      swap(doc);
+      here = path;
+      bind();
+      resize();
+      var y = push ? 0 : (history.state && history.state.y) || 0;
+      var target = u.hash && document.getElementById(u.hash.slice(1));
+      if (target) y = target.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: y, behavior: "instant" });
+      root.classList.remove("nav-leave");
+      leaveAt = 0;
+      if (!RM) {
+        root.style.setProperty("--wipe", "-40%");
+        root.classList.add("nav-enter");
+        burnIn = { from: from, start: performance.now(), dur: 1500 };
+      }
+      var h = document.querySelector("main h1");
+      if (h) {
+        h.setAttribute("tabindex", "-1");
+        try { h.focus({ preventScroll: true }); } catch (e) {}
+      }
+    }).catch(function () {
+      if (seq === navSeq) location.assign(u.href);
+    });
+  }
+
+  if (window.fetch && window.DOMParser && window.history && history.pushState) {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    document.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
+      if (a.hasAttribute("data-simple-version")) {
+        rememberMotion("low");
+        if (a.classList.contains("motion-toggle") && !RM) {
+          e.preventDefault();
+          a.classList.add("on");
+          setTimeout(function () { location.assign(a.href); }, 420);
+        }
+        return;
+      }
+      if (a.getAttribute("href").charAt(0) === "#") return;
+      var u = new URL(a.href, location.href);
+      if (u.origin !== location.origin || !PAGES[pathOf(u)]) return;
+      e.preventDefault();
+      if (pathOf(u) === here) {
+        var t = u.hash && document.getElementById(u.hash.slice(1));
+        if (t) t.scrollIntoView({ behavior: RM ? "auto" : "smooth" });
+        else window.scrollTo({ top: 0, behavior: RM ? "auto" : "smooth" });
+        return;
+      }
+      go(u, true);
+    });
+    window.addEventListener("popstate", function () {
+      var path = pathOf(location);
+      if (path !== here && PAGES[path]) go(new URL(location.href), false);
+    });
+    // the next page is usually fetched before it is asked for
+    var warm = function (e) {
+      var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a) return;
+      var u = new URL(a.href, location.href);
+      if (u.origin === location.origin && PAGES[pathOf(u)] && pathOf(u) !== here) fetchPage(pathOf(u));
+    };
+    document.addEventListener("pointerover", warm, { passive: true });
+    document.addEventListener("touchstart", warm, { passive: true });
+    document.addEventListener("focusin", warm);
+    var save = navigator.connection && navigator.connection.saveData;
+    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(function (p) { if (p !== here) fetchPage(p); }); }, 3000);
+  }
+
+  bind();
   resize();
   seedParticles();
   ptr.sx = AW / 2;

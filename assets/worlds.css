@@ -1,8 +1,9 @@
 /* ==========================================================================
    Worlds: the public pages as one scroll through animated worlds.
 
-   The Worlds version of /, /coaching and /about (at /worlds, /worlds/coaching
-   and /worlds/about). Same copy as the Words pages, set as a sequence of
+   The animated version of /, /coaching and /about, and the site's primary
+   one (the low motion version lives at /simple, /simple/coaching and
+   /simple/about). Same copy as the low motion pages, set as a sequence of
    pinned worlds (paper, the grid, the forge, the night, the tides, the
    flame) that burn into each other as the page scrolls. worlds.js paints
    the worlds and the figures; this sheet sets the words over them.
@@ -126,20 +127,66 @@ html:not(.gl) #sky { display: none; }
 .mast small { display: block; margin-top: 3px; color: var(--fg2); font-size: 0.66rem; letter-spacing: 0.02em; transition: color 0.6s ease; }
 
 /* Software and Coaching are the two offers, so they share one switch;
-   About stands beside it. The current page is filled. */
+   About stands beside it. Without JavaScript the current page's link is
+   filled; with it, worlds.js gives the switch a thumb that slides under
+   the current page, stretching across both links on its way (.stretch)
+   and landing with a little give. */
 .site-nav { display: flex; align-items: center; gap: 10px; }
 .offer-switch {
+  --spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
-  padding: 2px;
+  padding: 3px;
   border-radius: 999px;
   background: var(--track);
   background: color-mix(in srgb, var(--bg) 62%, transparent);
-  box-shadow: inset 0 0 0 1px var(--track);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  transition: background 0.6s ease;
+  box-shadow: inset 0 0 0 1px var(--track), 0 8px 28px -16px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  backdrop-filter: blur(12px) saturate(1.3);
+  transition: background 0.6s ease, transform 0.3s cubic-bezier(0.34, 1.45, 0.5, 1);
 }
+/* The thumb lies over the labels (it lets clicks through), so it hides
+   the label under it and shows its own inverse copy in its place. */
+.offer-switch .thumb {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  font-style: normal;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: var(--tw, 0px);
+  border-radius: 999px;
+  background: var(--fg);
+  box-shadow: 0 3px 12px -3px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(244, 88, 31, 0);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(var(--tx, 0px)) scale(0.6);
+  transition: transform 0.6s var(--spring), width 0.6s var(--spring), opacity 0.3s ease, background 0.6s ease, box-shadow 0.6s ease;
+}
+/* the labels again, in the inverse colour, held still against the thumb */
+.thumb-ink {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  display: flex;
+  padding: 3px;
+  transform: translateX(calc(-1 * var(--tx, 0px)));
+  transition: transform 0.6s var(--spring);
+}
+.offer-switch .thumb-ink .nav-link { color: var(--bg); transition: none; }
+.offer-switch.has-thumb .thumb { opacity: 1; transform: translateX(var(--tx, 0px)); }
+/* the stretch: quick and straight, then the spring takes it home */
+.offer-switch.stretch .thumb {
+  box-shadow: 0 3px 16px -3px rgba(0, 0, 0, 0.35), 0 0 18px 2px rgba(244, 88, 31, 0.35);
+  transition: transform 0.16s cubic-bezier(0.5, 0, 0.6, 1), width 0.16s cubic-bezier(0.5, 0, 0.6, 1), opacity 0.3s ease, background 0.6s ease, box-shadow 0.16s ease;
+}
+.offer-switch.stretch .thumb-ink { transition: transform 0.16s cubic-bezier(0.5, 0, 0.6, 1); }
+.offer-switch.still .thumb,
+.offer-switch.still .thumb-ink { transition: none; }
 .nav-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 32px;
@@ -152,17 +199,99 @@ html:not(.gl) #sky { display: none; }
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 160ms ease, color 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 .nav-link[aria-current="page"] { background: var(--fg); color: var(--bg); }
-/* About is not one of the two offers, so it is marked, not filled. */
-.nav-about[aria-current="page"] { background: none; color: var(--fg); text-decoration: underline 2px var(--ember); text-underline-offset: 0.45em; }
+.offer-switch.has-thumb .nav-link[aria-current="page"],
+.offer-switch.stretch .nav-link { background: none; color: var(--fg); }
+.offer-switch:active { transform: scale(0.97); }
+.offer-switch .nav-link:not([aria-current="page"]):hover { background: color-mix(in srgb, var(--fg) 9%, transparent); }
+/* About is not one of the two offers, so it is marked, not filled: an
+   ember line draws itself in under it. */
+.nav-about {
+  background-image: linear-gradient(var(--ember), var(--ember));
+  background-repeat: no-repeat;
+  background-position: 50% calc(100% - 5px);
+  background-size: 0 2px;
+  transition: background-size 0.5s cubic-bezier(0.34, 1.45, 0.5, 1), color 0.3s ease;
+}
+.nav-about[aria-current="page"] { background-color: transparent; color: var(--fg); background-size: calc(100% - 1.7rem) 2px; }
 /* Coaching is the offer a software visitor may not know about: an ember
-   dot draws the eye to it wherever it is not the page in view. */
-.offer-switch a[href="/worlds/coaching"]:not([aria-current="page"]) { box-shadow: inset 0 0 0 1px rgba(244, 88, 31, 0.6); }
-.offer-switch a[href="/worlds/coaching"]:not([aria-current="page"])::before { content: ""; width: 6px; height: 6px; margin-right: 0.45rem; border-radius: 50%; background: var(--ember); }
+   dot draws the eye to it wherever it is not the page in view, and
+   breathes a few times when the page arrives. */
+.offer-switch [href="/coaching"]::before,
+.offer-switch [data-href="/coaching"]::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--ember);
+}
+.offer-switch [href="/coaching"][aria-current="page"]::before,
+.offer-switch [data-href="/coaching"][data-current]::before { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .offer-switch a[href="/coaching"]:not([aria-current="page"])::before { animation: breathe 2.4s ease-in-out 1.2s 3; }
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 88, 31, 0.55); }
+  50% { box-shadow: 0 0 0 5px rgba(244, 88, 31, 0); }
+}
 .nav-link:not([aria-current="page"]):hover { color: var(--ember); }
+.nav-link:focus { outline: none; }
 .nav-link:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+/* The low motion version, one switch away at the top of every page. It
+   flips on (worlds.js adds .on) and the low motion page follows. */
+.motion-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 32px;
+  padding: 0 0.8rem 0 0.45rem;
+  border-radius: 999px;
+  color: var(--fg);
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  box-shadow: inset 0 0 0 1px var(--track);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.6s ease, color 0.3s ease;
+}
+.motion-track {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fg) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 22%, transparent);
+  transition: background 0.3s ease;
+}
+.motion-track i {
+  font-style: normal;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--fg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease;
+}
+.motion-toggle:hover { color: var(--ember); }
+.motion-toggle:hover .motion-track i { transform: translateX(3px); }
+.motion-toggle.on .motion-track { background: var(--ember); box-shadow: none; }
+.motion-toggle.on .motion-track i { transform: translateX(12px); background: #fff; }
+.motion-toggle:focus { outline: none; }
+.motion-toggle:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 
 /* The way into the Hearth lives only beside the coaching, as on /coaching. */
 .worlds-members {
@@ -510,7 +639,7 @@ html:not(.js) .slot { display: block; }
 .cta svg { width: 16px; height: 16px; flex: none; }
 .cta { text-wrap: balance; }
 
-/* ---- the flame room, after the last world on /worlds ------------------ */
+/* ---- the flame room, after the last world of the home page ----------- */
 .flame-room {
   position: relative;
   z-index: 2;
@@ -560,6 +689,37 @@ html.foot-over body > footer {
   @view-transition { navigation: auto; }
 }
 
+/* ---- moving between pages ---------------------------------------------- */
+/* worlds.js moves between Software, Coaching and About without loading a
+   new document. First the page in view lifts away (.nav-leave); then the
+   new page is in place and the sky burns up into it from below while its
+   words rise just behind the fire (.nav-enter, with --wipe tracking the
+   fire line). */
+html.nav-leave main,
+html.nav-leave body > footer,
+html.nav-leave .worlds {
+  opacity: 0;
+  translate: 0 -2.5vh;
+  pointer-events: none;
+  transition: opacity 0.32s ease, translate 0.38s cubic-bezier(0.5, 0, 0.75, 0);
+}
+html.nav-enter .pin {
+  -webkit-mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
+  mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
+}
+html.nav-enter .pin .copy > *,
+html.nav-enter .pin .cap { animation: rise 1.1s cubic-bezier(0.2, 0.75, 0.2, 1) 0.35s backwards; }
+html.nav-enter .pin .copy > :nth-child(2) { animation-delay: 0.47s; }
+html.nav-enter .pin .copy > :nth-child(3) { animation-delay: 0.59s; }
+html.nav-enter .pin .copy > :nth-child(n+4) { animation-delay: 0.71s; }
+html.nav-enter .worlds { animation: arrive 0.6s ease 1.1s backwards; }
+html.nav-enter body > footer { animation: arrive 0.6s ease 0.9s backwards; }
+.worlds-members.arrive { animation: pop 0.5s cubic-bezier(0.34, 1.45, 0.5, 1) both; }
+@keyframes rise { from { opacity: 0; translate: 0 34px; filter: blur(6px); } }
+@keyframes arrive { from { opacity: 0; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.7); } }
+main h1:focus { outline: none; }
+
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   .worlds { display: none; }
@@ -567,6 +727,10 @@ html.foot-over body > footer {
   .top .site-nav { order: 2; flex-basis: 100%; }
   .nav-link { min-height: 34px; padding: 0 0.75rem; font-size: 0.8125rem; }
   .worlds-members { min-height: 30px; padding: 0 0.65rem; font-size: 0.75rem; }
+  /* on a phone the low motion switch keeps its knob and drops its words
+     (the hero offers the same in a sentence) */
+  .motion-toggle { min-height: 30px; padding: 0 0.4rem; }
+  .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .mast b { font-size: 0.98rem; }
   .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
   .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }

@@ -1883,8 +1883,8 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       function seatDelta() {
         var vh = viewportH();
         var r = rootEl.getBoundingClientRect();
-        // a room wholly on screen is seated wherever it rests: on /worlds the
-        // room and the footer under it share the last screen
+        // a room wholly on screen is seated wherever it rests: on the animated
+        // home page the room and the footer under it share the last screen
         if (r.top >= -SEAT_EPS && r.bottom <= vh + SEAT_EPS) return 0;
         var want = r.bottom - vh;
         var y = window.pageYOffset || document.documentElement.scrollTop || 0;
