@@ -961,8 +961,9 @@ footer {
 
 /* Words and Worlds.
 
-   Every public page comes in two versions of the same copy. Words is the
-   page as written. Worlds (/worlds, /worlds/coaching, /worlds/about) is
+   Every public page comes in two versions of the same copy. These pages
+   (/simple, /simple/coaching, /simple/about) are the low motion version,
+   the page as written. The animated version (/, /coaching, /about) is
    the same copy as one scroll through animated worlds that burn into each
    other; it has its own stylesheet and engine, worlds.css and worlds.js.
    The switch is two links, one per version, the current one raised in
