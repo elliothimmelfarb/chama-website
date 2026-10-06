@@ -1,11 +1,13 @@
-// The public pages come in two parallel versions: the simple version (/,
-// /coaching, /about: the page as written) and the animated version (under
-// /worlds: the same copy as a scroll through animated worlds). These tests
-// guard the seams between them: each simple page's switch reaches its
-// animated counterpart, each animated page offers its simple counterpart
-// and otherwise never drops a reader back into the simple version, the
-// animated pages' navigation reaches all three of them from the top and the
-// bottom, and no public page asks another host for anything.
+// The public pages come in two parallel versions: the animated version (/,
+// /coaching, /about: the primary one, a scroll through animated worlds) and
+// the low motion version (under /simple: the same copy as a plain page).
+// These tests guard the seams between them: each low motion page's switch
+// reaches its animated counterpart and its links stay in the low motion
+// version, each animated page offers its low motion counterpart (and sends
+// a reader who chose it there) and otherwise never drops a reader into it,
+// the animated pages' navigation reaches all three of them from the top and
+// the bottom, the old /worlds addresses lead home, and no public page asks
+// another host for anything.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -16,9 +18,9 @@ import path from "node:path";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const PAIRS = [
-  { words: "/", worlds: "/worlds" },
-  { words: "/coaching", worlds: "/worlds/coaching" },
-  { words: "/about", worlds: "/worlds/about" },
+  { words: "/simple", worlds: "/" },
+  { words: "/simple/coaching", worlds: "/coaching" },
+  { words: "/simple/about", worlds: "/about" },
 ];
 
 // The same mapping Vercel's cleanUrls applies: /x serves x.html, and a
@@ -51,9 +53,9 @@ function switchLink(html, label) {
 }
 
 const SITE = [
-  { label: "Software", url: "/worlds" },
-  { label: "Coaching", url: "/worlds/coaching" },
-  { label: "About", url: "/worlds/about" },
+  { label: "Software", url: "/" },
+  { label: "Coaching", url: "/coaching" },
+  { label: "About", url: "/about" },
 ];
 
 function siteNavs(html) {
@@ -74,10 +76,27 @@ for (const { words, worlds } of PAIRS) {
     assert.equal(switchLink(read(words), "Animated"), worlds);
   });
 
-  test(`${worlds} offers ${words} as its simple version, in the hero and the footer`, () => {
+  test(`${words} keeps its links between pages inside the low motion version`, () => {
+    const html = read(words).replace(/<nav\b[^>]*\bdata-view-switch\b[\s\S]*?<\/nav>/, "");
+    const animatedUrls = new Set(PAIRS.map((p) => p.worlds));
+    const strays = links(html).map((a) => (a.href || "").replace(/[#?].*$/, "")).filter((h) => animatedUrls.has(h));
+    assert.deepEqual(strays, [], `links out of the low motion version: ${strays.join(", ")}`);
+  });
+
+  test(`${worlds} sends a reader who chose low motion to ${words}`, () => {
+    const head = /<head>[\s\S]*?<\/head>/.exec(read(worlds))[0];
+    const m = /location\.replace\("([^"]+)"/.exec(head);
+    assert.ok(m, "no low motion check in the head");
+    assert.equal(m[1], words);
+    assert.ok(head.indexOf("location.replace") < head.indexOf('rel="stylesheet"'), "the low motion check runs after the stylesheet is requested");
+  });
+
+  test(`${worlds} offers ${words} as its low motion version, at the top, in the hero and in the footer`, () => {
     const html = read(worlds);
     const simple = links(html).filter((a) => a.simple);
-    assert.ok(simple.length >= 2, "expected a simple-version link in the hero and in the footer");
+    assert.ok(simple.length >= 3, "expected a low motion link in the header, the hero and the footer");
+    const header = /<header\b[\s\S]*?<\/header>/.exec(html);
+    assert.ok(header && links(header[0]).some((a) => a.simple), "the header has no low motion switch");
     for (const a of simple) assert.equal(a.href, words);
     const footer = /<footer\b[\s\S]*<\/footer>/.exec(html);
     assert.ok(footer && links(footer[0]).some((a) => a.simple), "the footer has no simple-version link");
@@ -109,11 +128,21 @@ for (const { words, worlds } of PAIRS) {
   });
 }
 
-test("/worlds/coaching keeps the way into the Hearth", () => {
-  assert.ok(links(read("/worlds/coaching")).some((a) => a.href === "/hearth"), "no link to /hearth");
+test("/coaching keeps the way into the Hearth", () => {
+  assert.ok(links(read("/coaching")).some((a) => a.href === "/hearth"), "no link to /hearth");
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/privacy", "/404", "/worlds", "/worlds/coaching", "/worlds/about"];
+test("the old /worlds addresses lead to the pages they became", () => {
+  const { redirects } = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8"));
+  for (const [from, to] of [["/worlds", "/"], ["/worlds/coaching", "/coaching"], ["/worlds/about", "/about"]]) {
+    const r = redirects.find((x) => x.source === from && !x.has);
+    assert.ok(r, `no redirect from ${from}`);
+    assert.equal(r.destination, to);
+  }
+  assert.ok(!existsSync(path.join(ROOT, "worlds.html")) && !existsSync(path.join(ROOT, "worlds")), "a /worlds page would shadow its redirect");
+});
+
+const PUBLIC = ["/", "/coaching", "/about", "/privacy", "/404", "/simple", "/simple/coaching", "/simple/about"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {

@@ -29,6 +29,26 @@
       "permanent": true
     },
     {
+      "source": "/worlds",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/worlds.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/worlds/coaching",
+      "destination": "/coaching",
+      "permanent": true
+    },
+    {
+      "source": "/worlds/about",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
       "source": "/training",
       "destination": "/coaching",
       "permanent": true
