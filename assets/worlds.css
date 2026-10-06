@@ -292,6 +292,9 @@ html:not(.gl) #sky { display: none; }
 .motion-toggle.on .motion-track i { transform: translateX(12px); background: #fff; }
 .motion-toggle:focus { outline: none; }
 .motion-toggle:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+/* the low motion pages carry the same switch, shown on (site.css); the
+   shared name carries it across when the reader crosses between them */
+.motion-toggle { view-transition-name: motion-toggle; }
 
 /* The way into the Hearth lives only beside the coaching, as on /coaching. */
 .worlds-members {
