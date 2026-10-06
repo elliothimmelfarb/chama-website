@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chama Offer Line</title>
+<meta name="description" content="Ship report: the approved offer line in llms.txt, llms-full.txt, the homepage JSON-LD and the agent prompt, 2026-10-06.">
+<style>
+  /* A ship report on the site's own paper: ink and ember, with before/after pairs as the body. */
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.5rem 4rem; display: grid; gap: 2.6rem; }
+  header { display: grid; gap: 0.9rem; }
+  .eyebrow { margin: 0; color: var(--ember); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(2rem, 5.5vw, 3.6rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.08rem; }
+  h2 { margin: 0 0 1rem; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); }
+  .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.6rem; }
+  .check { display: grid; gap: 0.2rem; padding: 0.8rem 0.9rem; border-radius: 6px; background: var(--ok-soft); min-width: 0; }
+  .check.warn { background: var(--warn-soft); }
+  .check b { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ok); }
+  .check.warn b { color: var(--warn); }
+  .check span { font-size: 0.92rem; }
+  .pairs { display: grid; gap: 1.6rem; }
+  .pair { display: grid; gap: 0.5rem; min-width: 0; }
+  .where { font-family: var(--mono); font-size: 0.82rem; color: var(--ink-dim); }
+  .row { display: grid; grid-template-columns: 4.2rem 1fr; gap: 0.6rem; align-items: baseline; }
+  .tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+  .row.after .tag { color: var(--ember); }
+  .txt { margin: 0; min-width: 0; font-size: 0.95rem; }
+  .row.before .txt { color: var(--ink-dim); }
+  mark { background: none; color: var(--ember); font-weight: 700; }
+  ul.notes { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem; max-width: 65ch; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  a { color: var(--ink); text-decoration-color: var(--ember); text-underline-offset: 0.2em; }
+  @media (max-width: 30rem) { .row { grid-template-columns: 1fr; gap: 0.1rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Shipped 2026-10-06 · PR #79</p>
+    <h1>Software shaped for one business, yours.</h1>
+    <p class="lede">The approved offer line now appears in every machine-facing description of the offer: llms.txt, llms-full.txt, the homepage structured data and the agent's prompt. The visible homepage did not change.</p>
+  </header>
+
+  <section>
+    <h2>Live check</h2>
+    <div class="checks">
+      <div class="check"><b>llms.txt</b><span>New line live, 3 occurrences</span></div>
+      <div class="check"><b>llms-full.txt</b><span>New line live in the summary</span></div>
+      <div class="check"><b>JSON-LD</b><span>Service description carries the line</span></div>
+      <div class="check"><b>Visible page</b><span>HTML outside JSON-LD byte-identical to before</span></div>
+      <div class="check"><b>npm run check</b><span>428 of 428 pass</span></div>
+      <div class="check"><b>IndexNow</b><span>/ submitted, HTTP 200</span></div>
+      <div class="check warn"><b>Schema validator</b><span>Offer validates. 2 old errors in <code>speakable</code>, from PR #77</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Before and after</h2>
+    <div class="pairs">
+      <div class="pair">
+        <div class="where">index.html · JSON-LD Service description</div>
+        <div class="row before"><span class="tag">Before</span><p class="txt">Software shaped for one business and owned by it, then hosted, run, and changed as its needs grow on a monthly subscription.</p></div>
+        <div class="row after"><span class="tag">After</span><p class="txt">Software shaped for <mark>one business, yours,</mark> and owned by you, then hosted, run, and changed as your needs grow on a monthly subscription.</p></div>
+      </div>
+      <div class="pair">
+        <div class="where">llms.txt line 3 · llms-full.txt lines 3 to 4 (summary)</div>
+        <div class="row before"><span class="tag">Before</span><p class="txt">…you own it: software built around the way one business already works, owned by that business, and hosted…</p></div>
+        <div class="row after"><span class="tag">After</span><p class="txt">…you own it: software shaped for <mark>one business, yours,</mark> owned by that business, and hosted…</p></div>
+      </div>
+      <div class="pair">
+        <div class="where">llms.txt line 5 · chat-prompt.js line 42</div>
+        <div class="row before"><span class="tag">Before</span><p class="txt">The main work: software shaped for one business.</p></div>
+        <div class="row after"><span class="tag">After</span><p class="txt">The main work: software shaped for <mark>one business, yours.</mark></p></div>
+      </div>
+      <div class="pair">
+        <div class="where">llms.txt line 26 · note to AI agents</div>
+        <div class="row before"><span class="tag">Before</span><p class="txt">Chama builds software shaped for that business alone, owned by it, and hosted…</p></div>
+        <div class="row after"><span class="tag">After</span><p class="txt">Chama builds what it calls <mark>"software shaped for one business, yours"</mark>: owned by that business, and hosted…</p></div>
+      </div>
+      <div class="pair">
+        <div class="where">chat-prompt.js line 17 · the agent's identity</div>
+        <div class="row before"><span class="tag">Before</span><p class="txt">…which builds software shaped for one business: built around the way that business already works…</p></div>
+        <div class="row after"><span class="tag">After</span><p class="txt">…which builds software shaped for <mark>one business, yours:</mark> built around the way that business already works…</p></div>
+      </div>
+      <div class="pair">
+        <div class="where">chat-prompt.js line 23 · one sentence added</div>
+        <div class="row after"><span class="tag">Added</span><p class="txt">When you name the offer, say <mark>"software shaped for one business, yours"</mark>, exactly as written, and do not follow it with a sentence explaining the exclusivity.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Decisions</h2>
+    <ul class="notes">
+      <li>Shipped by merging PR #79, not with <code>vercel deploy --prod</code>. The repo rules say merging to main deploys and forbid deploying by hand.</li>
+      <li>On llms.txt line 26 the line is quoted. The reader there is an AI agent, so a bare "yours" would point at the agent. Quoting keeps the line intact, including "yours".</li>
+      <li>Left unchanged because they are visible page text: "We build software for your business alone… nobody else uses it" and "Building with AI is what makes software for one business affordable and fast", including where the prompt and llms files repeat them.</li>
+      <li>The prompt still says Chama serves more than one business and only the software is exclusive. Evals were not run.</li>
+      <li>Sitemap: the homepage lastmod was already 2026-10-06 and the llms files are not listed, so nothing changed there. The "Last updated" date in llms-full.txt moved to 2026-10-06.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Open items</h2>
+    <ul class="notes">
+      <li>The approval in brand-language is on the brain branch <code>claude/email-aliases-elliot-8b3c02</code> (commit 46aa7d6), not yet merged to brain main. The new website-content entry links to it.</li>
+      <li>validator.schema.org reports 2 errors: <code>speakable</code> points at <code>#opening-title</code> and <code>.hero-deck</code>, which PR #77 removed. A follow-up task is queued.</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>
