@@ -1,8 +1,9 @@
 // The public pages come in two parallel versions: the animated version (/,
 // /coaching, /about: the primary one, a scroll through animated worlds) and
 // the low motion version (under /simple: the same copy as a plain page).
-// These tests guard the seams between them: each low motion page's switch
-// reaches its animated counterpart and its links stay in the low motion
+// These tests guard the seams between them: both versions carry the same
+// motion switch, and each low motion page's switch reaches its animated
+// counterpart and its links stay in the low motion
 // version, each animated page offers its low motion counterpart (and sends
 // a reader who chose it there) and otherwise never drops a reader into it,
 // the animated pages' navigation reaches all three of them from the top and
@@ -38,18 +39,22 @@ function read(url) {
   return readFileSync(file, "utf8");
 }
 
-function viewSwitch(html) {
-  const m = /<nav\b[^>]*\bdata-view-switch\b[^>]*>([\s\S]*?)<\/nav>/.exec(html);
-  return m ? m[0] : null;
-}
-
-function switchLink(html, label) {
-  const nav = viewSwitch(html);
-  assert.ok(nav, "the page has no view switch (a <nav data-view-switch>)");
-  const re = new RegExp(`<a\\b[^>]*href="([^"]+)"[^>]*>(?:(?!</a>)[\\s\\S])*${label}`, "i");
-  const m = re.exec(nav);
-  assert.ok(m, `the switch has no ${label} link`);
-  return m[1];
+// The motion switch: one control on both versions, the animated version's
+// header switch. Off on the animated pages, on (knob across, ember track)
+// on the low motion pages, where it leads back to the animated page.
+function motionToggle(html) {
+  const header = /<header\b[\s\S]*?<\/header>/.exec(html);
+  assert.ok(header, "the page has no header");
+  const m = /<a\b([^>]*\bclass="motion-toggle\b[^"]*"[^>]*)>([\s\S]*?)<\/a>/.exec(header[0]);
+  assert.ok(m, "the header has no motion switch (an <a class=\"motion-toggle\">)");
+  return {
+    tag: m[0],
+    href: (/\bhref="([^"]*)"/.exec(m[1]) || [])[1],
+    on: /\bclass="motion-toggle[^"]*\bon\b/.test(m[1]),
+    motion: (/\bdata-motion="([^"]*)"/.exec(m[1]) || [])[1],
+    track: /class="motion-track"/.test(m[2]),
+    label: (/<span class="motion-label">([^<]*)<\/span>/.exec(m[2]) || [])[1],
+  };
 }
 
 const SITE = [
@@ -72,12 +77,23 @@ function links(html) {
 }
 
 for (const { words, worlds } of PAIRS) {
-  test(`${words} switches to ${worlds}`, () => {
-    assert.equal(switchLink(read(words), "Animated"), worlds);
+  test(`${words} carries the animated version's motion switch, shown on, leading to ${worlds}`, () => {
+    const html = read(words);
+    const t = motionToggle(html);
+    assert.equal(t.href, worlds);
+    assert.ok(t.on, "the switch is not shown on");
+    assert.equal(t.motion, "full", "following the switch does not remember the animated choice");
+    assert.ok(t.track, "the switch has no track and knob");
+    assert.equal(t.label, motionToggle(read(worlds)).label, "the switch is labelled differently from the animated version's");
+    assert.ok(!/view-switch-option/.test(html), "the old two-option switch is still on the page");
+  });
+
+  test(`${worlds} shows the motion switch off`, () => {
+    assert.ok(!motionToggle(read(worlds)).on);
   });
 
   test(`${words} keeps its links between pages inside the low motion version`, () => {
-    const html = read(words).replace(/<nav\b[^>]*\bdata-view-switch\b[\s\S]*?<\/nav>/, "");
+    const html = read(words).replace(motionToggle(read(words)).tag, "");
     const animatedUrls = new Set(PAIRS.map((p) => p.worlds));
     const strays = links(html).map((a) => (a.href || "").replace(/[#?].*$/, "")).filter((h) => animatedUrls.has(h));
     assert.deepEqual(strays, [], `links out of the low motion version: ${strays.join(", ")}`);

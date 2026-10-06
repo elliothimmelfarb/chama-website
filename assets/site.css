@@ -966,57 +966,95 @@ footer {
    the page as written. The animated version (/, /coaching, /about) is
    the same copy as one scroll through animated worlds that burn into each
    other; it has its own stylesheet and engine, worlds.css and worlds.js.
-   The switch is two links, one per version, the current one raised in
-   ink, so it works without JavaScript and each version has an address of
-   its own to share. It replaced the Words / Pictures switch on
-   2026-10-01. */
-.view-switch {
-  display: inline-flex;
-  align-self: start;
-  padding: 2px;
-  margin: 0;
-  border-radius: 999px;
-  background: var(--line);
-}
-
-.view-switch-option {
+   Both versions carry the same Low motion switch in the same corner: off
+   on the animated pages, on here. It is a link to the other version, so
+   it works without JavaScript; with it, the switch flips off before the
+   animated page loads. The look matches .motion-toggle in worlds.css
+   (on its paper theme); change one, change the other. It replaced the
+   two-option Low motion | Animated switch on 2026-10-06. */
+.motion-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.65rem 0.3rem 0.55rem;
+  align-self: start;
+  gap: 0.5rem;
+  min-height: 32px;
+  padding: 0 0.8rem 0 0.45rem;
   border-radius: 999px;
   color: var(--ink);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(20, 20, 18, 0.1);
+  font-size: 0.8125rem;
+  font-weight: 600;
   line-height: 1;
   text-decoration: none;
-  text-transform: uppercase;
-  transition: background 160ms ease, color 160ms ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.3s ease;
 }
 
-.view-switch-option svg {
-  width: 0.85em;
-  height: 0.85em;
-  display: block;
+.motion-track {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 22%, transparent);
+  transition: background 0.3s ease;
 }
 
-.view-switch-option[aria-current="page"] {
+.motion-track i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   background: var(--ink);
-  color: var(--paper);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease;
 }
 
-.view-switch-option:not([aria-current="page"]):hover {
+.motion-toggle:hover {
   color: var(--ember);
 }
 
-.view-switch-option:focus-visible {
+.motion-toggle:hover .motion-track i {
+  transform: translateX(3px);
+}
+
+.motion-toggle.on .motion-track {
+  background: var(--ember);
+  box-shadow: none;
+}
+
+.motion-toggle.on .motion-track i {
+  transform: translateX(12px);
+  background: #fff;
+}
+
+/* On, the knob leans back toward off under the pointer. */
+.motion-toggle.on:hover .motion-track i {
+  transform: translateX(9px);
+}
+
+.motion-toggle:focus {
+  outline: none;
+}
+
+.motion-toggle:focus-visible {
   outline: 2px solid var(--ember);
   outline-offset: 2px;
 }
 
-.masthead .view-switch {
+.masthead .motion-toggle {
   justify-self: end;
+}
+
+/* Named the same on both versions, so crossing between them carries the
+   switch from one page to the other instead of dissolving it. */
+.motion-toggle {
+  view-transition-name: motion-toggle;
 }
 
 /* Crossing between the two versions, or between pages, dissolves instead
@@ -1035,7 +1073,7 @@ footer {
     column-gap: 0.75rem;
   }
 
-  .masthead .view-switch {
+  .masthead .motion-toggle {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
@@ -1053,16 +1091,19 @@ footer {
     justify-self: end;
   }
 
-  /* No glyphs on a phone: with them the switch pushes the wordmark
-     onto two lines. */
-  .view-switch-option {
-    gap: 0;
-    padding: 0.3rem 0.45rem;
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
+  /* On a phone the switch keeps its knob and drops its words, as on
+     the animated pages. */
+  .motion-toggle {
+    min-height: 30px;
+    padding: 0 0.4rem;
   }
 
-  .view-switch-option svg {
-    display: none;
+  .motion-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }
