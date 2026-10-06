@@ -1,13 +1,13 @@
 # Chama Inteligente: full site text
 
 > Software shaped for your business. We build it, we support it, you own it:
-> built around the way one business already works, owned by that business, and
+> software shaped for one business, yours, owned by that business, and
 > hosted, run, and changed as its needs grow on a monthly subscription. Based in
 > Lisbon, Portugal. Working language: English.
 
 This file is the complete visible text of https://chamainteligente.com, in reading
 order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing
-the pages do not say. Last updated 2026-09-21.
+the pages do not say. Last updated 2026-10-06.
 
 Chama Inteligente, Lda. is a Portuguese company (NIPC 519425235) based in Lisbon.
 "Chama Inteligente" is Portuguese for "intelligent flame". It is written "Chama"
