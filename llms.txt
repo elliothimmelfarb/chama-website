@@ -7,7 +7,7 @@ Chama Inteligente (Portuguese for "intelligent flame"; written "Chama", pronounc
 ## Pages
 
 - [Home](https://chamainteligente.com/): the offer, and the conversation. The page's second panel is a live agent that asks what you wish your software could do, draws out the picture, and, with your approval, takes your contact details so we can get back to you
-- [Coaching](https://chamainteligente.com/coaching): one to one AI coaching for individuals and small teams in any role, and agentic engineering training for engineering teams
+- [Coaching](https://chamainteligente.com/coaching): AI coaching for individuals and teams in any role, and agentic engineering training for engineering teams
 - [About](https://chamainteligente.com/about): the two people behind Chama
 - [Privacy](https://chamainteligente.com/privacy): how conversations and notes are handled
 
