@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Page not found | Chama Inteligente</title>
+  <link rel="stylesheet" href="/assets/worlds.css">
+  <script src="/assets/sky.js" defer></script>
+  <script src="/assets/sparks.js" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -12,335 +15,188 @@
   <meta name="theme-color" content="#f3f0e8">
   <meta name="color-scheme" content="light">
   <style>
-    :root {
-      --paper: #f3f0e8;
-      --ink: #141412;
-      --quiet: #66635c;
-      --ember: #f4581f;
-      --pad: clamp(1.25rem, 4vw, 4.5rem);
-      --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* The 404 page: one world from worlds.css, held on screen (--u: 0.5), with
+       the game from sparks.js played over it. The page's own pieces: */
+
+    .lost { --u: 0.5; height: 100vh; height: 100svh; min-height: 34rem; }
+    .lost .pin { position: relative; height: 100%; }
+    /* Without WebGL, sparks.js paints the world's colour on its own canvas,
+       so the section must not paint over it. */
+    html:not(.gl) .lost { background: none; }
+
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.4rem; margin: 1.7rem 0 0 !important; max-width: none !important; }
+    .actions .cta { border: 0; font-family: inherit; cursor: pointer; }
+    .actions .cta svg { width: 18px; height: 18px; fill: currentColor; }
+    .copy p.hint { max-width: 34ch; margin-top: 1.1rem; font-size: 0.875rem; }
+
+    /* Between games the words are on screen; during one they step aside for
+       the score. */
+    .copy, .hud { transition: opacity 0.45s ease, translate 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0s; }
+    html.playing .copy,
+    html.over .copy-start,
+    html:not(.over) .copy-over {
+      opacity: 0;
+      translate: 0 18px;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s ease, translate 0.3s ease, visibility 0s linear 0.3s;
     }
+    .copy-over h2 { max-width: 12ch; }
 
-    * { box-sizing: border-box; }
-
-    html {
-      background: var(--paper);
-      color: var(--ink);
-      font-family: var(--sans);
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-    }
-
-    body { margin: 0; }
-
-    a {
-      color: inherit;
-      text-underline-offset: 0.18em;
-    }
-
-    a:hover { color: var(--ember); }
-
-    .frame {
-      width: min(100%, 70rem);
-      margin: 0 auto;
-      padding-inline: var(--pad);
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      gap: 2rem;
-      padding-top: 1.6rem;
-      padding-bottom: 1.15rem;
-      border-bottom: 1px solid var(--ink);
-    }
-
-    header p {
+    .hud {
+      position: absolute;
+      left: var(--pad);
+      top: calc(96px + env(safe-area-inset-top));
       margin: 0;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      color: var(--fg);
+      pointer-events: none;
     }
-
-    .mark {
-      width: 0.95rem;
-      height: 0.95rem;
-      display: inline-block;
-      vertical-align: -0.14em;
-      margin-right: 0.45rem;
-    }
-
-    main {
-      padding-top: clamp(4rem, 10vw, 8rem);
-      padding-bottom: clamp(5rem, 12vw, 10rem);
-    }
-
-    h1 {
-      max-width: 12ch;
-      margin: 0 0 clamp(2rem, 5vw, 3.5rem);
-      font-size: clamp(3.5rem, 9vw, 7rem);
+    html:not(.playing) .hud { opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+    .hud .kicker { margin-bottom: 0.5rem !important; }
+    .hud-score {
+      display: block;
+      font-size: clamp(3.4rem, 7vw, 6rem);
       font-weight: 500;
-      letter-spacing: -0.07em;
+      letter-spacing: -0.06em;
       line-height: 0.9;
-    }
-
-    .notice {
-      max-width: 46rem;
-      margin-left: auto;
-    }
-
-    p {
-      margin: 0 0 0.85rem;
-      font-size: clamp(1.08rem, 2vw, 1.3rem);
-      line-height: 1.45;
-    }
-
-    p:last-child { margin-bottom: 0; }
-
-    ul {
-      margin: 1.6rem 0 0;
-      padding: 0;
-      list-style: none;
-      border-top: 1px solid rgba(20, 20, 18, 0.28);
-    }
-
-    li {
-      padding: 1.1rem 0;
-      border-bottom: 1px solid rgba(20, 20, 18, 0.28);
-      font-size: clamp(1.08rem, 2vw, 1.3rem);
-    }
-
-    /* The game: keep the flame lit. */
-    .sparks {
-      margin-top: clamp(3.5rem, 8vw, 6rem);
-      border-top: 1px solid var(--ink);
-      padding-top: 1.15rem;
-    }
-
-    .sparks-head {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 0.5rem 2rem;
-      margin-bottom: 1.1rem;
-    }
-
-    .sparks h2 {
-      margin: 0;
-      font-size: clamp(1.6rem, 3.4vw, 2.4rem);
-      font-weight: 500;
-      letter-spacing: -0.04em;
-      line-height: 1;
-    }
-
-    .sparks-tally {
-      margin: 0;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
       font-variant-numeric: tabular-nums;
     }
+    .hud-best { display: block; margin-top: 0.6rem; color: var(--fg2); font-size: 0.8rem; font-weight: 600; }
+    .hud-help { display: block; margin-top: 1.4rem; color: var(--fg2); font-size: 0.8rem; transition: opacity 0.6s ease 0.2s; }
+    html.scored .hud-help { opacity: 0; }
 
-    .sparks-tally b { color: var(--ember); font-weight: 700; }
+    /* The page is one screen; the footer starts below it, without the
+       shadow the long pages use to lay it over their last world. */
+    body > footer { box-shadow: none; }
 
-    .sparks-stage {
-      position: relative;
-      background: #ece7dc;
-      border-radius: 6px;
-      overflow: hidden;
-    }
+    /* While a game is on, the masthead fades so a reach for a spark near the
+       top cannot land on a link, and the page holds still under a finger. */
+    html.playing .top { opacity: 0.2; }
+    html.playing .top > * { pointer-events: none; }
+    html.playing, html.playing body { overflow: hidden; touch-action: none; overscroll-behavior: none; }
+    html.playing body { cursor: none; }
 
-    .sparks canvas {
-      display: block;
-      width: 100%;
-      height: clamp(18rem, 42vw, 24rem);
-      cursor: crosshair;
-      outline: none;
-      touch-action: pan-y;
-    }
-
-    .sparks.playing canvas {
-      cursor: none;
-      touch-action: none;
-    }
-
-    .sparks canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--ember); }
-
-    .sparks-overlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-content: center;
-      justify-items: center;
-      gap: 0.4rem;
-      padding: 1.5rem;
-      text-align: center;
-      background: rgba(236, 231, 220, 0.72);
-    }
-
-    .sparks-overlay[hidden] { display: none; }
-
-    .sparks-overlay p { margin: 0; }
-
-    .sparks-overlay .sparks-title {
-      font-size: clamp(1.3rem, 2.6vw, 1.7rem);
-      font-weight: 500;
-      letter-spacing: -0.03em;
-    }
-
-    .sparks-overlay .sparks-line {
-      color: var(--quiet);
-      font-size: 1rem;
-    }
-
-    .sparks-overlay button {
-      margin-top: 0.9rem;
-      padding: 0.75rem 1.4rem;
-      border: 0;
-      border-radius: 999px;
-      background: var(--ink);
-      color: var(--paper);
-      font: inherit;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .sparks-overlay button:hover,
-    .sparks-overlay button:focus-visible {
-      background: var(--ember);
-      outline: none;
-    }
-
-    .sparks-help {
-      margin-top: 0.8rem;
-      color: var(--quiet);
-      font-size: 0.85rem;
-    }
-
-    /* The footer, the same on every page. Mirrors site.css, which this
-       page does not load. */
-    .page-end {
-      padding-top: clamp(2.6rem, 5vw, 4.4rem);
-      padding-bottom: 2rem;
-      background: #0e0c0a;
-      color: #8d867c;
-    }
-
-    .footer-inner {
+    /* The six worlds down the right edge, as on the home page: here they
+       light as the game reaches them. */
+    .trail {
+      position: fixed;
+      z-index: 6;
+      right: calc(18px + env(safe-area-inset-right));
+      top: 50%;
+      transform: translateY(-50%);
       display: flex;
-      justify-content: space-between;
-      gap: 2rem;
-      font-size: 0.75rem;
-      line-height: 1.4;
-    }
-
-    .footer-inner p {
+      flex-direction: column;
+      gap: 4px;
       margin: 0;
-      font-size: inherit;
-      line-height: inherit;
+      padding: 0;
+      list-style: none;
+      color: var(--fg);
+      transition: color 0.6s ease;
     }
-
-    .footer-inner a {
-      color: inherit;
-      text-underline-offset: 0.18em;
+    .trail li { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-height: 24px; }
+    .trail i {
+      width: 7px;
+      height: 7px;
+      border: 1.5px solid currentColor;
+      border-radius: 50%;
+      opacity: 0.45;
+      transition: transform 0.35s ease, background 0.35s ease, border-color 0.35s ease, opacity 0.35s ease;
     }
-
-    .footer-inner a:hover,
-    .footer-inner a:focus-visible { color: var(--ember); }
-
-    .footer-map a[aria-current="page"] {
-      text-decoration: none;
-      color: #ece7dc;
+    .trail span {
+      font-size: 0.64rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateX(6px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
     }
+    .trail:hover span, html.playing .trail [data-here] span { opacity: 0.85; transform: none; }
+    .trail [data-on] i { background: currentColor; opacity: 0.8; }
+    .trail [data-here] i { background: var(--ember); border-color: var(--ember); opacity: 1; transform: scale(1.35); }
 
-    .footer-social {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .social-link {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.6rem;
-      border: 1px solid rgba(20, 20, 18, 0.24);
-      border-radius: 999px;
-      color: #8d867c;
-      line-height: 1;
-      text-decoration: none;
-    }
-
-    .social-link svg {
-      width: 0.9rem;
-      height: 0.9rem;
-      fill: currentColor;
-      display: block;
-    }
-
-    .social-link:hover,
-    .social-link:focus-visible {
-      border-color: var(--ember);
-      color: var(--ember);
-    }
-
-    @media (max-width: 760px) {
-      .footer-inner {
-        display: grid;
-        gap: 0.3rem;
-      }
+    @media (max-width: 759px), (max-aspect-ratio: 9/10) {
+      .trail { display: flex; top: auto; bottom: auto; right: 16px; top: calc(112px + env(safe-area-inset-top)); transform: none; flex-direction: row; gap: 6px; }
+      .trail li { min-height: 0; }
+      .trail span { display: none; }
+      html:not(.playing) .trail { opacity: 0; }
+      .hud { top: calc(104px + env(safe-area-inset-top)); left: 16px; }
+      .hud-score { font-size: 3.2rem; }
+      .actions { margin-top: 1.2rem !important; gap: 0.7rem 1.1rem; }
+      .copy p.hint { display: none; }
     }
   </style>
 </head>
 <body>
-  <header class="frame">
-    <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente</p>
-    <p><a href="/">Back to the main page</a></p>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <canvas id="sky" class="layer" aria-hidden="true"></canvas>
+  <canvas id="play" class="layer" aria-hidden="true"></canvas>
+
+  <header class="top" data-theme="paper">
+    <a class="mast" href="/">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>
+      <span><b>Chama Inteligente</b><small>Intelligent Flame</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Pages">
+      <span class="offer-switch"><a class="nav-link" href="/">Software</a><a class="nav-link" href="/coaching">Coaching</a></span>
+      <a class="nav-link nav-about" href="/about">About</a>
+    </nav>
   </header>
 
-  <main class="frame">
-    <h1>That page is not here.</h1>
-    <div class="notice">
-      <p>The address you followed does not exist on this site. Nothing is broken on your end.</p>
-      <ul>
-        <li><a href="/">The main page</a>, and the intelligent flame for getting in touch</li>
-        <li><a href="/privacy">Privacy</a>, on how conversations and notes are handled</li>
-      </ul>
-    </div>
+  <ol class="trail" data-trail data-theme="paper" aria-hidden="true">
+    <li><span>Paper</span><i></i></li>
+    <li><span>The grid</span><i></i></li>
+    <li><span>The forge</span><i></i></li>
+    <li><span>The night</span><i></i></li>
+    <li><span>The tides</span><i></i></li>
+    <li><span>The flame</span><i></i></li>
+  </ol>
 
-    <section class="sparks" data-sparks aria-labelledby="sparks-h">
-      <div class="sparks-head">
-        <h2 id="sparks-h">While you are here, keep the flame lit.</h2>
-        <p class="sparks-tally">Sparks <b data-score>0</b> &middot; Best <b data-best>0</b></p>
-      </div>
-      <div class="sparks-stage">
-        <canvas tabindex="0" aria-label="Game: move the cup to catch falling sparks and avoid drops of water. Use the arrow keys, the mouse, or a finger."></canvas>
-        <div class="sparks-overlay" data-overlay>
-          <p class="sparks-title" data-title>Catch the sparks. Dodge the water.</p>
-          <p class="sparks-line" data-line>Every spark feeds the flame. A missed spark or a drop of water shrinks it.</p>
-          <button type="button" data-start>Start</button>
+  <main id="main-content">
+    <section class="world hero lost" data-theme="paper" aria-labelledby="t-lost">
+      <div class="pin">
+        <div class="copy copy-start">
+          <p class="kicker">Error 404</p>
+          <h1 id="t-lost">This page is off the map.</h1>
+          <p class="deck">The address you followed does not lead to a page on this site. Nothing is broken on your end.</p>
+          <p class="actions">
+            <button class="cta" type="button" data-start><svg viewBox="41.5 23 16 16" aria-hidden="true"><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></svg>Keep the flame lit</button>
+            <a href="/">Back to the main page</a>
+          </p>
+          <p class="hint">A small game while you are here: catch the sparks, dodge the water. Every ten sparks takes you to the next world.</p>
         </div>
+
+        <div class="copy copy-over">
+          <p class="kicker">The flame went out</p>
+          <h2>You caught <span data-final>0 sparks</span>.</h2>
+          <p class="deck" data-reached></p>
+          <p class="actions">
+            <button class="cta" type="button" data-again>Light it again</button>
+            <a href="/">Back to the main page</a>
+          </p>
+        </div>
+
+        <p class="hud" aria-hidden="true">
+          <span class="kicker" data-world-name>Paper</span>
+          <span class="hud-score" data-score>0</span>
+          <span class="hud-best">Best <span data-best>0</span></span>
+          <span class="hud-help">Move with the mouse, a finger, or the arrow keys.</span>
+        </p>
+        <p class="sr-only" aria-live="polite" data-live></p>
       </div>
-      <p class="sparks-help">Move with the mouse, a finger, or the arrow keys.</p>
     </section>
   </main>
-  <footer class="page-end">
-    <div class="frame footer-inner">
-      <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
-      <div class="footer-social">
-        <a class="social-link" href="https://www.linkedin.com/company/chama-inteligente/" rel="noopener" target="_blank" aria-label="Chama Inteligente on LinkedIn">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
-        </a>
-      </div>
-      <nav class="footer-map" aria-label="Site"><a href="/">Software</a> &middot; <a href="/coaching">Coaching</a> &middot; <a href="/about">About</a> &middot; <a href="/privacy">Privacy</a></nav>
+
+  <footer data-theme="flame">
+    <div class="end-row">
+      <nav class="site-nav" aria-label="Site">
+        <span class="offer-switch"><a class="nav-link" href="/">Software</a><a class="nav-link" href="/coaching">Coaching</a></span>
+        <a class="nav-link nav-about" href="/about">About</a>
+      </nav>
     </div>
+    <p class="end-small"><a href="/privacy">Privacy</a><span><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</span></p>
   </footer>
-  <script src="/assets/sparks.js" defer></script>
   <script type="speculationrules">
   {
     "prefetch": [
