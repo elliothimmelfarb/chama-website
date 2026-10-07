@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chama Search Console</title>
+<meta name="description" content="Ship report: what Search Console's indexing emails meant for chamainteligente.com, and what was fixed, 2026-10-07.">
+<style>
+  /* A ship report on the site's own paper: ink and ember, one row per Search Console reason. */
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.5rem 4rem; display: grid; gap: 2.6rem; }
+  header { display: grid; gap: 0.9rem; }
+  .eyebrow { margin: 0; color: var(--ember); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+  h1 { margin: 0; font-size: clamp(2rem, 5.5vw, 3.6rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.08rem; }
+  h2 { margin: 0 0 1rem; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); }
+  .reasons { display: grid; border-top: 1px solid var(--line); }
+  .reason { display: grid; grid-template-columns: 13rem 1fr 7.5rem; gap: 1rem; align-items: baseline; padding-block: 0.9rem; border-bottom: 1px solid var(--line); }
+  .reason > * { min-width: 0; }
+  .name { font-weight: 600; }
+  .url { font-family: var(--mono); font-size: 0.82rem; color: var(--ink-dim); overflow-wrap: anywhere; }
+  .why { margin: 0.25rem 0 0; font-size: 0.92rem; }
+  .pill { justify-self: end; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); white-space: nowrap; }
+  .pill.act { background: var(--warn-soft); color: var(--warn); }
+  ul.notes { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem; max-width: 65ch; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  a { color: var(--ink); text-decoration-color: var(--ember); text-underline-offset: 0.2em; }
+  @media (max-width: 40rem) { .reason { grid-template-columns: 1fr; gap: 0.3rem; } .pill { justify-self: start; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Shipped 2026-10-07 · <a href="https://github.com/elliothimmelfarb/chama-website/issues/88">#88</a></p>
+    <h1>Search Console's emails, read and answered</h1>
+    <p class="lede">Two emails (2026-08-23 and today) named four reasons pages were not indexed. They name reasons, not pages, so the Pages report says which URLs they cover. Three were correct behavior. One needed action: <code>/about</code> had never been crawled.</p>
+  </header>
+
+  <section>
+    <h2>Each reason, and its URLs</h2>
+    <div class="reasons">
+      <div class="reason">
+        <div class="name">Discovered, currently not indexed</div>
+        <div><div class="url">/about</div><p class="why">Known since 2026-08-29, never crawled. Live page is clean (200, self-canonical, indexable, in the sitemap). Indexing requested today; Google put it in its priority crawl queue.</p></div>
+        <span class="pill act">Requested</span>
+      </div>
+      <div class="reason">
+        <div class="name">Alternate page with proper canonical tag</div>
+        <div><div class="url">/worlds</div><p class="why">Read on 2026-10-02, when it still served a page pointing to <code>/</code>. It is now a permanent redirect and will move to the row below on its next crawl.</p></div>
+        <span class="pill">Resolves itself</span>
+      </div>
+      <div class="reason">
+        <div class="name">Page with redirect</div>
+        <div><div class="url">www. · http:// · http://www.</div><p class="why">Every variant sends readers to <code>https://chamainteligente.com</code>. This is the intended setup.</p></div>
+        <span class="pill">Correct</span>
+      </div>
+      <div class="reason">
+        <div class="name">Not found (404)</div>
+        <div><div class="url">https://chamainteligente.com/*</div><p class="why">A literal wildcard Google picked up on 2026-08-20. It is in no file and no commit in this repo. A 404 is the right answer.</p></div>
+        <span class="pill">Correct</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What changed in the site</h2>
+    <ul class="notes">
+      <li><code>sitemap.xml</code> listed the retired sharing card <code>og.png</code> with the retired line "Software crafted for your company, and only yours". It now names <code>og-2026-09-22.png</code>, the card every page shares, captioned with that card's published alt text.</li>
+      <li>A new test in <code>test/pages.test.js</code> holds the sitemap to the pages: each entry must be its page's canonical, indexable address, and any image it lists must be that page's <code>og:image</code>. It failed on the stale card before the fix.</li>
+      <li>The README's Search presence section now explains each of these rows, so the next email can be read without opening the report.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>State after shipping</h2>
+    <ul class="notes">
+      <li>Breadcrumbs: 3 valid, 0 issues. Sitemap read today, status Success, 4 pages.</li>
+      <li>Indexed: 3 pages. <code>/about</code> should join them after its crawl; check the Pages report in a week.</li>
+      <li><a href="https://github.com/elliothimmelfarb/chama-website/pull/89">PR #89</a> merged and live; <code>npm run check</code> passes 444 of 444.</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>
