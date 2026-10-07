@@ -176,3 +176,34 @@ for (const url of PUBLIC) {
     assert.deepEqual(external, [], `external requests: ${external.join(", ")}`);
   });
 }
+
+// Structured data that names parts of a page must name parts that exist:
+// validator.schema.org reports a speakable selector that matches nothing as
+// a severe error. Only #id and .class selectors are supported here.
+function speakableSelectors(html) {
+  const out = [];
+  const walk = (v) => {
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (!v || typeof v !== "object") return;
+    if (v.speakable) [].concat(v.speakable.cssSelector || []).forEach((s) => out.push(s));
+    Object.values(v).forEach(walk);
+  };
+  for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) walk(JSON.parse(m[1]));
+  return out;
+}
+
+function matches(html, selector) {
+  const id = /^#([\w-]+)$/.exec(selector);
+  if (id) return new RegExp(`\\bid="${id[1]}"`).test(html);
+  const cls = /^\.([\w-]+)$/.exec(selector);
+  if (cls) return [...html.matchAll(/\bclass="([^"]*)"/g)].some((m) => m[1].split(/\s+/).includes(cls[1]));
+  assert.fail(`unsupported speakable selector ${selector}`);
+}
+
+for (const url of PUBLIC) {
+  test(`${url} names only elements that exist in its speakable structured data`, () => {
+    const html = read(url);
+    const missing = speakableSelectors(html).filter((s) => !matches(html, s));
+    assert.deepEqual(missing, [], `speakable selectors with no match: ${missing.join(", ")}`);
+  });
+}
