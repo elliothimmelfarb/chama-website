@@ -207,3 +207,26 @@ for (const url of PUBLIC) {
     assert.deepEqual(missing, [], `speakable selectors with no match: ${missing.join(", ")}`);
   });
 }
+
+// The sitemap is what Search Console reads to decide what to crawl. Each entry
+// must be the canonical address of an indexable page (an entry that points
+// elsewhere is reported as "Alternate page" or "Page with redirect"), and an
+// image it lists must be the card that page actually shares, so a renamed card
+// does not leave the sitemap pointing at the retired one.
+const SITEMAP = readFileSync(path.join(ROOT, "sitemap.xml"), "utf8");
+const ORIGIN = "https://chamainteligente.com";
+
+for (const [, entry] of SITEMAP.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+  const loc = /<loc>([^<]+)<\/loc>/.exec(entry)[1];
+  const url = loc.slice(ORIGIN.length) || "/";
+  test(`the sitemap's ${url} is that page's canonical address, open to indexing`, () => {
+    const html = read(url);
+    assert.equal(/<link rel="canonical" href="([^"]+)"/.exec(html)?.[1], loc);
+    assert.ok(!/<meta name="robots" content="[^"]*noindex/.test(html), `${url} is noindex`);
+  });
+  for (const [, image] of entry.matchAll(/<image:loc>([^<]+)<\/image:loc>/g)) {
+    test(`the sitemap's image for ${url} is the card the page shares`, () => {
+      assert.equal(image, /<meta property="og:image" content="([^"]+)"/.exec(read(url))?.[1]);
+    });
+  }
+}
