@@ -3,4 +3,5 @@ node_modules
 .DS_Store
 .env*
 .playwright-mcp/
-.claude/
+.claude/*
+!.claude/settings.json
