@@ -4,18 +4,11 @@ You are in the public surface of Chama Inteligente, Lda: the deployable source f
 
 Its sibling, `../chama-inteligente/` ("the brain"), is the company's private repository: the wiki, org state, raw records, and a history of the website's copy and why it changed. The two were split on purpose and stay split.
 
-## Orientation on a cold start
+## Orientation
 
-Read [README.md](README.md) before changing anything; it is the operating manual and the single home of operational state (what each file is, the intake pipeline, the watchdog's verdict logic, DNS, search presence). This file holds only the rules that do not change; when a fact could go stale, it belongs in the README, not here.
+Read [README.md](README.md) before changing anything. It is the operating manual: what each file is, the intake pipeline, the watchdog, the Hearth, DNS, search presence, and the relight steps. When operational reality changes, update the README in the same PR.
 
-The site's center of gravity is the intelligent flame, the live chat agent:
-
-- `assets/agent.js` / `assets/agent.css` is the shared front-end app, mounted embedded on `index.html` and full-screen on `agent.html`.
-- `api/chat.js` is the agent loop over the Claude API; `api/chat-prompt.js` is its entire identity, a hand-authored frozen system prompt reviewed like copy, never casually edited.
-- `api/watchdog.js` is a second model on a cron that reads recent transcripts and can take the flame offline on its own authority. Relighting is always manual (README has the exact steps).
-- `api/intake.js` is the single pipeline for notes to Elliot, whether from the agent's tool or a direct POST.
-
-The members' room, the Hearth (`/hearth`), is the platform the business runs on: `api/hearth.js` and `lib/hearth/` are its backend, `assets/hearth*.js` its front end, `api/mcp.js` its MCP server. The README has the full map.
+The site's center of gravity is the intelligent flame, the live chat agent (`assets/agent.js`, `api/chat.js`). `api/chat-prompt.js` is its entire identity, a hand-authored frozen system prompt reviewed like copy and never casually edited. The watchdog can take the flame offline on its own authority, and relighting is always manual.
 
 Verify work with:
 
@@ -23,7 +16,7 @@ Verify work with:
 npm run check
 ```
 
-That runs syntax checks and all unit tests. `npm run evals` exists but spends API credit; run it only when the agent's behavior or prompt changed and it is worth paying for.
+That runs syntax checks and all unit tests. `npm run evals` spends API credit. Run it only when the agent's behavior or prompt changed and it is worth paying for.
 
 ## Rails
 
@@ -36,10 +29,15 @@ That runs syntax checks and all unit tests. `npm run evals` exists but spends AP
 
 ## Deploying
 
-Merge to `main`. Vercel project `chama-inteligente/chama-inteligente` builds it. Once the production deployment is Ready, verify the live page at https://chamainteligente.com yourself (curl or headless browser); do not trust the config to describe the response. After a content change worth announcing, push IndexNow (command in the README).
+Merge to `main`. Vercel project `chama-inteligente/chama-inteligente` builds it. Once the production deployment is Ready, verify the live page at https://chamainteligente.com yourself (curl or headless browser). Do not trust the config to describe the response. After a content change worth announcing, push IndexNow (command in the README).
 
 ## Conventions
 
-- Brand assets live in `brand/`; the mark's construction rules, including the optical centring rule, are in `brand/mark/README.md`.
-- Keep the README current when operational reality changes; that is where the next session will look.
+- Brand assets live in `brand/`. The mark's construction rules, including the optical centring rule, are in `brand/mark/README.md`.
 - Substantive decisions get recorded in the brain's wiki, not only in commit messages. The brain follows this repo (`wiki/topics/followed-repos.md` there) and reads its log when it matters.
+
+## Knowledge
+
+The README describes what each part is and how to operate it. Non-obvious lessons about this site (gotchas, platform quirks, why something is the way it is) live in skills in `.claude/skills/`, not here and not in memory. Before working in an area, read its skill. When you learn something non-obvious, record it in the skill it belongs under. If something in a skill is no longer true, fix it.
+
+There are no knowledge skills yet. The first discovery should create `chama-website-site` (the public pages, the flame, Vercel and deploys). Name every knowledge skill `chama-website-<area>` so `.gitignore` lets it in.
