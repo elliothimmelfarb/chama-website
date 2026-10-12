@@ -1,5 +1,6 @@
 {
   "enabledPlugins": {
     "stripe@claude-plugins-official": true
-  }
+  },
+  "autoMemoryEnabled": false
 }
