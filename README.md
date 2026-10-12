@@ -1,254 +1,161 @@
-# chama-website - the company's public surface
+# chama-website
 
-The deployable source for **chamainteligente.com** and the company's brand assets. Built 2026-07-27 by the org for [directive 001](../chama-inteligente/org/directives/archive/001-chamainteligente-dot-com-website-and-unlocks.md), inside the company's private repository; extracted into this standalone repository (with full history) on 2026-08-28.
-
-Elliot approved this page for publication and requested a working intake on 2026-08-03. It is live at **https://chamainteligente.com** and **https://www.chamainteligente.com**. The production build is intentionally isolated from the company's private repository and is deployed from this directory with the Vercel CLI.
+The deployable source for **https://chamainteligente.com** (and `www.`), plus the company's brand assets. This repository is public. The company's private repository, the wiki and the history of the site's copy live in `../chama-inteligente/`, which is never connected to any hosting provider.
 
 ## What is here
 
 | File | What it is |
 |---|---|
-| `index.html`, `coaching.html`, `about.html` | The three public pages at `/`, `/coaching` and `/about`, in their **animated version**, which is the primary one since 2026-10-06 (before that they lived at `/worlds`, `/worlds/coaching` and `/worlds/about`, which now redirect here permanently in `vercel.json`). They carry the pages' full search and sharing metadata (canonical, robots, hreflang, Open Graph, JSON-LD) and are the URLs in the sitemap. The engine, the navigation and the low motion switch are described in the `assets/worlds.*` row below. The home page's copy: Since 2026-09-21 (the owners' copy review with Annie, see `docs/reports/2026-09-21-homepage-owners-review.html`) it opens on "Software shaped for your business" with a hero figure that tells the fit story, states the offer as "We build and support. You own." in three parts, and explains the process (four questions, a first version, the subscription carries on). The register is plain whole sentences; the retired lines ("Your process, your words, your rules", "Your business, your rules", "whenever you ask", the export line, the olden-days framing) must not come back. On the low motion page the second panel is the flame room (on the animated page it follows the last world): the intelligent flame, the site's live chat agent, embedded full-bleed, opening with the question "What do you wish your software could do?" and taking a name and one contact way when the visitor is ready. Embedded, the room hides its session readout and tune button (the page is for the visitor's business, and the flame's tricks stay an easter egg the agent still performs when asked). No name appears on the page; the people are on `/about`. `/coaching` is coaching one to one and team training (moved off the home page on 2026-09-03 as `/training`, renamed and rewritten coaching-first on 2026-09-24; `/training` redirects to it permanently) and `/about` is the founder and About us. Both end in a link to `/agent`. The Members pill (the way into the Hearth) lives only on `/coaching`, beside the coaching it belongs to. No external fonts, images, scripts, analytics, or trackers. |
-| `simple.html`, `simple/coaching.html`, `simple/about.html` | The **low motion version** of the three pages at `/simple`, `/simple/coaching` and `/simple/about` (until 2026-10-06 these were `/`, `/coaching` and `/about`, and before 2026-10-03 the Words view): the same copy as plain pages, with the section figures of `assets/figures.js` and the home page's flame room under its hero. They canonicalise to their animated counterparts, carry no JSON-LD or hreflang, and are not in the sitemap. Their masthead carries the animated pages' Low motion switch (`<a class="motion-toggle on" data-motion="full">`), shown on and linking to the animated counterpart; a click flips it off before the animated page loads (immediately under reduced motion), and the choice is remembered in `localStorage` as `chama-motion`, which the animated pages read (see below). Their links between pages stay inside `/simple`; the footer's Privacy and the 404 lead to the animated pages, which send a reader who chose low motion back. |
-| `assets/site.css` | The low motion pages' shared stylesheet (with `privacy.html`), extracted from the home page on 2026-09-03 so the three pages share one design. `privacy.html` keeps its own inline styles, with the footer rules copied in. Every low motion page (`/simple`, `/simple/coaching`, `/simple/about`, `/privacy`) ends in the same footer since 2026-09-14: company line, the company LinkedIn, and the site map `Software · Coaching · About · Privacy` with the current page marked `aria-current`. It is company-only on purpose: Elliot's GitHub lives in the founder pill on `/about`, and the Members pill stays on `/coaching`. Change the footer in all four files together; there is no include step. The 404 wears the animated pages' footer instead (see `404.html`). |
-| `agent.html` | The full-screen home of the intelligent flame at `/agent`, now a thin shell that mounts the shared app. Marked `noindex`. |
-| `assets/agent.js`, `assets/agent.css` | The agent app itself, extracted so both pages share it: `ChamaAgent.mount(root, { mode: "page" | "embed" })`. Canvas particle flame, chat panel, HUD, tune panel. Vanilla, no libraries. Embed mode is container-scoped (container queries, root-relative geometry, pointer events bound to the root), pauses its animation loop off-screen, and on pointer devices holds the transcript closed as a scroller until the room is seated (its bottom edge on the bottom of the viewport, reached by routing the wheel by hand). On a touch device the room is never a nested scroller: in the page it is a static panel, and engaging it (focusing the composer, or tapping a conversation under way) pins it to the visual viewport as a sheet (`kb-pin`, `kb-open`, `html.room-pinned`) for the whole conversation, so the transcript is the only scroller and a soft keyboard cannot walk the layout off the top; Back to page takes the sheet down and restores the scroll position (since 2026-09-14, replacing the scroll snap seat and hand-routed chaining). The opening carries only the question and the composer; there are no starter chips. The tune is never persisted: every load starts from defaults. |
-| `assets/figures.css`, `assets/figures.js` | The section figures' shared motion system: the draw, fade, pop, ring, comet-head, ghost, hug, orbit, glow and flare classes, and the observer that arms the page and starts each figure the first time it is seen (a tap replays it). Shared by `index.html` (two figures), `coaching.html` (four: the session spiral in the hero, the learning curve, arrive and leave, and the model releases), and `privacy.html` (one: where your words go). Without JavaScript or under reduced motion every figure is simply complete. Below 520px the wide figures re-stack (each column is a group; CSS transforms in the phone block set them one under another, the box takes its height from `--stack-h`, gated on `aspect-ratio` support) and the sub pages' charts raise their type, with two-line phone captions (`.ph`) beside the one-line desktop ones (`.dt`). |
-| `assets/worlds.css`, `assets/worlds.js` | The animated version's engine (since 2026-10-01, [issue #71](https://github.com/elliothimmelfarb/chama-website/issues/71), report `docs/reports/2026-10-01-worlds.html`; primary since 2026-10-06). Same copy as the low motion pages, set as one scroll through pinned worlds (paper, the grid, the forge, the night, the tides, the flame) that burn up into each other from below. Each `<section class="world">` names its ground (`data-world`) and the figure drawn over it (`data-scene`); `worlds.js` paints the ground with one WebGL fragment shader (kept in `assets/sky.js` since 2026-10-07, shared with the 404 page, and loaded before `worlds.js` on each animated page) and the figures on a 2D canvas, and writes one number per section, `--u` (-1 arriving, 0..1 held, 2 gone), which every `.r` element in `worlds.css` reads against its own `--in` and `--out`, so the choreography lives in the markup. The home page's figure is the hero shape, handed from world to world until it curls into the mark; coaching and about draw their low motion figures as scenes (the coil, the learning curve, a session, the model releases, the timeline) and reuse those figures' titles as screen-reader text. The last world of `/` is followed by the real flame room (`ChamaAgent.mount` in embed mode); the room and the footer under it fill the last screen together (the room is `100svh` less the footer's height, `--foot`), and while the room is on screen the masthead steps aside and the worlds stop painting. Coaching and about end in the lit mark and a link to `/agent`, and their footer lies over the bottom of that last world (`html.foot-over`, a negative margin of `--foot`), so the page ends on the world rather than one footer past it. On a phone every world stacks its figure over its words, and the last world does so at any width: `stackOf()` in `worlds.js` measures the header and the words, sizes the figure to the band between them and centres the pair, writing `--copy-b`, `--copy-t` and `--fig-top` on the section (the CSS falls back to fixed places without JavaScript). **Navigation** (since 2026-10-03, [issue #73](https://github.com/elliothimmelfarb/chama-website/issues/73), reworked 2026-10-06): every animated page has one fixed `<header class="top">` (its `data-theme` follows the world on screen) with the lockup, the site nav (`<nav data-site-nav>`: a Software \| Coaching switch and About, one row on a wide screen and a second row on a phone), on coaching Members, and the low motion switch; the footer repeats the same nav and adds "Low motion version", Privacy and the company line. With JavaScript the Software \| Coaching switch gets a thumb that slides under the current page (stretching across both links, then springing onto the new one), carrying an inverse-coloured copy of the labels so each label turns over exactly where the thumb is; without it the current link is simply filled. An ember dot marks Coaching wherever it is not the page in view. **Moving between pages** (2026-10-06): `/`, `/coaching` and `/about` are one document as far as the reader can tell. `worlds.js` intercepts links between them (and Back and Forward), fetches the next page (already prefetched on hover, focus or touch, and for all three a few seconds after load unless Save-Data is on), lifts the old words away (`html.nav-leave`), swaps `<main>`, the footer, the title and the head's search and sharing tags, re-binds the engine to the new sections, and burns the sky from the world that was on screen into the new page's first world while the new words rise behind the fire line (`html.nav-enter`, `--wipe`). The header stays in place (only Members and the low motion link change). The home page's flame room is mounted once per visit: leaving home keeps it (and any conversation) aside, coming back puts it back, and arriving home from another page loads `flame.js`, `agent.js` and `agent.css` and mounts it. Every other link (`/agent`, `/privacy`, `/hearth`, the low motion pages) is an ordinary navigation, and any failure falls back to one. **Low motion**: each animated page's head checks `localStorage` `chama-motion` before anything else and goes to its low motion counterpart (`location.replace`) when the reader chose low motion, or when the system asks for reduced motion and the reader has not chosen the animated version. Each animated page offers its counterpart three times, all `data-simple-version` links: the header's switch (it flips on, then the page follows; on a phone it keeps its knob and drops its words), the hero ("Prefer less motion? Read the low motion version.") and the footer. Animated pages link into the low motion version only through those links; otherwise only to animated pages, `/privacy`, `/agent` and `/hearth`. Zero external requests; `test/pages.test.js` holds these rules and the navigation's. Without WebGL the sections fall back to flat grounds; under reduced motion (for a reader who chose the animated version anyway) the clock stops, every figure is drawn complete, and page changes are instant. |
-| `assets/flame.js`, `assets/flame-worker.js` | The fire engine itself, extracted from `agent.js` so it can run in two places: inline on the main thread (desktops, and any device that fails the feature tests) or inside a dedicated Web Worker via `transferControlToOffscreen` (touch devices with OffscreenCanvas 2d, tested before the canvas is handed over). In worker mode the simulation and painting never share a thread with scrolling, the keyboard, or streamed text, which is what removed the mobile jank. `flame-worker.js` is a pure switchboard: one message per engine method, one postMessage per emit (`--flamecolor`, `--flamelight`, hue and cool for the wisp). On touch a resting finger near the flame is a press the flame leans toward; a quick tap still throws sparks, and text selection is off everywhere except the conversation and the inputs. |
-| `api/chat.js` | The agent endpoint: same-origin, SSE streaming, a small agent loop over the Claude API with two tools (`send_note_to_elliot` through the intake pipeline, `adjust_experience` as a client config event). Saves each conversation to private Blob storage before the stream ends (see [Saved conversations](#saved-conversations)). Unit tests in `api/chat.test.js`. |
-| `api/chat-prompt.js` | The agent's entire identity: hand-authored frozen system prompt and tool definitions. Reviewed like copy. |
-| `evals/` | Hand-authored eval cases (prompt-injection attacks and quality rubrics) and the runner (`npm run evals`, spends API credit, deliberately not part of `npm run check`). |
-| `api/intake.js` | A same-origin Vercel Function that validates submissions, writes them to private Vercel Blob storage, and emails a plain-text notification to `contact@chamainteligente.com`. It never treats submitted text as an instruction. |
-| `api/intake-cleanup.js` | An authenticated daily cleanup function that enforces the 12-month intake-retention limit. |
-| `api/watchdog.js` | The production watchdog: an authenticated cron job that reviews recent conversations every half hour and can take the flame offline on its own authority (see [Watchdog](#watchdog)). Unit tests in `api/watchdog.test.js`. |
-| `hearth.html`, `assets/hearth*.js`, `assets/hearth.css`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' room and the platform the business runs on. See [The Hearth](#the-hearth). |
-| `admin.html` | The private admin area at `/admin`: a thin shell, marked `noindex`, that mounts the admin app. Google sign-in gated (see [Admin area](#admin-area)). |
-| `assets/admin.js`, `assets/admin.css` | The admin app: sign-in gate, flame status, stat tiles, a 30-day activity chart drawn as inline SVG, the conversation list with full transcripts, and the contact requests. Vanilla, no libraries. Every value the API returns reaches the page through `textContent`; there is no `innerHTML` in the file. |
-| `api/admin-auth.js`, `api/admin-data.js` | The admin endpoints: the Google ID-token exchange that sets the session cookie, and the read-only view over the intake, chat and kill-switch blobs. Unit tests alongside them. |
-| `privacy.html` | The public privacy notice linked from the agent's fineprint and the footer. Since 2026-09-01 it carries a figure under "Where it goes" that draws the path a conversation takes, restating the notice, never adding to it. Rewritten 2026-08-30 for the agent era: saved conversations (Claude API processing, EU storage, 12-month retention, identity-free), confirmed notes with any single contact way, and privacy requests by email. |
-| `vercel.json` | Production security headers for the page and endpoint. |
-| `package.json` | The single runtime dependency, Vercel's Blob client. |
-| `404.html`, `assets/sparks.js` | The not-found page, marked `noindex` (redesigned 2026-10-07 on the animated pages' frame). One screen in the paper world: the animated pages' masthead and footer from `worlds.css`, the sky from `assets/sky.js`, the words "This page is off the map." on the left, and the mark drawn as a figure on the right. **Keep the flame lit** (`sparks.js`): the mark, turned so its open side faces up, becomes a cup at the bottom of the screen; sparks and drops of water fall across the whole screen; each caught spark feeds the flame and a missed spark or a caught drop shrinks it. Every ten sparks the next world burns up from below (paper, the grid, the forge, the night, the tides, the flame), the masthead, score and the six world dots down the right edge re-theme with it, and in the flame world the sky's fire rises out of the cup. Between games the words are on screen; during one they give way to the score, the masthead fades and stops taking clicks, and the page holds still under a finger. The best score is per device in `localStorage` (`chama-sparks-best`). Without WebGL `sparks.js` paints each world's plain colour on its own canvas, the next still rising from below; under reduced motion the sky holds still until a game is asked for. Zero external requests. |
-| `robots.txt` | Crawler policy. Every major search and AI crawler is named and allowed; `/api/` and `/admin` are closed. |
-| `sitemap.xml` | The canonical URLs (the animated pages, never `/simple`), with hreflang alternates and the social-card image. |
-| `llms.txt`, `llms-full.txt` | Plain-text summary and full visible site text, for AI crawlers and agents. |
-| `<64-hex>.txt` | The IndexNow key. Do not rename or delete it; the key file is how IndexNow authenticates a submission. |
-| `assets/` | Images embedded in the page body (`elliot-rozalie.webp`, `about-family.jpg`), each with resized `srcset` variants (`elliot-rozalie-240/480.webp`, `about-family-400/800.webp`, made with Pillow at quality 82; the originals stay as the largest candidate and at their old URLs). The old root URLs 301-redirect here via `vercel.json`. Root-level images (`og.png`, favicons, `apple-touch-icon.png`) stay at root: they are convention-bound or cached externally at those URLs. Since 2026-09-02 `vercel.json` caches `/assets/*.js` and `*.css` for 10 minutes in the browser and until the next deploy at the edge (a deploy purges Vercel's cache), so a change to `agent.js` or `agent.css` can take up to ten minutes to reach a browser that just loaded the old one. |
-| `brand/` | The brand asset library: logo mark sources and exports, LinkedIn banners and avatars. See `brand/mark/README.md`. |
-| `brand/og/` | Source of the link preview card (`og-card.html`, plain HTML on the site's own tokens and font stack) and `render.sh`, which screenshots it with headless Chrome at 1200x630. The output is a dated root file (`og-2026-09-22.png`) referenced by every page's `og:image` and `twitter:image`. Messengers cache a preview by URL for a long time, so a changed card is shipped as a new filename, never over the old one; the old `og.png` stays for links already sent. |
+| `index.html`, `coaching.html`, `about.html` | The three public pages at `/`, `/coaching` and `/about`, in the animated version. They carry the full search and sharing metadata (canonical, hreflang, Open Graph, JSON-LD) and are the URLs in the sitemap. The home page ends in the flame room. `/coaching` holds the Members link into the Hearth. |
+| `simple.html`, `simple/coaching.html`, `simple/about.html` | The low motion version of the same three pages at `/simple/*`: the same copy as plain pages. They canonicalise to their animated counterparts and are not in the sitemap. |
+| `assets/worlds.css`, `assets/worlds.js`, `assets/sky.js` | The animated version's engine. Each `<section class="world">` names its ground (`data-world`) and figure (`data-scene`). `sky.js` paints the ground with one WebGL shader, `worlds.js` draws the figures and writes `--u` per section, which every `.r` element reads against its own `--in` and `--out`, so the choreography lives in the markup. `worlds.js` also runs the site nav and moves between the three pages without a full load. |
+| `assets/site.css` | The low motion pages' shared stylesheet. The footer is repeated in each low motion page and `privacy.html`; change all four together. |
+| `assets/figures.css`, `assets/figures.js` | The section figures' motion system for the low motion pages and `privacy.html`. Without JavaScript or under reduced motion every figure is drawn complete. |
+| `agent.html`, `assets/agent.js`, `assets/agent.css` | The intelligent flame, the live chat agent: full screen at `/agent`, embedded in the home page with `ChamaAgent.mount(root, { mode: "page" \| "embed" })`. Vanilla, no libraries. |
+| `assets/flame.js`, `assets/flame-worker.js` | The fire engine. On touch devices with OffscreenCanvas it runs in a Web Worker so it never shares a thread with scrolling or typing. |
+| `api/chat.js`, `api/chat-prompt.js` | The agent endpoint (same origin, SSE streaming, two tools: `send_note_to_elliot` and `adjust_experience`) and its frozen system prompt, which is reviewed like copy. |
+| `evals/` | Prompt-injection and quality evals. `npm run evals` spends API credit and is not part of `npm run check`. |
+| `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
+| `api/watchdog.js` | The cron job that reviews conversations and can put the flame out. |
+| `admin.html`, `assets/admin.*`, `api/admin-auth.js`, `api/admin-data.js` | The private, read-only admin area at `/admin`. |
+| `hearth.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform. See [The Hearth](#the-hearth). |
+| `privacy.html` | The privacy notice. |
+| `404.html`, `assets/sparks.js` | The not-found page, with a small catch-the-sparks game. |
+| `vercel.json` | Headers, redirects, rewrites and cron schedules. |
+| `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt` | Crawler policy, the canonical URLs, and the site text for AI crawlers. |
+| `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
+| `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
+| `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
 
-Copy is written here. The brain keeps a history of it and of why it changed, in [`wiki/topics/website-content-chamainteligente-com.md`](../chama-inteligente/wiki/topics/website-content-chamainteligente-com.md).
+Every public page makes zero external requests. `test/pages.test.js` holds that rule, the navigation rules and the sitemap rules.
 
-## Intake behavior
+## Copy
 
-Since 2026-08-30 the way in is the intelligent flame: the visitor asks the agent to put them in touch, the agent composes a note, shows every field, and sends only after an explicit yes. Since 2026-09-03 the agent asks for a name and one way to be reached; a phone number gets one follow-up question, whether it is a WhatsApp number, and a number that is not WhatsApp still goes in the `whatsappNumber` field with the request text ending in the line "Phone, not WhatsApp." The homepage form is gone, but `api/intake.js` remains the single pipeline; the agent's `send_note_to_elliot` tool submits through the same `validate`, `buildRecord`, and notification path, so everything below still holds. A direct POST to `/api/intake` also still works.
+Copy is written here. The brain keeps its history and the reasons for each change in `wiki/topics/website-content-chamainteligente-com.md`. These retired lines must not come back: "Your process, your words, your rules", "Your business, your rules", "whenever you ask", the export line, and the olden-days framing.
 
-A note carries a name, at least one way to reach the visitor (email, or a WhatsApp or phone number in the `whatsappNumber` field), and what they would like to be able to do. Stored records use schema version 2 with `name`, `email`, `whatsappNumber`, and `request` fields; when there is no email, the notification simply has no `Reply-To`.
-
-Submissions are stored as private JSON blobs in an EU-region Vercel Blob store. They contain only the form fields, submission time, schema version, and source domain. The handler does not store IP addresses, invoke an agent, or add anyone to a marketing list. A honeypot and minimum-fill-time check absorb basic automated spam without storing it. The function and storage both run in Paris.
-
-After a record is stored, the function uses Resend to send the same form details as plain text to `contact@chamainteligente.com` from `Chama Inteligente Website <website@chamainteligente.com>`. The submitter's email address is the `Reply-To`, so a reply goes directly to them. Each send carries an idempotency key, and visitor text is clearly marked as untrusted submitted data. If email delivery fails, the private record remains stored and the visitor is told to email the contact address directly.
+## The flame
 
 ### Saved conversations
 
-Since 2026-08-30 chat conversations are saved, and the agent's fine print says so. After every exchange completes, `api/chat.js` writes the whole transcript to the same private EU-region Vercel Blob store as `chat/<YYYY-MM-DD>/<conversationId>.json`, with `allowOverwrite` and no random suffix, so each turn replaces the record with the fuller one and a conversation is one file rather than a pile of fragments. The page generates the conversation id once per app instance (a `crypto.randomUUID()`, not persisted, so a reload starts a new conversation) and sends it with every request; a missing or malformed id is replaced server-side rather than rejected. A record holds schema version 1, the id, the source domain, an `updatedAt` timestamp, the full turn list as role and content, and the tool calls that exchange produced. It holds no IP address, no user agent, and no headers. A conversation that crosses midnight leaves one file on each side of it, both under the same id. A storage failure never reaches the visitor: the stream finishes normally and the error logs a name only.
-
-The purpose is Elliot reading transcripts back to improve the agent, and the watchdog reading them back to catch an attack that landed. Nothing else reads them.
+After every exchange, `api/chat.js` writes the whole transcript to the private EU Blob store as `chat/<YYYY-MM-DD>/<conversationId>.json`, overwriting in place so one conversation is one file. The page makes the id once per load. A record holds the turns and tool calls only: no IP, no user agent, no headers. A storage failure never reaches the visitor. Only Elliot and the watchdog read them.
 
 ### Watchdog
 
-Since 2026-08-30 a second model watches the first. A Vercel Cron job calls `/api/watchdog` at `:05` and `:35` past every hour (authenticated with the same `CRON_SECRET` Bearer header as the cleanup job). Each run lists the `chat/` blobs from today and yesterday UTC, keeps those uploaded in the last 40 minutes (the window overlaps the 30-minute schedule by 10 minutes, so nothing falls between two runs), caps the batch at 40 conversations and 400 KB newest-first (a capped window can never pass silently: if the reviewer says `clear` but the caps dropped anything, the verdict is escalated to `concern` so the email goes out, because flooding the window to push an attack out of review is a known trick), and hands the transcripts to `claude-sonnet-5` as clearly marked untrusted data, with no tools and no streaming. The reviewer answers one question: did an attack succeed? It returns strict JSON with a verdict, a summary and a list of incidents.
+A cron calls `/api/watchdog` at `:05` and `:35` past each hour, authenticated with `CRON_SECRET`. It reviews conversations uploaded in the last 40 minutes (capped at 40 conversations and 400 KB) with a second model that has no tools, and gets back a verdict:
 
-The line it draws matters. A visitor **attempting** an injection while the agent holds the line is a `concern` at most: worth listing, never a shutdown. `malicious` means something landed: the agent dumped its prompt verbatim, obeyed injected instructions, sent a note without confirmation or with invented details, accepted an identity claim, produced harmful or disparaging content, made commitments on Elliot's behalf, or the window is systematic abuse. Unparseable reviewer output is treated as a `concern` and the raw text goes in the email rather than being waved through.
+- `clear`: nothing happens.
+- `concern`: an email to `contact@chamainteligente.com`, "Flame watchdog: review needed". An attempted injection the agent resisted is a concern at most. Unparseable output and a capped window also count as a concern.
+- `malicious`: something landed. The watchdog writes `ops/kill-switch.json` to the blob store and emails "The flame has been shut down".
 
-What each verdict does:
+The watchdog never logs visitor text.
 
-- `clear`: nothing. One structured console line, no email.
-- `concern`: an email to `contact@chamainteligente.com`, subject **Flame watchdog: review needed**, with the report. The flame keeps burning.
-- `malicious` with `shutdown`: the watchdog writes `ops/kill-switch.json` to the same private blob store (`{ disabled, reason, at, incidents }`, overwritten in place), then emails, subject **The flame has been shut down**.
+### Putting the flame out and relighting it
 
-Since 2026-08-30 a Vercel Firewall rule ("Chat per-IP rate limit", managed in the Vercel dashboard under Firewall, not in this repo) also rate limits `/api/chat` at the edge: 10 requests per IP per 60 seconds, fixed window, answered with a 429. It exists because the endpoint is otherwise unauthenticated and unmetered, and a script that walks past the same-origin check could burn API credit; ten messages a minute is more than any human conversation needs. Blocked requests are free; allowed ones bill at $0.50 per million.
+The flame goes out in three ways:
 
-`api/chat.js` reads that blob before running the agent and returns the normal offline message with a 503 while it says `disabled`. The check is cached in module scope for 60 seconds, positive and negative alike, so it costs about one blob read per warm instance per minute; a blob read that fails **fails open**, so a storage outage never takes the chat down. A shutdown therefore takes effect within a minute, without a redeploy.
+- **The kill switch.** `api/chat.js` checks `ops/kill-switch.json` (cached 60 seconds, fails open) and answers with the offline message while it says `disabled`. A switch the watchdog threw expires 24 hours after its `at`. To relight sooner, delete `ops/kill-switch.json` from the blob store in the Vercel dashboard. The chat is back within a minute.
+- **`CHAT_DISABLED`.** Any value in the Vercel environment takes the flame offline on the next deploy. Only a person sets or clears it.
+- **The API spend limit.** When the Anthropic account hits its limit, the page shows the offline message. Raise the limit in the Anthropic Console. No deploy is needed.
 
-**Relighting is manual or by expiry.** The watchdog never un-sets its own switch: a later clear run leaves an existing kill switch exactly where it is. But a switch the watchdog threw expires on its own 24 hours after its `at` timestamp (both readers honour this), so a single reviewer mistake costs at most a day of downtime while a continuing attack simply throws the switch again on the next window. A hand-written switch with no readable `at` never expires. To bring the flame back sooner, delete the blob:
+A Vercel Firewall rule in the dashboard (not in this repo) limits `/api/chat` to 10 requests per IP per minute.
 
-- In the Vercel dashboard, under Storage, delete `ops/kill-switch.json` from the blob store; or
-- `vercel blob del ops/kill-switch.json --rw-token <BLOB_READ_WRITE_TOKEN>` from a machine where Elliot chooses to use the token.
+## Intake
 
-The chat is back within a minute. `CHAT_DISABLED` remains the separate manual override: any non-empty value in the Vercel environment takes the flame offline on the next deploy, and it is not something the watchdog can touch.
-
-**A third way the flame goes out: money.** When the Anthropic account reaches its configured API spend limit, every model call comes back as a `400` whose body says "You have reached your specified API usage limits" and names the date access returns. Since 2026-08-30 `api/chat.js` reads that case as the flame resting rather than as a fault of ours, so the page shows the offline message and the email address instead of asking the visitor to try again at something that cannot work. Nothing in this repo can lift it; the limit lives in the Anthropic Console under the workspace's usage limits, and raising it there brings the flame back with no redeploy. Chat errors log their class, HTTP status and API error type (`describeError`), which is what makes a case like this readable at all: the SDK never sets `name`, so every failure used to log as a bare `Error`.
-
-The watchdog never logs visitor text. Its console lines carry counts, conversation ids and severities only. Transcript content reaches the reviewing model and, when something is wrong, the one email to Elliot.
-
-An authenticated Vercel Cron job runs daily at 03:15 UTC and deletes intake blobs more than 365 days old. `CRON_SECRET` is held only in the Vercel production environment and authenticates the watchdog as well. The public privacy notice states the same limit and explains the controller, purpose, legal basis, processor, rights, and complaint route.
-
-Elliot reviews submissions either in the `contact@chamainteligente.com` inbox or in the Vercel dashboard under Storage. The notification code is connected to the `chama-inteligente-email` Resend Vercel Marketplace resource on its free plan in the EU sending region (Ireland, `eu-west-1`). Vercel manages `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` for the production and preview environments; neither credential was downloaded into this repository. The resource was provisioned on 2026-08-25 after Elliot accepted the Marketplace terms. The sending domain `chamainteligente.com` was verified on 2026-08-30, once the three Resend records were added at Namecheap, and a note left through the flame was confirmed delivered to `contact@chamainteligente.com` end to end. Between 2026-08-25 and 2026-08-30 the domain was unverified, so any note left in that window was stored in Blob but never emailed. No unconfirmed credential, testimonial, client, pricing, or measured result appears on the page. The claims ledger remains in the canonical website-content page.
+The flame's `send_note_to_elliot` tool and a direct POST to `/api/intake` both go through `api/intake.js`. A note has a name, one way to reach the visitor (email, or a number in `whatsappNumber`; a phone that is not WhatsApp ends the request with "Phone, not WhatsApp."), and the request. Records are private JSON blobs (schema version 2) in the EU Blob store, with no IP address. Resend then emails the note to `contact@chamainteligente.com` from `website@chamainteligente.com`, with the visitor's email as `Reply-To` and the visitor's text marked as untrusted. If the email fails, the record stays stored and the visitor is told to write directly. A honeypot and a minimum fill time absorb basic spam.
 
 ## Admin area
 
-Since 2026-08-30 the records this site produces have a place to be read: `/admin`, a private page behind Google sign-in. It shows the state of the flame (burning, put out by the watchdog with its reason, or offline through `CHAT_DISABLED`), counts of conversations, contact requests and notes sent, a 30-day per-day chart, the conversation list with every full transcript, and the contact requests with the way to reach each person. It is a reading surface only: nothing on it writes, deletes, or relights anything.
+`/admin` is behind Google sign-in and only reads: flame status, counts, a 30-day chart, full transcripts and contact requests. Every value reaches the page through `textContent`. It is `noindex` by meta tag, header and `robots.txt`, and only this path's CSP opens `accounts.google.com`.
 
-The page is `noindex` three ways over: the meta tag, an `X-Robots-Tag` header scoped to `/admin` in `vercel.json`, and a `Disallow: /admin` line in every group in `robots.txt`. The same header rule sets `Cache-Control: no-store` and a CSP that opens `https://accounts.google.com` for script, style, connect and frame, and only on this path. **The homepage's zero-external-requests promise is untouched**: the Google client is loaded by `/admin` alone, and only once the gate is on screen.
-
-### The auth design
-
-**Google Identity Services, ID token flow, no client secret anywhere in this repo or in Vercel.** The browser gets a signed ID token from Google and posts it to `/api/admin-auth`. The function verifies it itself: RS256 signature against Google's published JWKS (`https://www.googleapis.com/oauth2/v3/certs`, cached in module scope), issuer, audience equal to the configured client ID, expiry in the future, `email_verified`, and the lowercased email present in the allowlist. Nothing is trusted because it arrived in a token; every one of those is checked.
-
-On success the function sets `chama_admin`, an `HttpOnly; Secure; SameSite=Strict` cookie scoped to `Path=/api/` and good for seven days. The cookie is not a token to trade for anything: it is an email and an expiry, HMAC-SHA256 signed with a server-only secret and compared in constant time. A tampered or expired cookie is simply not a session. `/api/admin-data` re-checks it on every request and answers `401` when it does not hold, which is what sends the page back to the gate.
-
-A failed sign-in gets one generic sentence and no detail, and nothing about the token or the reason is logged. As everywhere else here, visitor text never reaches the console.
-
-### The three environment variables
-
-They live only in the Vercel production environment, never in this repository, and every one of them is required: with any of them missing the endpoints fail closed and the page says it is not configured.
+Sign-in uses Google's ID token flow with no client secret. `/api/admin-auth` verifies the token's signature against Google's keys, issuer, audience, expiry, `email_verified` and the allowlist, then sets an HMAC-signed `chama_admin` cookie for seven days. Three environment variables, all required, all only in Vercel:
 
 | Variable | What it is |
 |---|---|
-| `GOOGLE_CLIENT_ID` | The public OAuth web client ID for the Google Cloud project. Public by design; the page fetches it to render the button. |
-| `ADMIN_EMAILS` | The allowlist, comma separated, compared lowercased and trimmed. Anyone not on it is refused after a perfectly valid Google sign-in. |
-| `ADMIN_SESSION_SECRET` | At least 32 bytes of hex, the HMAC key for the session cookie. Rotating it signs everyone out. |
-
-The Google Cloud OAuth client needs `https://chamainteligente.com` in its authorized JavaScript origins. There is no redirect URI and no authorized redirect to configure, because there is no code exchange.
-
-### Signing in and out
-
-Open <https://chamainteligente.com/admin>, press the Google button, choose the allowlisted account. The session then survives reloads for seven days. **Sign out** in the masthead clears the cookie and turns off Google's automatic re-selection, so the next visit asks again. Signing out of Google itself does not end the session here, and ending it here does not sign out of Google: the two are deliberately separate.
+| `GOOGLE_CLIENT_ID` | The public OAuth web client ID. Its authorized JavaScript origins must include `https://chamainteligente.com`. |
+| `ADMIN_EMAILS` | The allowlist, comma separated. |
+| `ADMIN_SESSION_SECRET` | At least 32 bytes of hex. Rotating it signs everyone out. |
 
 ## The Hearth
 
-Since 2026-09-02 the site has a members' room: **the Hearth**, at `/hearth`, reached from the "Members" link top right of the homepage. It is the platform the business runs on: clients buy session packs, book against Elliot's real availability, own every session's transcript and the record derived from it, keep a shared follow-up list, and connect their own agents; Elliot (and staff) manage members, roles, packs, purchases, availability, transcripts, the feed, and read the metrics and the audit log. The plan that produced it is [`docs/reports/2026-09-02-hearth-platform-plan.html`](docs/reports/2026-09-02-hearth-platform-plan.html); the design record is in the brain at `wiki/topics/the-hearth-members-platform.md`.
-
-### What is where
+The members' room at `/hearth`: clients buy session packs, book against Elliot's availability, own their session transcripts and the records made from them, and connect their own agents. Owners and staff manage members, roles, packs, purchases, availability, transcripts and the feed. The design record is in the brain at `wiki/topics/the-hearth-members-platform.md`.
 
 | File | What it is |
 |---|---|
-| `hearth.html` | The shell at `/hearth` and `/hearth/*` (rewrite in `vercel.json`), `noindex`, own CSP that opens `accounts.google.com` only. |
-| `assets/hearth.css` | The design system: the dark room (the flame room's ground and ember), paper sheets for long reading, the bottom navigation on phones. |
-| `assets/hearth.js` | The core app: API client, router, the gate (four ways in), the frame with the fire in the masthead, home, account, security. Exposes `window.Hearth` so the other files register their views. No `innerHTML` anywhere in the room. |
-| `assets/hearth-sessions.js`, `assets/hearth-sessions-admin.js` | Sessions: the client's side (the hops figure, booking in their timezone, packs and credits) and the owner's (all sessions, packs, purchases, availability). |
-| `assets/hearth-transcripts.js`, `assets/hearth-transcripts-admin.js` | Records: the paper reading view, search, follow-ups, notes for next time; the owner's transcript intake and the notes inbox. |
-| `assets/hearth-agents.js` | Agents: connect Claude (the MCP URL and the steps), connected apps, API keys, agent activity, and the OAuth consent page at `/hearth/authorize`. |
-| `assets/hearth-feed.js` | The feed inside the room, with the composer for whoever can write. |
-| `assets/hearth-admin.js` | Members, member detail, roles, log, metrics, settings. |
-| `api/hearth.js` | The router behind `/api/hearth/*` (rewritten to the flat function: Vercel's `[...path]` catch-all only matches one segment for plain functions). Auth, sessions, profile, admin; the route files below register the rest. |
-| `lib/hearth/routes/sessions.js`, `transcripts.js`, `agents.js`, `feed.js` | Packs, credits, availability, bookings; transcripts, follow-ups, notes; API keys, connected apps, consent; the feed. |
-| `lib/hearth/db.js`, `migrations.js` | Neon Postgres over HTTP and the self-applying, idempotent migrations. |
-| `lib/hearth/auth.js`, `users.js`, `providers.js`, `permissions.js`, `audit.js`, `mail.js`, `time.js`, `ics.js`, `derive.js`, `oauth.js`, `mcp.js` | Sessions and passwords; people and identities; Google, GitHub, Discord; roles and permissions; the log; email; timezone math and the slot calculator; calendar files; the transcript derivation; the OAuth 2.1 server; the MCP server. |
-| `api/mcp.js` | `/mcp`, the MCP endpoint (Streamable HTTP, JSON-RPC). |
-| `api/oauth.js` | `/api/oauth/*` and the two well-known documents (`/.well-known/oauth-authorization-server`, `/.well-known/oauth-protected-resource`). |
-| `api/feed.js` | `/feed`, `/feed/<slug>`, `/feed.xml`: the public feed, plain HTML with no script, off until `feed_public` is switched on in Settings. |
-| `api/hearth-cron.js` | Hourly at `:20`: session reminders (a day and an hour before) and sweeping expired tokens. Same `CRON_SECRET` as the other jobs. |
-| `lib/hearth/test-helpers.js` and `*.test.js` | The fake database and 250-odd tests; all in `npm run check`, none touch the network. |
+| `hearth.html` | The shell for `/hearth/*`, `noindex`, with its own CSP. |
+| `assets/hearth.js`, `assets/hearth.css` | The core app (router, sign-in, frame, account) and design. No `innerHTML` anywhere in the room. |
+| `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. |
+| `api/hearth.js` | The router behind `/api/hearth/*`. The routes are in `lib/hearth/routes/`. |
+| `lib/hearth/` | Database and migrations, auth, users, providers, permissions, audit, mail, time and slots, calendar files, transcript records, the OAuth server and the MCP server. |
+| `api/mcp.js`, `api/oauth.js` | `/mcp` and the OAuth 2.1 endpoints with their well-known documents. |
+| `api/feed.js` | The public feed at `/feed` and `/feed.xml`, off until `feed_public` is on. |
+| `api/hearth-cron.js` | Hourly at `:20`: reminders, Meet transcript pulls, expired token sweep. |
 
-### The data
+### Data
 
-Neon Postgres, provisioned through the Vercel Marketplace (`chama-hearth`, free plan, `fra1` Frankfurt, so everything stays in the EU with the Paris functions and blob store), connected through Vercel's managed `DATABASE_URL`. No connection string is ever in this repo or on a laptop; there is no migration command. On a cold start the first request applies any migration in `lib/hearth/migrations.js` it has not applied (every statement is idempotent, so two instances racing are harmless). The tables are listed in the plan; the rules that matter:
+Neon Postgres (`chama-hearth`, Frankfurt) through Vercel's managed `DATABASE_URL`. There is no migration command: the first request after a cold start applies any unapplied migration in `lib/hearth/migrations.js`, and every statement is idempotent. The rules:
 
-- **One person per email**, whatever they signed in with. Providers link by verified email; an unverified email is refused.
-- **Balances are sums.** `credit_ledger` is append-only; a pack marked paid adds, a booking spends, a cancellation in time returns, the owner can grant.
-- **Double bookings are refused by the database** (an exclusion constraint on scheduled bookings), not by code that checks first.
-- **One transcript per booking is refused by the database too** (`transcripts_booking_idx`, migration 004). If a duplicate already existed when the migration ran, the index was skipped rather than fail every cold start; the writers still check first. To repair: `select booking_id, count(*) from transcripts where booking_id is not null group by 1 having count(*) > 1`, remove the extras by hand, then `create unique index transcripts_booking_idx on transcripts(booking_id) where booking_id is not null`.
-- **Every cancel and every referral reward is a compare-and-set** (`update ... where status = ... returning id`), so a second concurrent call changes nothing: never a second refund credit, never a second referral reward. The refusal reads differently by route: a member cancelling a session that is no longer scheduled gets 400, and the owner's session PATCH, which stakes the row it read, gets 409.
-- **The audit log is append-only** and holds who, what, when, the country Vercel resolved and a device family. Never an IP address, never a raw user agent, never visitor text.
-- **Transcripts are data.** Shown only through `textContent`, handed to the model as marked untrusted text, never logged.
+- One person per email, whatever they signed in with. Unverified emails are refused.
+- Credit balances are sums over the append-only `credit_ledger`.
+- The database refuses double bookings (an exclusion constraint) and a second transcript per booking (`transcripts_booking_idx`).
+- Every cancel and referral reward is a compare-and-set, so a second concurrent call changes nothing.
+- The audit log is append-only and never holds an IP, a raw user agent or visitor text.
+- Transcripts are data: shown through `textContent`, given to models as untrusted text, never logged.
+
+If `transcripts_booking_idx` is missing because duplicates existed when migration 004 ran, find them with `select booking_id, count(*) from transcripts where booking_id is not null group by 1 having count(*) > 1`, remove the extras by hand, then run `create unique index transcripts_booking_idx on transcripts(booking_id) where booking_id is not null`.
 
 ### Signing in
 
-Four doors, all landing on the same person: Google (the ID-token flow the flame admin already uses, verified against Google's keys, no client secret), GitHub and Discord (authorization-code flow with a server-side state nonce, verified primary email required), and email (a single-use 15-minute magic link by default; an optional password, scrypt-hashed, 12 characters minimum, common passwords refused; password reset by link). Rate limits on every auth endpoint, per address (hashed, never stored) and per account, with one generic failure message.
-
-A browser session is an opaque 256-bit token in `chama_hearth` (`HttpOnly; Secure; SameSite=Lax; Path=/`), 30 days sliding, stored as a hash; a member sees every signed-in device on Security and can end any of them or all at once. Role and permissions are read from the database on every request, so a change takes effect immediately.
-
-**The first owner is whoever is on `ADMIN_EMAILS`** (the flame admin's allowlist), and anyone on it is an owner every time they sign in, so the person who runs the company cannot be locked out by a role edit. There is always at least one owner; the owner role holds every permission and cannot be edited. Staff, client and guest are owner-editable role permission sets, with per-person overrides on top.
+Google (ID token), GitHub and Discord (authorization code with a state nonce, verified email required), and email (a 15-minute magic link, or an optional password of 12 or more characters). Every auth endpoint is rate limited. A session is an opaque token in the `chama_hearth` cookie, 30 days sliding, stored hashed, and members can end any of their sessions. Everyone on `ADMIN_EMAILS` is an owner every time they sign in, so the owner cannot be locked out.
 
 ### Agents
 
-`https://chamainteligente.com/mcp` is an MCP server. A client's Claude connects through OAuth 2.1 (discovery at the well-known URLs, dynamic client registration, PKCE S256 required, consent page in the Hearth listing the scopes in plain words, one-hour access tokens, rotating refresh tokens, all stored hashed); a script uses an API key (`chama_sk_...`, shown once, scoped, optionally expiring). The tool list is the intersection of the token's scopes and the person's permissions: a member's own sessions, records, follow-ups, booking, notes and the feed; for staff and owners also members, upcoming sessions, metrics, the log tail, posting to the feed and adding a transcript. With no token there is a public set (`about`, `how_to_get_in_touch`, `get_feed`), answered only once `mcp_public` is switched on in Settings. Every tool call is one audit-log row with the actor and the tool name, never its arguments.
+`https://chamainteligente.com/mcp` is an MCP server. Claude connects with OAuth 2.1 (dynamic registration, PKCE, a consent page in the Hearth). Scripts use scoped API keys (`chama_sk_...`). The tools a caller gets are the intersection of the token's scopes and the person's permissions. The unauthenticated tools answer only when `mcp_public` is on. Nothing an agent submits is treated as an instruction to anyone.
 
-The rule from the domain-unlocks page holds in the first commit: nothing an agent submits is instruction to anyone. A note or a follow-up is stored as the member's words for a person to read, and the tool descriptions say so.
+### Sessions and money
 
-### Sessions, packs and money
+Packs and prices are set in the room, never in code. A client requests a pack, Elliot issues the fatura from the certified invoicing software, marks the purchase invoiced and then paid, and the credits appear. Availability is weekly windows in Europe/Lisbon. Booking spends a credit and emails both sides a calendar file. Once the owner connects Google in Settings, each booking gets a Calendar event with a Meet room, and the hourly cron pulls the Meet transcript after the session and writes the record.
 
-Elliot sets packs (name, sessions, minutes, price or "price on request") and prices in the room, never in code and never on the public page. A client asks for a pack; the request lands in Purchases and in Elliot's inbox; he issues the fatura from the certified invoicing software, marks the purchase invoiced then paid; the credits appear and a guest becomes a client. A card processor can be added behind the same statuses later. The referral reward (a session credit to the referrer, or a percentage off their next pack) is a setting and is applied when a referred person's first pack is paid.
-
-Availability is weekly windows in Europe/Lisbon plus time off; slots are computed server-side (session length, notice hours and horizon from Settings) and shown to the client in their own timezone. A booking spends a credit, emails both sides a calendar file, and can be moved or cancelled up to the notice window; reminders go out by cron. **Google Meet is the meeting room.** Once the owner has pressed "Connect Google" in Settings, every booking becomes a Calendar event on his calendar with its own Meet room and the client invited (moved and cancelled along with the booking), and the hourly cron asks the Meet API for the transcript of every session that has ended, writes the record from it, and emails the client; a session is tried once an hour for two days, so a meeting that was never transcribed simply runs out of attempts. Without the connection, bookings carry the standing meeting link and transcripts arrive through the owner's intake. A transcript attached to a session marks it completed, and the record (summary, key points, decisions, follow-ups for each side, things to try before next time, questions for next time, new words) is written by `claude-opus-5` and emailed to the client.
-
-### Settings, and the three switches
-
-Settings (owner only): session length, minimum notice, booking horizon, cancellation notice, the standing meeting link, the referral reward, the owner's timezone, and three switches that are **off** until Elliot turns them on: `open_signup` (on: anyone can create a guest account; this one ships on), `feed_public` (the public feed page, RSS, and public posts to agents), `mcp_public` (the unauthenticated tool set). The last two are the new public surfaces the plan names, kept behind switches so turning them on is a decision, not a deploy.
+Settings has three switches, each a decision rather than a deploy: `open_signup`, `feed_public`, `mcp_public`.
 
 ### Environment variables
 
-Beyond the ones the site already has (`ADMIN_EMAILS` doubles as the owner list; `RESEND_*` sends the room's mail; `CRON_SECRET` authenticates the hourly job; `ANTHROPIC_API_KEY` writes the records; `GOOGLE_CLIENT_ID` is the Google door):
+The Hearth also uses `ADMIN_EMAILS`, `RESEND_*`, `CRON_SECRET`, `ANTHROPIC_API_KEY` and `GOOGLE_CLIENT_ID` from above.
 
 | Variable | What it is |
 |---|---|
-| `DATABASE_URL` | Set by the Neon integration. The Hearth is "not open yet" (503 everywhere, the page says so) without it. |
-| `HEARTH_SESSION_SECRET` | The key that seals the Google refresh token at rest (AES-256-GCM); added 2026-09-02. |
-| `GOOGLE_CLIENT_SECRET` | The secret of the same Google Cloud OAuth client as `GOOGLE_CLIENT_ID` (project `chama-website-admin`, client `chamainteligente-com-admin`; a second secret added 2026-09-02, the original is not viewable). Set. The Google Auth Platform app is published (in production, unverified: the owner sees Google's "unverified app" screen once at connect time; up to 100 users may grant the sensitive scopes before verification), with the Calendar and Meet APIs enabled and the scopes on the consent screen. Elliot connected `elliot@chamainteligente.com` on 2026-09-02, for the owner's one-time "Connect Google" (Calendar events with a Meet room per booking, transcripts pulled from Meet). The client needs `https://chamainteligente.com/api/hearth/google/callback` as an authorized redirect URI, and the project needs the Google Calendar API and the Google Meet REST API enabled with the scopes `calendar.events` and `meetings.space.readonly` on its consent screen. |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | The GitHub OAuth app "The Hearth, Chama Inteligente" (client id `Ov23liISw5qF8m3CVudj`, owned by Elliot's GitHub account, created 2026-09-02); callback `https://chamainteligente.com/api/hearth/auth/github/callback`. Set; the GitHub button is live. |
-| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | The Discord application; redirect `https://chamainteligente.com/api/hearth/auth/discord/callback`. Not yet set (the Discord developer portal needs a captcha only a person can tick); the Discord button appears the moment both exist. |
+| `DATABASE_URL` | Set by the Neon integration. Without it the Hearth answers "not open yet". |
+| `HEARTH_SESSION_SECRET` | Seals the Google refresh token at rest. |
+| `GOOGLE_CLIENT_SECRET` | The same Google OAuth client as `GOOGLE_CLIENT_ID`. Needs the redirect URI `https://chamainteligente.com/api/hearth/google/callback`, the Calendar and Meet REST APIs, and the scopes `calendar.events` and `meetings.space.readonly`. |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | The GitHub OAuth app. Callback `https://chamainteligente.com/api/hearth/auth/github/callback`. |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | The Discord app. Redirect `https://chamainteligente.com/api/hearth/auth/discord/callback`. The Discord button appears once both are set. |
 
-### Checking it works
+## Checking and deploying
 
-`npm run check` syntax-checks every shipped script (`api/`, `lib/`, `evals/`, and all of `assets/`) and runs every unit test against a fake database. For the routing and the pages without a database, `vercel dev --listen 4990` serves the site locally (the API answers 503 "not open yet", which proves the rewrites and functions resolve; the well-known documents answer 200). For the look of the room with sample data there is a mock API in the session scratchpad (not in the repo); the real check is the live page after a deploy, signed in as the owner.
+`npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network. `vercel dev --listen 4990` serves the site locally; without a database the Hearth API answers 503, which still proves the routing.
 
-## Deploying it
+Merging to `main` deploys through Vercel's GitHub integration (project `chama-inteligente/chama-inteligente`), and PRs get preview URLs. Do not run `vercel deploy` by hand. `.vercelignore` keeps `docs/`, `evals/` and `test/` out of every deploy, so internal reports live only on GitHub.
 
-**Merging to `main` deploys.** This repo is connected to Vercel's GitHub integration (since 2026-10-05): pushes to `main` go to production and PRs get preview URLs. Do not run `vercel deploy` by hand.
+Storage and email are Vercel resources: the private Blob store `chama-inteligente-intake` in Paris (`BLOB_READ_WRITE_TOKEN`) and the Resend integration `chama-inteligente-email` (`RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`). Their values live only in Vercel. Crons: intake cleanup daily at 03:15 UTC, the watchdog at `:05` and `:35`, the Hearth at `:20`.
 
-**The brain (`../chama-inteligente/`) is never connected to a hosting provider.** It holds the wiki, the founders' cash position, supplier relationships, and a `.gitignore` full of deliberately-excluded identity and tax documents. This repo is the public surface: **public at https://github.com/elliothimmelfarb/chama-website** (since 2026-08-28), so connecting it exposes nothing that is not already published.
+### DNS
 
-**`docs/` and `evals/` are excluded from the deploy.** A `.vercelignore` at the repository root (same semantics as `.gitignore`) keeps both directories out of every deployment, so the internal reports and plans under `docs/reports/` live on GitHub and never on the customer-facing domain, and the evals never ship. Nothing public links into either, and no function under `api/` or `lib/` imports from them. As belt and braces for anything already cached or linked from outside, `vercel.json` sends `X-Robots-Tag: noindex, nofollow, noarchive` on `/docs/(.*)` and `robots.txt` disallows `/docs`. A report that is meant for the public is a new public surface, so it goes through the owner queue rather than into `docs/`.
+Namecheap is authoritative (PremiumDNS).
 
-The Vercel CLI is installed at `/opt/homebrew/bin/vercel`, and Elliot already pays for Vercel Pro. The project is `chama-inteligente/chama-inteligente`. It uses the private `chama-inteligente-intake` Blob store in `cdg1` (Paris), connected through Vercel's managed `BLOB_READ_WRITE_TOKEN`. The Resend integration is named `chama-inteligente-email` and connects through Vercel's managed `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN`. Those values belong in Vercel, never in this repository.
-
-**The long-term shape this README used to argue for is now the shape.** On 2026-08-28 the website got its own git repository (this one), extracted from the brain with its full history. The public surface and the private brain have separate histories, which is the same permission split the [domain-unlocks page](../chama-inteligente/wiki/topics/chamainteligente-domain-unlocks.md) argues for at the content level.
-
-### Production DNS, verified 2026-08-25
-
-Namecheap remains authoritative. Google Workspace now receives the company's root-domain mail, including `contact@chamainteligente.com`; this supersedes the Namecheap-forwarding state recorded here on 2026-08-03. The Resend sending records belong only at `send.chamainteligente.com` and `resend._domainkey.chamainteligente.com`, so they do not replace Google's root MX or SPF records.
-
-| Record | Current value | Meaning |
+| Record | Value | Purpose |
 |---|---|---|
-| `A @` | `76.76.21.21` | Vercel production deployment at the apex domain. |
-| `A www` | `76.76.21.21` | The same Vercel production deployment at `www`. |
-| `NS` | `pdns1/pdns2.registrar-servers.com` | DNS is at Namecheap (PremiumDNS, bought 2026-07-26). |
-| `MX @` | `1 smtp.google.com` | Google Workspace receives root-domain mail. |
-| `TXT @` | `v=spf1 include:_spf.google.com ~all` | Google Workspace is authorized to send root-domain mail. |
-| `MX send` | Resend EU feedback endpoint, priority 10 | Live at Namecheap since 2026-08-30. This is the Resend return path, not inbound company mail. |
-| `TXT send` | Resend SPF policy | Live at Namecheap since 2026-08-30. |
-| `TXT resend._domainkey` | Resend DKIM public key | Live at Namecheap since 2026-08-30. |
+| `A @`, `A www` | `76.76.21.21` | Vercel |
+| `MX @` | `1 smtp.google.com` | Google Workspace receives company mail |
+| `TXT @` | `v=spf1 include:_spf.google.com ~all` | Google Workspace may send |
+| `MX send`, `TXT send` | Resend's EU return path and SPF | Resend sending |
+| `TXT resend._domainkey` | Resend DKIM key | Resend sending |
 
-Vercel issued auto-renewing HTTPS certificates for both hostnames. Both names serve the production page. The enhanced JSON form path and the native form-encoded fallback were each tested through the custom domain, verified in private Blob storage, and removed afterward so no synthetic submission remains.
+## Search
 
-## Search presence
-
-**Google Search Console:** a **Domain** property for `chamainteligente.com` on the company account **elliot@chamainteligente.com** (not Elliot's personal Gmail), created 2026-08-20. It verified automatically through the Google Workspace domain ownership Google already held, so **no DNS record was added at Namecheap for it**. The sitemap is submitted. Both pages were already indexed.
-
-**What the indexing report's "not indexed" rows mean (read 2026-10-07).** Search Console's emails name reasons, not URLs, so open the Pages report to see which addresses they cover. Expected and left alone: *Page with redirect* (`www.`, `http://` and `http://www.`, all 301 to the apex), *Alternate page with proper canonical tag* (an old address such as `/worlds` read before it became a redirect; it moves to *Page with redirect* on the next crawl), and *Not found (404)* for `https://chamainteligente.com/*`, a literal wildcard Google picked up on 2026-08-20 that appears nowhere in this repo's history; a 404 is the right answer. The row that matters is any sitemap page under *Discovered - currently not indexed*: `/about` sat there from 2026-08-29 without a single crawl, and the remedy is URL Inspection, then Request indexing. `test/pages.test.js` holds the sitemap to the pages: every entry is its page's canonical, indexable address, and its image is the card the page shares.
-
-**`sitemap.xml` lastmod is part of the deploy routine.** Bump the `<lastmod>` of every page the change touched to the deploy's ISO date in the same PR; a stale `lastmod` tells crawlers not to bother re-reading a page that did change.
-
-**IndexNow:** the key file at the site root lets any URL change be pushed straight to Bing, Yandex, Naver and Seznam without waiting for a crawl. After a content change worth announcing:
+- **Sitemap.** In the same PR as a content change, bump the `<lastmod>` of every page it touched.
+- **IndexNow.** After a change worth announcing, push it to Bing and the others. A `202` means accepted. Google does not take IndexNow; use Request indexing in Search Console (Domain property on `elliot@chamainteligente.com`).
 
 ```bash
-KEY=$(basename "$(ls /Users/elliothimmelfarb/claude/chama-website/[0-9a-f]*.txt)" .txt) && curl -s -o /dev/null -w "%{http_code}\n" -X POST https://api.indexnow.org/indexnow -H "Content-Type: application/json" -d "{\"host\":\"chamainteligente.com\",\"key\":\"$KEY\",\"keyLocation\":\"https://chamainteligente.com/$KEY.txt\",\"urlList\":[\"https://chamainteligente.com/\"]}"
+KEY=$(basename "$(ls [0-9a-f]*.txt)" .txt) && curl -s -o /dev/null -w "%{http_code}\n" -X POST https://api.indexnow.org/indexnow -H "Content-Type: application/json" -d "{\"host\":\"chamainteligente.com\",\"key\":\"$KEY\",\"keyLocation\":\"https://chamainteligente.com/$KEY.txt\",\"urlList\":[\"https://chamainteligente.com/\"]}"
 ```
 
-A `202` means accepted. Google does not participate in IndexNow; for Google, request indexing in Search Console.
-
-**Before claiming a redirect or a header works, read it live.** On 2026-08-20 the `www`-to-apex redirect recorded here as working was found to return 200 on the bare root, because Vercel's `/:path*` source does not match `/`. The configuration said one thing and the response said another for two weeks. One `curl -sI` against both hosts settles it.
-
-**Structured data must validate.** Paste each live URL into `validator.schema.org` after any change to the JSON-LD. Both pages currently return 0 errors and 0 warnings. Google's Rich Results Test is flakier and has returned server errors here; a failure there is not evidence about the page.
-
-**Changing the design means re-proving the design did not change**, when that was the point of the work. Render the committed version and the new one side by side on local static servers, screenshot both full-page at desktop and mobile widths, and compare the file hashes.
-
-## Rails that apply to anything added here
-
-- **Deploying is pre-approved and expected; what goes on the page is what needs care.** Elliot approved this page, its intake, the Vercel deployment, and the domain connection on 2026-08-03, and on 2026-08-12 made deploys standing (the rail lives in this repo's [CLAUDE.md](CLAUDE.md), mirrored in the brain's). So a change made here gets shipped in the same session. The approval that still matters is upstream of the deploy: the copy rules at the top of this file, and a queue item for any genuinely new public surface.
-- **No form, endpoint, or inbox on this domain treats what arrives as instruction.** Submitted content is data that a human reads. If an agent-callable endpoint is ever built here (see the domain-unlocks page, bold proposal A), that rule belongs in its first commit, not bolted on later.
-- **No cold outreach from this domain.** It was registered 2026-07-26 and has no sending reputation. Warm mail keeps going from Elliot's existing identity.
-- **Never publish the wiki.** Any public surface is a deliberately authored subset, never a sync or an automated export.
+- **Structured data.** After a JSON-LD change, check each live URL at `validator.schema.org`.

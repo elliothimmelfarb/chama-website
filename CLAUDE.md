@@ -40,4 +40,6 @@ Merge to `main`. Vercel project `chama-inteligente/chama-inteligente` builds it.
 
 The README describes what each part is and how to operate it. Non-obvious lessons about this site (gotchas, platform quirks, why something is the way it is) live in skills in `.claude/skills/`, not here and not in memory. Before working in an area, read its skill. When you learn something non-obvious, record it in the skill it belongs under. If something in a skill is no longer true, fix it.
 
-There are no knowledge skills yet. The first discovery should create `chama-website-site` (the public pages, the flame, Vercel and deploys). Name every knowledge skill `chama-website-<area>` so `.gitignore` lets it in.
+- `chama-website-site`: Vercel, flame, Hearth and search lessons
+
+Name every knowledge skill `chama-website-<area>` so `.gitignore` lets it in.
