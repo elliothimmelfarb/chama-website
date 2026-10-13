@@ -371,8 +371,56 @@ body {
 
 .sheet .label { color: var(--quiet); }
 .sheet ::selection { background: var(--ember); color: #fff; }
-.record-visual { margin: 0.4rem 0 0.6rem; }
+/* The crafted record: big picture first, then ideas, playbook, what's next. */
+.record { gap: 1.1rem; }
+.record h2 { font-size: 1.15rem; margin-top: 0.6rem; }
+.record h2.record-part { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--quiet); border-top: 1px solid rgba(20, 20, 18, 0.14); padding-top: 1.2rem; margin-top: 1rem; }
+.record h3 { font-size: 1.15rem; line-height: 1.25; }
+.record p, .record li { line-height: 1.6; }
+.record ul, .record ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; }
+.record-lede { font-size: 1.05rem; }
+.record-short { background: var(--ink); color: var(--paper); border-radius: 8px; padding: 1rem 1.15rem; }
+.record-short .label { color: #b4ada0; }
+.record-short li { font-size: 1rem; }
+.record-visual { margin: 0.2rem 0; display: grid; gap: 0.45rem; }
 .record-visual img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.record-visual figcaption { font-size: 0.82rem; color: var(--quiet); }
+.record-chapter { padding-top: 0.4rem; }
+.record-num { font-family: var(--mono); font-size: 0.72rem; color: #c2410c; }
+.record-quote { margin: 0.2rem 0; border-left: 3px solid var(--ember); padding: 0.1rem 0 0.1rem 1rem; }
+.record-quote p { font-size: 1.08rem; line-height: 1.45; }
+.record-quote cite { display: block; font-style: normal; font-size: 0.8rem; color: var(--quiet); margin-top: 0.3rem; }
+.record-action { border: 1px solid rgba(20, 20, 18, 0.16); border-radius: 8px; padding: 1rem 1.1rem; }
+.record-action-head { display: flex; gap: 0.7rem; align-items: baseline; }
+.record-action-head input { flex: none; width: 1.05rem; height: 1.05rem; accent-color: var(--ember); transform: translateY(0.12rem); }
+.record ol.record-steps { counter-reset: step; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 0.45rem; }
+.record-steps li { counter-increment: step; background: #e9e4d8; border-radius: 6px; padding: 0.55rem 0.7rem; font-size: 0.88rem; line-height: 1.4; }
+.record-steps li::before { content: counter(step); display: block; font-family: var(--mono); font-size: 0.72rem; color: #c2410c; }
+.record-prompt { display: grid; gap: 0.4rem; }
+.record-prompt pre { margin: 0; font-family: var(--mono); font-size: 0.8rem; line-height: 1.55; white-space: pre-wrap; background: #e9e4d8; border-radius: 6px; padding: 0.8rem 0.9rem; max-height: 22rem; overflow: auto; }
+.record-plain li.done { color: var(--quiet); }
+.record-done { margin-left: 0.5rem; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: #3f8f4f; }
+.record-glossary { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: 0.5rem 1rem; margin: 0; }
+.record-glossary dt { font-weight: 700; }
+.record-glossary dd { margin: 0; font-size: 0.92rem; }
+@media (max-width: 34rem) { .record-glossary { grid-template-columns: minmax(0, 1fr); } .record-glossary dd { margin-bottom: 0.4rem; } }
+.record-remember { background: var(--ink); color: var(--paper); border-radius: 8px; padding: 1rem 1.15rem; margin-top: 0.6rem; }
+.record-remember .label { color: #b4ada0; }
+.record-remember .btn { color: var(--paper); border-color: rgba(243, 240, 232, 0.3); width: fit-content; }
+.record-remember .btn.primary { color: #fff; }
+.remember-list { list-style: none; padding: 0 !important; }
+.remember-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.2rem 1rem; border-top: 1px solid rgba(243, 240, 232, 0.14); padding-top: 0.45rem; font-size: 0.92rem; }
+.remember-when { font-size: 0.75rem; color: #b4ada0; white-space: nowrap; }
+.remember-back { grid-column: 1 / -1; color: #b4ada0; font-size: 0.85rem; }
+.transcript-raw { white-space: pre-wrap; font-family: inherit; line-height: 1.5; margin: 0; max-height: 60vh; overflow: auto; }
+.flash { gap: 0.9rem; }
+.record-remember .flash { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 1rem; }
+.record-remember .flash .btn { color: var(--ink); border-color: rgba(20, 20, 18, 0.3); }
+.record-remember .flash .btn.primary { color: #fff; }
+.flash-tag { display: flex; justify-content: space-between; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: #c2410c; }
+.flash-q { font-size: 1.2rem; line-height: 1.35; font-weight: 600; }
+.flash-a { border-top: 1px solid rgba(20, 20, 18, 0.14); padding-top: 0.7rem; }
+.flash-from { color: var(--quiet); }
 
 .list { display: grid; }
 .list > * {

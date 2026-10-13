@@ -101,52 +101,34 @@
       var back = button("All records", "btn ghost sm", function () { H.navigate(H.can("transcripts.manage") && t.userId !== H.state.user.id ? "/admin/transcripts" : "/transcripts"); });
       wrap.appendChild(append(el("div", "row"), [back]));
 
-      var sheet = el("article", "sheet stack");
+      var sheet = el("article", "sheet stack record");
       var kicker = el("p", "label", fmtHeld(t.heldAt) + (t.member && t.member.id !== H.state.user.id ? " · " + (t.member.name || t.member.email) : ""));
       sheet.appendChild(kicker);
       sheet.appendChild(el("h1", null, t.title || (d && d.title) || "Untitled session"));
 
-      // The session's picture, drawn by Elliot. An <img> keeps it inert.
-      if (t.hasVisual) {
-        var figure = el("figure", "record-visual");
-        var img = el("img");
-        img.src = "/api/hearth/transcripts/" + encodeURIComponent(t.id) + "/visual";
-        img.alt = "A picture of what this session covered.";
-        img.decoding = "async";
-        figure.appendChild(img);
-        sheet.appendChild(figure);
-      }
-
+      var linked = {};
       if (!d) {
         sheet.appendChild(el("p", "dim", t.status === "deriving" ? "The record is being written. Come back in a minute." : t.status === "failed" ? "The record could not be written this time; Elliot can try again." : "The transcript is here; the record has not been written yet."));
+      } else if (d.version === 2) {
+        linked = renderCrafted(sheet, t, d, data.followUps);
       } else {
         sheet.appendChild(el("p", null, d.summary));
         section(sheet, "Key points", d.keyPoints);
         section(sheet, "Decisions", d.decisions);
         section(sheet, "Try before next time", d.tryBeforeNext, true);
         section(sheet, "Questions for next time", d.questionsForNext);
-        if (d.concepts && d.concepts.length) {
-          sheet.appendChild(el("h2", null, "Words that came up"));
-          var dl = el("dl", "stack tight");
-          d.concepts.forEach(function (c) {
-            var dt = el("dt", null, c.term);
-            dt.style.fontWeight = "700";
-            var dd = el("dd", "small", c.meaning);
-            dd.style.margin = "0 0 0.4rem";
-            append(dl, [dt, dd]);
-          });
-          sheet.appendChild(dl);
-        }
+        glossary(sheet, d.concepts);
       }
       wrap.appendChild(sheet);
-      if (H.can("transcripts.manage")) wrap.appendChild(visualControl(t));
+      if (H.can("transcripts.manage")) wrap.appendChild(figureControl(t));
 
-      // Follow-ups from this session, with the checkbox that ticks them.
+      // Follow-ups from this session that the record does not already show.
+      var rest = data.followUps.filter(function (f) { return !linked[f.id] && !(d && d.version === 2 && f.owner === "coach"); });
       var fu = el("div", "card stack tight");
-      fu.appendChild(el("p", "label", "Follow-ups from this session"));
-      if (!data.followUps.length) fu.appendChild(el("p", "small dim", "None recorded."));
+      fu.appendChild(el("p", "label", d && d.version === 2 ? "Anything else from this session" : "Follow-ups from this session"));
+      if (!rest.length) fu.appendChild(el("p", "small dim", d && d.version === 2 ? "Add your own here." : "None recorded."));
       var list = el("div", "stack tight");
-      data.followUps.forEach(function (f) { list.appendChild(followUpRow(f)); });
+      rest.forEach(function (f) { list.appendChild(followUpRow(f)); });
       fu.appendChild(list);
       fu.appendChild(addFollowUpForm(t.userId, t.id, function (f) { list.appendChild(followUpRow(f)); }));
       wrap.appendChild(fu);
@@ -157,50 +139,188 @@
       var show = button("Show the transcript", "btn sm");
       append(rawHead, [el("p", "label", "The transcript, as recorded"), show]);
       raw.appendChild(rawHead);
-      var pre = el("pre", "small");
-      pre.style.whiteSpace = "pre-wrap";
-      pre.style.fontFamily = "inherit";
-      pre.style.lineHeight = "1.5";
-      pre.style.margin = "0";
-      pre.style.maxHeight = "60vh";
-      pre.style.overflow = "auto";
+      var pre = el("pre", "small transcript-raw");
       pre.textContent = t.raw || "";
       pre.hidden = true;
       raw.appendChild(pre);
       show.addEventListener("click", function () { pre.hidden = !pre.hidden; show.textContent = pre.hidden ? "Show the transcript" : "Hide the transcript"; });
       wrap.appendChild(raw);
-      wrap.appendChild(el("p", "small faint", "This record was written from the transcript by AI and may contain mistakes."));
+      wrap.appendChild(el("p", "small faint", d && d.version === 2 ? "Written by Elliot from the transcript, with help from AI." : "This record was written from the transcript by AI and may contain mistakes."));
       return wrap;
     });
   }, { perm: "transcripts.own", title: "Record" });
 
-  // The owner's way to add, replace or remove the picture by hand.
-  function visualControl(t) {
-    var card = el("div", "card row between");
-    card.appendChild(el("p", "small dim", t.hasVisual ? "This record has a picture." : "No picture on this record yet."));
-    var actions = el("div", "row");
-    var file = el("input");
-    file.type = "file";
-    file.accept = ".svg,image/svg+xml";
-    file.hidden = true;
-    file.addEventListener("change", function () {
-      var f = file.files && file.files[0];
-      if (!f) return;
-      f.text().then(function (svg) {
-        return api("/admin/transcripts/" + encodeURIComponent(t.id), { method: "PATCH", body: { visualSvg: svg } });
-      }).then(function () { H.toast("Picture saved."); H.navigate("/transcripts/" + encodeURIComponent(t.id)); })
-        .catch(function (err) { H.toast(err.message, "bad"); });
+  /* ---------- the crafted record (version 2) ---------- */
+
+  // Big picture first: the short version, the picture, the ideas, then
+  // what to do, what's next, and what to remember. Returns the ids of the
+  // follow-ups the playbook already shows.
+  function renderCrafted(sheet, t, d, followUps) {
+    var byId = {};
+    followUps.forEach(function (f) { byId[f.id] = f; });
+    var alts = {};
+    (t.figures || []).forEach(function (f) { alts[f.key] = f.alt; });
+    var linked = {};
+
+    if (d.short && d.short.length) {
+      var short = el("div", "record-short stack tight");
+      short.appendChild(el("p", "label", "The short version"));
+      var ol = el("ol");
+      d.short.forEach(function (line) { ol.appendChild(el("li", null, line)); });
+      short.appendChild(ol);
+      sheet.appendChild(short);
+    }
+    if (d.hero && alts[d.hero.figure] !== undefined) sheet.appendChild(figure(t, d.hero.figure, alts, d.hero.caption));
+    if (d.summary) sheet.appendChild(el("p", "record-lede", d.summary));
+
+    if (d.chapters && d.chapters.length) {
+      sheet.appendChild(el("h2", "record-part", "The ideas"));
+      d.chapters.forEach(function (c, i) {
+        var ch = el("section", "record-chapter stack tight");
+        ch.appendChild(el("p", "record-num", "Idea " + (i + 1) + " of " + d.chapters.length));
+        ch.appendChild(el("h3", null, c.heading));
+        (c.body || []).forEach(function (para) { ch.appendChild(el("p", null, para)); });
+        if (c.figure && alts[c.figure] !== undefined) ch.appendChild(figure(t, c.figure, alts, c.caption));
+        if (c.quote) {
+          var q = el("blockquote", "record-quote");
+          q.appendChild(el("p", null, "“" + c.quote.text + "”"));
+          if (c.quote.who) q.appendChild(el("cite", null, c.quote.who));
+          ch.appendChild(q);
+        }
+        sheet.appendChild(ch);
+      });
+    }
+
+    if (d.actions && d.actions.length) {
+      sheet.appendChild(el("h2", "record-part", "Your playbook"));
+      d.actions.forEach(function (a) {
+        var box = el("section", "record-action stack tight");
+        var head = el("div", "record-action-head");
+        var f = a.followUpId && byId[a.followUpId];
+        if (f) { linked[f.id] = true; head.appendChild(tick(f)); }
+        head.appendChild(el("h3", null, a.title));
+        box.appendChild(head);
+        if (a.why) box.appendChild(el("p", null, a.why));
+        if (a.steps && a.steps.length) {
+          var steps = el("ol", "record-steps");
+          a.steps.forEach(function (s) { steps.appendChild(el("li", null, s)); });
+          box.appendChild(steps);
+        }
+        if (a.prompt) box.appendChild(promptBlock(a.prompt));
+        sheet.appendChild(box);
+      });
+    }
+
+    var mine = followUps.filter(function (f) { return f.owner === "coach"; });
+    if (mine.length) {
+      sheet.appendChild(el("h2", null, "From Elliot"));
+      var ul = el("ul", "record-plain");
+      mine.forEach(function (f) {
+        var li = el("li", f.doneAt ? "done" : null, f.text);
+        if (f.doneAt) li.appendChild(el("span", "record-done", "done"));
+        ul.appendChild(li);
+      });
+      sheet.appendChild(ul);
+    }
+
+    section(sheet, "Agreed", d.decisions);
+
+    if (d.next || (d.questionsForNext && d.questionsForNext.length)) {
+      sheet.appendChild(el("h2", null, "Next time" + (d.next && d.next.when ? ": " + d.next.when : "")));
+      var plan = (d.next && d.next.plan) || [];
+      if (plan.length) {
+        var pl = el("ul", "record-plain");
+        plan.forEach(function (p) { pl.appendChild(el("li", null, p)); });
+        sheet.appendChild(pl);
+      }
+      if (d.questionsForNext && d.questionsForNext.length) {
+        sheet.appendChild(el("p", "label", "Questions to bring"));
+        var qs = el("ul", "record-plain");
+        d.questionsForNext.forEach(function (p) { qs.appendChild(el("li", null, p)); });
+        sheet.appendChild(qs);
+      }
+    }
+
+    if (H.rememberSection) sheet.appendChild(H.rememberSection(t));
+    glossary(sheet, d.concepts);
+    return linked;
+  }
+
+  function figure(t, key, alts, caption) {
+    var fig = el("figure", "record-visual");
+    var img = el("img");
+    img.src = "/api/hearth/transcripts/" + encodeURIComponent(t.id) + "/figures/" + encodeURIComponent(key);
+    img.alt = alts[key] || "";
+    img.decoding = "async";
+    img.loading = "lazy";
+    fig.appendChild(img);
+    if (caption) fig.appendChild(el("figcaption", null, caption));
+    return fig;
+  }
+
+  function tick(f) {
+    var box = el("input");
+    box.type = "checkbox";
+    box.checked = Boolean(f.doneAt);
+    box.setAttribute("aria-label", "Done");
+    box.addEventListener("change", function () {
+      box.disabled = true;
+      api("/follow-ups/" + f.id, { method: "PATCH", body: { done: box.checked } }).then(function () {
+        if (box.checked) H.flare();
+        box.disabled = false;
+      }).catch(function (err) { H.toast(err.message, "bad"); box.checked = !box.checked; box.disabled = false; });
     });
-    actions.appendChild(file);
-    actions.appendChild(button(t.hasVisual ? "Replace picture" : "Add a picture (.svg)", "btn sm", function () { file.click(); }));
-    if (t.hasVisual) {
-      actions.appendChild(button("Remove", "btn ghost sm", function () {
-        api("/admin/transcripts/" + encodeURIComponent(t.id), { method: "PATCH", body: { visualSvg: "" } })
+    return box;
+  }
+
+  function promptBlock(text) {
+    var wrap = el("div", "record-prompt");
+    var head = el("div", "row between");
+    var copy = button("Copy", "btn sm");
+    var pre = el("pre", null, text);
+    copy.addEventListener("click", function () {
+      function selectIt() {
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy"; }, 1600); }, selectIt);
+      } else selectIt();
+    });
+    append(head, [el("p", "label", "Prompt to copy"), copy]);
+    append(wrap, [head, pre]);
+    return wrap;
+  }
+
+  function glossary(sheet, concepts) {
+    if (!concepts || !concepts.length) return;
+    sheet.appendChild(el("h2", null, "Words that came up"));
+    var dl = el("dl", "record-glossary");
+    concepts.forEach(function (c) { append(dl, [el("dt", null, c.term), el("dd", null, c.meaning)]); });
+    sheet.appendChild(dl);
+  }
+
+  // The owner's view of a record's pictures. Claude sets them through MCP;
+  // this is for checking and removing by hand.
+  function figureControl(t) {
+    var card = el("div", "card stack tight");
+    card.appendChild(el("p", "label", "Pictures on this record"));
+    if (!t.figures || !t.figures.length) card.appendChild(el("p", "small dim", "None yet. Claude adds them with set_record_figure."));
+    (t.figures || []).forEach(function (f) {
+      var row = el("div", "row between");
+      row.appendChild(el("p", "small", f.key + (f.alt ? " · " + f.alt : "")));
+      row.appendChild(button("Remove", "btn ghost sm", function () {
+        var body = { figures: {} };
+        body.figures[f.key] = null;
+        api("/admin/transcripts/" + encodeURIComponent(t.id), { method: "PATCH", body: body })
           .then(function () { H.navigate("/transcripts/" + encodeURIComponent(t.id)); })
           .catch(function (err) { H.toast(err.message, "bad"); });
       }));
-    }
-    card.appendChild(actions);
+      card.appendChild(row);
+    });
     return card;
   }
 

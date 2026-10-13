@@ -31,6 +31,7 @@ import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
 import * as mail from "../lib/hearth/mail.js";
 import { registerSessionRoutes } from "../lib/hearth/routes/sessions.js";
 import { registerTranscriptRoutes } from "../lib/hearth/routes/transcripts.js";
+import { registerRecallRoutes } from "../lib/hearth/routes/recall.js";
 import { registerAgentRoutes } from "../lib/hearth/routes/agents.js";
 import { registerFeedRoutes } from "../lib/hearth/routes/feed.js";
 import { registerGoogleRoutes } from "../lib/hearth/routes/google.js";
@@ -764,6 +765,7 @@ route("GET", "/admin/metrics", async (context) => {
 
 registerSessionRoutes({ route, needs, readSettings });
 registerTranscriptRoutes({ route, needs, readSettings });
+registerRecallRoutes({ route, needs });
 registerAgentRoutes({ route, needs, readSettings });
 registerFeedRoutes({ route, needs, readSettings });
 registerGoogleRoutes({ route, needs, readSettings });
