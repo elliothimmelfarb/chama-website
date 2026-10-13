@@ -389,11 +389,12 @@ body {
   .sheet.record { margin-inline: calc(-1 * var(--pad)); border-radius: 0; padding-inline: 16px; }
   .record-visual img { width: calc(100% + 32px); max-width: none; margin-inline: -16px; border-radius: 0; }
 }
-.fig-zoom { position: fixed; inset: 0; z-index: 50; background: rgba(14, 12, 10, 0.94); display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.fig-zoom { position: fixed; inset: 0; z-index: 50; background: rgba(14, 12, 10, 0.98); display: grid; grid-template-rows: auto minmax(0, 1fr); }
 .fig-zoom-close { justify-self: end; margin: calc(env(safe-area-inset-top, 0px) + 0.8rem) 1rem 0.6rem; color: var(--text); }
-.fig-zoom-scroll { overflow: auto; padding: 0 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem); display: grid; place-items: start center; }
-.fig-zoom-scroll img { display: block; width: max(100%, 56rem); max-width: none; height: auto; border-radius: 8px; }
-@media (min-width: 60rem) { .fig-zoom-scroll img { width: min(100%, 72rem); } .fig-zoom-scroll { place-items: center; } }
+.fig-zoom-scroll { overflow: auto; padding: 0 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem); }
+/* Auto margins centre it when it fits and never cut off its left edge when it doesn't. */
+.fig-zoom-scroll img { display: block; width: 56rem; max-width: none; height: auto; margin-inline: auto; border-radius: 8px; }
+@media (min-width: 60rem) { .fig-zoom-scroll img { width: min(100%, 72rem); } }
 /* Checkboxes drawn for the paper sheet. */
 .sheet input[type="checkbox"] {
   appearance: none; -webkit-appearance: none; margin: 0; flex: none;
@@ -409,9 +410,9 @@ body {
 }
 .sheet input[type="checkbox"]:disabled { opacity: 0.5; cursor: default; }
 .hh-viewing { background: var(--ember); color: #141412; }
-.hh-viewing-inner { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding-block: 0.55rem; flex-wrap: wrap; }
-.hh-viewing p { font-size: 0.88rem; font-weight: 600; margin: 0; }
-.hh-viewing .btn { color: #141412; border-color: rgba(20, 20, 18, 0.5); }
+.hh-viewing-inner { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding-block: 0.35rem; }
+.hh-viewing p { font-size: 0.85rem; font-weight: 600; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hh-viewing .btn { color: #141412; border-color: rgba(20, 20, 18, 0.5); flex: none; min-height: 1.8rem; }
 .record-visual figcaption { font-size: 0.82rem; color: var(--quiet); }
 .record-chapter { padding-top: 0.4rem; }
 .record-num { font-family: var(--mono); font-size: 0.72rem; color: #c2410c; }
