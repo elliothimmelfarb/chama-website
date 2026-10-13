@@ -339,8 +339,10 @@
     if (state.viewer) {
       bar = el("div", "hh-viewing");
       var inner0 = el("div", "frame hh-viewing-inner");
-      inner0.appendChild(el("p", null, "Viewing as " + (state.user.name || state.user.email) + ". This is exactly what they see. Nothing can be changed."));
-      inner0.appendChild(button("Exit the view", "btn sm", function () {
+      var says = el("p", null, "Viewing as " + (state.user.name || state.user.email) + " · read-only");
+      says.title = "This is exactly what they see. Nothing can be changed while viewing.";
+      inner0.appendChild(says);
+      inner0.appendChild(button("Exit", "btn sm", function () {
         api("/view-as", { method: "DELETE" }).then(function () { location.href = BASE; }, function () { location.href = BASE; });
       }));
       bar.appendChild(inner0);
