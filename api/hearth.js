@@ -23,7 +23,7 @@ import {
 } from "../lib/hearth/auth.js";
 import {
   ensureRoles, findUserByEmail, findUserById, createUser, userForIdentity, loadActor,
-  publicUser, countOwners, promoteIfAdmin
+  publicUser, countOwners, promoteIfAdmin, adminEmails
 } from "../lib/hearth/users.js";
 import { PERMISSIONS, ROLE_DEFAULTS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
 import { isValidZone } from "../lib/hearth/time.js";
@@ -175,6 +175,13 @@ async function finishSignIn(context, user, { created = false, provider, next = H
 
 // Referral attribution at sign-up: the code came with the request (from the
 // ?ref= the page remembered). It only ever attaches to a brand-new user.
+// Signup closed keeps strangers out, never the people on ADMIN_EMAILS: that
+// list is how the owner gets back in, so it opens the door even before the
+// address has an account.
+function mayEnter(email, existing, settings) {
+  return Boolean(existing) || settings.open_signup || adminEmails().includes(email);
+}
+
 async function referrerFor(code) {
   if (typeof code !== "string" || !/^[a-z0-9]{6,12}$/.test(code)) return null;
   const rows = await sql()`select id from users where referral_code = ${code} and status = 'active'`;
@@ -220,7 +227,7 @@ route("POST", "/auth/google", async (context) => {
   }
   const settings = await readSettings();
   const existing = await findUserByEmail(result.identity.email);
-  if (!existing && !settings.open_signup) throw new HttpError(403, MESSAGES.forbidden);
+  if (!mayEnter(result.identity.email, existing, settings)) throw new HttpError(403, MESSAGES.forbidden);
   const referredBy = existing ? null : await referrerFor(body.ref);
   const { user, created } = await userForIdentity({ ...result.identity, referredBy });
   if (created) await recordReferral(referredBy, user.id);
@@ -274,7 +281,7 @@ route("GET", "/auth/:provider/callback", async (context, params) => {
   }
   const settings = await readSettings();
   const existing = await findUserByEmail(result.identity.email);
-  if (!existing && !settings.open_signup) return failed();
+  if (!mayEnter(result.identity.email, existing, settings)) return failed();
   const referredBy = existing ? null : await referrerFor(meta.ref);
   const { user, created } = await userForIdentity({ ...result.identity, referredBy });
   if (created) await recordReferral(referredBy, user.id);
@@ -300,7 +307,7 @@ route("POST", "/auth/email/start", async (context) => {
   // endpoint cannot be used to learn who is a member; with signup closed the
   // unknown branch also spends about what a real send costs, so timing says
   // nothing either.
-  if (!existing && !settings.open_signup) {
+  if (!mayEnter(email, existing, settings)) {
     await new Promise((resolve) => setTimeout(resolve, 250 + Math.floor(Math.random() * 300)));
     return json({ ok: true });
   }
