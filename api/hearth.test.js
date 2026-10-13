@@ -185,6 +185,35 @@ test("a magic link records its token and reports an unsendable email", async () 
   assert.equal(insert.values[2], "magic");
 });
 
+// ADMIN_EMAILS is the way back in, so a closed signup must not close it: the
+// owner's own address gets a link even before it has an account.
+test("with signup closed, an address on ADMIN_EMAILS still gets a magic link", async () => {
+  const db = fakeDb([
+    [/insert into rate_limits/, [{ count: 1 }]],
+    [/select key, value from settings/, [{ key: "open_signup", value: false }]],
+    [/select \* from users where email/, []]
+  ]);
+  useClient(db);
+
+  const quiet = console.error;
+  console.error = () => {};
+  process.env.ADMIN_EMAILS = "owner@example.com";
+  try {
+    await handleHearth(
+      hearth("/auth/email/start", { method: "POST", body: JSON.stringify({ email: "owner@example.com" }) })
+    );
+    await handleHearth(
+      hearth("/auth/email/start", { method: "POST", body: JSON.stringify({ email: "stranger@example.com" }) })
+    );
+  } finally {
+    console.error = quiet;
+    process.env.ADMIN_EMAILS = "";
+  }
+
+  const inserts = db.matching(/insert into email_tokens/);
+  assert.deepEqual(inserts.map((call) => call.values[0]), ["owner@example.com"]);
+});
+
 test("an unknown magic link lands back at the Hearth with an error", async () => {
   useClient(fakeDb([[/update email_tokens/, []]]));
   const response = await handleHearth(hearth("/auth/email/callback?token=nothing"));
