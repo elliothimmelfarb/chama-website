@@ -117,7 +117,9 @@ Packs and prices are set in the room, never in code. A client requests a pack, E
 
 Through MCP, `add_transcript` with `draft` attaches a transcript without writing the record or telling the member, and `write_record` writes it without mail, so the owner can read a record before the client is told. Without `draft`, adding a transcript writes the record and emails the member.
 
-A record can also carry a picture: one SVG drawn for that session, shown above the summary. The owner adds it on the record page or with the `set_record_visual` MCP tool. It is served from `/api/hearth/transcripts/<id>/visual` only to people who may read the record, shown through `<img>` so it cannot run, and refused on upload if it holds script, event handlers or any link that leaves the file (`lib/hearth/visual.js`).
+A record can also be written by hand (`set_record`, version 2 of the record shape in `lib/hearth/record.js`): the short version, a big-picture figure, the ideas as chapters with their own figures and the client's words, a playbook of actions with steps and prompts to copy, what is agreed, and what the next session is for. The playbook's actions become the client's follow-ups. Figures are SVGs keyed per record (`set_record_figure`, table `record_figures`), served from `/api/hearth/transcripts/<id>/figures/<key>` only to people who may read the record, shown through `<img>` so they cannot run, and refused on upload if they hold script, event handlers or any link that leaves the file (`lib/hearth/visual.js`).
+
+Remember cards are spaced repetition for a record (`set_record_cards`, table `recall_cards`). A card comes back after 1, 3, 7, 16 and 35 days: "Got it" climbs a step, "Fuzzy" holds, "Missed it" starts over, and a card answered well at the top retires (`lib/hearth/recall.js`). Members review on the record, on the Remember page, and see the count due on Home.
 
 Settings has three switches, each a decision rather than a deploy: `open_signup`, `feed_public`, `mcp_public`.
 
