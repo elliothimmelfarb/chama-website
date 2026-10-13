@@ -4,6 +4,7 @@ import test from "node:test";
 import { useClient } from "../lib/hearth/db.js";
 import { fakeDb, makeRequest } from "../lib/hearth/test-helpers.js";
 import { SESSION_COOKIE } from "../lib/hearth/auth.js";
+import { VIEW_COOKIE } from "./hearth.js";
 import { MESSAGES, SETTING_DEFAULTS, handleHearth, readSettings } from "./hearth.js";
 
 // A dummy connection string is enough: useClient means neon() is never
@@ -489,4 +490,73 @@ test("readSettings lays the stored rows over the defaults", async () => {
   assert.equal(settings.open_signup, false);
   assert.equal(settings.owner_timezone, SETTING_DEFAULTS.owner_timezone);
   assert.equal("not_a_setting" in settings, false);
+});
+
+/* ---------- viewing the room as a member ---------- */
+
+// The owner, a member, and roles that differ by name, so the test can tell
+// whose permissions the room is using.
+function viewDb({ actorRole = "owner", extra = [] } = {}) {
+  const users = {
+    "actor-1": userRow({ role: actorRole, name: "Elliot" }),
+    "member-1": userRow({ id: "member-1", email: "member@example.com", name: "Member", role: "client" })
+  };
+  const roles = {
+    owner: ["hearth.enter", "members.read", "transcripts.manage"],
+    client: ["hearth.enter", "transcripts.own"]
+  };
+  return fakeDb([
+    ...extra,
+    ...sessionHandlers(),
+    [/select \* from users where id/, (call) => (users[call.values[0]] ? [users[call.values[0]]] : [])],
+    [/select \* from roles where name/, (call) => [{ name: call.values[0], label: call.values[0], permissions: roles[call.values[0]] || [] }]],
+    [/from user_permissions/, []],
+    [/select key, value from settings/, []]
+  ]);
+}
+
+function viewing(path, options = {}, member = "member-1") {
+  return hearth(path, { ...options, headers: { cookie: `${SESSION_COOKIE}=t; ${VIEW_COOKIE}=${member}` } });
+}
+
+test("an owner viewing as a member sees the room as that member, read-only", async () => {
+  useClient(viewDb());
+  const me = await body(await handleHearth(viewing("/me")));
+  assert.equal(me.user.id, "member-1");
+  assert.deepEqual(me.user.permissions.sort(), ["hearth.enter", "transcripts.own"]);
+  assert.equal(me.viewer.name, "Elliot");
+
+  const db = viewDb();
+  useClient(db);
+  const write = await handleHearth(viewing("/follow-ups", { method: "POST", body: JSON.stringify({ text: "Do the thing" }) }));
+  assert.equal(write.status, 403);
+  assert.match((await body(write)).error, /viewing as Member/);
+  assert.equal(db.count(/insert into follow_ups/), 0);
+
+  useClient(viewDb());
+  const exit = await handleHearth(viewing("/view-as", { method: "DELETE" }));
+  assert.equal(exit.status, 200);
+  assert.match(exit.headers.get("Set-Cookie") || "", new RegExp(`^${VIEW_COOKIE}=; .*Max-Age=0`));
+});
+
+test("a view cookie means nothing to anyone but an owner", async () => {
+  useClient(viewDb({ actorRole: "client" }));
+  const me = await body(await handleHearth(viewing("/me")));
+  assert.equal(me.user.id, "actor-1");
+  assert.equal(me.viewer, undefined);
+});
+
+test("only an owner starts viewing as someone, and only as someone who exists", async () => {
+  useClient(viewDb({ actorRole: "client" }));
+  assert.equal((await handleHearth(hearth("/admin/view-as", { cookie: "t", method: "POST", body: JSON.stringify({ userId: "member-1" }) }))).status, 403);
+
+  useClient(viewDb());
+  assert.equal((await handleHearth(hearth("/admin/view-as", { cookie: "t", method: "POST", body: JSON.stringify({ userId: "nobody" }) }))).status, 404);
+
+  const db = viewDb();
+  useClient(db);
+  const started = await handleHearth(hearth("/admin/view-as", { cookie: "t", method: "POST", body: JSON.stringify({ userId: "member-1" }) }));
+  assert.equal(started.status, 200);
+  assert.match(started.headers.get("Set-Cookie") || "", new RegExp(`^${VIEW_COOKIE}=member-1; Secure; Path=/; SameSite=Lax; HttpOnly`));
+  assert.equal(db.count(/insert into audit_log/), 1, "starting a view is logged");
 });

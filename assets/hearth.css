@@ -383,7 +383,35 @@ body {
 .record-short .label { color: #b4ada0; }
 .record-short li { font-size: 1rem; }
 .record-visual { margin: 0.2rem 0; display: grid; gap: 0.45rem; }
-.record-visual img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.record-visual img { display: block; width: 100%; height: auto; border-radius: 6px; cursor: zoom-in; }
+@media (max-width: 34rem) {
+  /* On a phone the sheet runs edge to edge and pictures use every pixel. */
+  .sheet.record { margin-inline: calc(-1 * var(--pad)); border-radius: 0; padding-inline: 16px; }
+  .record-visual img { width: calc(100% + 32px); max-width: none; margin-inline: -16px; border-radius: 0; }
+}
+.fig-zoom { position: fixed; inset: 0; z-index: 50; background: rgba(14, 12, 10, 0.94); display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.fig-zoom-close { justify-self: end; margin: calc(env(safe-area-inset-top, 0px) + 0.8rem) 1rem 0.6rem; color: var(--text); }
+.fig-zoom-scroll { overflow: auto; padding: 0 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem); display: grid; place-items: start center; }
+.fig-zoom-scroll img { display: block; width: max(100%, 56rem); max-width: none; height: auto; border-radius: 8px; }
+@media (min-width: 60rem) { .fig-zoom-scroll img { width: min(100%, 72rem); } .fig-zoom-scroll { place-items: center; } }
+/* Checkboxes drawn for the paper sheet. */
+.sheet input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; margin: 0; flex: none;
+  width: 1.15rem; height: 1.15rem; border: 1.5px solid rgba(20, 20, 18, 0.55); border-radius: 4px;
+  background: #fffdf8; cursor: pointer; transform: translateY(0.15rem);
+  transition: background 140ms var(--ease), border-color 140ms var(--ease);
+}
+.sheet input[type="checkbox"]:hover { border-color: var(--ink); }
+.sheet input[type="checkbox"]:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.sheet input[type="checkbox"]:checked {
+  background: var(--ember) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 0.85rem no-repeat;
+  border-color: var(--ember);
+}
+.sheet input[type="checkbox"]:disabled { opacity: 0.5; cursor: default; }
+.hh-viewing { background: var(--ember); color: #141412; }
+.hh-viewing-inner { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding-block: 0.55rem; flex-wrap: wrap; }
+.hh-viewing p { font-size: 0.88rem; font-weight: 600; margin: 0; }
+.hh-viewing .btn { color: #141412; border-color: rgba(20, 20, 18, 0.5); }
 .record-visual figcaption { font-size: 0.82rem; color: var(--quiet); }
 .record-chapter { padding-top: 0.4rem; }
 .record-num { font-family: var(--mono); font-size: 0.72rem; color: #c2410c; }
@@ -392,7 +420,6 @@ body {
 .record-quote cite { display: block; font-style: normal; font-size: 0.8rem; color: var(--quiet); margin-top: 0.3rem; }
 .record-action { border: 1px solid rgba(20, 20, 18, 0.16); border-radius: 8px; padding: 1rem 1.1rem; }
 .record-action-head { display: flex; gap: 0.7rem; align-items: baseline; }
-.record-action-head input { flex: none; width: 1.05rem; height: 1.05rem; accent-color: var(--ember); transform: translateY(0.12rem); }
 .record ol.record-steps { counter-reset: step; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 0.45rem; }
 .record-steps li { counter-increment: step; background: #e9e4d8; border-radius: 6px; padding: 0.55rem 0.7rem; font-size: 0.88rem; line-height: 1.4; }
 .record-steps li::before { content: counter(step); display: block; font-family: var(--mono); font-size: 0.72rem; color: #c2410c; }

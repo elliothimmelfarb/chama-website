@@ -121,6 +121,12 @@
       }
       wrap.appendChild(sheet);
       if (H.can("transcripts.manage")) wrap.appendChild(figureControl(t));
+      if (H.state.user.role === "owner" && t.userId !== H.state.user.id) {
+        var who = (t.member && (t.member.name || t.member.email)) || "the member";
+        back.parentNode.appendChild(button("See this as " + who.split(" ")[0] + " sees it", "btn sm", function () {
+          H.viewAs(t.userId, "/transcripts/" + encodeURIComponent(t.id)).catch(function (err) { H.toast(err.message, "bad"); });
+        }));
+      }
 
       // Follow-ups from this session that the record does not already show.
       var rest = data.followUps.filter(function (f) { return !linked[f.id] && !(d && d.version === 2 && f.owner === "coach"); });
@@ -253,9 +259,32 @@
     img.alt = alts[key] || "";
     img.decoding = "async";
     img.loading = "lazy";
+    img.title = "Tap to enlarge";
+    img.addEventListener("click", function () { zoom(img.src, img.alt); });
     fig.appendChild(img);
     if (caption) fig.appendChild(el("figcaption", null, caption));
     return fig;
+  }
+
+  // A picture at reading size, to pan and pinch on a phone.
+  function zoom(src, alt) {
+    var overlay = el("div", "fig-zoom");
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-label", "Picture, enlarged");
+    var close = button("Close", "btn sm fig-zoom-close");
+    var big = el("img");
+    big.src = src;
+    big.alt = alt || "";
+    var scroller = el("div", "fig-zoom-scroll");
+    scroller.appendChild(big);
+    append(overlay, [close, scroller]);
+    function done() { document.removeEventListener("keydown", onKey); overlay.remove(); }
+    function onKey(e) { if (e.key === "Escape") done(); }
+    close.addEventListener("click", done);
+    overlay.addEventListener("click", function (e) { if (e.target === overlay || e.target === scroller) done(); });
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(overlay);
+    close.focus();
   }
 
   function tick(f) {

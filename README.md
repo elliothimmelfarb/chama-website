@@ -121,6 +121,8 @@ A record can also be written by hand (`set_record`, version 2 of the record shap
 
 Remember cards are spaced repetition for a record (`set_record_cards`, table `recall_cards`). A card comes back after 1, 3, 7, 16 and 35 days: "Got it" climbs a step, "Fuzzy" holds, "Missed it" starts over, and a card answered well at the top retires (`lib/hearth/recall.js`). Members review on the record, on the Remember page, and see the count due on Home.
 
+An owner can view the room as any member (a member's page, or "See this as ... sees it" on a record). Their nav, Home, records and cards render exactly as the member's, under a banner with the way out. A second cookie names the member and means something only alongside an owner's session, every change is refused while it is set, and starting and ending a view are logged.
+
 Settings has three switches, each a decision rather than a deploy: `open_signup`, `feed_public`, `mcp_public`.
 
 ### Environment variables

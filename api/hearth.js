@@ -136,6 +136,12 @@ function rolesReady() {
 
 /* ---------- the actor ---------- */
 
+// An owner can see the room exactly as a member does. The view cookie only
+// names the member; it means something only alongside an owner's own
+// session, and while it is set every change is refused.
+export const VIEW_COOKIE = "__Host-chama_hearth_view";
+const VIEW_SECONDS = 2 * 3600;
+
 async function loadContext(request, injected = null) {
   const context = { request, ...requestContext(request), actor: null, session: null, actorKind: "user", actorRef: null };
   if (injected && injected.actor) {
@@ -150,6 +156,14 @@ async function loadContext(request, injected = null) {
     if (actor && actor.user.status === "active") {
       context.actor = actor;
       context.session = session;
+      const viewId = readCookie(request.headers.get("cookie"), VIEW_COOKIE);
+      if (viewId && actor.user.role === "owner" && viewId !== actor.user.id) {
+        const seen = await loadActor(viewId);
+        if (seen) {
+          context.viewer = actor;
+          context.actor = seen;
+        }
+      }
     }
   }
   return context;
@@ -211,8 +225,27 @@ route("GET", "/me", async (context) => {
   return json({
     user: publicUser(user, permissions),
     role: context.actor.role ? { name: context.actor.role.name, label: context.actor.role.label } : null,
+    viewer: context.viewer ? { id: context.viewer.user.id, name: context.viewer.user.name || context.viewer.user.email } : undefined,
     settings: { sessionMinutes: settings.session_minutes, meetingUrl: settings.meeting_url ? true : false }
   });
+});
+
+/* ---------- viewing as a member ---------- */
+
+route("POST", "/admin/view-as", async (context) => {
+  needs(context);
+  if (context.actor.user.role !== "owner") throw new HttpError(403, MESSAGES.forbidden);
+  const body = await readJson(context.request);
+  const target = await findUserById(String(body.userId || ""));
+  if (!target) throw new HttpError(404, MESSAGES.notFound);
+  if (target.id === context.actor.user.id) throw new HttpError(400, "That's you already.");
+  await auditor(context, context.actor.user)(EVENTS.viewAsStarted, target.id);
+  return json({ ok: true }, 200, { "Set-Cookie": cookie(VIEW_COOKIE, target.id, { maxAge: VIEW_SECONDS }) });
+});
+
+route("DELETE", "/view-as", async (context) => {
+  if (context.viewer) await auditor(context, context.viewer.user)(EVENTS.viewAsEnded, context.actor.user.id);
+  return json({ ok: true }, 200, { "Set-Cookie": cookie(VIEW_COOKIE, "", { maxAge: 0 }) });
 });
 
 /* ---------- Google ---------- */
@@ -797,6 +830,10 @@ export async function handleHearth(request, injected = null) {
     await ready();
     await rolesReady();
     const context = await loadContext(request, injected);
+    if (context.viewer && method !== "GET" && !(method === "DELETE" && path === "/view-as")) {
+      const who = context.actor.user.name || context.actor.user.email;
+      throw new HttpError(403, `You're viewing as ${who}, so nothing can be changed. Exit the view to make changes.`);
+    }
     return await matched.handler(context, params);
   } catch (error) {
     if (error instanceof HttpError) return json({ error: error.message, ...error.extra }, error.status);
