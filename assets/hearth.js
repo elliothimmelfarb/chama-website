@@ -334,6 +334,18 @@
     var root = state.root;
     clear(root);
 
+    // An owner looking through a member's eyes: say so, and give the way out.
+    var bar = null;
+    if (state.viewer) {
+      bar = el("div", "hh-viewing");
+      var inner0 = el("div", "frame hh-viewing-inner");
+      inner0.appendChild(el("p", null, "Viewing as " + (state.user.name || state.user.email) + ". This is exactly what they see. Nothing can be changed."));
+      inner0.appendChild(button("Exit the view", "btn sm", function () {
+        api("/view-as", { method: "DELETE" }).then(function () { location.href = BASE; }, function () { location.href = BASE; });
+      }));
+      bar.appendChild(inner0);
+    }
+
     var mast = el("header", "hh-mast");
     var inner = el("div", "frame hh-mast-inner");
     var fire = el("div", "hh-fire");
@@ -356,6 +368,7 @@
     who.addEventListener("click", function () { navigate("/account"); });
     inner.appendChild(who);
 
+    if (bar) mast.appendChild(bar);
     mast.appendChild(inner);
     root.appendChild(mast);
     state.mast = title;
@@ -938,11 +951,18 @@
 
   /* ---------- boot ---------- */
 
+  // Owners only; the server refuses anyone else. Lands on `to` as the member.
+  function viewAs(userId, to) {
+    return api("/admin/view-as", { method: "POST", body: { userId: userId } }).then(function () {
+      location.href = BASE + (to || "");
+    });
+  }
+
   window.Hearth = {
     register: register, onHome: onHome, api: api, el: el, svg: svg, mark: mark, clear: clear, append: append,
     button: button, link: link, field: field, input: input, pill: pill, avatar: avatar, toast: toast, flare: flare,
     navigate: navigate, render: render, viewHead: viewHead, empty: empty, fmtDate: fmtDate, fmtRelative: fmtRelative,
-    countUp: countUp, barChart: barChart, can: can, state: state, BASE: BASE
+    countUp: countUp, barChart: barChart, can: can, state: state, BASE: BASE, viewAs: viewAs
   };
 
   function boot() {
@@ -955,6 +975,7 @@
         state.user = me.user;
         state.role = me.role;
         state.settings = me.settings;
+        state.viewer = me.viewer || null;
         state.permissions = {};
         (me.user.permissions || []).forEach(function (p) { state.permissions[p] = true; });
         if (query().welcome) { toast("Welcome to the Hearth.", "good"); history.replaceState(null, "", location.pathname); }

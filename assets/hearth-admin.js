@@ -425,7 +425,13 @@
           .then(function () { toast(suspended ? "They are back in." : "Suspended.", "good"); H.render(); })
           .catch(function (error) { toast(error.message, "bad"); });
       });
-      card.appendChild(append(el("div", "row"), [statusButton]));
+      var row = append(el("div", "row"), [statusButton]);
+      if (H.state.user.role === "owner" && member.id !== H.state.user.id) {
+        row.appendChild(button("View the Hearth as " + (member.name || member.email).split(" ")[0], "btn", function () {
+          H.viewAs(member.id).catch(function (error) { toast(error.message, "bad"); });
+        }));
+      }
+      card.appendChild(row);
 
       var notes = textarea(member.notes || "", 4);
       var saveNotes = button("Save notes", "btn", function () {
