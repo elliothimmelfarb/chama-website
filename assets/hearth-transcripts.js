@@ -106,6 +106,17 @@
       sheet.appendChild(kicker);
       sheet.appendChild(el("h1", null, t.title || (d && d.title) || "Untitled session"));
 
+      // The session's picture, drawn by Elliot. An <img> keeps it inert.
+      if (t.hasVisual) {
+        var figure = el("figure", "record-visual");
+        var img = el("img");
+        img.src = "/api/hearth/transcripts/" + encodeURIComponent(t.id) + "/visual";
+        img.alt = "A picture of what this session covered.";
+        img.decoding = "async";
+        figure.appendChild(img);
+        sheet.appendChild(figure);
+      }
+
       if (!d) {
         sheet.appendChild(el("p", "dim", t.status === "deriving" ? "The record is being written. Come back in a minute." : t.status === "failed" ? "The record could not be written this time; Elliot can try again." : "The transcript is here; the record has not been written yet."));
       } else {
@@ -128,6 +139,7 @@
         }
       }
       wrap.appendChild(sheet);
+      if (H.can("transcripts.manage")) wrap.appendChild(visualControl(t));
 
       // Follow-ups from this session, with the checkbox that ticks them.
       var fu = el("div", "card stack tight");
@@ -161,6 +173,36 @@
       return wrap;
     });
   }, { perm: "transcripts.own", title: "Record" });
+
+  // The owner's way to add, replace or remove the picture by hand.
+  function visualControl(t) {
+    var card = el("div", "card row between");
+    card.appendChild(el("p", "small dim", t.hasVisual ? "This record has a picture." : "No picture on this record yet."));
+    var actions = el("div", "row");
+    var file = el("input");
+    file.type = "file";
+    file.accept = ".svg,image/svg+xml";
+    file.hidden = true;
+    file.addEventListener("change", function () {
+      var f = file.files && file.files[0];
+      if (!f) return;
+      f.text().then(function (svg) {
+        return api("/admin/transcripts/" + encodeURIComponent(t.id), { method: "PATCH", body: { visualSvg: svg } });
+      }).then(function () { H.toast("Picture saved."); H.navigate("/transcripts/" + encodeURIComponent(t.id)); })
+        .catch(function (err) { H.toast(err.message, "bad"); });
+    });
+    actions.appendChild(file);
+    actions.appendChild(button(t.hasVisual ? "Replace picture" : "Add a picture (.svg)", "btn sm", function () { file.click(); }));
+    if (t.hasVisual) {
+      actions.appendChild(button("Remove", "btn ghost sm", function () {
+        api("/admin/transcripts/" + encodeURIComponent(t.id), { method: "PATCH", body: { visualSvg: "" } })
+          .then(function () { H.navigate("/transcripts/" + encodeURIComponent(t.id)); })
+          .catch(function (err) { H.toast(err.message, "bad"); });
+      }));
+    }
+    card.appendChild(actions);
+    return card;
+  }
 
   function section(sheet, title, items, emphasize) {
     if (!items || !items.length) return;
