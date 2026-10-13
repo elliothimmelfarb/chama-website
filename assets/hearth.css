@@ -371,6 +371,8 @@ body {
 
 .sheet .label { color: var(--quiet); }
 .sheet ::selection { background: var(--ember); color: #fff; }
+.record-visual { margin: 0.4rem 0 0.6rem; }
+.record-visual img { display: block; width: 100%; height: auto; border-radius: 6px; }
 
 .list { display: grid; }
 .list > * {

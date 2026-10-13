@@ -115,6 +115,8 @@ Google (ID token), GitHub and Discord (authorization code with a state nonce, ve
 
 Packs and prices are set in the room, never in code. A client requests a pack, Elliot issues the fatura from the certified invoicing software, marks the purchase invoiced and then paid, and the credits appear. Availability is weekly windows in Europe/Lisbon. Booking spends a credit and emails both sides a calendar file. Once the owner connects Google in Settings, each booking gets a Calendar event with a Meet room, and the hourly cron pulls the Meet transcript after the session and writes the record.
 
+A record can also carry a picture: one SVG drawn for that session, shown above the summary. The owner adds it on the record page or with the `set_record_visual` MCP tool. It is served from `/api/hearth/transcripts/<id>/visual` only to people who may read the record, shown through `<img>` so it cannot run, and refused on upload if it holds script, event handlers or any link that leaves the file (`lib/hearth/visual.js`).
+
 Settings has three switches, each a decision rather than a deploy: `open_signup`, `feed_public`, `mcp_public`.
 
 ### Environment variables
