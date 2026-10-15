@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hearth Stripe Invoices</title>
+<meta name="description" content="Ship report: Elliot bills members through Stripe after the fact, members pay on Stripe's page, and paid invoices update the Hearth on their own, 2026-10-15.">
+<style>
+  /* A ship report on the site's own paper: ink and ember, the screens doing the talking. */
+  .phone3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; align-items: start; }
+  .phone3 figure img { max-width: 17rem; }
+  .stand { font-size: 0.72rem; font-weight: 700; color: var(--warn); }
+  pre { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; background: var(--ground-2); border: 1px solid var(--line); overflow-x: auto; font-size: 0.82rem; }
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  header { display: grid; gap: 0.9rem; }
+  .meta { margin: 0; color: var(--ember); font-size: 0.8rem; font-weight: 700; }
+  h1 { margin: 0; font-size: clamp(2rem, 5.5vw, 3.6rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.08rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+  figure { margin: 0; display: grid; gap: 0.6rem; }
+  figure img, figure video { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #0e0c0a; }
+  figcaption { font-size: 0.9rem; color: var(--ink-dim); max-width: 62ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+  .three { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 1rem; align-items: start; }
+  .phone { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 1.4rem; align-items: center; }
+  ol.notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; font-size: 0.92rem; }
+  ol.notes li::marker { color: var(--ember); font-weight: 700; }
+  .flow { width: 100%; height: auto; display: block; }
+  .flow text { font-family: var(--sans); fill: var(--ink); }
+  .flow .dim { fill: var(--ink-dim); }
+  .flow .box { fill: var(--ground-2); stroke: var(--line); }
+  .flow .hot { fill: var(--ember); }
+  .flow .arrow { stroke: var(--ink-dim); fill: none; stroke-width: 1.5; }
+  .todo { display: grid; gap: 0.7rem; }
+  .todo div { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.5rem; align-items: baseline; }
+  .todo span { color: var(--warn); font-weight: 700; }
+  a { color: var(--ink); text-decoration-color: var(--ember); text-underline-offset: 0.2em; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  @media (max-width: 44rem) {
+    .two, .three, .phone, .phone3 { grid-template-columns: minmax(0, 1fr); }
+    .phone figure { max-width: 16rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="meta">Shipped 2026-10-15 · <a href="https://github.com/elliothimmelfarb/chama-website/pull/109">PR #109</a> · live on chamainteligente.com</p>
+    <h1>Bill now, they pay on Stripe</h1>
+    <p class="lede">You turn held sessions or a pack request into a Stripe invoice in one form. The member gets the link by email and sees it in their account. When they pay, the Hearth marks it paid, and a paid pack adds its credits.</p>
+    <div class="chips">
+      <span class="chip">✓ Live in production</span>
+      <span class="chip">✓ 486 tests pass</span>
+      <span class="chip">✓ Webhook live and checking signatures</span>
+      <span class="chip">✓ Stripe accepted the real API calls</span>
+      <span class="chip open">Needs your Stripe secret key</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>How it flows</h2>
+    <svg class="flow" viewBox="0 0 900 230" role="img" aria-label="Held sessions, a pack request or hand-typed lines become a Stripe invoice; the member pays on Stripe; the webhook marks it paid and adds pack credits.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor" style="color: var(--ink-dim)"/></marker></defs>
+      <rect class="box" x="10" y="10" width="170" height="50" rx="10"/><text x="95" y="40" text-anchor="middle" font-size="15">Held sessions</text>
+      <rect class="box" x="10" y="80" width="170" height="50" rx="10"/><text x="95" y="110" text-anchor="middle" font-size="15">A pack request</text>
+      <rect class="box" x="10" y="150" width="170" height="50" rx="10"/><text x="95" y="180" text-anchor="middle" font-size="15">Lines you type</text>
+      <path class="arrow" d="M180 35L262 95" marker-end="url(#ah)"/><path class="arrow" d="M180 105H262" marker-end="url(#ah)"/><path class="arrow" d="M180 175L262 115" marker-end="url(#ah)"/>
+      <rect class="hot" x="265" y="78" width="170" height="54" rx="10"/>
+      <text x="350" y="102" text-anchor="middle" font-size="15" font-weight="600" style="fill:#fff">Stripe invoice</text>
+      <text x="350" y="121" text-anchor="middle" font-size="12" style="fill:#fff">numbered, due in 14 days</text>
+      <path class="arrow" d="M435 105H500" marker-end="url(#ah)"/>
+      <rect class="box" x="503" y="78" width="160" height="54" rx="10"/>
+      <text x="583" y="101" text-anchor="middle" font-size="15">Member pays</text>
+      <text class="dim" x="583" y="120" text-anchor="middle" font-size="12">email link or Hearth</text>
+      <path class="arrow" d="M663 105H725" marker-end="url(#ah)"/>
+      <rect class="hot" x="728" y="78" width="162" height="54" rx="10"/>
+      <text x="809" y="102" text-anchor="middle" font-size="15" font-weight="600" style="fill:#fff">Marked paid</text>
+      <text x="809" y="121" text-anchor="middle" font-size="12" style="fill:#fff">by Stripe's webhook</text>
+      <path class="arrow" d="M809 132V170" marker-end="url(#ah)"/>
+      <text class="dim" x="809" y="192" text-anchor="middle" font-size="13">a pack adds its credits</text>
+      <text class="dim" x="809" y="210" text-anchor="middle" font-size="13">you get an email</text>
+    </svg>
+  </section>
+
+  <section>
+    <h2>Your side</h2>
+    <div class="two">
+      <figure>
+        <img src="2026-10-15-stripe-invoices/to-invoice.jpg" alt="Purchases page with Invoice with Stripe buttons on each held session">
+        <figcaption><b>Start from To invoice</b>, a pack request, or a member's page. Each has an "Invoice with Stripe" button that opens the form for that person.</figcaption>
+      </figure>
+      <figure>
+        <img src="2026-10-15-stripe-invoices/form.jpg" alt="New invoice form with three held sessions switched on at 120 euros each">
+        <figcaption><b>One form.</b> Their held sessions come in switched on, priced from your single-session pack (change it per invoice). Add a pack or any line by hand, a due date and a note.</figcaption>
+      </figure>
+    </div>
+    <figure style="margin-top:1.4rem">
+      <img src="2026-10-15-stripe-invoices/list.jpg" alt="Invoices list with one paid and one open invoice">
+      <figcaption><b>Business, Invoices.</b> Each invoice with its Stripe number and status. Open ones can be sent again or voided. Voiding puts the sessions back on To invoice.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>The member's side</h2>
+    <div class="phone3">
+      <figure>
+        <img src="2026-10-15-stripe-invoices/home.jpg" alt="Member home on a phone showing an invoice to pay with a Pay button">
+        <figcaption><b>1 · On Home.</b> An open invoice is the first thing they see, even before they are a client.</figcaption>
+      </figure>
+      <figure>
+        <img src="2026-10-15-stripe-invoices/pay.jpg" alt="A stand-in for Stripe's hosted invoice page">
+        <figcaption><b>2 · Pay on Stripe.</b> <span class="stand">LOCAL STAND-IN.</span> In production this is Stripe's own hosted invoice page with your branding and payment methods.</figcaption>
+      </figure>
+      <figure>
+        <img src="2026-10-15-stripe-invoices/paid.jpg" alt="Sessions page showing 4 credits and the invoice marked paid with a Receipt button">
+        <figcaption><b>3 · Paid.</b> The webhook marked it paid and the pack's 4 credits landed. The invoice stays in Sessions with its receipt.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Worth knowing</h2>
+    <ol class="notes">
+      <li>The Stripe invoice is the payment request, not the fatura. That still comes from the certified software.</li>
+      <li>Your Stripe account is shared with ShopIntake, and ShopIntake's webhook already sends a fatura notice for every paid invoice. Hearth payments will show up there too, which is what the accountant needs. Hearth invoices are tagged <code>source: hearth</code>.</li>
+      <li>An invoice you send by hand from the Stripe dashboard also lands in the member's account, matched by their email. ShopIntake's subscription invoices never do.</li>
+      <li>The email to the member comes from the Hearth, not Stripe, so it matches the other Hearth mail.</li>
+      <li>Checkout, where people pay before booking, is not built yet, as you asked.</li>
+      <li>Screens above are from a local copy with a stand-in Stripe. In production I checked the webhook (it rejects unsigned calls and accepts signed ones) and the new database table.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Left for you</h2>
+    <div class="todo">
+      <div><span>1</span><div>
+        <p style="margin:0 0 0.6rem">Make the secret key. Stripe only lets you do this in the dashboard: <a href="https://dashboard.stripe.com/apikeys">Developers, API keys</a>, then <b>Create restricted key</b>. Name it "Hearth" and set <b>Customers: Write</b> and <b>Invoices: Write</b>, then create it and copy the key. Then run this in Terminal, which reads the key from your clipboard:</p>
+        <pre>cd ~/claude/chama-website && KEY=$(pbpaste | tr -d '\n') && printf %s "$KEY" | vercel env add STRIPE_SECRET_KEY production --sensitive && security add-generic-password -U -s chama-hearth-stripe-key -a chamainteligente.com -w "$KEY"</pre>
+        <p style="margin:0.6rem 0 0">Tell me when it's done, and I'll redeploy and run a real invoice to you that I void without paying.</p>
+      </div></div>
+      <div><span>2</span><p style="margin:0">One empty draft invoice and a customer named "Hearth API check (delete me)" are in Stripe from my test. The connector can't delete them, so I'll remove them with the new key.</p></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
