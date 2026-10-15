@@ -29,7 +29,7 @@ import { PERMISSIONS, ROLE_DEFAULTS, ROLE_NAMES, sanitizePermissionList } from "
 import { isValidZone } from "../lib/hearth/time.js";
 import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
 import * as mail from "../lib/hearth/mail.js";
-import { registerSessionRoutes, BILLING_MODES } from "../lib/hearth/routes/sessions.js";
+import { registerSessionRoutes, BILLING_MODES, clearGoogleCache } from "../lib/hearth/routes/sessions.js";
 import { registerTranscriptRoutes } from "../lib/hearth/routes/transcripts.js";
 import { registerRecallRoutes } from "../lib/hearth/routes/recall.js";
 import { registerAgentRoutes } from "../lib/hearth/routes/agents.js";
@@ -84,7 +84,11 @@ export const SETTING_DEFAULTS = {
   feed_public: false,
   mcp_public: false,
   open_signup: true,
-  owner_timezone: "Europe/Lisbon"
+  owner_timezone: "Europe/Lisbon",
+  // Events on these Google calendars block member booking, when Google is
+  // connected and google_busy is on. "primary" is the connected account's own.
+  google_busy: true,
+  google_calendars: ["primary"]
 };
 
 export async function readSettings() {
@@ -112,7 +116,11 @@ function validSetting(key, value) {
     case "feed_public":
     case "mcp_public":
     case "open_signup":
+    case "google_busy":
       return typeof value === "boolean";
+    case "google_calendars":
+      return Array.isArray(value) && value.length >= 1 && value.length <= 10 &&
+        value.every((id) => typeof id === "string" && /^[^\s<>"']{1,200}$/.test(id));
     case "owner_timezone":
       // The slot calculator does date arithmetic in this zone; a name it
       // cannot resolve would break every booking.
@@ -749,6 +757,7 @@ route("PUT", "/admin/settings", async (context) => {
     `;
     changed.push(key);
   }
+  if (changed.some((k) => k.startsWith("google_"))) clearGoogleCache();
   await auditor(context, context.actor.user)(EVENTS.settingsUpdated, null, { keys: changed });
   return json({ ok: true, settings: await readSettings() });
 });
