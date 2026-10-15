@@ -216,7 +216,8 @@
   // keystroke and offers what it found as buttons. It needs members.read;
   // where that is missing the picker falls back to a plain id field rather
   // than pretending the search is empty.
-  function memberPicker(placeholder) {
+  function memberPicker(placeholder, options) {
+    var opts = options || {};
     var wrap = el("div", "stack tight");
     var search = input("search", "member", placeholder || "Search name or email");
     var results = el("div", "row");
@@ -231,9 +232,10 @@
 
     function choose(member) {
       picked = member;
-      chosen.textContent = "Booking for " + memberName(member) + " (" + member.email + ")";
+      chosen.textContent = (opts.verb || "Booking for") + " " + memberName(member) + " (" + member.email + ")";
       clear(results);
       search.value = "";
+      if (opts.onChoose) opts.onChoose(member);
     }
 
     function draw(members) {
@@ -729,7 +731,7 @@
     var grantPicker = null;
     if (ctx && ctx.onCleanup) ctx.onCleanup(function () { if (grantPicker) grantPicker.stop(); });
 
-    wrap.appendChild(H.viewHead("Purchases", "Pack requests. Invoice by hand, then mark paid here to add the credits."));
+    wrap.appendChild(H.viewHead("Purchases", "Pack requests. Invoice them with Stripe and the credits arrive when it is paid, or invoice by hand and mark paid here."));
 
     var controls = el("div", "row");
     controls.appendChild(select(PURCHASE_FILTERS, status, function (value) { status = value; load(); }));
@@ -789,12 +791,16 @@
         patch(voided, { status: "void" });
       });
       var saveOnly = button("Save details", "btn ghost", function () { patch(saveOnly, numbers()); });
+      var stripeIt = button("Invoice with Stripe", "btn primary", function () {
+        H.navigate("/admin/invoices?member=" + encodeURIComponent(purchase.member.id) + "&purchase=" + encodeURIComponent(purchase.id));
+      });
+      var stripeRow = purchase.status === "requested" && purchase.member && purchase.member.id ? [stripeIt] : [];
 
       append(card, [
         field("Invoice reference", ref, "Invoice number"),
         field("Amount in cents", amount),
         field("Discount in cents", discount),
-        append(el("div", "row"), [saveOnly, invoiced, paid, voided]),
+        append(el("div", "row"), stripeRow.concat([saveOnly, invoiced, paid, voided])),
         line
       ]);
       return card;
@@ -923,7 +929,10 @@
                 .then(function () { toast("Marked invoiced.", "good"); return draw(); })
                 .catch(function (error) { toast(error.message, "bad"); });
             });
-            append(row, [left, done]);
+            var bill = button("Invoice with Stripe", "btn sm primary", function () {
+              H.navigate("/admin/invoices?member=" + encodeURIComponent(b.userId));
+            });
+            append(row, [left, append(el("div", "row"), [bill, done])]);
             list.appendChild(row);
           });
         }, function (error) { clear(list); list.appendChild(H.empty(error.message)); });
@@ -938,6 +947,322 @@
       return wrap;
     });
   }, { perm: "purchases.manage", title: "Purchases", nav: { group: "Business", label: "Purchases", order: 12 } });
+
+  /* ---------- invoices, through Stripe ---------- */
+
+  // Bill one member after the fact: the sessions they held while billed
+  // after, a pack they asked for, or lines typed by hand. Stripe hosts the
+  // page they pay on; the webhook marks it paid here on its own.
+  var INVOICE_FILTERS = [
+    { value: "", label: "All" },
+    { value: "open", label: "To pay" },
+    { value: "paid", label: "Paid" },
+    { value: "void", label: "Void" }
+  ];
+
+  function euros(text) {
+    var n = parseFloat(String(text).replace(",", "."));
+    return isNaN(n) ? NaN : Math.round(n * 100);
+  }
+
+  // "Coaching session, 24 Sep 2026 and 2 more", so a long invoice stays one line.
+  function linesSummary(inv) {
+    var lines = inv.lines || [];
+    if (!lines.length) return inv.description || "";
+    if (lines.length <= 2) return lines.map(function (l) { return l.description; }).join(", ");
+    return lines[0].description + " and " + (lines.length - 1) + " more";
+  }
+
+  function sectionLabel(text) {
+    var node = el("p", "label", text);
+    node.style.marginTop = "0.9rem";
+    return node;
+  }
+
+  function moneyInput(name, cents) {
+    var node = input("number", name, "0.00", cents === null || cents === undefined ? "" : (cents / 100).toFixed(2));
+    node.min = "0";
+    node.step = "0.01";
+    node.inputMode = "decimal";
+    return node;
+  }
+
+  H.register("/admin/invoices", function (ctx) {
+    var wrap = el("div", "stack");
+    var picker = null;
+    var filter = "";
+    if (ctx && ctx.onCleanup) ctx.onCleanup(function () { if (picker) picker.stop(); });
+    var startMember = ctx && ctx.query && ctx.query.member;
+    var startPurchase = ctx && ctx.query && ctx.query.purchase;
+
+    var formCard = el("div", "card stack tight");
+    formCard.hidden = !startMember;
+    var newButton = button("New invoice", "btn primary", function () {
+      formCard.hidden = !formCard.hidden;
+      if (!formCard.hidden) formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    wrap.appendChild(H.viewHead("Invoices", "Bill a member through Stripe. They pay on Stripe's page, and paid invoices update here on their own.", [newButton]));
+    var notice = el("div");
+    wrap.appendChild(notice);
+    wrap.appendChild(formCard);
+
+    var controls = el("div", "row");
+    controls.appendChild(select(INVOICE_FILTERS, filter, function (value) { filter = value; load(); }));
+    wrap.appendChild(controls);
+    var listCard = el("div", "card pad0");
+    wrap.appendChild(listCard);
+
+    /* the form */
+
+    var body = el("div", "stack tight");
+    function buildForm() {
+      clear(formCard);
+      formCard.appendChild(el("p", "label", "New invoice"));
+      picker = memberPicker("Search name or email", { verb: "Invoicing", onChoose: function (member) { loadSources(member.id); } });
+      formCard.appendChild(picker.node);
+      formCard.appendChild(body);
+    }
+
+    function loadSources(userId, purchaseId) {
+      clear(body);
+      body.appendChild(el("p", "small dim", "Looking for what they have to pay…"));
+      return api("/admin/invoice-sources/" + encodeURIComponent(userId)).then(function (data) {
+        drawSources(data, purchaseId);
+      }, function (error) {
+        clear(body);
+        body.appendChild(el("p", "form-error", error.message));
+      });
+    }
+
+    function drawSources(data, purchaseId) {
+      clear(body);
+      var member = data.member;
+      body.appendChild(el("p", "small", "Invoicing " + memberName(member) + " (" + member.email + ")" + (member.billing === "after" ? ", billed after." : ".")));
+      var lines = [];
+      var total = el("p", "primary");
+
+      function recount() {
+        var sum = 0;
+        var bad = false;
+        lines.forEach(function (line) {
+          var on = line.include ? line.include.checked : true;
+          if (!on) return;
+          var cents = line.cents();
+          if (isNaN(cents) || cents <= 0) bad = true; else sum += cents;
+        });
+        total.textContent = bad ? "Every line needs an amount." : "Total " + money(sum, "EUR");
+      }
+
+      // Held sessions, each its own line at the per-session price.
+      if (data.bookings.length) {
+        body.appendChild(sectionLabel("Sessions held, not invoiced"));
+        var price = moneyInput("sessionPrice", data.sessionPriceCents);
+        price.addEventListener("input", recount);
+        body.appendChild(field("Price per session (EUR)", price, data.sessionPriceCents ? "From your packs. Change it for this invoice if you need to." : "Set a price for one session."));
+        data.bookings.forEach(function (b) {
+          var t = toggle(dayLabel(b.startsAt, ownerZone()) + " · " + timeRange(b, ownerZone()) + (b.status === "no_show" ? " · no show" : ""), true);
+          t.input.addEventListener("change", recount);
+          body.appendChild(t.node);
+          lines.push({
+            include: t.input,
+            bookingId: b.id,
+            description: function () {
+              return "Coaching session, " + new Date(b.startsAt).toLocaleDateString("en-GB", { timeZone: ownerZone(), day: "numeric", month: "short", year: "numeric" });
+            },
+            cents: function () { return euros(price.value); }
+          });
+        });
+      }
+
+      // An open pack request, at the price it was asked at.
+      if (data.purchases.length) {
+        body.appendChild(sectionLabel("Pack requests"));
+        data.purchases.forEach(function (p) {
+          var net = p.amountCents === null ? null : p.amountCents - (p.discountCents || 0);
+          var t = toggle(p.packName + " · " + p.sessions + " sessions · " + money(net, p.currency), p.id === purchaseId);
+          var amount = moneyInput("pack", net);
+          amount.addEventListener("input", recount);
+          t.input.addEventListener("change", function () {
+            // One pack per invoice, so its credits land when this one is paid.
+            if (t.input.checked) lines.forEach(function (other) { if (other.purchaseId && other !== line) other.include.checked = false; });
+            recount();
+          });
+          body.appendChild(t.node);
+          body.appendChild(field("Amount (EUR)", amount));
+          var line = {
+            include: t.input,
+            purchaseId: p.id,
+            description: function () { return p.packName + " (" + p.sessions + " sessions)"; },
+            cents: function () { return euros(amount.value); }
+          };
+          lines.push(line);
+        });
+      }
+
+      // Anything else, by hand.
+      var extraWrap = el("div", "stack tight");
+      body.appendChild(sectionLabel("Other lines"));
+      body.appendChild(extraWrap);
+      function addLine() {
+        var row = el("div", "row");
+        var what = input("text", "lineDescription", "What it is for");
+        what.maxLength = 200;
+        what.className += " grow";
+        var amount = moneyInput("lineAmount", null);
+        amount.style.maxWidth = "9rem";
+        var line = {
+          description: function () { return what.value.trim(); },
+          cents: function () { return euros(amount.value); },
+          blank: function () { return !what.value.trim() && !amount.value; }
+        };
+        var remove = button("Remove", "btn sm ghost", function () {
+          lines.splice(lines.indexOf(line), 1);
+          extraWrap.removeChild(row);
+          recount();
+        });
+        amount.addEventListener("input", recount);
+        what.addEventListener("input", recount);
+        append(row, [what, amount, remove]);
+        extraWrap.appendChild(row);
+        lines.push(line);
+        recount();
+      }
+      body.appendChild(append(el("div", "row"), [button("Add a line", "btn sm", addLine)]));
+      if (!data.bookings.length && !data.purchases.length) addLine();
+
+      var due = input("number", "daysUntilDue", "14", "14");
+      due.min = "0";
+      due.max = "365";
+      due.step = "1";
+      var memo = textarea("", 2);
+      memo.maxLength = 500;
+      var mailIt = toggle("Email them the link to pay", true);
+      var line = el("p", "form-error");
+      var create = button("Create invoice", "btn primary", function () {
+        line.textContent = "";
+        var chosen = lines.filter(function (l) {
+          if (l.include) return l.include.checked;
+          return !l.blank();
+        });
+        if (!chosen.length) { line.textContent = "Pick something to invoice."; return; }
+        var payload = {
+          userId: member.id,
+          lines: [],
+          bookingIds: [],
+          purchaseId: null,
+          daysUntilDue: parseInt(due.value, 10),
+          description: memo.value.trim(),
+          email: mailIt.input.checked
+        };
+        for (var i = 0; i < chosen.length; i += 1) {
+          var c = chosen[i];
+          var cents = c.cents();
+          var text = c.description();
+          if (!text) { line.textContent = "Every line needs a description."; return; }
+          if (isNaN(cents) || cents <= 0) { line.textContent = "Every line needs an amount above zero."; return; }
+          payload.lines.push({ description: text, amountCents: cents });
+          if (c.bookingId) payload.bookingIds.push(c.bookingId);
+          if (c.purchaseId) payload.purchaseId = c.purchaseId;
+        }
+        if (isNaN(payload.daysUntilDue)) payload.daysUntilDue = 14;
+        var sum = payload.lines.reduce(function (a, l) { return a + l.amountCents; }, 0);
+        if (!window.confirm("Create a Stripe invoice for " + money(sum, "EUR") + " to " + memberName(member) + (payload.email ? " and email it to them?" : "?"))) return;
+        busy(create, api("/admin/invoices", { method: "POST", body: payload }))
+          .then(function (result) {
+            toast(result.emailed ? "Invoice " + (result.invoice.number || "") + " sent." : "Invoice " + (result.invoice.number || "") + " created.", "good");
+            flare();
+            if (picker) picker.reset();
+            clear(body);
+            formCard.hidden = true;
+            if (startMember) history.replaceState(null, "", BASE + "/admin/invoices");
+            load();
+          })
+          .catch(function (error) {
+            line.textContent = error.message;
+            toast(error.message, "bad");
+          });
+      });
+      append(body, [
+        field("Due in days", due),
+        field("Note on the invoice", memo, "Optional. The member sees it on Stripe's page."),
+        mailIt.node,
+        total,
+        append(el("div", "row"), [create]),
+        line
+      ]);
+      recount();
+    }
+
+    /* the list */
+
+    function invoiceRow(inv) {
+      var row = el("div");
+      var left = el("div", "grow");
+      var who = el("div", "primary");
+      var a = H.link(memberName(inv.member), BASE + "/admin/members/" + encodeURIComponent(inv.userId));
+      a.addEventListener("click", function (e) { e.preventDefault(); H.navigate("/admin/members/" + encodeURIComponent(inv.userId)); });
+      who.appendChild(a);
+      who.appendChild(document.createTextNode(" · " + money(inv.amountCents, inv.currency)));
+      var what = linesSummary(inv);
+      var when = inv.status === "paid" && inv.paidAt ? "paid " + fmtDate(inv.paidAt, { dateStyle: "medium" })
+        : inv.status === "open" && inv.dueAt ? "due " + fmtDate(inv.dueAt, { dateStyle: "medium" })
+        : fmtDate(inv.createdAt, { dateStyle: "medium" });
+      append(left, [who, el("div", "secondary", (inv.number ? inv.number + " · " : "") + when), what ? el("div", "secondary faint", what) : el("span")]);
+      var right = el("div", "row");
+      var labels = { open: "to pay", paid: "paid", void: "void", uncollectible: "uncollectible", draft: "draft" };
+      right.appendChild(pill(labels[inv.status] || inv.status, inv.status === "paid" ? "client" : inv.status === "open" ? "live" : inv.status === "void" ? "bad" : ""));
+      if (inv.hostedUrl) {
+        var page = link("Stripe page", inv.hostedUrl, "btn sm ghost");
+        page.target = "_blank";
+        page.rel = "noopener";
+        right.appendChild(page);
+      }
+      if (inv.status === "open") {
+        var remind = button("Send again", "btn sm", function () {
+          busy(remind, api("/admin/invoices/" + encodeURIComponent(inv.id) + "/remind", { method: "POST", body: {} }))
+            .then(function () { toast("Sent again.", "good"); })
+            .catch(function (error) { toast(error.message, "bad"); });
+        });
+        var voidIt = button("Void", "btn sm danger", function () {
+          if (!window.confirm("Void this invoice? Stripe stops accepting payment and its sessions can be invoiced again.")) return;
+          busy(voidIt, api("/admin/invoices/" + encodeURIComponent(inv.id) + "/void", { method: "POST", body: {} }))
+            .then(function () { toast("Voided.", "good"); load(); })
+            .catch(function (error) { toast(error.message, "bad"); });
+        });
+        append(right, [remind, voidIt]);
+      }
+      append(row, [left, right]);
+      return row;
+    }
+
+    function load() {
+      return api("/admin/invoices").then(function (data) {
+        clear(notice);
+        if (!data.configured) {
+          var n = el("div", "card stack tight");
+          append(n, [el("p", "label", "Stripe is not connected"), el("p", "small dim", "Add STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in Vercel, then redeploy. Until then invoices cannot be created.")]);
+          notice.appendChild(n);
+          newButton.disabled = true;
+        }
+        clear(listCard);
+        var rows = (data.invoices || []).filter(function (i) { return !filter || i.status === filter; });
+        if (!rows.length) {
+          listCard.appendChild(H.empty(filter ? "Nothing with that status." : "No invoices yet."));
+          return;
+        }
+        var list = el("div", "list");
+        rows.forEach(function (inv) { list.appendChild(invoiceRow(inv)); });
+        listCard.appendChild(list);
+      }, function (error) {
+        clear(listCard);
+        listCard.appendChild(H.empty(error.message));
+      });
+    }
+
+    buildForm();
+    if (startMember) loadSources(startMember, startPurchase);
+    return load().then(function () { return wrap; });
+  }, { perm: "purchases.manage", title: "Invoices", nav: { group: "Business", label: "Invoices", order: 12.5 } });
 
   /* ---------- availability ---------- */
 

@@ -89,6 +89,7 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 | `api/mcp.js`, `api/oauth.js` | `/mcp` and the OAuth 2.1 endpoints with their well-known documents. |
 | `api/feed.js` | The public feed at `/feed` and `/feed.xml`, off until `feed_public` is on. |
 | `api/hearth-cron.js` | Hourly at `:20`: reminders, Meet transcript pulls, expired token sweep. |
+| `api/stripe-webhook.js`, `lib/hearth/stripe.js`, `lib/hearth/routes/invoices.js` | Stripe invoices: the client, the owner's and member's routes, and the signed webhook at `/api/stripe-webhook`. |
 
 ### Data
 
@@ -117,6 +118,14 @@ Packs and prices are set in the room, never in code. A client requests a pack, E
 
 Each member pays one of two ways, set on their member page under How they pay (`users.billing`). Pre-buy (`prebuy`, the default) members need a credit to book, and the server refuses a booking without one. Billed after (`after`) members book any open time without credits; their held sessions wait under Purchases, To invoice, until marked invoiced (`bookings.billing`, `bookings.invoiced_at`). The rule lives in `POST /bookings`, so the MCP `book_session` tool follows it too.
 
+### Invoices through Stripe
+
+Under Business, Invoices, the owner bills one member through Stripe: the sessions they held while billed after (one line each, at the single-session pack's price unless changed), a pack they asked for, or lines typed by hand. "Invoice with Stripe" on the To invoice list, on a pack request and on a member's page opens the form for that member. The Hearth reuses or makes the member's Stripe customer (`users.stripe_customer_id`), creates and finalizes a `send_invoice` invoice tagged `metadata.source = hearth`, marks those sessions invoiced (`bookings.invoice_id`) or the pack invoiced, and emails the member the link from Resend (Stripe's own invoice emails are not used). Each invoice is a row in `invoices`. Members see theirs on Sessions, and an open one on Home, guests included, with a Pay button to Stripe's hosted page.
+
+Stripe calls `/api/stripe-webhook` (endpoint `we_1UQsBvKIjHJB7AoptnkdEcEw`, events `invoice.finalized`, `invoice.paid`, `invoice.voided`, `invoice.marked_uncollectible`). Paid is a compare-and-set, so a replay adds nothing; a paid pack invoice adds its credits through the same path as Mark paid, and the owner gets an email. Voiding, in the room or in Stripe, frees the sessions to be invoiced again and puts the pack back to requested. An invoice sent by hand from the Stripe dashboard (`send_invoice`, `manual`) attaches itself to the member with that customer or email.
+
+The Stripe invoice is the payment request, not the fatura: the fatura still comes from the certified software. The Stripe account is shared with ShopIntake, whose webhook sends a fatura notice for every paid invoice, Hearth ones included. Checkout (paying before booking) is not built yet.
+
 Availability is painted on a weekly grid of half hours in the owner's zone (each painted run is one row in `availability_rules`). A real week, chosen with arrows, is laid over the grid: the Google Calendar events and booked sessions of those dates, so the week is painted around them. Under it, the coming weeks as dates: a day can be taken off (a whole-day block), given extra time (`availability_openings`), or blocked in part, and the panel shows exactly which times members are offered (`GET /admin/slots`, the same calculator they use). When Google is connected, the coming weeks also show the events on Elliot's Google calendars (titles only on the owner's side), and with Block booking on (`google_busy`, default on) members are not offered times that overlap them. The calendars read are `google_calendars` (default the connected account's `primary`); another account's calendar must be shared with the connected account first. Events are read with the existing `calendar.events` scope, cached two minutes per instance, and a failed read blocks nothing. Members book from a strip of days that glow by how open they are, see the chosen day as a daylight bar, and confirm with the cost spelled out. Booking emails both sides a calendar file. Once the owner connects Google in Settings, each booking gets a Calendar event with a Meet room, and the hourly cron pulls the Meet transcript after the session and writes the record.
 
 Through MCP, `add_transcript` with `draft` attaches a transcript without writing the record or telling the member, and `write_record` writes it without mail, so the owner can read a record before the client is told. Without `draft`, adding a transcript writes the record and emails the member.
@@ -139,6 +148,8 @@ The Hearth also uses `ADMIN_EMAILS`, `RESEND_*`, `CRON_SECRET`, `ANTHROPIC_API_K
 | `HEARTH_SESSION_SECRET` | Seals the Google refresh token at rest. |
 | `GOOGLE_CLIENT_SECRET` | The same Google OAuth client as `GOOGLE_CLIENT_ID`. Needs the redirect URI `https://chamainteligente.com/api/hearth/google/callback`, the Calendar and Meet REST APIs, and the scopes `calendar.events` and `meetings.space.readonly`. |
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | The GitHub OAuth app. Callback `https://chamainteligente.com/api/hearth/auth/github/callback`. |
+| `STRIPE_SECRET_KEY` | A restricted key on the Chama Inteligente Stripe account with Customers and Invoices write. Without it the Invoices page says Stripe is not connected and nothing else changes. |
+| `STRIPE_WEBHOOK_SECRET` | The signing secret of the Hearth's webhook endpoint above. |
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | The Discord app. Redirect `https://chamainteligente.com/api/hearth/auth/discord/callback`. The Discord button appears once both are set. |
 
 ## Checking and deploying

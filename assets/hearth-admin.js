@@ -422,7 +422,7 @@
       var hint = el("span", "hint");
       function billingHint(mode) {
         return mode === "after"
-          ? "Books any open time. Sessions they hold wait under Purchases, To invoice."
+          ? "Books any open time. Sessions they hold wait under Purchases, To invoice, until you invoice them."
           : "Needs a session credit to book. Credits come from a paid pack or a grant.";
       }
       [{ value: "prebuy", label: "Pre-buy" }, { value: "after", label: "Billed after" }].forEach(function (opt) {
@@ -463,6 +463,11 @@
           .catch(function (error) { toast(error.message, "bad"); });
       });
       var row = append(el("div", "row"), [statusButton]);
+      if (H.can("purchases.manage")) {
+        row.appendChild(button("Invoice with Stripe", "btn", function () {
+          H.navigate("/admin/invoices?member=" + encodeURIComponent(member.id));
+        }));
+      }
       if (H.state.user.role === "owner" && member.id !== H.state.user.id) {
         row.appendChild(button("View the Hearth as " + (member.name || member.email).split(" ")[0], "btn", function () {
           H.viewAs(member.id).catch(function (error) { toast(error.message, "bad"); });
