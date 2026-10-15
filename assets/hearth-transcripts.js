@@ -181,9 +181,11 @@
 
     if (d.chapters && d.chapters.length) {
       sheet.appendChild(el("h2", "record-part", "The ideas"));
-      d.chapters.forEach(function (c, i) {
+      var ideas = d.chapters.filter(function (c) { return !c.label; }).length;
+      var n = 0;
+      d.chapters.forEach(function (c) {
         var ch = el("section", "record-chapter stack tight");
-        ch.appendChild(el("p", "record-num", "Idea " + (i + 1) + " of " + d.chapters.length));
+        ch.appendChild(el("p", "record-num", c.label || ("Idea " + (++n) + " of " + ideas)));
         ch.appendChild(el("h3", null, c.heading));
         (c.body || []).forEach(function (para) { ch.appendChild(el("p", null, para)); });
         if (c.figure && alts[c.figure] !== undefined) ch.appendChild(figure(t, c.figure, alts, c.caption));

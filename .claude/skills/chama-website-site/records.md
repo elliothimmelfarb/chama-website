@@ -9,6 +9,7 @@ How a coaching session becomes a record in the Hearth, and what Elliot corrected
 - A whole transcript is too big to pass through a tool call by hand. Call the MCP endpoint directly instead: JSON-RPC `tools/call` to `https://chamainteligente.com/mcp` with `Authorization: Bearer` and the key from the Keychain (`chama-hearth-api-key`), and the arguments read from a file.
 - To read a past record whole (figures and cards included), query `transcripts`, `record_figures` and `recall_cards` directly (see `hearth.md`).
 - Figures render at about half size on a phone (600-unit viewBox in a ~375px column). Draw at 600 wide with body text at 17 or more and labels at 14 or more, and check them as PNGs with `qlmanage -t -s 900` before uploading. Colours: paper `#ebe6da`, card `#f3f0e8`, ember `#f4581f`, dark ember `#c2410c`, ink `#141412`, muted `#66635c`.
+- The page labels each chapter "Idea n of m". A chapter with a `label` (for example "Idea 1 in practice") shows that instead and isn't counted, so supporting chapters don't turn into extra ideas.
 - To see a record as the member sees it without signing in: run the PGlite harness (`hearth.md`), seed the member and copy the record's rows from production into it, and open `/login/<token>` then `/hearth/transcripts/<id>`.
 
 ## What Elliot corrects
@@ -29,3 +30,5 @@ How a coaching session becomes a record in the Hearth, and what Elliot corrected
 - Name the box the model checks. "Please verify X" makes the box "I did the check"; "we need X to be true" makes it "X is true", so it does more work. Not "more per prompt".
 - It's the newest Claude models that balk at expanding their own permissions. Elliot's answer is stages: a plan first, which it will write and then carry out where it wouldn't act in one shot, and the plan can be changed.
 - The context cascade ends with the conversation, not the prompt.
+- When Elliot names the session's ideas ("there were two things"), the record is built on exactly those: they're the only unlabelled chapters, the hero shows them, and everything else is labelled as where they show up.
+- Meet the no-repeat rule by saying a point differently and fully, never by cutting. Shortening the summary, concepts, cards and playbook reasons to dodge overlaps lost the substance he wanted. A short version he has approved keeps its wording, and the chapters elaborate around it in their own words.
