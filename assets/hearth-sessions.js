@@ -131,7 +131,9 @@
 
   H.register("/sessions", function () {
     var wrap = el("div", "stack");
-    return api("/bookings").then(function (data) {
+    return Promise.all([api("/bookings"), api("/invoices").catch(function () { return { invoices: [] }; })]).then(function (r) {
+      var data = r[0];
+      var invoices = r[1].invoices || [];
       var bookings = data.bookings;
       var upcoming = bookings.filter(function (b) { return b.status === "scheduled" && new Date(b.endsAt) > new Date(); }).sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
       var past = bookings.filter(function (b) { return b.status !== "scheduled" || new Date(b.endsAt) <= new Date(); }).sort(function (a, b) { return new Date(b.startsAt) - new Date(a.startsAt); });
@@ -165,6 +167,8 @@
       tile(completed, "sessions so far", false, 1);
       tile(upcoming.length ? fmtDay(upcoming[0].startsAt) : "none yet", "next session", upcoming.length > 0, 2);
       wrap.appendChild(tiles);
+
+      if (invoices.length) wrap.appendChild(invoicesCard(invoices));
 
       var up = el("div", "card pad0");
       var upHead = el("div", "row between");
@@ -205,6 +209,43 @@
       return wrap;
     });
   }, { perm: "sessions.own", title: "Sessions", nav: { group: "Member", label: "Sessions", order: 1 } });
+
+  // Invoices Elliot sent through Stripe. An open one can be paid on Stripe's
+  // page; a paid one keeps that page as the receipt.
+  function invoicesCard(invoices) {
+    var card = el("div", "card pad0");
+    var head = el("div", "row between");
+    head.style.padding = "0.9rem 1.1rem";
+    head.appendChild(el("p", "label", "Invoices"));
+    card.appendChild(head);
+    var list = el("div", "list");
+    invoices.forEach(function (inv) {
+      var row = el("div");
+      var left = el("div", "grow");
+      left.appendChild(el("div", "primary", money(inv.amountCents, inv.currency) + (inv.number ? " · " + inv.number : "")));
+      var lines = inv.lines || [];
+      var what = !lines.length ? inv.description
+        : lines.length <= 2 ? lines.map(function (l) { return l.description; }).join(", ")
+        : lines[0].description + " and " + (lines.length - 1) + " more";
+      var when = inv.status === "paid" && inv.paidAt ? "paid " + fmtDay(inv.paidAt)
+        : inv.status === "open" && inv.dueAt ? "due " + fmtDay(inv.dueAt)
+        : "sent " + fmtDay(inv.createdAt);
+      left.appendChild(el("div", "secondary", (what ? what + " · " : "") + when));
+      var right = el("div", "row");
+      var label = { open: "to pay", paid: "paid", void: "void", uncollectible: "closed" }[inv.status] || inv.status;
+      right.appendChild(pill(label, inv.status === "paid" ? "client" : inv.status === "open" ? "live" : ""));
+      if (inv.hostedUrl) {
+        var go = link(inv.status === "open" ? "Pay" : "Receipt", inv.hostedUrl, "btn sm" + (inv.status === "open" ? " primary" : ""));
+        go.target = "_blank";
+        go.rel = "noopener";
+        right.appendChild(go);
+      }
+      append(row, [left, right]);
+      list.appendChild(row);
+    });
+    card.appendChild(list);
+    return card;
+  }
 
   function upcomingRow(b, data) {
     var row = el("div");
@@ -705,6 +746,19 @@
       if (data.billing !== "after") H.countUp(tile(data.balance, "credits left", data.balance > 0), data.balance);
       var n = tile(next ? fmtDay(next.startsAt) + " " + fmtTime(next.startsAt) : "none", "next session", Boolean(next));
       n.style.fontSize = "1.4rem";
+    });
+  });
+
+  // An invoice waiting to be paid is the first thing anyone sees, guests
+  // included: someone can be billed before they are a client.
+  H.onHome(function (tile, wrap) {
+    return api("/invoices").then(function (data) {
+      var open = (data.invoices || []).filter(function (i) { return i.status === "open"; });
+      if (!open.length) return;
+      var card = invoicesCard(open);
+      card.classList.add("glow");
+      var tiles = wrap.querySelector(".grid3");
+      wrap.insertBefore(card, tiles ? tiles.nextSibling : null);
     });
   });
 })();
