@@ -163,7 +163,7 @@
     var d = new Date(iso);
     if (isNaN(d.getTime())) return "";
     try {
-      return d.toLocaleString(undefined, { timeZone: zone, hour: "2-digit", minute: "2-digit" });
+      return d.toLocaleString(undefined, { timeZone: zone, hour: "numeric", minute: "2-digit" });
     } catch (e) {
       return fmtDate(iso, { timeStyle: "short" });
     }
