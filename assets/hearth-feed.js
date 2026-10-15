@@ -288,7 +288,7 @@
   H.register("/feed/:id", function (ctx) {
     return api("/feed/" + encodeURIComponent(ctx.params.id)).then(function (data) {
       var p = data.post;
-      var wrap = el("div", "stack");
+      var wrap = el("div", "stack reading");
       wrap.appendChild(append(el("div", "row"), [
         button("Back to the feed", "btn ghost sm", function () { H.navigate("/feed"); })
       ]));
