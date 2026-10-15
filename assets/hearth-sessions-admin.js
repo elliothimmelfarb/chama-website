@@ -1373,17 +1373,39 @@
         append(head, [titleBox, status]);
         card.appendChild(head);
 
+        // A real week laid over the template: what is on your Google
+        // calendars and what is booked, so the week is painted around them.
+        // The painting itself stays the same for every week.
+        var today = zoneParts(new Date(), state.zone);
+        var thisMonday = addDays(today, -((today.weekday + 6) % 7));
+        var weekOffset = 0;
+        var weekBar = el("div", "row week-bar");
+        var prevWeek = button("Previous week", "btn sm icon-btn", function () { weekOffset -= 1; loadWeek(); });
+        var nextWeek = button("Next week", "btn sm icon-btn", function () { weekOffset += 1; loadWeek(); });
+        prevWeek.textContent = "\u2039";
+        nextWeek.textContent = "\u203A";
+        prevWeek.setAttribute("aria-label", "Previous week");
+        nextWeek.setAttribute("aria-label", "Next week");
+        var weekLabel = el("p", "small week-label");
+        var backToday = button("This week", "btn sm ghost", function () { weekOffset = 0; loadWeek(); });
+        var weekNote = el("p", "small faint grow week-note");
+        append(weekBar, [prevWeek, weekLabel, nextWeek, backToday, weekNote]);
+        card.appendChild(weekBar);
+
         var grid = el("div", "paint");
         grid.setAttribute("role", "grid");
         grid.setAttribute("aria-label", "Weekly availability in " + state.zone + ", half hour cells");
         var buttons = {};
         var dayTotals = {};
+        var dayDates = {};
         grid.appendChild(el("div", "paint-corner"));
         WEEK.forEach(function (d) {
           var h = el("div", "paint-day");
           var total = el("span", "paint-day-total");
           dayTotals[d.weekday] = total;
-          append(h, [el("span", "paint-day-name", d.label.slice(0, 3)), total]);
+          var date = el("span", "paint-day-date");
+          dayDates[d.weekday] = date;
+          append(h, [el("span", "paint-day-name", d.label.slice(0, 3)), date, total]);
           grid.appendChild(h);
         });
         for (var i = first; i < last; i += 1) {
@@ -1400,9 +1422,98 @@
             grid.appendChild(b);
           });
         }
+        var overlay = el("div", "paint-overlay");
+        overlay.setAttribute("aria-hidden", "true");
+        grid.appendChild(overlay);
         var scroller = el("div", "paint-scroll");
         scroller.appendChild(grid);
         card.appendChild(scroller);
+        var legend = el("div", "dl-legend");
+        [["dl-open", "your week"], ["dl-google", "Google Calendar"], ["dl-booked", "booked"]].forEach(function (x) {
+          append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
+        });
+        card.appendChild(legend);
+
+        var weekItems = [];
+        var weekSeq = 0;
+
+        function weekStart() { return addDays(thisMonday, weekOffset * 7); }
+
+        function loadWeek() {
+          var monday = weekStart();
+          var from = zonedInstant(monday, 0, state.zone);
+          var to = zonedInstant(addDays(monday, 7), 0, state.zone);
+          var sunday = addDays(monday, 6);
+          var fmt = function (ymd, withMonth) { return new Date(Date.UTC(ymd.year, ymd.month - 1, ymd.day)).toLocaleDateString(undefined, { timeZone: "UTC", day: "numeric", month: withMonth ? "short" : undefined }); };
+          weekLabel.textContent = fmt(monday, monday.month !== sunday.month) + " to " + fmt(sunday, true);
+          backToday.hidden = weekOffset === 0;
+          prevWeek.disabled = weekOffset <= -1;
+          WEEK.forEach(function (d) {
+            var ymd = addDays(monday, (d.weekday + 6) % 7);
+            dayDates[d.weekday].textContent = String(ymd.day);
+            var key = ymdKey(ymd);
+            dayDates[d.weekday].classList.toggle("today", key === ymdKey(today));
+          });
+          var seq = ++weekSeq;
+          weekNote.textContent = "Reading your calendar...";
+          var q = "?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString());
+          Promise.all([
+            api("/admin/calendar-events" + q).catch(function () { return { connected: false, failed: true, events: [] }; }),
+            can("sessions.manage") ? api("/admin/bookings" + q).catch(function () { return { bookings: [] }; }) : Promise.resolve({ bookings: [] })
+          ]).then(function (r) {
+            if (seq !== weekSeq) return;
+            var g = r[0];
+            weekItems = [];
+            (g.events || []).forEach(function (e) { weekItems.push({ kind: "google", starts: e.startsAt, ends: e.endsAt, title: e.title, allDay: e.allDay }); });
+            (r[1].bookings || []).filter(function (b) { return b.status === "scheduled"; }).forEach(function (b) {
+              weekItems.push({ kind: "booked", starts: b.startsAt, ends: b.endsAt, title: memberName(b.member) });
+            });
+            var n = (g.events || []).length;
+            weekNote.textContent = !g.connected
+              ? (g.failed ? "Your Google Calendar could not be read just now." : "Connect Google in Settings to see your calendar here.")
+              : n ? n + (n === 1 ? " event" : " events") + " from your calendar this week." : "Nothing on your calendar this week.";
+            drawOverlay();
+          });
+        }
+
+        // Each item is cut at midnight in your zone and drawn in its day's
+        // column, over the half hours it covers.
+        function drawOverlay() {
+          clear(overlay);
+          var monday = weekStart();
+          var firstCell = buttons["1:" + first];
+          if (!firstCell) return;
+          var cellH = firstCell.offsetHeight;
+          var top0 = firstCell.offsetTop;
+          var lo = first * CELL, hi = last * CELL;
+          WEEK.forEach(function (d) {
+            var ymd = addDays(monday, (d.weekday + 6) % 7);
+            var dayStart = zonedInstant(ymd, 0, state.zone).getTime();
+            var dayEnd = zonedInstant(addDays(ymd, 1), 0, state.zone).getTime();
+            var col = buttons[d.weekday + ":" + first];
+            weekItems.forEach(function (item) {
+              var s = new Date(item.starts).getTime(), e = new Date(item.ends).getTime();
+              if (e <= dayStart || s >= dayEnd) return;
+              var a = item.allDay ? lo : Math.max(lo, (Math.max(s, dayStart) - dayStart) / 60000);
+              var b = item.allDay ? hi : Math.min(hi, (Math.min(e, dayEnd) - dayStart) / 60000);
+              var clipped = !item.allDay && ((Math.max(s, dayStart) - dayStart) / 60000 < lo || (Math.min(e, dayEnd) - dayStart) / 60000 > hi);
+              if (b <= a) {
+                // Entirely outside the hours shown: a small mark at the edge.
+                var early = (Math.min(e, dayEnd) - dayStart) / 60000 <= lo;
+                a = early ? lo : hi - 8; b = a + 8;
+              }
+              var node = el("span", "ov ov-" + item.kind + (item.allDay ? " all-day" : "") + (clipped ? " clipped" : ""));
+              node.style.top = (top0 + ((a - lo) / CELL) * cellH) + "px";
+              node.style.height = Math.max(6, ((b - a) / CELL) * cellH - 2) + "px";
+              node.style.left = col.offsetLeft + "px";
+              node.style.width = col.offsetWidth + "px";
+              if (((b - a) / CELL) * cellH >= 22) node.appendChild(el("span", "ov-text", item.title));
+              overlay.appendChild(node);
+            });
+          });
+        }
+        var onResize = function () { drawOverlay(); };
+        window.addEventListener("resize", onResize);
 
         function paintCell(wd, i, on) {
           if (cells[wd][i] === on) return false;
@@ -1548,9 +1659,10 @@
         }
 
         drawAll();
+        requestAnimationFrame(loadWeek);
         return {
           node: card,
-          flush: function () { if (dirty) save(); window.removeEventListener("pointerup", endStroke); window.removeEventListener("pointercancel", endStroke); },
+          flush: function () { if (dirty) save(); window.removeEventListener("pointerup", endStroke); window.removeEventListener("pointercancel", endStroke); window.removeEventListener("resize", onResize); },
           runsFor: function (wd) { return runsOf(cells[wd]); }
         };
       }

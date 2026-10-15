@@ -765,6 +765,8 @@ body {
 .paint-cell.hour { border-top-color: rgba(243, 240, 232, 0.07); }
 .paint-cell:hover { background: var(--surface-2); }
 .paint-cell.on { background: var(--ember); border-top-color: transparent; }
+/* Each painted cell reaches 1px into the next, so a run never shows seams at fractional offsets. */
+.paint-cell.on:not(.bottom) { box-shadow: 0 1px 0 0 var(--ember); }
 .paint-cell.on:hover { background: #ff6a33; }
 .paint-cell.on.top { border-top-left-radius: 5px; border-top-right-radius: 5px; }
 .paint-cell.on.bottom { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
@@ -946,4 +948,26 @@ body {
   .date-booked::before { background: var(--good); }
   .gcal-strip .grow { flex: 1 1 0; min-width: 0; }
   .gcal-actions { flex-basis: 100%; padding-left: 1.2rem; }
+}
+
+/* ---------- availability: a real week over the painted one ---------- */
+
+.week-bar { gap: 0.4rem; }
+.week-label { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 9.5rem; text-align: center; }
+.btn.icon-btn { min-width: 2.2rem; font-size: 1.3rem; line-height: 1; padding: 0 0.5rem 0.15rem; }
+.week-note { text-align: right; }
+.paint { position: relative; }
+.paint-day-date { font-size: 0.8rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.paint-day-date.today { color: #fff; background: var(--ember); border-radius: 999px; padding: 0 0.4rem; }
+.paint-overlay { position: absolute; inset: 0; pointer-events: none; }
+.ov { position: absolute; border-radius: 4px; overflow: hidden; margin-top: 1px; }
+.ov-google { background: repeating-linear-gradient(-45deg, rgba(143, 179, 230, 0.62) 0 5px, rgba(143, 179, 230, 0.42) 5px 10px); box-shadow: inset 0 0 0 1px #8fb3e6; }
+.ov-google.all-day { background: rgba(143, 179, 230, 0.16); box-shadow: inset 0 0 0 1px rgba(143, 179, 230, 0.6); }
+.ov-booked { background: var(--good); box-shadow: inset 0 0 0 1px rgba(14, 12, 10, 0.4); }
+.ov.clipped { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.ov-text { display: block; padding: 2px 4px; font-size: 0.64rem; line-height: 1.2; font-weight: 600; color: #0e0c0a; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-word; }
+.ov-google.all-day .ov-text { color: #cfe0f7; }
+@media (max-width: 34rem) {
+  .week-note { flex-basis: 100%; text-align: left; }
+  .ov-text { font-size: 0.56rem; padding: 1px 2px; }
 }
