@@ -37,7 +37,16 @@
   --col: 64rem;
   --nav-w: 14rem;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --read: 48rem;
 }
+
+/* Big monitors: the shell grows with the screen instead of staying a
+   1024px strip in the middle, and on the widest ones the type grows a step
+   so the room does not read as small print. Media queries in rem use the
+   browser's 16px, not the root size set here. */
+@media (min-width: 90rem) { :root { --col: 80rem; --nav-w: 15rem; } }
+@media (min-width: 112rem) { :root { --col: 92rem; } }
+@media (min-width: 150rem) { :root { --col: 100rem; } }
 
 * { box-sizing: border-box; }
 
@@ -50,6 +59,9 @@ html {
   text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
 }
+
+@media (min-width: 112rem) { html { font-size: 17px; } }
+@media (min-width: 150rem) { html { font-size: 18px; } }
 
 body {
   margin: 0;
@@ -248,6 +260,10 @@ body {
 }
 
 .hh-view { min-width: 0; }
+
+/* Long reading (a record, a post) keeps a reading measure and sits in the
+   middle of the view, so a wide shell does not stretch the lines. */
+.hh-view .reading { width: 100%; max-width: var(--read); margin-inline: auto; }
 
 /* the view enters: a short rise and fade */
 .hh-view > .view {

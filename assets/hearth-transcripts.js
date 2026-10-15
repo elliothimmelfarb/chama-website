@@ -97,7 +97,7 @@
     return api("/transcripts/" + encodeURIComponent(ctx.params.id)).then(function (data) {
       var t = data.transcript;
       var d = t.derived;
-      var wrap = el("div", "stack");
+      var wrap = el("div", "stack reading");
       var back = button("All records", "btn ghost sm", function () { H.navigate(H.can("transcripts.manage") && t.userId !== H.state.user.id ? "/admin/transcripts" : "/transcripts"); });
       wrap.appendChild(append(el("div", "row"), [back]));
 
