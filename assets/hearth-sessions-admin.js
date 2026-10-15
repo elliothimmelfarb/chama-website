@@ -23,6 +23,7 @@
   var append = H.append;
   var clear = H.clear;
   var button = H.button;
+  var link = H.link;
   var field = H.field;
   var input = H.input;
   var pill = H.pill;
@@ -1239,16 +1240,18 @@
           el("p", "small dim", "Pick a date to take it off, add extra time, or see the exact times members are offered. Members book from " + (data.noticeHours || 0) + " hours ahead, up to " + (data.horizonDays || 60) + " days out; change that in Settings.")
         ]);
         card.appendChild(head);
+        var gStrip = el("div", "gcal-strip");
         var cal = el("div", "dates");
         var panel = el("div", "day-panel");
-        append(card, [cal, panel]);
+        append(card, [gStrip, cal, panel]);
+        state.gcal = { connected: false, events: [] };
 
         var today = zoneParts(new Date(), state.zone);
         var mondayOffset = (today.weekday + 6) % 7;
         var start = addDays(today, -mondayOffset);
         var DAYS = 35;
 
-        function load() {
+        function load(fresh) {
           var from = zonedInstant(today, 0, state.zone);
           var to = zonedInstant(addDays(start, DAYS), 0, state.zone);
           return Promise.all([
@@ -1256,16 +1259,83 @@
             can("sessions.manage")
               ? api("/admin/bookings?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString())).catch(function () { return { bookings: [] }; })
               : Promise.resolve({ bookings: [] }),
-            api("/admin/availability")
+            api("/admin/availability"),
+            api("/admin/calendar-events?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString()) + (fresh === true ? "&fresh=1" : ""))
+              .catch(function () { return { connected: false, failed: true, events: [] }; })
           ]).then(function (r) {
             state.slots = r[0].slots || [];
             state.bookings = (r[1].bookings || []).filter(function (b) { return b.status === "scheduled"; });
             state.data = r[2];
+            state.gcal = r[3];
+            state.gcal.ranges = (r[3].events || []).map(function (e) { return { starts_at: e.startsAt, ends_at: e.endsAt, title: e.title, allDay: e.allDay }; });
+            drawStrip();
             draw();
           }, function (error) {
             clear(cal);
             cal.appendChild(H.empty(error.message));
           });
+        }
+
+        // Where the Google calendar stands, and the two choices about it.
+        function drawStrip() {
+          clear(gStrip);
+          var g = state.gcal;
+          var dot = el("span", "gcal-dot" + (g.connected && !(g.unread || []).length ? " on" : ""));
+          var text = el("div", "grow");
+          if (!g.connected) {
+            text.appendChild(el("p", "small", g.failed ? "Your Google Calendar could not be read just now." : "Google Calendar is not connected, so your events are not shown here."));
+            if (can("settings.manage")) {
+              var go = link("Connect it in Settings", BASE + "/admin/settings", "small");
+              go.addEventListener("click", function (e) { e.preventDefault(); H.navigate("/admin/settings"); });
+              text.appendChild(go);
+            }
+            append(gStrip, [dot, text]);
+            return;
+          }
+          var n = (g.events || []).length;
+          text.appendChild(el("p", "small", "Google Calendar (" + (g.email || "connected") + "): " + n + (n === 1 ? " event" : " events") + " in these weeks, drawn on each date." + (g.blocks ? " Members cannot book over them." : " They do not block booking.")));
+          var cals = (g.calendars || ["primary"]).map(function (c) { return c === "primary" ? (g.email || "your calendar") : c; });
+          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + "."));
+          (g.unread || []).forEach(function (id) {
+            text.appendChild(el("p", "small bad-text", "Could not read " + (id === "primary" ? "your main calendar" : id) + ". If it is another account's calendar, share it with " + (g.email || "the connected account") + " first."));
+          });
+          var actions = el("div", "row gcal-actions");
+          if (can("settings.manage")) {
+            var sw = toggle("Block booking", g.blocks);
+            sw.input.addEventListener("change", function () {
+              sw.input.disabled = true;
+              api("/admin/settings", { method: "PUT", body: { google_busy: sw.input.checked } })
+                .then(function () { toast(sw.input.checked ? "Your Google events now block booking." : "Your Google events no longer block booking.", "good"); return load(); })
+                .catch(function (error) { toast(error.message, "bad"); sw.input.checked = !sw.input.checked; })
+                .then(function () { sw.input.disabled = false; });
+            });
+            actions.appendChild(sw.node);
+            var editCals = button("Calendars", "btn sm ghost", function () { drawCalendarsForm(); });
+            actions.appendChild(editCals);
+          }
+          var refresh = button("Refresh", "btn sm ghost", function () { busy(refresh, load(true)); });
+          actions.appendChild(refresh);
+          append(gStrip, [dot, text, actions]);
+        }
+
+        function drawCalendarsForm() {
+          var g = state.gcal;
+          var box = el("div", "stack tight gcal-form");
+          var field1 = input("text", "calendars", "primary, someone@example.com", (g.calendars || ["primary"]).join(", "));
+          var line = el("p", "form-error");
+          var save = button("Save calendars", "btn sm primary", function () {
+            var ids = field1.value.split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+            if (!ids.length) ids = ["primary"];
+            busy(save, api("/admin/settings", { method: "PUT", body: { google_calendars: ids } }))
+              .then(function () { toast("Calendars saved.", "good"); return load(true); })
+              .catch(function (error) { line.textContent = error.message; });
+          });
+          append(box, [
+            field("Calendars to read", field1, "Comma separated. \"primary\" is " + (g.email || "the connected account") + ". To add another account's calendar, share it with " + (g.email || "that account") + " (See all event details) in Google Calendar, then add its address here."),
+            append(el("div", "row"), [save, button("Cancel", "btn sm ghost", drawStrip)]),
+            line
+          ]);
+          gStrip.appendChild(box);
         }
 
         function byDay(list, keyOf) {
@@ -1308,10 +1378,13 @@
             var fillBar = el("span");
             fillBar.style.setProperty("--w", String(free / max));
             bar.appendChild(fillBar);
-            var meta = el("span", "date-meta", off ? "off" : free ? free + (free === 1 ? " time" : " times") : past ? "" : "none");
+            var meta = el("span", "date-meta", off ? "off" : free ? String(free) : past ? "" : "none");
+            if (free && !off) meta.appendChild(el("span", "w", free === 1 ? " time" : " times"));
             append(tile, [num, bar, meta]);
             if (booked) tile.appendChild(el("span", "date-booked", booked + " booked"));
             if (extra) tile.appendChild(el("span", "date-extra", "extra"));
+            var gEvents = past ? [] : touching(state.gcal.ranges || [], ymd);
+            if (gEvents.length) tile.appendChild(el("span", "date-gcal", gEvents.some(function (e) { return e.allDay; }) ? "busy all day" : gEvents.length + (gEvents.length === 1 ? " event" : " events")));
             if (ymd.day === 1 || n === 0) num.textContent = ymd.day + " " + new Date(Date.UTC(ymd.year, ymd.month - 1, ymd.day)).toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
             tile.setAttribute("aria-label", dayLabel(zonedInstant(ymd, 12 * 60, state.zone).toISOString(), state.zone) + ": " + (off ? "day off" : free + " open times") + (booked ? ", " + booked + " booked" : ""));
             (function (ymd, key) {
@@ -1362,6 +1435,19 @@
 
           var free = state.slots.filter(function (s) { return dayKey(s.startsAt, state.zone) === state.selected; });
           var booked = state.bookings.filter(function (b) { return dayKey(b.startsAt, state.zone) === state.selected; });
+          var gDay = touching(state.gcal.ranges || [], ymd);
+          panel.appendChild(dayLine(ymd, wd, free, booked, gDay, dayStart, dayEnd));
+          if (gDay.length) {
+            var gl = el("div", "list gcal-list");
+            gDay.forEach(function (e) {
+              var row = el("div");
+              var whenText = e.allDay ? "all day" : clockTime(e.starts_at, state.zone) + " to " + clockTime(e.ends_at, state.zone);
+              append(row, [append(el("div", "grow"), [el("div", "primary", e.title), el("div", "secondary", whenText)]), el("span", "meta", "Google")]);
+              gl.appendChild(row);
+            });
+            panel.appendChild(el("p", "label", "On your calendar"));
+            panel.appendChild(gl);
+          }
           if (booked.length) {
             var bl = el("p", "small");
             bl.textContent = "Booked: " + booked.map(function (b) { return clockTime(b.startsAt, state.zone) + " " + memberName(b.member); }).join(", ");
@@ -1402,6 +1488,52 @@
           panel.appendChild(el("p", "label", "Just this day, in " + state.zone));
           panel.appendChild(editRow);
           panel.appendChild(line);
+        }
+
+        // The selected day as one line: your usual hours, what members can
+        // book, your Google events and booked sessions, on the same clock.
+        function dayLine(ymd, wd, free, booked, gDay, dayStart, dayEnd) {
+          var minutes = state.data.sessionMinutes || defaultMinutes();
+          var startMs = dayStart.getTime();
+          function m(iso) { return Math.max(0, Math.min(1440, (new Date(iso).getTime() - startMs) / 60000)); }
+          var lo = 7 * 60, hi = 21 * 60;
+          var usual = week.runsFor(wd);
+          usual.forEach(function (r) { lo = Math.min(lo, r[0]); hi = Math.max(hi, r[1]); });
+          free.forEach(function (s) { lo = Math.min(lo, m(s.startsAt)); hi = Math.max(hi, m(s.startsAt) + minutes); });
+          gDay.forEach(function (e) { if (!e.allDay) { lo = Math.min(lo, m(e.starts_at)); hi = Math.max(hi, m(e.ends_at)); } });
+          lo = Math.floor(lo / 60) * 60; hi = Math.min(1440, Math.ceil(hi / 60) * 60);
+          var span = hi - lo;
+          var wrapLine = el("div", "dayline-wrap");
+          var line = el("div", "dayline");
+          line.setAttribute("role", "img");
+          line.setAttribute("aria-label", "This day from " + minutesToClock(lo) + " to " + minutesToClock(hi));
+          function bar(cls, a, b, label) {
+            a = Math.max(lo, a); b = Math.min(hi, b);
+            if (b <= a) return;
+            var node = el("span", cls);
+            node.style.left = ((a - lo) / span * 100) + "%";
+            node.style.width = ((b - a) / span * 100) + "%";
+            if (label) { node.title = label; if ((b - a) / span > 0.12) node.appendChild(el("span", "dayline-text", label)); }
+            line.appendChild(node);
+          }
+          usual.forEach(function (r) { bar("dl-usual", r[0], r[1]); });
+          var runs = [];
+          free.forEach(function (s) { var a = m(s.startsAt); var last = runs[runs.length - 1]; if (last && a <= last[1]) last[1] = Math.max(last[1], a + minutes); else runs.push([a, a + minutes]); });
+          runs.forEach(function (r) { bar("dl-open", r[0], r[1]); });
+          gDay.forEach(function (e) { bar("dl-google", e.allDay ? lo : m(e.starts_at), e.allDay ? hi : m(e.ends_at), e.title); });
+          booked.forEach(function (b) { bar("dl-booked", m(b.startsAt), m(b.endsAt), memberName(b.member)); });
+          for (var h = lo; h <= hi; h += 60) {
+            if ((h - lo) % (span > 720 ? 180 : 120) !== 0) continue;
+            var t = el("span", "dl-tick" + (h === lo ? " first" : ""), minutesToClock(h));
+            t.style.left = ((h - lo) / span * 100) + "%";
+            line.appendChild(t);
+          }
+          var legend = el("div", "dl-legend");
+          [["dl-usual", "your week"], ["dl-open", "members can book"], ["dl-google", "Google Calendar"], ["dl-booked", "booked"]].forEach(function (x) {
+            append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
+          });
+          append(wrapLine, [line, legend]);
+          return wrapLine;
         }
 
         function changeRow(what, detail, path) {

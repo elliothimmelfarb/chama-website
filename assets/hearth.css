@@ -803,6 +803,7 @@ body {
 .time-chip { font-size: 0.8rem; font-variant-numeric: tabular-nums; border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.15rem 0.55rem; color: var(--text); }
 
 @media (max-width: 34rem) {
+  .date-meta .w { display: none; }
   .date-tile { min-height: 3.6rem; padding: 0.35rem; }
   .date-meta, .date-booked { font-size: 0.62rem; }
   .date-num { font-size: 0.85rem; }
@@ -910,4 +911,39 @@ body {
   .time, .book-stage.confirming, .book-stage.ticket { animation: none; }
   .token.spending { animation: none; opacity: 0.4; }
   .ticket-ring, .ticket-tick { animation: none; stroke-dashoffset: 0; }
+}
+
+/* ---------- availability: Google Calendar on the coming weeks ---------- */
+
+.gcal-strip { display: flex; align-items: flex-start; gap: 0.7rem; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; padding: 0.7rem 0.85rem; background: var(--ground-2); }
+.gcal-strip .grow { display: grid; gap: 0.15rem; flex: 1 1 18rem; }
+.gcal-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 0.45rem; background: var(--text-faint); flex: none; }
+.gcal-dot.on { background: var(--good); box-shadow: 0 0 8px var(--good); }
+.gcal-actions { gap: 0.4rem; }
+.gcal-form { flex-basis: 100%; border-top: 1px solid var(--line); padding-top: 0.7rem; }
+.bad-text { color: var(--bad); }
+.date-gcal { font-size: 0.66rem; color: #8fb3e6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gcal-list > * { padding-inline: 0; }
+.gcal-list .meta { color: #8fb3e6; }
+
+.dayline-wrap { display: grid; gap: 1.6rem; }
+.dayline { position: relative; height: 2.6rem; border-radius: 8px; background: var(--ground-2); box-shadow: inset 0 0 0 1px var(--line); margin-top: 0.2rem; }
+.dayline > span:not(.dl-tick) { position: absolute; border-radius: 5px; overflow: hidden; }
+.dl-usual { top: 4px; bottom: 4px; background: var(--ember-faint); box-shadow: inset 0 0 0 1px rgba(244, 88, 31, 0.35); }
+.dl-open { top: 10px; bottom: 10px; background: var(--ember); }
+.dl-google { top: 6px; bottom: 6px; background: repeating-linear-gradient(-45deg, rgba(143, 179, 230, 0.55) 0 5px, rgba(143, 179, 230, 0.35) 5px 10px); box-shadow: inset 0 0 0 1px #8fb3e6; z-index: 1; }
+.dl-booked { top: 6px; bottom: 6px; background: var(--good); z-index: 2; }
+.dayline-text { display: block; padding: 0 0.4rem; font-size: 0.7rem; line-height: calc(2.6rem - 12px); color: #0e0c0a; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-tick { position: absolute; top: calc(100% + 0.3rem); transform: translateX(-50%); font-size: 0.66rem; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.dl-tick.first { transform: none; }
+.dl-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.75rem; color: var(--text-dim); }
+.dl-key { display: inline-flex; align-items: center; gap: 0.35rem; }
+.dl-key > span { position: static; display: inline-block; width: 0.9rem; height: 0.55rem; border-radius: 3px; }
+
+@media (max-width: 34rem) {
+  .date-gcal, .date-booked { font-size: 0; height: 6px; display: flex; gap: 3px; }
+  .date-gcal::before, .date-booked::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #8fb3e6; }
+  .date-booked::before { background: var(--good); }
+  .gcal-strip .grow { flex: 1 1 0; min-width: 0; }
+  .gcal-actions { flex-basis: 100%; padding-left: 1.2rem; }
 }
