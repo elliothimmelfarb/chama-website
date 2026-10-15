@@ -18,5 +18,9 @@ How a coaching session becomes a record in the Hearth, and what Elliot corrected
 - His spoken corrections steer the meaning. Don't echo his speech-to-text wording, and an edit should not make a passage longer.
 - The end stays lean: no prep homework he didn't assign, short "From Elliot" lines, and only what he actually committed to (not "I might look at that").
 - No stacked phrases. "Own this end to end" on top of an outcome is extraneous where the outcome already says it.
+- Build on the last record; don't reuse its shape. Find the session's own through-line (often the client says it, like reading back last time's first line) and frame the record as the next step from the previous one. Filling the old chapter shapes with new material reads as a repeat.
+- Match the session's energy. When the session is about asking for more, the record shouldn't drift into caution, hedges and trimming. Applying "keep it lean" is not a reason to make it safer.
+- Keep his prompts close to how he said them out loud, messy wording and all. They are his speech-to-text prompts, and paraphrasing loses the hype and the exact asks. Include every prompt he built live with the client.
+- "Moving right" is not "say why instead of what". The far-right ask is still a what: what you're trying to accomplish, not the thing you'd build to get it ("I need a better visual way to interact with this data", not "build me a UI that shows these one by one"). Don't repeat "say why you need it".
 - Use his words for his ideas ("unhappy", not "confused"; "what, not how").
 - In a what-versus-how contrast, the "how" side is process prescription (plan, then sub-agents, then phases), not a vaguer version of the same ask.
