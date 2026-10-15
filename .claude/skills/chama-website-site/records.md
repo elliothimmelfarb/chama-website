@@ -23,6 +23,7 @@ How a coaching session becomes a record in the Hearth, and what Elliot corrected
 - Match the session's energy. When the session is about asking for more, the record shouldn't drift into caution, hedges and trimming. Applying "keep it lean" is not a reason to make it safer.
 - Keep his prompts close to how he said them out loud, messy wording and all. They are his speech-to-text prompts, and paraphrasing loses the hype and the exact asks. Include every prompt he built live with the client.
 - "Moving right" is not "say why instead of what". The far-right ask is still a what: what you're trying to accomplish, not the thing you'd build to get it ("I need a better visual way to interact with this data", not "build me a UI that shows these one by one"). Don't repeat "say why you need it".
+- No repeated sentences anywhere in a record. The summary, short version, captions, playbook, concepts and cards each say their point once, in their own words, never by copying a chapter sentence. The summary maps the session; it doesn't restate the first chapter. Before publishing, split every field into sentences and flag any pair from different fields that shares a 4-word run.
 - Use his words for his ideas ("unhappy", not "confused"; "what, not how").
 - In a what-versus-how contrast, the "how" side is process prescription (plan, then sub-agents, then phases), not a vaguer version of the same ask.
 - Name the box the model checks. "Please verify X" makes the box "I did the check"; "we need X to be true" makes it "X is true", so it does more work. Not "more per prompt".
