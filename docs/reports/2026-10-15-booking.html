@@ -69,7 +69,7 @@
 <body>
 <div class="wrap">
   <header>
-    <p class="meta">Shipped 2026-10-15 · <a href="https://github.com/elliothimmelfarb/chama-website/pull/103">PR #103</a> · live on chamainteligente.com/hearth</p>
+    <p class="meta">Shipped 2026-10-15 · <a href="https://github.com/elliothimmelfarb/chama-website/pull/103">PR #103</a>, <a href="https://github.com/elliothimmelfarb/chama-website/pull/105">#105</a> · live on chamainteligente.com/hearth</p>
     <h1>Members book, you paint the hours</h1>
     <p class="lede">Members pick a time from your real availability. You set that availability by painting a week, and change single days on a calendar. Pre-buy members can only book with a credit in hand.</p>
     <div class="chips">
@@ -136,6 +136,30 @@
   </section>
 
   <section>
+    <h2>Your Google Calendar, on the same page</h2>
+    <div class="two">
+      <figure>
+        <img src="2026-10-15-booking/gcal.jpg" alt="The coming weeks with Google Calendar events on each date and a timeline for one day">
+        <figcaption><b>Shown with sample events.</b> Each date says how many events you have. The chosen day becomes one timeline: your week, what members can book, Google events (blue stripes) and bookings. Titles are only ever shown to you.</figcaption>
+      </figure>
+      <div style="display:grid; gap:1rem; align-content:start">
+        <div class="chips">
+          <span class="chip">✓ Members can't book over your events</span>
+          <span class="chip">✓ No reconnect needed</span>
+          <span class="chip">✓ Production reads the Chama calendar</span>
+          <span class="chip open">Personal calendar not shared yet</span>
+        </div>
+        <ol class="notes">
+          <li>Events marked Free, ones you declined, and the Hearth's own bookings don't block anything.</li>
+          <li>A "Block booking" switch turns the blocking off and leaves the events on display.</li>
+          <li>"Calendars" picks which ones to read. It already lists the Chama calendar and your personal Gmail calendar.</li>
+          <li>If Google can't be read, nothing is blocked and the page says so.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <h2>The member's side</h2>
     <div class="three">
       <figure>
@@ -162,6 +186,7 @@
     <div class="todo">
       <div><span>1</span><p style="margin:0">Paint your week at <a href="https://chamainteligente.com/hearth/admin/availability">Hearth, Availability</a>. Nothing is painted in production yet, so nobody can book until you do.</p></div>
       <div><span>2</span><p style="margin:0">Scott Nelson is pre-buy with 0 credits. Grant him credits, or switch him to billed after on his member page, if he should book now.</p></div>
+      <div><span>3</span><p style="margin:0">Share your personal Google Calendar with elliot@chamainteligente.com: in Google Calendar on the web, open your calendar's Settings and sharing, then under "Share with specific people" add elliot@chamainteligente.com with "See all event details". Nothing else is needed after that.</p></div>
     </div>
   </section>
 </div>
