@@ -29,7 +29,7 @@ import { PERMISSIONS, ROLE_DEFAULTS, ROLE_NAMES, sanitizePermissionList } from "
 import { isValidZone } from "../lib/hearth/time.js";
 import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
 import * as mail from "../lib/hearth/mail.js";
-import { registerSessionRoutes } from "../lib/hearth/routes/sessions.js";
+import { registerSessionRoutes, BILLING_MODES } from "../lib/hearth/routes/sessions.js";
 import { registerTranscriptRoutes } from "../lib/hearth/routes/transcripts.js";
 import { registerRecallRoutes } from "../lib/hearth/routes/recall.js";
 import { registerAgentRoutes } from "../lib/hearth/routes/agents.js";
@@ -646,6 +646,11 @@ route("PATCH", "/admin/members/:id", async (context, params) => {
     await sql()`update users set status = ${body.status} where id = ${target.id}`;
     if (body.status === "suspended") await revokeAllSessions(target.id);
     await log(EVENTS.statusChanged, target.id, { to: body.status });
+  }
+  if (typeof body.billing === "string" && body.billing !== target.billing) {
+    if (!BILLING_MODES.includes(body.billing)) throw new HttpError(400, "Billing is pre-buy or billed after.");
+    await sql()`update users set billing = ${body.billing} where id = ${target.id}`;
+    await log(EVENTS.billingChanged, target.id, { from: target.billing || "prebuy", to: body.billing });
   }
   if (typeof body.notes === "string") {
     await sql()`update users set notes = ${clampText(body.notes, 4000, { multiline: true })} where id = ${target.id}`;
