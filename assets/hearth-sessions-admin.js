@@ -471,6 +471,8 @@
 
         var right = el("div", "row");
         right.appendChild(statusPill(booking.status));
+        if (booking.billing === "after") right.appendChild(pill(booking.invoicedAt ? "invoiced" : "bill after", booking.invoicedAt ? "" : "staff"));
+        if (booking.billing === "free") right.appendChild(pill("free"));
         if (booking.transcriptId) right.appendChild(pill("transcript"));
         append(row, [left, right]);
 
@@ -893,7 +895,44 @@
       });
     }
 
+    // Sessions held by members billed after that have not been invoiced yet.
+    function toInvoiceCard() {
+      var card = el("div", "card pad0");
+      var head = el("div", "row between");
+      head.style.padding = "0.9rem 1.1rem";
+      head.appendChild(el("p", "label", "To invoice"));
+      card.appendChild(head);
+      var list = el("div", "list");
+      card.appendChild(list);
+      function draw() {
+        return api("/admin/to-invoice").then(function (data) {
+          clear(list);
+          var rows = data.bookings || [];
+          if (!rows.length) {
+            var none = el("div", "small dim", "Nothing waiting. Sessions held by members billed after show up here.");
+            list.appendChild(none);
+            return;
+          }
+          rows.forEach(function (b) {
+            var row = el("div");
+            var left = el("div", "grow");
+            append(left, [el("div", "primary", memberName(b.member)), el("div", "secondary", dayLabel(b.startsAt, ownerZone()) + " · " + timeRange(b, ownerZone()) + (b.status === "no_show" ? " · no show" : ""))]);
+            var done = button("Mark invoiced", "btn sm", function () {
+              busy(done, api("/admin/bookings/" + encodeURIComponent(b.id), { method: "PATCH", body: { invoiced: true } }))
+                .then(function () { toast("Marked invoiced.", "good"); return draw(); })
+                .catch(function (error) { toast(error.message, "bad"); });
+            });
+            append(row, [left, done]);
+            list.appendChild(row);
+          });
+        }, function (error) { clear(list); list.appendChild(H.empty(error.message)); });
+      }
+      draw();
+      return card;
+    }
+
     return load().then(function () {
+      wrap.appendChild(toInvoiceCard());
       wrap.appendChild(grantCard());
       return wrap;
     });
@@ -901,155 +940,521 @@
 
   /* ---------- availability ---------- */
 
-  H.register("/admin/availability", function () {
+  // The week is painted on a grid of half hours. Each run of painted cells
+  // in a column is saved as one weekly window, in the owner's zone. Below it,
+  // the coming weeks as dates, where one day can be taken off or given extra
+  // time without touching the week.
+
+  var CELL = 30;
+  var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  // Wall clock arithmetic in a named zone, the same method as
+  // lib/hearth/time.js: guess in UTC, correct by the zone's offset, and
+  // correct once more across a clock change.
+  var zoneFormatters = {};
+  function zoneParts(date, zone) {
+    var f = zoneFormatters[zone];
+    if (!f) {
+      f = new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", weekday: "short" });
+      zoneFormatters[zone] = f;
+    }
+    var p = {};
+    f.formatToParts(date).forEach(function (x) { p[x.type] = x.value; });
+    return { year: +p.year, month: +p.month, day: +p.day, hour: (+p.hour) % 24, minute: +p.minute, second: +p.second, weekday: SHORT_DAYS.indexOf(p.weekday) };
+  }
+
+  function zoneOffset(date, zone) {
+    var p = zoneParts(date, zone);
+    return Math.round((Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - date.getTime()) / 60000);
+  }
+
+  function zonedInstant(ymd, minute, zone) {
+    var guess = Date.UTC(ymd.year, ymd.month - 1, ymd.day) + minute * 60000;
+    var offset = zoneOffset(new Date(guess), zone);
+    var instant = guess - offset * 60000;
+    var second = zoneOffset(new Date(instant), zone);
+    if (second !== offset) instant = guess - second * 60000;
+    return new Date(instant);
+  }
+
+  function addDays(ymd, n) {
+    var d = new Date(Date.UTC(ymd.year, ymd.month - 1, ymd.day + n));
+    return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(), weekday: d.getUTCDay() };
+  }
+
+  function ymdKey(ymd) {
+    return ymd.year + "-" + (ymd.month < 10 ? "0" : "") + ymd.month + "-" + (ymd.day < 10 ? "0" : "") + ymd.day;
+  }
+
+  function hoursText(minutes) {
+    var h = minutes / 60;
+    if (!minutes) return "closed";
+    return (h % 1 === 0 ? String(h) : h.toFixed(1)) + (h === 1 ? " hour" : " hours");
+  }
+
+  // Runs of true cells as [startMinute, endMinute] pairs.
+  function runsOf(cells) {
+    var out = [];
+    var start = -1;
+    for (var i = 0; i <= cells.length; i += 1) {
+      if (cells[i] && start < 0) start = i;
+      if (!cells[i] && start >= 0) { out.push([start * CELL, i * CELL]); start = -1; }
+    }
+    return out;
+  }
+
+  H.register("/admin/availability", function (ctx) {
+    var state = { data: null, zone: ownerZone(), selected: null, slots: [], bookings: [] };
+
     return api("/admin/availability").then(function (data) {
-      var zone = data.timezone || ownerZone();
+      state.data = data;
+      state.zone = data.timezone || ownerZone();
       var wrap = el("div", "stack");
-      wrap.appendChild(H.viewHead("Availability", "Weekly availability and blocked dates."));
-      wrap.appendChild(el("p", "small dim", "Windows are in " + zone + "; change it in Settings."));
+      wrap.appendChild(H.viewHead("Availability", "Paint the hours you take sessions. Members see these times, less anything already booked, in their own timezone."));
 
-      var rules = data.rules || [];
-      var rows = {};
-      WEEK.forEach(function (day) { rows[day.weekday] = []; });
+      var week = weekPainter();
+      var dates = datesCard();
+      wrap.appendChild(week.node);
+      wrap.appendChild(dates.node);
+      wrap.appendChild(longOffCard());
 
-      var grid = el("div", "grid2 rise");
-      var dayLists = {};
+      ctx.onCleanup(function () { week.flush(); });
 
-      WEEK.forEach(function (day, index) {
-        var card = rise(el("div", "card stack tight"), index);
-        card.appendChild(el("p", "label", day.label));
-        var list = el("div", "stack tight");
-        card.appendChild(list);
-        dayLists[day.weekday] = list;
-        card.appendChild(append(el("div", "row"), [
-          button("Add window", "btn sm ghost", function () { addWindow(day.weekday, 9 * 60, 17 * 60); })
-        ]));
-        grid.appendChild(card);
-      });
+      /* ---------- the painted week ---------- */
 
-      function addWindow(weekday, startMinute, endMinute) {
-        var row = el("div", "row");
-        var start = input("time", "start", "", minutesToClock(startMinute));
-        var end = input("time", "end", "", minutesToClock(endMinute));
-        var entry = { weekday: weekday, start: start, end: end, node: row };
-        var remove = button("Remove", "btn sm ghost", function () {
-          rows[weekday] = rows[weekday].filter(function (r) { return r !== entry; });
-          if (row.parentNode) row.parentNode.removeChild(row);
+      function weekPainter() {
+        var sessionMinutes = data.sessionMinutes || defaultMinutes();
+        var cells = {};
+        WEEK.forEach(function (d) { cells[d.weekday] = []; for (var i = 0; i < 48; i += 1) cells[d.weekday].push(false); });
+        var lo = 7 * 60, hi = 21 * 60;
+        (data.rules || []).forEach(function (r) {
+          if (r.active === false) return;
+          var wd = Number(r.weekday);
+          if (!cells[wd]) return;
+          for (var i = Math.floor(r.start_minute / CELL); i < Math.ceil(r.end_minute / CELL) && i < 48; i += 1) cells[wd][i] = true;
+          lo = Math.min(lo, Math.floor(r.start_minute / 60) * 60);
+          hi = Math.max(hi, Math.ceil(r.end_minute / 60) * 60);
         });
-        append(row, [start, el("span", "small dim", "to"), end, remove]);
-        rows[weekday].push(entry);
-        dayLists[weekday].appendChild(row);
-      }
+        var first = lo / CELL, last = hi / CELL;
 
-      rules.forEach(function (rule) {
-        var weekday = Number(rule.weekday);
-        if (!(weekday in rows)) return;
-        addWindow(weekday, Number(rule.start_minute), Number(rule.end_minute));
-      });
+        var card = el("section", "card stack paint-card");
+        var head = el("div", "row between");
+        var titleBox = el("div");
+        var total = el("p", "small dim");
+        append(titleBox, [el("h2", null, "Your week"), total]);
+        var status = el("p", "save-state small faint", "Saves as you paint");
+        status.setAttribute("aria-live", "polite");
+        append(head, [titleBox, status]);
+        card.appendChild(head);
 
-      wrap.appendChild(grid);
-
-      var line = el("p", "form-error");
-      var save = button("Save the week", "btn primary", function () {
-        line.textContent = "";
-        var body = { rules: [] };
-        var bad = false;
-        WEEK.forEach(function (day) {
-          rows[day.weekday].forEach(function (entry) {
-            var startMinute = clockToMinutes(entry.start.value);
-            var endMinute = clockToMinutes(entry.end.value);
-            if (startMinute === null || endMinute === null || endMinute <= startMinute) { bad = true; return; }
-            body.rules.push({ weekday: day.weekday, startMinute: startMinute, endMinute: endMinute, timezone: zone, active: true });
+        var grid = el("div", "paint");
+        grid.setAttribute("role", "grid");
+        grid.setAttribute("aria-label", "Weekly availability in " + state.zone + ", half hour cells");
+        var buttons = {};
+        var dayTotals = {};
+        grid.appendChild(el("div", "paint-corner"));
+        WEEK.forEach(function (d) {
+          var h = el("div", "paint-day");
+          var total = el("span", "paint-day-total");
+          dayTotals[d.weekday] = total;
+          append(h, [el("span", "paint-day-name", d.label.slice(0, 3)), total]);
+          grid.appendChild(h);
+        });
+        for (var i = first; i < last; i += 1) {
+          var minute = i * CELL;
+          var t = el("div", "paint-time" + (minute % 60 === 0 ? "" : " half"), minute % 60 === 0 ? minutesToClock(minute) : "");
+          grid.appendChild(t);
+          WEEK.forEach(function (d) {
+            var b = el("button", "paint-cell" + (minute % 60 === 0 ? " hour" : ""));
+            b.type = "button";
+            b.dataset.wd = String(d.weekday);
+            b.dataset.i = String(i);
+            b.setAttribute("aria-label", d.label + " " + minutesToClock(i * CELL) + " to " + minutesToClock(i * CELL + CELL));
+            buttons[d.weekday + ":" + i] = b;
+            grid.appendChild(b);
           });
-        });
-        if (bad) {
-          line.textContent = "Every window needs a start before its end.";
-          return;
         }
-        busy(save, api("/admin/availability", { method: "PUT", body: body }))
-          .then(function () { toast("The week is saved.", "good"); flare(); })
-          .catch(function (error) {
-            line.textContent = error.message;
+        var scroller = el("div", "paint-scroll");
+        scroller.appendChild(grid);
+        card.appendChild(scroller);
+
+        function paintCell(wd, i, on) {
+          if (cells[wd][i] === on) return false;
+          cells[wd][i] = on;
+          draw(wd, i);
+          return true;
+        }
+
+        function draw(wd, i) {
+          var b = buttons[wd + ":" + i];
+          if (!b) return;
+          var on = cells[wd][i];
+          b.classList.toggle("on", on);
+          b.classList.toggle("top", on && !cells[wd][i - 1]);
+          b.classList.toggle("bottom", on && !cells[wd][i + 1]);
+          b.setAttribute("aria-pressed", String(on));
+        }
+
+        function drawAll() {
+          WEEK.forEach(function (d) { for (var i = first; i < last; i += 1) draw(d.weekday, i); });
+          totals();
+        }
+
+        function totals() {
+          var weekMinutes = 0, sessions = 0;
+          WEEK.forEach(function (d) {
+            var m = 0;
+            runsOf(cells[d.weekday]).forEach(function (r) { m += r[1] - r[0]; sessions += Math.floor((r[1] - r[0]) / sessionMinutes); });
+            weekMinutes += m;
+            dayTotals[d.weekday].textContent = m ? (m / 60 % 1 === 0 ? m / 60 : (m / 60).toFixed(1)) + "h" : "";
+          });
+          total.textContent = weekMinutes
+            ? hoursText(weekMinutes) + " a week, room for up to " + sessions + " session" + (sessions === 1 ? "" : "s") + ". In " + state.zone + "."
+            : "Nothing painted yet, so nobody can book. Drag across the grid to open some hours.";
+        }
+
+        // Mouse and pen paint by dragging; the first cell decides whether the
+        // stroke opens or closes. A tap or a key toggles one cell, which is
+        // how a phone works, so the page still scrolls under a finger.
+        var stroke = null;
+        var swallowClick = false;
+        grid.addEventListener("pointerdown", function (e) {
+          if (e.pointerType === "touch" || e.button !== 0) return;
+          var b = e.target.closest && e.target.closest(".paint-cell");
+          if (!b) return;
+          e.preventDefault();
+          var wd = +b.dataset.wd, i = +b.dataset.i;
+          stroke = { on: !cells[wd][i], changed: false };
+          if (paintCell(wd, i, stroke.on)) stroke.changed = true;
+          grid.classList.add("painting");
+          swallowClick = true;
+        });
+        grid.addEventListener("pointermove", function (e) {
+          if (!stroke) return;
+          var target = document.elementFromPoint(e.clientX, e.clientY);
+          var b = target && target.closest && target.closest(".paint-cell");
+          if (!b || !grid.contains(b)) return;
+          if (paintCell(+b.dataset.wd, +b.dataset.i, stroke.on)) { stroke.changed = true; drawNeighbours(+b.dataset.wd, +b.dataset.i); }
+        });
+        function endStroke() {
+          if (!stroke) return;
+          var changed = stroke.changed;
+          stroke = null;
+          grid.classList.remove("painting");
+          if (changed) { drawAll(); changedWeek(); }
+        }
+        window.addEventListener("pointerup", endStroke);
+        window.addEventListener("pointercancel", endStroke);
+        grid.addEventListener("click", function (e) {
+          if (swallowClick) { swallowClick = false; return; }
+          var b = e.target.closest && e.target.closest(".paint-cell");
+          if (!b) return;
+          var wd = +b.dataset.wd, i = +b.dataset.i;
+          paintCell(wd, i, !cells[wd][i]);
+          drawNeighbours(wd, i);
+          totals();
+          changedWeek();
+        });
+        function drawNeighbours(wd, i) { draw(wd, i - 1); draw(wd, i + 1); }
+
+        /* ---------- quick fills ---------- */
+
+        function fill(days, from, to) {
+          days.forEach(function (wd) { for (var i = 0; i < 48; i += 1) cells[wd][i] = i >= from / CELL && i < to / CELL; });
+          drawAll();
+          changedWeek();
+        }
+        var weekdays = [1, 2, 3, 4, 5];
+        var quick = el("div", "row paint-quick");
+        append(quick, [
+          button("Weekdays 9 to 5", "btn sm", function () { fill(weekdays, 9 * 60, 17 * 60); }),
+          button("Weekday mornings", "btn sm", function () { fill(weekdays, 9 * 60, 12 * 60); }),
+          button("Copy Monday to the weekdays", "btn sm", function () {
+            [2, 3, 4, 5].forEach(function (wd) { cells[wd] = cells[1].slice(); });
+            drawAll();
+            changedWeek();
+          }),
+          button("Clear the week", "btn sm ghost", function () {
+            if (!window.confirm("Close every hour of the week? Booked sessions stay booked.")) return;
+            fill([0, 1, 2, 3, 4, 5, 6], 0, 0);
+          })
+        ]);
+        card.appendChild(quick);
+
+        /* ---------- saving ---------- */
+
+        var timer = null, saving = null, dirty = false;
+        function changedWeek() {
+          dirty = true;
+          status.textContent = "Unsaved";
+          status.className = "save-state small faint";
+          clearTimeout(timer);
+          timer = setTimeout(save, 700);
+        }
+        function body() {
+          var rules = [];
+          WEEK.forEach(function (d) {
+            runsOf(cells[d.weekday]).forEach(function (r) {
+              rules.push({ weekday: d.weekday, startMinute: r[0], endMinute: r[1], timezone: state.zone, active: true });
+            });
+          });
+          return { rules: rules };
+        }
+        function save() {
+          clearTimeout(timer);
+          if (!dirty) return saving || Promise.resolve();
+          if (saving) { timer = setTimeout(save, 300); return saving; }
+          dirty = false;
+          status.textContent = "Saving";
+          saving = api("/admin/availability", { method: "PUT", body: body() }).then(function () {
+            saving = null;
+            status.textContent = "Saved";
+            status.className = "save-state small good";
+            dates.reload();
+          }, function (error) {
+            saving = null;
+            dirty = true;
+            status.textContent = "Not saved: " + error.message;
+            status.className = "save-state small bad";
             toast(error.message, "bad");
           });
-      });
-      wrap.appendChild(append(el("div", "row"), [save]));
-      wrap.appendChild(line);
-
-      /* ---------- time off ---------- */
-
-      var blocksCard = el("div", "card stack tight");
-      blocksCard.appendChild(el("p", "label", "Time off"));
-      blocksCard.appendChild(el("p", "small dim", "Blocked dates override the weekly availability."));
-      var blockList = el("div", "list");
-      blocksCard.appendChild(blockList);
-
-      function drawBlocks(blocks) {
-        clear(blockList);
-        if (!blocks.length) {
-          blockList.appendChild(el("div", "small dim", "No blocked dates."));
-          return;
+          return saving;
         }
-        blocks.forEach(function (block) {
+
+        drawAll();
+        return {
+          node: card,
+          flush: function () { if (dirty) save(); window.removeEventListener("pointerup", endStroke); window.removeEventListener("pointercancel", endStroke); },
+          runsFor: function (wd) { return runsOf(cells[wd]); }
+        };
+      }
+
+      /* ---------- the coming weeks, date by date ---------- */
+
+      function datesCard() {
+        var card = el("section", "card stack");
+        var head = el("div");
+        append(head, [
+          el("h2", null, "The coming weeks"),
+          el("p", "small dim", "Pick a date to take it off, add extra time, or see the exact times members are offered. Members book from " + (data.noticeHours || 0) + " hours ahead, up to " + (data.horizonDays || 60) + " days out; change that in Settings.")
+        ]);
+        card.appendChild(head);
+        var cal = el("div", "dates");
+        var panel = el("div", "day-panel");
+        append(card, [cal, panel]);
+
+        var today = zoneParts(new Date(), state.zone);
+        var mondayOffset = (today.weekday + 6) % 7;
+        var start = addDays(today, -mondayOffset);
+        var DAYS = 35;
+
+        function load() {
+          var from = zonedInstant(today, 0, state.zone);
+          var to = zonedInstant(addDays(start, DAYS), 0, state.zone);
+          return Promise.all([
+            api("/admin/slots?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString())),
+            can("sessions.manage")
+              ? api("/admin/bookings?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString())).catch(function () { return { bookings: [] }; })
+              : Promise.resolve({ bookings: [] }),
+            api("/admin/availability")
+          ]).then(function (r) {
+            state.slots = r[0].slots || [];
+            state.bookings = (r[1].bookings || []).filter(function (b) { return b.status === "scheduled"; });
+            state.data = r[2];
+            draw();
+          }, function (error) {
+            clear(cal);
+            cal.appendChild(H.empty(error.message));
+          });
+        }
+
+        function byDay(list, keyOf) {
+          var out = {};
+          list.forEach(function (item) { var k = keyOf(item); (out[k] = out[k] || []).push(item); });
+          return out;
+        }
+
+        function touching(ranges, ymd) {
+          var s = zonedInstant(ymd, 0, state.zone).getTime(), e = zonedInstant(addDays(ymd, 1), 0, state.zone).getTime();
+          return ranges.filter(function (r) { return new Date(r.starts_at).getTime() < e && new Date(r.ends_at).getTime() > s; });
+        }
+
+        function wholeDayOff(ymd) {
+          var s = zonedInstant(ymd, 0, state.zone).getTime(), e = zonedInstant(addDays(ymd, 1), 0, state.zone).getTime();
+          return (state.data.blocks || []).some(function (b) { return new Date(b.starts_at).getTime() <= s && new Date(b.ends_at).getTime() >= e; });
+        }
+
+        function draw() {
+          clear(cal);
+          WEEK.forEach(function (d) { cal.appendChild(el("div", "dates-head", d.label.slice(0, 3))); });
+          var slotsByDay = byDay(state.slots, function (s) { return dayKey(s.startsAt, state.zone); });
+          var booksByDay = byDay(state.bookings, function (b) { return dayKey(b.startsAt, state.zone); });
+          var max = 1;
+          Object.keys(slotsByDay).forEach(function (k) { max = Math.max(max, slotsByDay[k].length); });
+          var todayKey = ymdKey(today);
+          for (var n = 0; n < DAYS; n += 1) {
+            var ymd = addDays(start, n);
+            var key = ymdKey(ymd);
+            var past = key < todayKey;
+            var free = (slotsByDay[key] || []).length;
+            var booked = (booksByDay[key] || []).length;
+            var off = !past && wholeDayOff(ymd);
+            var extra = !past && touching(state.data.openings || [], ymd).length > 0;
+            var tile = el("button", "date-tile" + (past ? " past" : "") + (off ? " off" : "") + (key === state.selected ? " selected" : "") + (key === todayKey ? " today" : ""));
+            tile.type = "button";
+            tile.disabled = past;
+            var num = el("span", "date-num", String(ymd.day));
+            var bar = el("span", "date-bar");
+            var fillBar = el("span");
+            fillBar.style.setProperty("--w", String(free / max));
+            bar.appendChild(fillBar);
+            var meta = el("span", "date-meta", off ? "off" : free ? free + (free === 1 ? " time" : " times") : past ? "" : "none");
+            append(tile, [num, bar, meta]);
+            if (booked) tile.appendChild(el("span", "date-booked", booked + " booked"));
+            if (extra) tile.appendChild(el("span", "date-extra", "extra"));
+            if (ymd.day === 1 || n === 0) num.textContent = ymd.day + " " + new Date(Date.UTC(ymd.year, ymd.month - 1, ymd.day)).toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
+            tile.setAttribute("aria-label", dayLabel(zonedInstant(ymd, 12 * 60, state.zone).toISOString(), state.zone) + ": " + (off ? "day off" : free + " open times") + (booked ? ", " + booked + " booked" : ""));
+            (function (ymd, key) {
+              tile.addEventListener("click", function () { state.selected = key; draw(); });
+            })(ymd, key);
+            cal.appendChild(tile);
+          }
+          drawPanel();
+        }
+
+        function drawPanel() {
+          clear(panel);
+          if (!state.selected) {
+            panel.appendChild(el("p", "small faint", "Pick a date above."));
+            return;
+          }
+          var parts = state.selected.split("-");
+          var ymd = { year: +parts[0], month: +parts[1], day: +parts[2] };
+          var noon = zonedInstant(ymd, 12 * 60, state.zone);
+          var wd = zoneParts(noon, state.zone).weekday;
+          var dayStart = zonedInstant(ymd, 0, state.zone), dayEnd = zonedInstant(addDays(ymd, 1), 0, state.zone);
+          var off = wholeDayOff(ymd);
+
+          var top = el("div", "row between");
+          top.appendChild(el("h3", null, dayLabel(noon.toISOString(), state.zone)));
+          var toggleOff = button(off ? "Open this day again" : "Take this day off", off ? "btn sm primary" : "btn sm", function () {
+            var job = off
+              ? Promise.all(touching(state.data.blocks || [], ymd).map(function (b) { return api("/admin/blocks/" + encodeURIComponent(b.id), { method: "DELETE" }); }))
+              : api("/admin/blocks", { method: "POST", body: { startsAt: dayStart.toISOString(), endsAt: dayEnd.toISOString(), reason: "Day off" } });
+            busy(toggleOff, job).then(function () { toast(off ? "The day is open again." : "Day off. Nobody can book it.", "good"); return load(); })
+              .catch(function (error) { toast(error.message, "bad"); });
+          });
+          top.appendChild(toggleOff);
+          panel.appendChild(top);
+
+          var usual = week.runsFor(wd).map(function (r) { return minutesToClock(r[0]) + " to " + minutesToClock(r[1]); });
+          panel.appendChild(el("p", "small dim", usual.length ? "Your usual " + WEEK.filter(function (d) { return d.weekday === wd; })[0].label + ": " + usual.join(", ") + "." : "Nothing in your week on this day."));
+
+          var list = el("div", "list day-changes");
+          touching(state.data.openings || [], ymd).forEach(function (o) {
+            list.appendChild(changeRow("Extra time", clockTime(o.starts_at, state.zone) + " to " + clockTime(o.ends_at, state.zone), "/admin/openings/" + encodeURIComponent(o.id)));
+          });
+          touching(state.data.blocks || [], ymd).forEach(function (b) {
+            var whole = new Date(b.starts_at) <= dayStart && new Date(b.ends_at) >= dayEnd;
+            list.appendChild(changeRow(whole ? "Day off" : "Blocked", whole ? (b.reason || "all day") : clockTime(b.starts_at, state.zone) + " to " + clockTime(b.ends_at, state.zone) + (b.reason ? " · " + b.reason : ""), "/admin/blocks/" + encodeURIComponent(b.id)));
+          });
+          if (list.childNodes.length) panel.appendChild(list);
+
+          var free = state.slots.filter(function (s) { return dayKey(s.startsAt, state.zone) === state.selected; });
+          var booked = state.bookings.filter(function (b) { return dayKey(b.startsAt, state.zone) === state.selected; });
+          if (booked.length) {
+            var bl = el("p", "small");
+            bl.textContent = "Booked: " + booked.map(function (b) { return clockTime(b.startsAt, state.zone) + " " + memberName(b.member); }).join(", ");
+            panel.appendChild(bl);
+          }
+          var offered = el("div", "offered");
+          if (free.length) {
+            offered.appendChild(el("span", "label", "Members are offered"));
+            var chips = el("div", "row tight-row");
+            free.forEach(function (s) { chips.appendChild(el("span", "time-chip", clockTime(s.startsAt, state.zone))); });
+            offered.appendChild(chips);
+          } else {
+            offered.appendChild(el("p", "small faint", off ? "Nothing is offered on a day off." : "Nothing is offered on this day."));
+          }
+          panel.appendChild(offered);
+
+          var from = input("time", "from", "", "18:00");
+          var to = input("time", "to", "", "20:00");
+          var line = el("p", "form-error");
+          function range() {
+            var a = clockToMinutes(from.value), b = clockToMinutes(to.value);
+            if (a === null || b === null || b <= a) { line.textContent = "Pick a start before the end."; return null; }
+            line.textContent = "";
+            return { startsAt: zonedInstant(ymd, a, state.zone).toISOString(), endsAt: zonedInstant(ymd, b, state.zone).toISOString() };
+          }
+          var addExtra = button("Add extra time", "btn sm primary", function () {
+            var r = range(); if (!r) return;
+            busy(addExtra, api("/admin/openings", { method: "POST", body: r })).then(function () { toast("Extra time added.", "good"); flare(); return load(); })
+              .catch(function (error) { line.textContent = error.message; });
+          });
+          var blockIt = button("Block this time", "btn sm", function () {
+            var r = range(); if (!r) return;
+            busy(blockIt, api("/admin/blocks", { method: "POST", body: r })).then(function () { toast("Blocked.", "good"); return load(); })
+              .catch(function (error) { line.textContent = error.message; });
+          });
+          var editRow = el("div", "row");
+          append(editRow, [from, el("span", "small dim", "to"), to, addExtra, blockIt]);
+          panel.appendChild(el("p", "label", "Just this day, in " + state.zone));
+          panel.appendChild(editRow);
+          panel.appendChild(line);
+        }
+
+        function changeRow(what, detail, path) {
           var row = el("div");
           var left = el("div", "grow");
-          append(left, [
-            el("div", "primary", fmtDate(block.starts_at) + " to " + fmtDate(block.ends_at)),
-            el("div", "secondary", block.reason || "")
-          ]);
+          append(left, [el("div", "primary", what), el("div", "secondary", detail)]);
           var remove = button("Remove", "btn sm ghost", function () {
-            busy(remove, api("/admin/blocks/" + encodeURIComponent(block.id), { method: "DELETE" }))
-              .then(function () { toast("Removed.", "good"); reloadBlocks(); })
+            busy(remove, api(path, { method: "DELETE" })).then(function () { toast("Removed.", "good"); return load(); })
               .catch(function (error) { toast(error.message, "bad"); });
           });
           append(row, [left, remove]);
-          blockList.appendChild(row);
+          return row;
+        }
+
+        state.selected = ymdKey(today);
+        cal.appendChild(el("p", "dim", "Reading the calendar..."));
+        load();
+        return { node: card, reload: load };
+      }
+
+      /* ---------- longer time off ---------- */
+
+      function longOffCard() {
+        var blocksCard = el("section", "card stack tight");
+        blocksCard.appendChild(el("h2", null, "Longer time off"));
+        blocksCard.appendChild(el("p", "small dim", "A holiday or a trip, across several days. It overrides the week."));
+        var fromField = input("datetime-local", "startsAt", "");
+        var toField = input("datetime-local", "endsAt", "");
+        var reason = input("text", "reason", "Reason (optional)");
+        var blockLine = el("p", "form-error");
+        var addBlock = button("Book the time out", "btn", function () {
+          blockLine.textContent = "";
+          var startsAt = localToInstant(fromField.value);
+          var endsAt = localToInstant(toField.value);
+          if (!startsAt || !endsAt) { blockLine.textContent = "Time off needs a start and an end."; return; }
+          busy(addBlock, api("/admin/blocks", { method: "POST", body: { startsAt: startsAt, endsAt: endsAt, reason: reason.value } }))
+            .then(function () {
+              toast("Booked out.", "good");
+              flare();
+              fromField.value = "";
+              toField.value = "";
+              reason.value = "";
+              return dates.reload();
+            })
+            .catch(function (error) { blockLine.textContent = error.message; });
         });
+        var localZone = browserZone();
+        var hint = localZone && localZone !== state.zone ? "In your timezone (" + localZone + "), not " + state.zone + "." : "In your timezone.";
+        var pair = el("div", "grid2");
+        append(pair, [field("From", fromField), field("To", toField)]);
+        append(blocksCard, [pair, el("p", "small faint", hint), field("Reason", reason), append(el("div", "row"), [addBlock]), blockLine]);
+        return blocksCard;
       }
-
-      function reloadBlocks() {
-        return api("/admin/availability").then(function (fresh) {
-          drawBlocks(fresh.blocks || []);
-        }, function (error) { toast(error.message, "bad"); });
-      }
-
-      drawBlocks(data.blocks || []);
-
-      var from = input("datetime-local", "startsAt", "");
-      var to = input("datetime-local", "endsAt", "");
-      var reason = input("text", "reason", "Reason (optional)");
-      var blockLine = el("p", "form-error");
-      var addBlock = button("Book the time out", "btn", function () {
-        blockLine.textContent = "";
-        var startsAt = localToInstant(from.value);
-        var endsAt = localToInstant(to.value);
-        if (!startsAt || !endsAt) { blockLine.textContent = "A block needs a start and an end."; return; }
-        busy(addBlock, api("/admin/blocks", { method: "POST", body: { startsAt: startsAt, endsAt: endsAt, reason: reason.value } }))
-          .then(function () {
-            toast("Booked out.", "good");
-            flare();
-            from.value = "";
-            to.value = "";
-            reason.value = "";
-            return reloadBlocks();
-          })
-          .catch(function (error) {
-            blockLine.textContent = error.message;
-            toast(error.message, "bad");
-          });
-      });
-      var localZone = browserZone();
-      var blockHint = localZone && localZone !== zone
-        ? "In your timezone (" + localZone + "), not " + zone + "."
-        : "In your timezone.";
-      append(blocksCard, [
-        field("From", from, blockHint),
-        field("To", to, blockHint),
-        field("Reason", reason),
-        append(el("div", "row"), [addBlock]),
-        blockLine
-      ]);
-      wrap.appendChild(blocksCard);
 
       return wrap;
     });

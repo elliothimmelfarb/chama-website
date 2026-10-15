@@ -414,6 +414,43 @@
       append(roleRow, [roleSelect, saveRole]);
       card.appendChild(field("Role", roleRow));
 
+      // How they pay, saved the moment it is picked.
+      var billing = member.billing || "prebuy";
+      var seg = el("div", "seg");
+      seg.setAttribute("role", "radiogroup");
+      seg.setAttribute("aria-label", "How they pay");
+      var hint = el("span", "hint");
+      function billingHint(mode) {
+        return mode === "after"
+          ? "Books any open time. Sessions they hold wait under Purchases, To invoice."
+          : "Needs a session credit to book. Credits come from a paid pack or a grant.";
+      }
+      [{ value: "prebuy", label: "Pre-buy" }, { value: "after", label: "Billed after" }].forEach(function (opt) {
+        var b = button(opt.label, "seg-opt", function () {
+          if (opt.value === billing) return;
+          Array.prototype.forEach.call(seg.childNodes, function (n) { n.disabled = true; });
+          api("/admin/members/" + encodeURIComponent(member.id), { method: "PATCH", body: { billing: opt.value } })
+            .then(function () {
+              billing = opt.value;
+              member.billing = opt.value;
+              Array.prototype.forEach.call(seg.childNodes, function (n) { n.setAttribute("aria-checked", String(n.dataset.value === billing)); });
+              hint.textContent = billingHint(billing);
+              toast(opt.value === "after" ? "They can book now and be invoiced after." : "They book against credits now.", "good");
+            })
+            .catch(function (error) { toast(error.message, "bad"); })
+            .then(function () { Array.prototype.forEach.call(seg.childNodes, function (n) { n.disabled = false; }); });
+        });
+        b.dataset.value = opt.value;
+        b.setAttribute("role", "radio");
+        b.setAttribute("aria-checked", String(opt.value === billing));
+        seg.appendChild(b);
+      });
+      hint.textContent = billingHint(billing);
+      var payField = el("div", "field");
+      payField.style.marginBottom = "0.6rem";
+      append(payField, [el("span", null, "How they pay"), seg, hint]);
+      card.appendChild(payField);
+
       var suspended = member.status !== "active";
       var statusButton = button(suspended ? "Reactivate" : "Suspend", suspended ? "btn" : "btn danger", function () {
         var next = suspended ? "active" : "suspended";

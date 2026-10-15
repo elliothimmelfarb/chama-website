@@ -23,7 +23,7 @@
   function tz() { return (H.state.user && H.state.user.timezone) || undefined; }
 
   function fmtTime(iso) {
-    return new Date(iso).toLocaleTimeString(undefined, { timeZone: tz(), hour: "2-digit", minute: "2-digit" });
+    return new Date(iso).toLocaleTimeString(undefined, { timeZone: tz(), hour: "numeric", minute: "2-digit" });
   }
 
   function fmtDay(iso, long) {
@@ -137,9 +137,12 @@
       var past = bookings.filter(function (b) { return b.status !== "scheduled" || new Date(b.endsAt) <= new Date(); }).sort(function (a, b) { return new Date(b.startsAt) - new Date(a.startsAt); });
       var completed = bookings.filter(function (b) { return b.status === "completed" || (b.status === "scheduled" && new Date(b.endsAt) <= new Date()); }).length;
 
+      var after = data.billing === "after";
+      var canBook = after || data.balance > 0;
       var actions = [];
-      if (data.balance > 0) actions.push(button("Book a session", "btn primary", function () { H.navigate("/sessions/book"); }));
-      actions.push(button(data.balance > 0 ? "Packs and credits" : "Get sessions", data.balance > 0 ? "btn" : "btn primary", function () { H.navigate("/sessions/packs"); }));
+      if (canBook) actions.push(button("Book a session", "btn primary", function () { H.navigate("/sessions/book"); }));
+      if (!after) actions.push(button(canBook ? "Packs and credits" : "Get sessions", canBook ? "btn" : "btn primary", function () { H.navigate("/sessions/packs"); }));
+      if (!canBook) actions.push(button("See open times", "btn ghost", function () { H.navigate("/sessions/book"); }));
       wrap.appendChild(H.viewHead("Sessions", "Your upcoming and past sessions.", actions));
 
       var figCard = el("div", "card");
@@ -157,7 +160,8 @@
         append(c, [n, el("div", "what", what)]);
         tiles.appendChild(c);
       }
-      tile(data.balance, "credits left", data.balance > 0, 0);
+      if (after) tile("Billed after", "how you pay", false, 0);
+      else tile(data.balance, "credits left", data.balance > 0, 0);
       tile(completed, "sessions so far", false, 1);
       tile(upcoming.length ? fmtDay(upcoming[0].startsAt) : "none yet", "next session", upcoming.length > 0, 2);
       wrap.appendChild(tiles);
@@ -171,6 +175,7 @@
         var e = el("div", "empty");
         e.style.border = "0";
         e.appendChild(el("p", null, "No sessions booked."));
+        if (canBook) e.appendChild(button("Find a time", "btn primary mt", function () { H.navigate("/sessions/book"); }));
         up.appendChild(e);
       } else {
         var list = el("div", "list");
@@ -221,7 +226,8 @@
     var canMove = away >= data.cancelNoticeHours;
     right.appendChild(button("Move", "btn ghost sm", function () { H.navigate("/sessions/move/" + b.id); }));
     var cancel = button("Cancel", "btn ghost sm", function () {
-      var msg = canMove ? "Cancel this session? The credit comes back to you." : "Cancel this session? It is inside the " + data.cancelNoticeHours + "-hour notice, so the credit is not returned.";
+      var paid = b.billing === "credit";
+      var msg = !paid ? "Cancel this session?" : canMove ? "Cancel this session? The credit comes back to you." : "Cancel this session? It is inside the " + data.cancelNoticeHours + "-hour notice, so the credit is not returned.";
       if (!window.confirm(msg)) return;
       cancel.disabled = true;
       api("/bookings/" + encodeURIComponent(b.id) + "/cancel", { method: "POST", body: {} }).then(function (r) {
@@ -253,93 +259,358 @@
 
   /* ---------- booking and moving ---------- */
 
+  // One page, three beats: a strip of days glowing by how open they are, the
+  // chosen day drawn as its daylight with the free times on it, and a
+  // confirmation that says exactly what the booking costs. The soonest free
+  // time sits on top for anyone who just wants the next one.
+
+  var DAY_PARTS = [
+    { label: "Morning", until: 12 * 60 },
+    { label: "Afternoon", until: 17 * 60 },
+    { label: "Evening", until: 24 * 60 }
+  ];
+  var LIGHT_FROM = 6 * 60, LIGHT_TO = 23 * 60;
+
+  function minuteOfDay(iso, zone) {
+    var p = new Intl.DateTimeFormat("en-GB", { timeZone: zone, hourCycle: "h23", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(iso));
+    var h = 0, m = 0;
+    p.forEach(function (x) { if (x.type === "hour") h = +x.value % 24; if (x.type === "minute") m = +x.value; });
+    return h * 60 + m;
+  }
+
+  function sameClock(iso, a, b) {
+    if (!a || !b || a === b) return true;
+    return minuteOfDay(iso, a) === minuteOfDay(iso, b) && dayKeyIn(iso, a) === dayKeyIn(iso, b);
+  }
+
+  function dayKeyIn(iso, zone) {
+    return new Date(iso).toLocaleDateString("en-CA", { timeZone: zone });
+  }
+
+  function reduceMotion() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  // Ember tokens, one per credit, with the one a booking would spend marked.
+  function tokens(count, spending) {
+    var row = el("span", "tokens");
+    row.setAttribute("aria-hidden", "true");
+    var shown = Math.min(count, 12);
+    for (var i = 0; i < shown; i += 1) row.appendChild(el("span", "token" + (spending && i === shown - 1 ? " spending" : "")));
+    return row;
+  }
+
   function picker(opts) {
-    var wrap = el("div", "stack");
+    var wrap = el("div", "stack book");
     wrap.appendChild(H.viewHead(opts.title, opts.lede));
-    var note = el("p", "small faint", "Times are in " + (tz() || "your local time") + ". Sessions are " + ((H.state.settings && H.state.settings.sessionMinutes) || 60) + " minutes.");
-    wrap.appendChild(note);
-    var card = el("div", "card stack");
-    var loading = el("p", "dim", "Finding free times...");
-    card.appendChild(loading);
-    wrap.appendChild(card);
 
-    var from = new Date();
-    var span = 14;
+    var pay = opts.pay || { billing: "prebuy", balance: 0 };
+    var canBook = Boolean(opts.except) || pay.billing === "after" || pay.balance > 0;
 
-    function load() {
-      var to = new Date(from.getTime() + span * DAY);
-      var q = "?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString()) + (opts.except ? "&except=" + encodeURIComponent(opts.except) : "");
-      api("/slots" + q).then(function (data) {
-        H.clear(card);
-        var byDay = {};
-        var days = [];
-        data.slots.forEach(function (s) {
-          var k = dayKey(s.startsAt);
-          if (!byDay[k]) { byDay[k] = []; days.push(k); }
-          byDay[k].push(s);
-        });
-        var nav = el("div", "row between");
-        var prev = button("Earlier", "btn ghost sm", function () { from = new Date(Math.max(Date.now(), from.getTime() - span * DAY)); load(); });
-        prev.disabled = from.getTime() <= Date.now() + 60000;
-        var range = el("p", "small dim", fmtDay(from.toISOString()) + " to " + fmtDay(to.toISOString()));
-        var next = button("Later", "btn ghost sm", function () { from = new Date(from.getTime() + span * DAY); load(); });
-        next.disabled = to >= new Date(data.horizon);
-        append(nav, [prev, range, next]);
-        card.appendChild(nav);
-        if (!days.length) {
-          card.appendChild(H.empty("No free times in the next two weeks. Try again later, or email Elliot."));
-          return;
-        }
-        var chips = el("div", "row");
-        chips.style.overflowX = "auto";
-        chips.style.flexWrap = "nowrap";
-        chips.style.paddingBottom = "0.3rem";
-        var times = el("div", "grid3");
-        var selectedDay = days[0];
-        function showDay(k) {
-          selectedDay = k;
-          Array.prototype.forEach.call(chips.childNodes, function (c) { c.classList.toggle("primary", c.dataset.day === k); });
-          H.clear(times);
-          byDay[k].forEach(function (s) {
-            var t = button(fmtTime(s.startsAt), "btn", function () { confirm(s); });
-            times.appendChild(t);
-          });
-        }
-        days.forEach(function (k) {
-          var c = button(fmtDay(byDay[k][0].startsAt), "btn sm", function () { showDay(k); });
-          c.dataset.day = k;
-          chips.appendChild(c);
-        });
-        append(card, [el("p", "label", "Day"), chips, el("p", "label", "Time"), times]);
-        showDay(selectedDay);
-      }).catch(function (err) { H.clear(card); card.appendChild(el("p", "form-error", err.message)); });
+    var payLine = null;
+    if (!opts.except) {
+      if (pay.billing === "after") {
+        payLine = el("p", "pay-line small dim", "You are billed after each session, so any open time is yours to take.");
+      } else if (pay.balance > 0) {
+        payLine = el("p", "pay-line small");
+        append(payLine, [tokens(pay.balance), document.createTextNode(pay.balance + (pay.balance === 1 ? " session credit" : " session credits") + ". A booking uses one.")]);
+      } else {
+        payLine = el("div", "card glow row between");
+        var t = el("div", "grow");
+        append(t, [el("p", null, "Sessions are bought ahead."), el("p", "small dim", "Get a pack and any of these times can be yours. You can look around first.")]);
+        append(payLine, [t, button("See packs", "btn primary", function () { H.navigate("/sessions/packs"); })]);
+      }
+      wrap.appendChild(payLine);
     }
 
-    function confirm(slot) {
-      H.clear(card);
-      card.appendChild(el("p", "label", "Confirm"));
-      card.appendChild(el("h2", null, fmtDay(slot.startsAt, true) + ", " + fmtTime(slot.startsAt) + " to " + fmtTime(slot.endsAt)));
-      var noteInput = null;
-      if (!opts.except) {
-        noteInput = el("textarea", "textarea");
-        noteInput.placeholder = "What you want to work on (optional)";
-        noteInput.maxLength = 2000;
-        card.appendChild(H.field("Note for Elliot", noteInput));
-      }
-      var row = el("div", "row");
-      var ok = button(opts.except ? "Move it here" : "Book it", "btn primary", function () {
-        ok.disabled = true;
-        var body = { startsAt: slot.startsAt };
-        if (noteInput) body.note = noteInput.value;
-        var req = opts.except ? api("/bookings/" + opts.except + "/move", { method: "POST", body: body }) : api("/bookings", { method: "POST", body: body });
-        req.then(function () {
-          H.toast(opts.except ? "Moved. A new calendar invitation has been emailed to you." : "Booked. A calendar invitation has been emailed to you.", "good");
-          H.flare();
-          H.navigate("/sessions");
-        }).catch(function (err) { H.toast(err.message, "bad"); ok.disabled = false; if (err.status === 409) load(); });
+    var soonest = el("div");
+    wrap.appendChild(soonest);
+    var stage = el("div", "card stack book-stage");
+    stage.appendChild(el("p", "dim", "Finding open times..."));
+    wrap.appendChild(stage);
+    var foot = el("p", "small faint");
+    foot.appendChild(document.createTextNode("Times are in " + (tz() || "your local time") + ". "));
+    var change = link("Change", H.BASE + "/account");
+    change.addEventListener("click", function (ev) { ev.preventDefault(); H.navigate("/account"); });
+    foot.appendChild(change);
+    wrap.appendChild(foot);
+
+    var slots = [];
+    var horizon = null;
+    var loadedTo = new Date();
+    var ownerZone = null;
+    var minutes = 60;
+    var selectedDay = null;
+    var stripScroll = 0;
+
+    function fetchMore() {
+      var from = loadedTo;
+      var to = new Date(from.getTime() + 42 * DAY);
+      var q = "?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString()) + (opts.except ? "&except=" + encodeURIComponent(opts.except) : "");
+      return api("/slots" + q).then(function (data) {
+        horizon = new Date(data.horizon);
+        ownerZone = data.ownerTimezone || null;
+        minutes = data.minutes || minutes;
+        var cut = to > horizon ? horizon : to;
+        loadedTo = cut;
+        var seen = {};
+        slots.forEach(function (s) { seen[s.startsAt] = true; });
+        data.slots.forEach(function (s) { if (!seen[s.startsAt]) slots.push(s); });
       });
-      append(row, [ok, button("Pick another time", "btn ghost", load)]);
-      card.appendChild(row);
+    }
+
+    function load() {
+      slots = [];
+      loadedTo = new Date();
+      return fetchMore().then(drawPicker).catch(function (err) { H.clear(stage); stage.appendChild(el("p", "form-error", err.message)); });
+    }
+
+    function byDay() {
+      var out = { keys: [], map: {} };
+      slots.forEach(function (s) {
+        var k = dayKey(s.startsAt);
+        if (!out.map[k]) { out.map[k] = []; out.keys.push(k); }
+        out.map[k].push(s);
+      });
+      return out;
+    }
+
+    function drawSoonest(first) {
+      H.clear(soonest);
+      if (!first) return;
+      var card = el("div", "card soonest row between");
+      var left = el("div", "grow");
+      append(left, [el("p", "small dim", "Soonest open time"), el("p", "soonest-when", fmtDay(first.startsAt, true) + ", " + fmtTime(first.startsAt))]);
+      append(card, [left, button(opts.except ? "Move it here" : "Take it", "btn primary", function () { confirmSlot(first); })]);
+      soonest.appendChild(card);
+    }
+
+    function drawPicker() {
+      H.clear(stage);
+      var days = byDay();
+      drawSoonest(slots[0]);
+      if (!days.keys.length) {
+        stage.appendChild(H.empty("No open times right now. Elliot opens more regularly, so check back soon, or write to contact@chamainteligente.com."));
+        return;
+      }
+      if (!selectedDay || !days.map[selectedDay]) selectedDay = days.keys[0];
+
+      // The strip: every calendar day from today to the last one loaded, so
+      // a closed day reads as closed rather than vanishing.
+      var max = 1;
+      days.keys.forEach(function (k) { max = Math.max(max, days.map[k].length); });
+      var strip = el("div", "daystrip");
+      strip.setAttribute("role", "listbox");
+      strip.setAttribute("aria-label", "Days");
+      var cursor = new Date(days.map[days.keys[0]][0].startsAt);
+      var lastKey = days.keys[days.keys.length - 1];
+      var guard = 0;
+      while (guard < 120) {
+        guard += 1;
+        var iso = cursor.toISOString();
+        var k = dayKey(iso);
+        var free = (days.map[k] || []).length;
+        var chip = el("button", "day" + (free ? "" : " closed") + (k === selectedDay ? " selected" : ""));
+        chip.type = "button";
+        chip.disabled = !free;
+        chip.setAttribute("role", "option");
+        chip.setAttribute("aria-selected", String(k === selectedDay));
+        chip.setAttribute("aria-label", fmtDay(iso, true) + (free ? ", " + free + " open " + (free === 1 ? "time" : "times") : ", closed"));
+        chip.style.setProperty("--heat", String(free / max));
+        var dow = new Date(iso).toLocaleDateString(undefined, { timeZone: tz(), weekday: "short" });
+        var num = new Date(iso).toLocaleDateString(undefined, { timeZone: tz(), day: "numeric" });
+        var mon = new Date(iso).toLocaleDateString(undefined, { timeZone: tz(), month: "short" });
+        append(chip, [el("span", "day-dow", dow), el("span", "day-num", num), el("span", "day-mon", mon), el("span", "day-ember")]);
+        (function (key) {
+          chip.addEventListener("click", function () {
+            selectedDay = key;
+            stripScroll = strip.scrollLeft;
+            drawPicker();
+          });
+        })(k);
+        strip.appendChild(chip);
+        if (k >= lastKey) break;
+        cursor = new Date(cursor.getTime() + DAY);
+      }
+      if (horizon && loadedTo < horizon) {
+        var more = button("Later dates", "day more", function () {
+          more.disabled = true;
+          stripScroll = strip.scrollLeft;
+          fetchMore().then(drawPicker).catch(function (err) { H.toast(err.message, "bad"); more.disabled = false; });
+        });
+        strip.appendChild(more);
+      }
+      stage.appendChild(strip);
+      requestAnimationFrame(function () {
+        strip.scrollLeft = stripScroll;
+        var sel = strip.querySelector(".day.selected");
+        if (sel && (sel.offsetLeft < strip.scrollLeft || sel.offsetLeft + sel.offsetWidth > strip.scrollLeft + strip.clientWidth)) {
+          strip.scrollLeft = sel.offsetLeft - 16;
+        }
+      });
+
+      stage.appendChild(dayView(days.map[selectedDay]));
+    }
+
+    // The chosen day as its daylight, with every free time an ember on it.
+    function dayView(daySlots) {
+      var box = el("div", "dayview");
+      box.appendChild(el("h2", null, fmtDay(daySlots[0].startsAt, true)));
+
+      var zone = tz();
+      var light = el("div", "daylight");
+      light.setAttribute("aria-hidden", "true");
+      var lo = LIGHT_FROM, hi = LIGHT_TO;
+      daySlots.forEach(function (s) { var m = minuteOfDay(s.startsAt, zone); lo = Math.min(lo, Math.floor(m / 60) * 60); hi = Math.max(hi, Math.min(1440, m + minutes)); });
+      var span = hi - lo;
+      function pct(m) { return (((m - lo) / span) * 100) + "%"; }
+      // The open stretches as one glow, a dot at each start, and the hour a
+      // hovered time would take lit on top.
+      var runs = [];
+      daySlots.forEach(function (s) {
+        var m = minuteOfDay(s.startsAt, zone);
+        var last = runs[runs.length - 1];
+        if (last && m <= last[1]) last[1] = Math.max(last[1], m + minutes); else runs.push([m, m + minutes]);
+      });
+      runs.forEach(function (r) {
+        var band = el("span", "band");
+        band.style.left = pct(r[0]);
+        band.style.width = ((r[1] - r[0]) / span * 100) + "%";
+        light.appendChild(band);
+      });
+      var marks = {};
+      daySlots.forEach(function (s) {
+        var m = minuteOfDay(s.startsAt, zone);
+        var dot = el("span", "spark");
+        dot.style.left = pct(m);
+        light.appendChild(dot);
+        var hour = el("span", "hourlit");
+        hour.style.left = pct(m);
+        hour.style.width = ((minutes / span) * 100) + "%";
+        marks[s.startsAt] = hour;
+        light.appendChild(hour);
+      });
+      [lo, lo + span / 2, hi].forEach(function (m, i) {
+        var tick = el("span", "tick" + (i === 0 ? " start" : i === 2 ? " end" : ""), minutesToLabel(Math.round(m / 60) * 60));
+        tick.style.left = (i * 50) + "%";
+        light.appendChild(tick);
+      });
+      box.appendChild(light);
+
+      DAY_PARTS.forEach(function (part, idx) {
+        var from = idx ? DAY_PARTS[idx - 1].until : 0;
+        var inPart = daySlots.filter(function (s) { var m = minuteOfDay(s.startsAt, zone); return m >= from && m < part.until; });
+        if (!inPart.length) return;
+        var group = el("div", "times-group");
+        group.appendChild(el("p", "label", part.label));
+        var times = el("div", "times");
+        inPart.forEach(function (s, i) {
+          var t = button(fmtTime(s.startsAt), "time", function () { confirmSlot(s); });
+          t.style.setProperty("--i", String(i));
+          function lit(on) { if (marks[s.startsAt]) marks[s.startsAt].classList.toggle("lit", on); }
+          t.addEventListener("mouseenter", function () { lit(true); });
+          t.addEventListener("mouseleave", function () { lit(false); });
+          t.addEventListener("focus", function () { lit(true); });
+          t.addEventListener("blur", function () { lit(false); });
+          times.appendChild(t);
+        });
+        group.appendChild(times);
+        box.appendChild(group);
+      });
+      return box;
+    }
+
+    function minutesToLabel(m) {
+      var d = new Date(Date.UTC(2026, 0, 5, Math.floor(m / 60) % 24, m % 60));
+      return d.toLocaleTimeString(undefined, { timeZone: "UTC", hour: "numeric" });
+    }
+
+    function confirmSlot(slot) {
+      H.clear(soonest);
+      H.clear(stage);
+      stage.classList.add("confirming");
+      var top = el("div", "confirm-when");
+      append(top, [
+        el("p", "small dim", opts.except ? "Move your session to" : "Your session"),
+        el("p", "confirm-day", fmtDay(slot.startsAt, true)),
+        el("p", "confirm-time", fmtTime(slot.startsAt) + " to " + fmtTime(slot.endsAt))
+      ]);
+      if (ownerZone && !sameClock(slot.startsAt, tz(), ownerZone)) {
+        top.appendChild(el("p", "small faint", "That is " + new Date(slot.startsAt).toLocaleTimeString(undefined, { timeZone: ownerZone, hour: "numeric", minute: "2-digit" }) + " for Elliot in " + ownerZone.split("/").pop().replace(/_/g, " ") + "."));
+      }
+      stage.appendChild(top);
+
+      var noteInput = null;
+      if (!opts.except && canBook) {
+        noteInput = el("textarea", "textarea");
+        noteInput.placeholder = "What would make this session worth it? (optional)";
+        noteInput.maxLength = 2000;
+        noteInput.rows = 3;
+        stage.appendChild(H.field("A note for Elliot", noteInput));
+      }
+
+      if (!opts.except) {
+        var cost = el("p", "pay-line small");
+        if (pay.billing === "after") cost.textContent = "Billed after the session. Nothing to pay now.";
+        else if (pay.balance > 0) append(cost, [tokens(pay.balance, true), document.createTextNode("Uses 1 of your " + pay.balance + " credits. Cancel at least " + (opts.cancelNoticeHours || 24) + " hours ahead and it comes back.")]);
+        else cost.textContent = "This needs a session credit. Get a pack, then come back for this time.";
+        stage.appendChild(cost);
+      }
+
+      var row = el("div", "row");
+      var ok;
+      if (canBook) {
+        ok = button(opts.except ? "Move it here" : "Book it", "btn primary book-go", function () {
+          ok.disabled = true;
+          ok.textContent = opts.except ? "Moving..." : "Booking...";
+          var body = { startsAt: slot.startsAt };
+          if (noteInput) body.note = noteInput.value;
+          var req = opts.except ? api("/bookings/" + opts.except + "/move", { method: "POST", body: body }) : api("/bookings", { method: "POST", body: body });
+          req.then(function (r) {
+            H.flare();
+            booked(slot, r);
+          }).catch(function (err) {
+            H.toast(err.message, "bad");
+            ok.disabled = false;
+            ok.textContent = opts.except ? "Move it here" : "Book it";
+            if (err.status === 409) { stage.classList.remove("confirming"); load(); }
+          });
+        });
+      } else {
+        ok = button("See packs", "btn primary", function () { H.navigate("/sessions/packs"); });
+      }
+      append(row, [ok, button("Pick another time", "btn ghost", function () { stage.classList.remove("confirming"); drawSoonest(slots[0]); drawPicker(); })]);
+      stage.appendChild(row);
+      if (noteInput && !("ontouchstart" in window)) noteInput.focus({ preventScroll: true });
+      stage.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "nearest" });
+    }
+
+    // The ticket: what is now true, and where to go next.
+    function booked(slot, result) {
+      H.clear(soonest);
+      if (payLine && payLine.parentNode) payLine.parentNode.removeChild(payLine);
+      H.clear(stage);
+      stage.classList.remove("confirming");
+      stage.classList.add("ticket");
+      var mark = svg("svg", { viewBox: "0 0 120 120", class: "ticket-mark", "aria-hidden": "true" });
+      mark.appendChild(svg("circle", { cx: 60, cy: 60, r: 44, fill: "none", stroke: "#f4581f", "stroke-opacity": ".25", "stroke-width": 1.5 }));
+      mark.appendChild(svg("circle", { cx: 60, cy: 60, r: 44, fill: "none", stroke: "#f4581f", "stroke-width": 2.5, "stroke-linecap": "round", pathLength: 1, class: "ticket-ring" }));
+      mark.appendChild(svg("path", { d: "M42 61 L55 74 L80 47", fill: "none", stroke: "#f4581f", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round", pathLength: 1, class: "ticket-tick" }));
+      stage.appendChild(mark);
+      append(stage, [
+        el("h2", null, opts.except ? "Moved." : "You're booked."),
+        el("p", "confirm-day", fmtDay(slot.startsAt, true)),
+        el("p", "confirm-time", fmtTime(slot.startsAt) + " to " + fmtTime(slot.endsAt)),
+        el("p", "small dim", "A calendar invitation is on its way to your email. The meeting link is in it and on your Sessions page.")
+      ]);
+      if (!opts.except && result && typeof result.balance === "number" && pay.billing !== "after") {
+        stage.appendChild(el("p", "small faint", result.balance + (result.balance === 1 ? " credit" : " credits") + " left."));
+      }
+      var row = el("div", "row center-row");
+      row.appendChild(button("See my sessions", "btn primary", function () { H.navigate("/sessions"); }));
+      var more = pay.billing === "after" || (result && result.balance > 0);
+      if (!opts.except && more) row.appendChild(button("Book another", "btn ghost", function () { H.render(); }));
+      stage.appendChild(row);
     }
 
     load();
@@ -347,19 +618,18 @@
   }
 
   H.register("/sessions/book", function () {
-    return api("/credits").then(function (c) {
-      if (c.balance < 1) {
-        var w = el("div", "stack");
-        w.appendChild(H.viewHead("Book a session", "You need a credit first."));
-        w.appendChild(H.empty("No credits left.", button("See packs", "btn primary mt", function () { H.navigate("/sessions/packs"); })));
-        return w;
-      }
-      return picker({ title: "Book a session", lede: "Pick a day, then a time. One credit per session." });
+    return Promise.all([api("/credits"), api("/bookings")]).then(function (r) {
+      return picker({
+        title: "Book a session",
+        lede: "Pick a day, then a time. Sessions are " + (r[1].sessionMinutes || 60) + " minutes, on a video call.",
+        pay: { billing: r[0].billing || "prebuy", balance: r[0].balance },
+        cancelNoticeHours: r[1].cancelNoticeHours
+      });
     });
   }, { perm: "sessions.own", title: "Book" });
 
   H.register("/sessions/move/:id", function (ctx) {
-    return picker({ title: "Move a session", lede: "Pick the new time. The credit stays with the session.", except: ctx.params.id });
+    return picker({ title: "Move a session", lede: "Pick the new time. Nothing changes but the time.", except: ctx.params.id });
   }, { perm: "sessions.own", title: "Move" });
 
   /* ---------- packs and credits ---------- */
@@ -432,7 +702,7 @@
     if (!H.can("sessions.own")) return;
     return api("/bookings").then(function (data) {
       var next = data.bookings.filter(function (b) { return b.status === "scheduled" && new Date(b.endsAt) > new Date(); }).sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); })[0];
-      H.countUp(tile(data.balance, "credits left", data.balance > 0), data.balance);
+      if (data.billing !== "after") H.countUp(tile(data.balance, "credits left", data.balance > 0), data.balance);
       var n = tile(next ? fmtDay(next.startsAt) + " " + fmtTime(next.startsAt) : "none", "next session", Boolean(next));
       n.style.fontSize = "1.4rem";
     });
