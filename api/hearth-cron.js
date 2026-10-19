@@ -1,11 +1,13 @@
 // The Hearth's hourly housekeeping, called by Vercel Cron with the same
 // CRON_SECRET bearer as the other jobs.
 //
-// Three things, all idempotent: session reminders (a day before and an hour
+// Four things, all idempotent: session reminders (a day before and an hour
 // before, each sent once and recorded on the booking); pulling Meet
 // transcripts for sessions that have ended, when Google is connected, and
-// writing the record from them; and sweeping expired tokens, states and
-// rate-limit windows so the small tables stay small.
+// writing the record from them; asking Stripe about card checkouts that have
+// not settled, in case the member closed the tab and no webhook came; and
+// sweeping expired tokens, states and rate-limit windows so the small tables
+// stay small.
 
 import { configured, isUniqueViolation, ready, sql } from "../lib/hearth/db.js";
 import { json } from "../lib/hearth/http.js";
@@ -14,6 +16,7 @@ import * as mail from "../lib/hearth/mail.js";
 import * as google from "../lib/hearth/google.js";
 import { deriveAndStore } from "../lib/hearth/routes/transcripts.js";
 import { audit } from "../lib/hearth/audit.js";
+import { sweepCheckouts } from "../lib/hearth/routes/checkout.js";
 
 function authorized(request, env = process.env) {
   const secret = typeof env.CRON_SECRET === "string" ? env.CRON_SECRET.trim() : "";
@@ -159,9 +162,15 @@ export async function handleCron(request) {
     } catch (error) {
       console.error("Meet pull failed", error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError");
     }
+    let checkouts = { checked: 0, paid: 0 };
+    try {
+      checkouts = await sweepCheckouts();
+    } catch (error) {
+      console.error("Checkout sweep failed", error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError");
+    }
     await sweep();
-    console.info("Hearth cron", JSON.stringify({ reminders, meet }));
-    return json({ ok: true, reminders, meet });
+    console.info("Hearth cron", JSON.stringify({ reminders, meet, checkouts }));
+    return json({ ok: true, reminders, meet, checkouts });
   } catch (error) {
     console.error("Hearth cron failed", error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError");
     return json({ ok: false }, 500);

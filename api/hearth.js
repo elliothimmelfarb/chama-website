@@ -37,6 +37,7 @@ import { registerFeedRoutes } from "../lib/hearth/routes/feed.js";
 import { registerGoogleRoutes } from "../lib/hearth/routes/google.js";
 import { registerAskRoutes } from "../lib/hearth/routes/ask.js";
 import { registerInvoiceRoutes } from "../lib/hearth/routes/invoices.js";
+import { registerCheckoutRoutes } from "../lib/hearth/routes/checkout.js";
 import {
   availableProviders, providerConfig, verifyGoogleIdToken, issueState, consumeState,
   githubAuthorizeUrl, githubExchange, discordAuthorizeUrl, discordExchange
@@ -89,7 +90,11 @@ export const SETTING_DEFAULTS = {
   // Events on these Google calendars block member booking, when Google is
   // connected and google_busy is on. "primary" is the connected account's own.
   google_busy: true,
-  google_calendars: ["primary"]
+  google_calendars: ["primary"],
+  // Members can pay for a pack by card through Stripe Checkout. Off until
+  // the owner turns it on under Purchases, and only shown while Stripe is
+  // connected.
+  card_checkout: false
 };
 
 export async function readSettings() {
@@ -118,6 +123,7 @@ function validSetting(key, value) {
     case "mcp_public":
     case "open_signup":
     case "google_busy":
+    case "card_checkout":
       return typeof value === "boolean";
     case "google_calendars":
       return Array.isArray(value) && value.length >= 1 && value.length <= 10 &&
@@ -819,6 +825,7 @@ registerFeedRoutes({ route, needs, readSettings });
 registerGoogleRoutes({ route, needs, readSettings });
 registerAskRoutes({ route, needs, readSettings });
 registerInvoiceRoutes({ route, needs });
+registerCheckoutRoutes({ route, needs, readSettings });
 
 /* ---------- dispatch ---------- */
 

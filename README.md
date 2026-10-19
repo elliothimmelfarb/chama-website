@@ -88,8 +88,8 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 | `lib/hearth/` | Database and migrations, auth, users, providers, permissions, audit, mail, time and slots, calendar files, transcript records, the OAuth server and the MCP server. |
 | `api/mcp.js`, `api/oauth.js` | `/mcp` and the OAuth 2.1 endpoints with their well-known documents. |
 | `api/feed.js` | The public feed at `/feed` and `/feed.xml`, off until `feed_public` is on. |
-| `api/hearth-cron.js` | Hourly at `:20`: reminders, Meet transcript pulls, expired token sweep. |
-| `api/stripe-webhook.js`, `lib/hearth/stripe.js`, `lib/hearth/routes/invoices.js` | Stripe invoices: the client, the owner's and member's routes, and the signed webhook at `/api/stripe-webhook`. |
+| `api/hearth-cron.js` | Hourly at `:20`: reminders, Meet transcript pulls, unsettled card checkouts, expired token sweep. |
+| `api/stripe-webhook.js`, `lib/hearth/stripe.js`, `lib/hearth/routes/invoices.js`, `lib/hearth/routes/checkout.js` | Stripe: the client, invoices, card checkout for packs, and the signed webhook at `/api/stripe-webhook`. |
 
 ### Data
 
@@ -114,7 +114,7 @@ Google (ID token), GitHub and Discord (authorization code with a state nonce, ve
 
 ### Sessions and money
 
-Packs and prices are set in the room, never in code. A client requests a pack, Elliot issues the fatura from the certified invoicing software, marks the purchase invoiced and then paid, and the credits appear.
+Packs and prices are set in the room, never in code. A client requests a pack, Elliot issues the fatura from the certified invoicing software, marks the purchase invoiced and then paid, and the credits appear. With card payment on, a client can instead pay for a priced pack by card (see Card payment for packs).
 
 Each member pays one of two ways, set on their member page under How they pay (`users.billing`). Pre-buy (`prebuy`, the default) members need a credit to book, and the server refuses a booking without one. Billed after (`after`) members book any open time without credits; their held sessions wait under Purchases, To invoice, until marked invoiced (`bookings.billing`, `bookings.invoiced_at`). The rule lives in `POST /bookings`, so the MCP `book_session` tool follows it too.
 
@@ -124,7 +124,15 @@ Under Business, Invoices, the owner bills one member through Stripe: the session
 
 Stripe calls `/api/stripe-webhook` (endpoint `we_1UQsBvKIjHJB7AoptnkdEcEw`, events `invoice.finalized`, `invoice.paid`, `invoice.voided`, `invoice.marked_uncollectible`). Paid is a compare-and-set, so a replay adds nothing; a paid pack invoice adds its credits through the same path as Mark paid, and the owner gets an email. Voiding, in the room or in Stripe, frees the sessions to be invoiced again and puts the pack back to requested. An invoice sent by hand from the Stripe dashboard (`send_invoice`, `manual`) attaches itself to the member with that customer or email.
 
-The Stripe invoice is the payment request, not the fatura: the fatura still comes from the certified software. The Stripe account is shared with ShopIntake, whose webhook sends a fatura notice for every paid invoice, Hearth ones included. Checkout (paying before booking) is not built yet.
+The Stripe invoice is the payment request, not the fatura: the fatura still comes from the certified software. The Stripe account is shared with ShopIntake, whose webhook sends a fatura notice for every paid invoice, Hearth ones included.
+
+### Card payment for packs
+
+Off until the owner turns on "Members can pay by card" under Business, Purchases (`card_checkout`), and shown only while `STRIPE_SECRET_KEY` is set. With it on, each priced pack has Pay by card next to Ask for an invoice, and a requested pack has a Pay by card button under In progress. The member is sent to Stripe's hosted Checkout (no Stripe script on any page) for the pack's price less any referral discount, with billing address required and a tax ID optional. The session is tagged `metadata.source = hearth` and `hearth_purchase_id`, and its id is kept on the purchase (`purchases.checkout_session_id`). A second click while it is open returns the same session. A pack that already has a Stripe invoice is paid from the invoice instead.
+
+Three paths settle it, all through `settleCheckout` and the same compare-and-set as Mark paid: the member's return to `/hearth/sessions/packs?checkout=done`, which asks Stripe about the stored session (never the address bar); the webhook on `checkout.session.completed` and `checkout.session.async_payment_succeeded`; and the hourly cron, which checks unsettled sessions from the last 15 days and forgets expired ones. Credits arrive once, the purchase records `provider = stripe_checkout` and the session id, an open invoice for the same pack is voided, and the owner gets an email with the billing details the buyer typed (marked untrusted) for the fatura. Stripe also issues a paid invoice for the payment (`invoice_creation`), so ShopIntake's fatura notice covers card payments too; the Hearth's invoice webhook ignores it because it is not `send_invoice`. A card payment that arrives for a pack already paid another way, or voided, adds nothing, is logged as `purchase.card_duplicate`, and the owner is emailed to refund it. If Stripe refuses to start a checkout, the member is told Elliot can invoice instead and the owner is emailed Stripe's reason.
+
+Before turning card payment on: add `checkout.session.completed` and `checkout.session.async_payment_succeeded` to the webhook endpoint `we_1UQsBvKIjHJB7AoptnkdEcEw` (without them the return page and the cron still settle payments, only later), and make sure the restricted key can write Checkout Sessions and read and write Customers and Invoices. The site has no terms or refund page yet.
 
 Availability is painted on a weekly grid of half hours in the owner's zone (each painted run is one row in `availability_rules`). A real week, chosen with arrows, is laid over the grid: the Google Calendar events and booked sessions of those dates, so the week is painted around them. Under it, the coming weeks as dates: a day can be taken off (a whole-day block), given extra time (`availability_openings`), or blocked in part, and the panel shows exactly which times members are offered (`GET /admin/slots`, the same calculator they use). When Google is connected, the coming weeks also show the events on Elliot's Google calendars (titles only on the owner's side), and with Block booking on (`google_busy`, default on) members are not offered times that overlap them. The calendars read are `google_calendars` (default the connected account's `primary`); another account's calendar must be shared with the connected account first. Events are read with the existing `calendar.events` scope, cached two minutes per instance, and a failed read blocks nothing. Members book from a strip of days that glow by how open they are, see the chosen day as a daylight bar, and confirm with the cost spelled out. Booking emails both sides a calendar file. Once the owner connects Google in Settings, each booking gets a Calendar event with a Meet room, and the hourly cron pulls the Meet transcript after the session and writes the record.
 

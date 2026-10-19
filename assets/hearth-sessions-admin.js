@@ -733,6 +733,40 @@
 
     wrap.appendChild(H.viewHead("Purchases", "Pack requests. Invoice them with Stripe and the credits arrive when it is paid, or invoice by hand and mark paid here."));
 
+    // Whether members can pay for a pack by card through Stripe Checkout.
+    var cardStrip = el("div", "card row between");
+    cardStrip.hidden = true;
+    wrap.appendChild(cardStrip);
+    function drawCard(card) {
+      clear(cardStrip);
+      if (!card) return;
+      cardStrip.hidden = false;
+      var text = el("div", "grow");
+      if (!card.connected) {
+        append(text, [el("p", "label", "Card payment"), el("p", "small dim", "Stripe is not connected, so members cannot pay by card. Add STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in Vercel, then redeploy.")]);
+        cardStrip.appendChild(text);
+        return;
+      }
+      append(text, [
+        el("p", "label", "Card payment"),
+        el("p", "small dim", card.on
+          ? "Members see Pay by card on each priced pack. They pay on Stripe's page, the credits arrive on their own, and you get an email with what the fatura needs."
+          : "Off. Members can only ask for a pack and wait for your invoice.")
+      ]);
+      cardStrip.appendChild(text);
+      if (can("settings.manage")) {
+        var sw = toggle("Members can pay by card", card.on);
+        sw.input.addEventListener("change", function () {
+          sw.input.disabled = true;
+          api("/admin/settings", { method: "PUT", body: { card_checkout: sw.input.checked } })
+            .then(function () { toast(sw.input.checked ? "Members can now pay for packs by card." : "Card payment is off.", "good"); return load(); })
+            .catch(function (error) { toast(error.message, "bad"); sw.input.checked = !sw.input.checked; })
+            .then(function () { sw.input.disabled = false; });
+        });
+        cardStrip.appendChild(sw.node);
+      }
+    }
+
     var controls = el("div", "row");
     controls.appendChild(select(PURCHASE_FILTERS, status, function (value) { status = value; load(); }));
     wrap.appendChild(controls);
@@ -831,10 +865,12 @@
         }
         var amountText = money(purchase.amountCents, purchase.currency);
         if (purchase.discountCents > 0) amountText += " less " + money(purchase.discountCents, purchase.currency);
+        var how = purchase.status === "paid" && purchase.provider === "stripe_checkout" ? " · paid by card"
+          : purchase.status === "requested" && purchase.cardStarted ? " · card checkout started" : "";
         append(left, [
           who,
           el("div", "secondary", (purchase.packName || "A pack") + " · " + purchase.sessions + " sessions · " + amountText),
-          el("div", "secondary", fmtDate(purchase.createdAt, { dateStyle: "medium" }))
+          el("div", "secondary", fmtDate(purchase.createdAt, { dateStyle: "medium" }) + how)
         ]);
         if (purchase.note) {
           left.appendChild(el("div", "secondary faint", "their note"));
@@ -895,6 +931,7 @@
 
     function load() {
       return api("/admin/purchases?status=" + encodeURIComponent(status)).then(function (data) {
+        drawCard(data.card);
         draw(data.purchases || []);
       }, function (error) {
         clear(listCard);

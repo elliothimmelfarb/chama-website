@@ -1,5 +1,5 @@
-// Stripe's webhook: what happened to an invoice, signed with
-// STRIPE_WEBHOOK_SECRET.
+// Stripe's webhook: what happened to an invoice, or a pack paid by card
+// through Checkout, signed with STRIPE_WEBHOOK_SECRET.
 //
 // Its own function rather than a Hearth route because it must read the raw
 // body to check the signature, and because the Hearth refuses cross-site
@@ -10,12 +10,20 @@ import { configured, ready } from "../lib/hearth/db.js";
 import { json } from "../lib/hearth/http.js";
 import { stripeConfig, verifyWebhook } from "../lib/hearth/stripe.js";
 import { applyStripeInvoice } from "../lib/hearth/routes/invoices.js";
+import { settleCheckout } from "../lib/hearth/routes/checkout.js";
 
 const INVOICE_EVENTS = new Set([
   "invoice.finalized",
   "invoice.paid",
   "invoice.voided",
   "invoice.marked_uncollectible"
+]);
+
+// A card payment can settle later than the session completes (bank-debit
+// methods), so both events are read; settleCheckout acts only once paid.
+const CHECKOUT_EVENTS = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded"
 ]);
 
 export async function handleStripeWebhook(request) {
@@ -25,10 +33,11 @@ export async function handleStripeWebhook(request) {
   const raw = await request.text();
   const event = verifyWebhook(raw, request.headers.get("stripe-signature"), webhookSecret);
   if (!event) return json({ error: "Bad signature." }, 400);
-  if (!INVOICE_EVENTS.has(event.type)) return json({ received: true });
+  const checkout = CHECKOUT_EVENTS.has(event.type);
+  if (!checkout && !INVOICE_EVENTS.has(event.type)) return json({ received: true });
   try {
     await ready();
-    const outcome = await applyStripeInvoice(event.data?.object);
+    const outcome = checkout ? await settleCheckout(event.data?.object) : await applyStripeInvoice(event.data?.object);
     console.log("Stripe event", event.type, outcome);
     return json({ received: true });
   } catch (error) {
