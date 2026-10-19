@@ -675,11 +675,50 @@
 
   /* ---------- packs and credits ---------- */
 
-  H.register("/sessions/packs", function () {
+  // Card payment leaves for Stripe's own page and comes back here. Only an
+  // https address from the server is followed.
+  function payByCard(purchaseId, node) {
+    node.disabled = true;
+    return api("/purchases/" + encodeURIComponent(purchaseId) + "/checkout", { method: "POST", body: {} }).then(function (data) {
+      if (data.url && /^https:\/\//.test(data.url)) { window.location.assign(data.url); return; }
+      if (data.paid) { H.toast("That pack is already paid. Your credits are in.", "good"); H.render(); return; }
+      if (data.processing) { H.toast("Your payment is still clearing. The credits arrive when it does.", "good"); }
+      node.disabled = false;
+    }).catch(function (err) { H.toast(err.message, "bad"); node.disabled = false; });
+  }
+
+  // Back from Stripe: the server asks Stripe what happened, then the address
+  // bar is tidied so a reload does not ask again.
+  function checkoutReturn(query) {
+    if (!query || !query.checkout) return Promise.resolve();
+    history.replaceState(null, "", location.pathname);
+    if (query.checkout === "cancelled") {
+      H.toast("Checkout cancelled. Nothing was charged.");
+      return Promise.resolve();
+    }
+    if (query.checkout !== "done" || !query.purchase) return Promise.resolve();
+    return api("/purchases/" + encodeURIComponent(query.purchase) + "/checkout/confirm", { method: "POST", body: {} }).then(function (data) {
+      if (data.status === "paid") {
+        H.toast("Paid. " + data.sessions + " session credits are in your account.", "good");
+        H.flare();
+      } else if (data.status === "processing") {
+        H.toast("Your payment is still clearing. The credits arrive when it does, and you will get an email.", "good");
+      } else {
+        H.toast("Stripe has not confirmed the payment yet. If you paid, the credits arrive within the hour.");
+      }
+    }).catch(function (err) { H.toast(err.message, "bad"); });
+  }
+
+  H.register("/sessions/packs", function (ctx) {
     var wrap = el("div", "stack");
-    wrap.appendChild(H.viewHead("Packs and credits", "A pack is a set of sessions. Request one, and the credits are added when the invoice is paid."));
-    return Promise.all([api("/packs").catch(function () { return { packs: [] }; }), api("/credits")]).then(function (r) {
+    return checkoutReturn(ctx && ctx.query).then(function () {
+      return Promise.all([api("/packs").catch(function () { return { packs: [] }; }), api("/credits")]);
+    }).then(function (r) {
       var packs = r[0].packs, credits = r[1];
+      var card = Boolean(r[0].cardCheckout);
+      wrap.appendChild(H.viewHead("Packs and credits", card
+        ? "A pack is a set of sessions. Pay by card and the credits arrive straight away, or ask for an invoice."
+        : "A pack is a set of sessions. Request one, and the credits are added when the invoice is paid."));
       var bal = el("div", "card row between");
       append(bal, [append(el("div", "stat"), [el("div", "num" + (credits.balance > 0 ? " ember" : ""), String(credits.balance)), el("div", "what", "credits left")]),
         credits.balance > 0 ? button("Book a session", "btn primary", function () { H.navigate("/sessions/book"); }) : null]);
@@ -692,7 +731,14 @@
         var oc = el("div", "card stack tight");
         oc.appendChild(el("p", "label", "In progress"));
         open.forEach(function (p) {
-          oc.appendChild(el("p", "small", p.packName + ", " + p.sessions + " sessions: " + (p.status === "requested" ? "requested" : "invoiced, awaiting payment")));
+          var line = el("p", "small", p.packName + ", " + p.sessions + " sessions: " + (p.status === "requested" ? (p.cardStarted ? "card payment started" : "requested") : "invoiced, awaiting payment"));
+          var net = p.amountCents === null || p.amountCents === undefined ? null : p.amountCents - (p.discountCents || 0);
+          if (card && p.status === "requested" && net !== null && net >= 50) {
+            var pay = button("Pay " + money(net, p.currency) + " by card", "btn sm primary", function () { payByCard(p.id, pay); });
+            oc.appendChild(append(el("div", "row between"), [line, pay]));
+          } else {
+            oc.appendChild(line);
+          }
         });
         wrap.appendChild(oc);
       }
@@ -701,8 +747,9 @@
         packs.forEach(function (p, i) {
           var c = el("div", "card stack tight");
           c.style.setProperty("--i", String(i));
-          append(c, [el("h3", null, p.name), el("p", "small dim", p.description || ""), el("p", null, p.sessions + " sessions of " + p.minutes + " minutes"), el("p", "ember", money(p.priceCents, p.currency))]);
-          var ask = button("Ask for this pack", "btn", function () {
+          append(c, [el("h3", null, p.name), el("p", "small dim", p.description || ""), el("p", null, p.sessions + (p.sessions === 1 ? " session of " : " sessions of ") + p.minutes + " minutes"), el("p", "ember", money(p.priceCents, p.currency))]);
+          var payable = card && p.priceCents !== null && p.priceCents !== undefined && p.priceCents >= 50;
+          var ask = button(payable ? "Ask for an invoice" : "Ask for this pack", payable ? "btn ghost" : "btn", function () {
             ask.disabled = true;
             api("/purchases", { method: "POST", body: { packId: p.id } }).then(function () {
               H.toast("Requested. Elliot will send the invoice.", "good");
@@ -710,7 +757,18 @@
               H.render();
             }).catch(function (err) { H.toast(err.message, "bad"); ask.disabled = false; });
           });
-          c.appendChild(append(el("div", "row"), [ask]));
+          var row = el("div", "row");
+          if (payable) {
+            var cardBtn = button("Pay by card", "btn primary", function () {
+              cardBtn.disabled = true;
+              api("/purchases", { method: "POST", body: { packId: p.id, card: true } }).then(function (data) {
+                return payByCard(data.purchase.id, cardBtn);
+              }).catch(function (err) { H.toast(err.message, "bad"); cardBtn.disabled = false; });
+            });
+            row.appendChild(cardBtn);
+          }
+          row.appendChild(ask);
+          c.appendChild(row);
           grid.appendChild(c);
         });
         wrap.appendChild(grid);
