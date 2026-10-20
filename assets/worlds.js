@@ -355,7 +355,6 @@
     ctx.restore();
     ctx.save();
     ctx.beginPath(); ctx.rect(-20, -20, AW + 40, AH + 40); ctx.rect(x0, y0, 2 * h, 2 * h); ctx.clip("evenodd");
-    ctx.translate(0, s.ghost * s.R * 0.09);
     if (s.ghost < 0.999) drawShape(s, 1 - s.ghost);
     if (s.ghost > 0.001) {
       trace(sp);
