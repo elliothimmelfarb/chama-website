@@ -765,8 +765,9 @@ main h1:focus { outline: none; }
 .spoke img.round { width: 52%; height: 54%; }
 .spoke img.wide { width: 66%; }
 .spoke:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
-.wheel-count { color: var(--fg2); letter-spacing: 0.12em; }
-.wheel-count b { color: var(--fg); font-weight: 700; }
+.wheel-world .copy { width: min(40vw, 35rem); }
+.copy .turn-count { margin: 0 0 0.5rem; color: var(--fg2); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.turn-intro h1 { margin-bottom: 0.4em; }
 .turns { display: grid; }
 .turn {
   grid-area: 1 / 1;

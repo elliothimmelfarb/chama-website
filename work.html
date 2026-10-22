@@ -89,25 +89,20 @@
   </header>
 
   <main id="main-content">
-    <!-- 1. Paper: every business a different shape, each one fitted -->
-    <section class="world hero" data-theme="paper" data-world="paper" data-scene="kin" data-label="Who we have worked with" style="--h:165" aria-labelledby="t-hero">
+    <!-- The grid: who we have worked with. The wheel of clients turns in with
+         no one in focus beside the introduction, then brings each client to
+         the front as the page scrolls. -->
+    <section class="world hero wheel-world" data-theme="grid" data-world="grid" data-scene="wheel" data-label="Who we have worked with" style="--h:495" aria-labelledby="t-hero">
       <div class="pin">
         <div class="copy">
-          <h1 id="t-hero" class="r" style="--in:-3">Who we have worked with.</h1>
-          <p class="deck r" style="--in:-3">Every business is a different shape. These are the ones we have built software for or coached, and the friends doing work like ours.</p>
-          <p class="alt-version r" style="--in:-3">Prefer less motion? <a href="/simple/work" data-simple-version>Read the low motion version.</a></p>
-        </div>
-        <p class="cue r" style="--in:-3;--out:0.3;--k:5" aria-hidden="true"><i></i>The work</p>
-      </div>
-    </section>
-
-    <!-- The grid: the wheel of clients, a ring standing on the floor, turning as the page scrolls -->
-    <section class="world wheel-world" data-theme="grid" data-world="grid" data-scene="wheel" data-label="Clients" style="--h:385" aria-labelledby="t-clients">
-      <div class="pin">
-        <div class="copy">
-          <h2 class="kicker r" id="t-clients">Clients <span class="wheel-count">&middot; <b data-wheel-count>1</b> of 3</span></h2>
-          <div class="turns r" style="--in:-0.4">
-            <div class="turn on" id="toraya-lisboa" data-i="0" aria-hidden="false">
+          <div class="turns r" style="--in:-3">
+            <div class="turn turn-intro on" data-i="-1" aria-hidden="false">
+              <h1 id="t-hero">Who we have worked with.</h1>
+              <p class="deck">Every business is a different shape. These are the ones we have built software for or coached, and the friends doing work like ours.</p>
+              <p class="alt-version">Prefer less motion? <a href="/simple/work" data-simple-version>Read the low motion version.</a></p>
+            </div>
+            <div class="turn" id="toraya-lisboa" data-i="0" aria-hidden="true">
+              <p class="turn-count">Clients &middot; 1 of 3</p>
               <p class="turn-kind">Software · Rossio station, Lisbon</p>
               <h3>Toraya Lisboa</h3>
               <p>A Japanese deli and drinks shop in the Rossio station building, run by Hironori Ando and founded by Naomi Kawata.</p>
@@ -115,6 +110,7 @@
               <p class="visit"><a href="https://toraya.pt" rel="noopener" target="_blank">toraya.pt</a></p>
             </div>
             <div class="turn" id="alves-limited-group" data-i="1" aria-hidden="true">
+              <p class="turn-count">Clients &middot; 2 of 3</p>
               <p class="turn-kind">Software · Plasencia and São Paulo</p>
               <h3>Alves Limited Group</h3>
               <p>A family-run group that helps people move, study and do business abroad, between Spain, Portugal, Brazil and the UK.</p>
@@ -122,6 +118,7 @@
               <p class="visit"><a href="https://alveslimitedgroup.com/" rel="noopener" target="_blank">alveslimitedgroup.com</a></p>
             </div>
             <div class="turn" id="springlar" data-i="2" aria-hidden="true">
+              <p class="turn-count">Clients &middot; 3 of 3</p>
               <p class="turn-kind">Coaching · Cascais</p>
               <h3>Springlar</h3>
               <p>They design and build healthy, carbon-neutral houses in timber, from cross-laminated wood and cork.</p>
@@ -135,6 +132,7 @@
           <button class="spoke" type="button" data-i="1" data-shape="1" tabindex="-1"><span class="spoke-plate" style="clip-path:polygon(22.5% 2.5%, 95% 25%, 80% 97.5%, 2.5% 77.5%)"></span><img class="wide" src="/assets/work/alves-limited.webp" alt="" width="399" height="158" decoding="async"></button>
           <button class="spoke" type="button" data-i="2" data-shape="2" tabindex="-1"><span class="spoke-plate" style="clip-path:polygon(0% 52.5%, 22.5% 12.5%, 67.5% 7.5%, 100% 42.5%, 85% 85%, 30% 90%)"></span><img class="wide" src="/assets/work/springlar.webp" alt="" width="864" height="146" decoding="async"></button>
         </div>
+        <p class="cue r" style="--in:-3;--out:0.08;--k:12" aria-hidden="true"><i></i>The work</p>
       </div>
     </section>
 

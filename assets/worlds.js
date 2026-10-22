@@ -11,7 +11,7 @@
                  business's shape (fit, shelf, offer, questions, change,
                  build, mark) or one of the coaching and about figures
                  (coil, curve, session, releases, keepers, family, timeline)
-                 or the work figures (kin, wheel, peer).
+                 or the work figures (wheel, peer).
    Shape scenes hand one shape from world to world and morph it; any other
    pair of scenes cross-fades while the fire passes.
 
@@ -271,7 +271,6 @@
     releases: { kind: "draw", box: true, draw: drawReleases },
     peer: { kind: "draw", draw: drawPeer },
     wheel: { kind: "draw", draw: drawWheel },
-    kin: { kind: "draw", at: [0.71, 0.5, 1.0], tall: [0.5, 0.27, 0.82], ext: [1.35, 1.35], draw: drawKin },
     keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
     family: { kind: "draw", draw: drawFamily },
     timeline: { kind: "draw", draw: drawTimeline }
@@ -784,86 +783,13 @@
     if (la > 0.01) orbitLights(c, L.cx, L.cy, L.R * 1.65, L.R * 0.55, -0.28, RM ? 1 : t, la, 2, [4.2, 4.2]);
   }
 
-  // Work, the hero: every business a different shape. Each client's shape
-  // is drawn in ink and then fitted with its own ember outline, one after
-  // another; a peer's shape stands apart in dashed ink, joined to them by a
-  // dotted line of light. In unit coordinates around the figure's centre.
+  // Work: every business a different shape. A client in focus on the wheel
+  // stands on a plate cut to one of these (WHEEL_SHAPES below).
   var KIN = [
     { at: [-0.5, -0.22], r: 0.5, pts: [0, -1, 0.82, -0.42, 0.62, 0.74, -0.38, 0.92, -0.95, 0.1] },
     { at: [0.56, -0.5], r: 0.36, pts: [-0.55, -0.95, 0.9, -0.5, 0.6, 0.95, -0.95, 0.55] },
     { at: [0.3, 0.52], r: 0.44, pts: [-1, 0.05, -0.55, -0.75, 0.35, -0.85, 1, -0.15, 0.7, 0.7, -0.4, 0.8] }
   ];
-  var PEER = { at: [-0.72, 0.78], r: 0.27, pts: [0, -1, 0.95, 0.62, -0.92, 0.7] };
-  function kinPoints(f, L, t, i, grow) {
-    var drift = RM ? 0 : 0.018 * Math.sin(t * 0.45 + i * 1.7);
-    var cx = L.cx + (f.at[0] + drift) * L.R, cy = L.cy + (f.at[1] - drift) * L.R, rr = f.r * L.R * grow, out = [];
-    for (var j = 0; j <= f.pts.length; j += 2) {
-      var q = j % f.pts.length;
-      out.push(cx + f.pts[q] * rr, cy + f.pts[q + 1] * rr);
-    }
-    return out;
-  }
-  function drawKin(c, l, t, L, a) {
-    // /work has no world after this one, so the figure leaves with its pin
-    // as the ledger scrolls up, instead of staying drawn over it
-    var pin = L.sec && L.sec.querySelector(".pin"), dy = pin ? Math.min(0, pin.getBoundingClientRect().top) : 0;
-    if (dy < -AH) return;
-    c.save();
-    c.translate(0, dy);
-    c.lineJoin = "round";
-    c.lineCap = "round";
-    // the peer's line of light runs to the nearest client, drawn first so the shapes sit on it
-    var pd = RM ? 1 : sm(2.6, 3.6, t);
-    if (pd > 0) {
-      var p0 = kinPoints(PEER, L, t, 3, 1);
-      var ax = (p0[0] + p0[2] + p0[4]) / 3, ay = (p0[1] + p0[3] + p0[5]) / 3, bx = L.cx + KIN[2].at[0] * L.R, by = L.cy + KIN[2].at[1] * L.R;
-      // stop at the client's ember outline rather than its middle
-      var dd = Math.hypot(bx - ax, by - ay) || 1, stop = KIN[2].r * L.R * 1.05;
-      bx -= (bx - ax) / dd * stop; by -= (by - ay) / dd * stop;
-      c.globalAlpha = a * 0.55;
-      c.strokeStyle = rgba(EMB, 1);
-      c.lineWidth = 1.2;
-      c.setLineDash([1.5, 6]);
-      strokePart(c, [ax, ay, bx, by], pd);
-      c.setLineDash([]);
-    }
-    for (var i = 0; i < KIN.length; i++) {
-      var d0 = 0.2 + 0.5 * i, dr = RM ? 1 : sm(d0, d0 + 1.1, t), hug = RM ? 1 : sm(d0 + 1.0, d0 + 1.8, t);
-      var pts = kinPoints(KIN[i], L, t, i, 1);
-      if (dr > 0) {
-        c.globalAlpha = a * 0.06 * dr;
-        c.fillStyle = rgba(INK, 1);
-        c.beginPath(); c.moveTo(pts[0], pts[1]);
-        for (var j = 2; j < pts.length; j += 2) c.lineTo(pts[j], pts[j + 1]);
-        c.fill();
-        c.globalAlpha = a;
-        c.strokeStyle = rgba(INK, 1);
-        c.lineWidth = 1.6;
-        strokePart(c, pts, dr);
-      }
-      if (hug > 0) {
-        c.globalAlpha = a;
-        c.strokeStyle = EMBER;
-        c.lineWidth = 1.8;
-        c.shadowColor = EMBER;
-        c.shadowBlur = 6 + 8 * (1 - hug);
-        strokePart(c, kinPoints(KIN[i], L, t, i, 1.16), hug);
-        c.shadowBlur = 0;
-      }
-    }
-    var pr = RM ? 1 : sm(2.2, 3.0, t);
-    if (pr > 0) {
-      c.globalAlpha = a * 0.7;
-      c.strokeStyle = rgba(INK, 1);
-      c.lineWidth = 1.4;
-      c.setLineDash([4, 5]);
-      strokePart(c, kinPoints(PEER, L, t, 3, 1), pr);
-      c.setLineDash([]);
-    }
-    c.restore();
-    c.globalAlpha = 1;
-  }
-
   // Work, friends: our fire, and a friend's some way off, joined by a dotted
   // line of light with one ember travelling along it.
   function drawPeer(c, l, t, L, a) {
@@ -924,28 +850,32 @@
     var step = TAU / Math.max(n, 3);
     if (P) {
       var bigP = Math.min(AW * 0.44, AH * 0.19);
-      return { cx: AW * 0.62, cy: AH * 0.31, rx: AW * 0.17, ry: AH * 0.15, big: bigP, far: 0.28, step: step };
+      return { cx: AW * 0.6, cy: AH * 0.31, rx: AW * 0.145, ry: AH * 0.128, big: bigP, far: 0.28, step: step };
     }
     var bigW = Math.min(AH * 0.33, AW * 0.23);
-    return { cx: AW * 0.7, cy: AH * 0.53, rx: AW * 0.13, ry: AH * 0.37, big: bigW, far: 0.26, step: step };
+    return { cx: AW * 0.68, cy: AH * 0.53, rx: AW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
   }
-  // where along the wheel the page is: each client holds, then the wheel turns
+  // where along the wheel the page is: first the introduction, the wheel
+  // turning in with no one in focus; then each client holds and the wheel turns
+  function wheelIntro(n) { return 1.1 / (0.95 * n + 1.1); }
   function wheelPos(l, n) {
-    var p = clamp(l) * (n - 1), f = Math.min(Math.floor(p), n - 2);
-    if (n < 2) return 0;
-    return f + sm(0.3, 0.7, p - f);
+    var a = wheelIntro(n);
+    if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k) }; }
+    if (n < 2) return { p: 0, lit: 1 };
+    var q = clamp((l - a) / (1 - a)) * (n - 1), f = Math.min(Math.floor(q), n - 2);
+    return { p: f + sm(0.3, 0.7, q - f), lit: 1 };
   }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
-    var G = wheelGeom(L.portrait, n), p = wheelPos(l, n), on = Math.round(p);
+    var G = wheelGeom(L.portrait, n), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
     var place = [];
     for (var i = 0; i < n; i++) {
       var d = i - p;
       d -= Math.round(d / n) * n;
       var th = d * G.step, z = Math.cos(th), near = (z + 1) / 2;
       var x = G.cx - Math.cos(th) * G.rx, y = G.cy + Math.sin(th) * G.ry;
-      var focus = clamp(1 - Math.abs(d)), e = focus * focus * (3 - 2 * focus);
+      var focus = clamp(1 - Math.abs(d)) * wp.lit, e = focus * focus * (3 - 2 * focus);
       // the front is big because it is in focus; the rest shrink fast with distance
       var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
       place.push({ x: x, y: y, sc: sc, near: near, e: e });
@@ -957,7 +887,7 @@
       sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
       // the rest are only their logos: further back, smaller, dimmer, darker, softer
       var dim = 1 - e;
-      img.style.opacity = (e + dim * (0.1 + 0.62 * near * near)).toFixed(3);
+      img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
       img.style.filter = dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none";
       plate.style.opacity = sm(0.6, 1, focus).toFixed(3);
       img.style.transform = "scale(" + (1 + 0.25 * dim).toFixed(3) + ")";
@@ -965,16 +895,18 @@
     }
     if (on !== W.on) {
       W.on = on;
-      W.turns.forEach(function (tn, j) { tn.classList.toggle("on", j === on); tn.setAttribute("aria-hidden", j === on ? "false" : "true"); });
+      W.turns.forEach(function (tn) { var me = +tn.getAttribute("data-i") === on; tn.classList.toggle("on", me); tn.setAttribute("aria-hidden", me ? "false" : "true"); });
       if (W.count) W.count.textContent = on + 1;
     }
     // the client in focus: the ember fit drawn round its plate
     var best = -1, bf = 0;
     for (var m = 0; m < n; m++) if (place[m].e > bf) { bf = place[m].e; best = m; }
     if (best < 0 || bf < 0.6) return;
+    // the logos ride the pin as the next world arrives; the outline goes with them
+    var pin = L.sec.querySelector(".pin"), dy = pin ? Math.min(0, pin.getBoundingClientRect().top) : 0;
     var f = place[best], shape = WHEEL_SHAPES[(+W.spokes[best].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length], half = G.big * f.sc / 2;
     var out = [];
-    for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + shape[qq + 1] * half * 1.12); }
+    for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + dy + shape[qq + 1] * half * 1.12); }
     c.save();
     c.lineJoin = "round";
     c.lineCap = "round";
@@ -990,8 +922,8 @@
   function wheelY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
     if (k < 0) return null;
-    var n = wheelOf(sec).spokes.length, i = +el.getAttribute("data-i") || 0;
-    return tops[k] + (hs[k] - pins[k]) * (n > 1 ? i / (n - 1) : 0);
+    var n = wheelOf(sec).spokes.length, i = +el.getAttribute("data-i") || 0, a = wheelIntro(n);
+    return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (n > 1 ? i / (n - 1) : 0));
   }
 
   // About us: the two lights circle the family's photograph, and a third,
