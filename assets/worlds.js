@@ -196,7 +196,7 @@
       fill: INK, fillA: 0.05,
       hug: EMB, hugA: 0, hugDraw: 1, hugScale: 1.12, follow: 10,
       glow: 0, wob: 0,
-      sq: 1.45, sqX: 0, sqY: 0, sqA: 0, ghost: 0,
+      sq: 1.45, sqA: 0, ghost: 0,
       stars: [0, 0, 0, 0, 0], edges: 0, constA: 0,
       mark: 0, spark: 0,
       attract: 0, heat: 0, flame: 0
@@ -221,12 +221,11 @@
       s.draw = RM ? 1 : sm(0.2, 1.7, t); s.fillA = 0.05 * s.draw;
       s.hugA = 1; s.hugDraw = RM ? 1 : sm(1.6, 2.7, t); s.wob = 0.016; s.follow = 4;
     } },
-    // off the shelf: a square closes on it off-centre, so it cuts what does not
-    // fit and leaves a corner of features the business never uses
-    shelf: { kind: "shape", at: [0.66, 0.45, 0.95], cap: 1.2, state: function (s, l) {
-      var c = sm(0.06, 0.4, l);
+    // off the shelf: a square closes on it, cuts what does not fit, and its
+    // corners cover what the business never uses
+    shelf: { kind: "shape", at: [0.7, 0.45, 0.95], cap: 1.2, state: function (s, l) {
       s.ink = COLD; s.fill = COLD; s.fillA = 0.06; s.lw = 1.7;
-      s.sqA = sm(0, 0.14, l); s.sq = lerp(1.45, 0.62, c); s.sqX = 0.42 * c; s.sqY = 0.3 * c; s.ghost = sm(0.28, 0.5, l); s.follow = 12;
+      s.sqA = sm(0, 0.14, l); s.sq = lerp(1.45, 0.66, sm(0.06, 0.4, l)); s.ghost = sm(0.28, 0.5, l); s.follow = 12;
     } },
     // the offer: built, then supported, then owned
     offer: { kind: "shape", at: [0.7, 0.5, 1.05], state: function (s, l) {
@@ -349,7 +348,7 @@
     ctx.globalAlpha = 1;
   }
   function drawCropped(s) {
-    var h = s.sq * s.R, x0 = s.cx + s.sqX * s.R - h, y0 = s.cy + s.sqY * s.R - h;
+    var h = s.sq * s.R, x0 = s.cx - h, y0 = s.cy - h;
     ctx.save();
     ctx.beginPath(); ctx.rect(x0, y0, 2 * h, 2 * h); ctx.clip();
     ctx.globalAlpha = 0.05 * s.sqA * SA; ctx.fillStyle = "#2b6c9b"; ctx.fillRect(x0, y0, 2 * h, 2 * h);
