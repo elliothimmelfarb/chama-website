@@ -230,3 +230,22 @@ for (const [, entry] of SITEMAP.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
     });
   }
 }
+
+// Software and coaching carry equal weight. A link preview or an agent's
+// summary built from any of these should name both.
+for (const url of ["/", "/simple"]) {
+  test(`${url} names both software and coaching in every description a link preview reads`, () => {
+    const html = read(url);
+    for (const tag of ['name="description"', 'property="og:description"', 'name="twitter:description"']) {
+      const content = new RegExp(`<meta ${tag} content="([^"]+)"`).exec(html)?.[1] ?? "";
+      assert.match(content, /software/i, `${tag} on ${url}`);
+      assert.match(content, /coach/i, `${tag} on ${url}`);
+    }
+  });
+}
+
+test("llms.txt names both software and coaching in its summary line", () => {
+  const summary = /^> (.+)$/m.exec(readFileSync(path.join(ROOT, "llms.txt"), "utf8"))?.[1] ?? "";
+  assert.match(summary, /software/i);
+  assert.match(summary, /coach/i);
+});
