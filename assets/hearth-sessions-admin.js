@@ -1769,7 +1769,8 @@
           var n = (g.events || []).length;
           text.appendChild(el("p", "small", "Google Calendar (" + (g.email || "connected") + "): " + n + (n === 1 ? " event" : " events") + " in these weeks, drawn on each date." + (g.blocks ? " Members cannot book over them." : " They do not block booking.")));
           var cals = (g.calendars || ["primary"]).map(function (c) { return c === "primary" ? (g.email || "your calendar") : c; });
-          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + "."));
+          var shared = g.shared || [];
+          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + (shared.length ? ", and the events with you on " + shared.join(", ") : "") + "."));
           (g.unread || []).forEach(function (id) {
             text.appendChild(el("p", "small bad-text", "Could not read " + (id === "primary" ? "your main calendar" : id) + ". If it is another account's calendar, share it with " + (g.email || "the connected account") + " first."));
           });
@@ -1796,16 +1797,19 @@
           var g = state.gcal;
           var box = el("div", "stack tight gcal-form");
           var field1 = input("text", "calendars", "primary, someone@example.com", (g.calendars || ["primary"]).join(", "));
+          var field2 = input("text", "shared-calendars", "partner@example.com", (g.shared || []).join(", "));
           var line = el("p", "form-error");
+          var list = function (f) { return f.value.split(",").map(function (x) { return x.trim(); }).filter(Boolean); };
           var save = button("Save calendars", "btn sm primary", function () {
-            var ids = field1.value.split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+            var ids = list(field1);
             if (!ids.length) ids = ["primary"];
-            busy(save, api("/admin/settings", { method: "PUT", body: { google_calendars: ids } }))
+            busy(save, api("/admin/settings", { method: "PUT", body: { google_calendars: ids, google_shared_calendars: list(field2) } }))
               .then(function () { toast("Calendars saved.", "good"); return load(true); })
               .catch(function (error) { line.textContent = error.message; });
           });
           append(box, [
             field("Calendars to read", field1, "Comma separated. \"primary\" is " + (g.email || "the connected account") + ". To add another account's calendar, share it with " + (g.email || "that account") + " (See all event details) in Google Calendar, then add its address here."),
+            field("Shared calendars", field2, "Someone else's calendar shared with " + (g.email || "the connected account") + ". Only the events with you count: ones you are invited to, or with your first name in the title."),
             append(el("div", "row"), [save, button("Cancel", "btn sm ghost", drawStrip)]),
             line
           ]);
