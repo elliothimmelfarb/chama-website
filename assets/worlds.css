@@ -737,6 +737,50 @@ main h1:focus { outline: none; }
 .clients a:hover img, .clients a:focus-visible img { filter: none; opacity: 1; }
 .clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
 
+/* ---- /work: the wheel of clients ---------------------------------------- */
+/* worlds.js places every .spoke round the ring and cuts each to a circle or,
+   as it comes into focus, to that client's shape. The words of the client in
+   focus are the one .turn marked .on. */
+.wheel { position: absolute; inset: 0; pointer-events: none; }
+.spoke {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10rem;
+  height: 10rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  place-items: center;
+  background: #faf8f3;
+  transform-origin: 50% 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform, clip-path;
+}
+.spoke img { display: block; width: 58%; height: 46%; object-fit: contain; }
+.spoke img.round { width: 52%; height: 54%; }
+.spoke img.wide { width: 66%; }
+.wheel-count { color: var(--fg2); letter-spacing: 0.12em; }
+.wheel-count b { color: var(--fg); font-weight: 700; }
+.turns { display: grid; }
+.turn {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
+}
+.turn.on { opacity: 1; visibility: visible; transform: none; transition: opacity 0.55s ease 0.12s, transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s, visibility 0s; }
+.copy .turn-kind { margin: 0 0 0.9rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.turn h3 { margin: 0 0 0.45em; max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 0.94; text-wrap: balance; }
+html:not(.js) .turn { grid-area: auto; opacity: 1; visibility: visible; transform: none; margin-bottom: 2rem; }
+html:not(.js) .wheel { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .turn, .turn.on { transition: none; transform: none; }
+}
+
 /* ---- /work: a world for each client ------------------------------------ */
 /* The client's logo sits on a plate cut to that client's shape (the same
    points worlds.js draws its outline and ember fit around). The plate is
@@ -884,6 +928,8 @@ html:has(main .ledger) .top::before {
   .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
   .peer-plate { width: min(62vw, 16rem); }
   .copy p.permission { font-size: 0.78rem; }
+  .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
+  .copy .turn-kind { margin-bottom: 0.6rem; }
   html:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px); }
   .beats { margin-top: 0.9rem; }
   .ticks { margin-bottom: 0.7rem; }
