@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Hearth | Chama Inteligente</title>
+  <!-- Served at /hearth to anyone without a Hearth session (vercel.json).
+       Members with a session get the room (hearth-room.html) at the same
+       address. This page is static: it loads nothing from the room and
+       calls no endpoint. Copy is canonical in the brain:
+       wiki/topics/website-content-chamainteligente-com.md. -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="description" content="The members' room for our coaching clients. Book time with Elliot, keep a record of every session, remember what you learned, and connect your own AI agent.">
+  <meta name="author" content="Elliot Himmelfarb">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="theme-color" content="#0e0c0a">
+  <meta name="color-scheme" content="dark">
+  <link rel="canonical" href="https://chamainteligente.com/hearth">
+  <link rel="alternate" hreflang="en" href="https://chamainteligente.com/hearth">
+  <link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/hearth">
+  <meta property="og:title" content="The Hearth | Chama Inteligente">
+  <meta property="og:description" content="The members' room for our coaching clients. Book time with Elliot, keep a record of every session, remember what you learned, and connect your own AI agent.">
+  <meta property="og:url" content="https://chamainteligente.com/hearth">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Chama Inteligente">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://chamainteligente.com/og-hearth-2026-10-22.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Hearth. For our coaching clients: book sessions with Elliot, keep a record of each one, and connect your own AI agent. Chama Inteligente, Lisbon.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Hearth | Chama Inteligente">
+  <meta name="twitter:description" content="The members' room for our coaching clients. Book time with Elliot, keep a record of every session, remember what you learned, and connect your own AI agent.">
+  <meta name="twitter:image" content="https://chamainteligente.com/og-hearth-2026-10-22.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://chamainteligente.com/hearth#webpage",
+        "url": "https://chamainteligente.com/hearth",
+        "name": "The Hearth | Chama Inteligente",
+        "description": "The members' room for our coaching clients. Book time with Elliot, keep a record of every session, remember what you learned, and connect your own AI agent.",
+        "isPartOf": { "@id": "https://chamainteligente.com/#website" },
+        "about": { "@id": "https://chamainteligente.com/#organization" },
+        "breadcrumb": { "@id": "https://chamainteligente.com/hearth#breadcrumb" },
+        "primaryImageOfPage": {
+          "@type": "ImageObject",
+          "url": "https://chamainteligente.com/og-hearth-2026-10-22.png",
+          "caption": "The Hearth. The members' room for our coaching clients."
+        },
+        "inLanguage": "en",
+        "dateModified": "2026-10-22"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://chamainteligente.com/hearth#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://chamainteligente.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Coaching", "item": "https://chamainteligente.com/coaching" },
+          { "@type": "ListItem", "position": 3, "name": "The Hearth", "item": "https://chamainteligente.com/hearth" }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    /* The Hearth's own ground and tokens (assets/hearth.css), so the page
+       and the room behind it read as one place. */
+    :root {
+      --ground: #0e0c0a;
+      --ground-2: #151210;
+      --ground-3: #1c1917;
+      --text: #ece7dc;
+      --text-dim: #9a938a;
+      --text-faint: #6d665e;
+      --line: rgba(236, 231, 220, 0.12);
+      --line-strong: rgba(236, 231, 220, 0.24);
+      --paper: #f3f0e8;
+      --ink: #141412;
+      --quiet: #66635c;
+      --ember: #f4581f;
+      --pad: clamp(1rem, 4vw, 4.5rem);
+      --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      background: var(--ground);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body { margin: 0; background: var(--ground); overflow-x: clip; }
+
+    ::selection { background: var(--ember); color: #fff; }
+
+    a { color: inherit; text-underline-offset: 0.18em; }
+    a:hover { color: var(--ember); }
+    a:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; border-radius: 2px; }
+
+    .skip-link { position: absolute; left: -999px; }
+    .skip-link:focus { left: var(--pad); top: 0.6rem; z-index: 5; padding: 0.5rem 0.8rem; background: var(--paper); color: var(--ink); }
+
+    .frame {
+      width: min(100%, 72rem);
+      margin: 0 auto;
+      padding-inline: var(--pad);
+    }
+
+    .mark { display: block; }
+
+    /* ---------- masthead ---------- */
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 1.2rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .brand .mark { width: 1.6rem; height: 1.6rem; }
+    .brand b { font-size: 1rem; letter-spacing: -0.045em; }
+    .brand small { display: block; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+
+    .top-right { display: flex; align-items: center; gap: 1.4rem; }
+
+    .top-nav { display: flex; gap: 1.1rem; font-size: 0.9rem; color: var(--text-dim); }
+    .top-nav a { text-decoration: none; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 2.75rem;
+      padding: 0.7rem 1.25rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;
+    }
+
+    .btn:hover { border-color: var(--text-dim); color: var(--text); background: var(--ground-3); }
+    .btn.primary { background: var(--ember); border-color: var(--ember); color: #fff; }
+    .btn.primary:hover { background: #ff6a33; border-color: #ff6a33; color: #fff; }
+    .btn svg { width: 1rem; height: 1rem; }
+    .btn.small { min-height: 2.3rem; padding: 0.55rem 1rem; font-size: 0.88rem; }
+
+    /* ---------- hero ---------- */
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      align-items: center;
+      gap: clamp(2rem, 5vw, 5rem);
+      padding-top: clamp(3.5rem, 9vw, 7.5rem);
+      padding-bottom: clamp(3.5rem, 9vw, 7rem);
+    }
+
+    .kicker {
+      margin: 0 0 1.1rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    h1 {
+      margin: 0 0 1.6rem;
+      font-size: clamp(3.6rem, 10vw, 7.5rem);
+      font-weight: 700;
+      letter-spacing: -0.06em;
+      line-height: 0.9;
+    }
+
+    .accent { color: var(--ember); }
+
+    .deck {
+      max-width: 32rem;
+      margin: 0 0 2.2rem;
+      font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+    /* The fire, and the room around it: rings that breathe slowly. */
+    .hearth-fig { width: 100%; max-width: 28rem; justify-self: center; }
+    .hearth-fig svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .hearth-fig .ring { fill: none; stroke: var(--ember); transform-origin: 200px 200px; }
+    .hearth-fig .glow { transform-origin: 200px 200px; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .hearth-fig .glow { animation: breathe 6s ease-in-out infinite; }
+      .hearth-fig .ring { animation: breathe 6s ease-in-out infinite; }
+      .hearth-fig .ring.r2 { animation-delay: -1.5s; }
+      .hearth-fig .ring.r3 { animation-delay: -3s; }
+      .hearth-fig .ring.r4 { animation-delay: -4.5s; }
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.025); }
+    }
+
+    /* ---------- the four things a member gets ---------- */
+
+    .gets { border-top: 1px solid var(--line); }
+
+    .get {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(2rem, 6vw, 6rem);
+      padding-block: clamp(3.5rem, 8vw, 6.5rem);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .get:nth-child(even) .get-copy { order: 2; }
+
+    h2 {
+      margin: 0 0 1.1rem;
+      font-size: clamp(2rem, 4.4vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1;
+    }
+
+    p {
+      margin: 0 0 0.9rem;
+      font-size: clamp(1.05rem, 1.7vw, 1.2rem);
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .get-copy p { max-width: 30rem; color: #d6d0c4; }
+
+    figure { margin: 0; }
+
+    .panel {
+      padding: clamp(1.2rem, 3vw, 2rem);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--ground-2);
+    }
+
+    .panel svg { width: 100%; height: auto; display: block; }
+
+    figcaption {
+      margin-top: 0.8rem;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: var(--text-faint);
+    }
+
+    .fig-label {
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* A record, as the room lays it: a paper sheet on the dark ground. */
+    .sheet {
+      padding: clamp(1.2rem, 3vw, 1.8rem);
+      border-radius: 10px;
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+    }
+
+    .sheet .row { padding: 0.85rem 0; border-top: 1px solid rgba(20, 20, 18, 0.14); }
+    .sheet .row:first-child { border-top: 0; padding-top: 0; }
+    .sheet .label { margin: 0 0 0.55rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--quiet); }
+    .sheet .label.ember { color: var(--ember); }
+    .sheet .bar { height: 0.55rem; margin: 0 0 0.45rem; border-radius: 99px; background: rgba(20, 20, 18, 0.13); }
+    .sheet .bar:last-child { margin-bottom: 0; }
+    .sheet .check { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.45rem; }
+    .sheet .check:last-child { margin-bottom: 0; }
+    .sheet .check i { flex: none; width: 0.85rem; height: 0.85rem; border: 1.5px solid rgba(20, 20, 18, 0.4); border-radius: 3px; }
+    .sheet .check .bar { flex: 1; margin: 0; }
+    .sheet .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .sheet .who { margin: 0 0 0.5rem; font-size: 0.78rem; color: var(--quiet); }
+
+    /* ---------- private, and joining ---------- */
+
+    .join {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(2rem, 6vw, 6rem);
+      padding-block: clamp(3.5rem, 8vw, 6.5rem);
+    }
+
+    .join h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); }
+    .join .actions { margin-top: 1.6rem; }
+    .member-line { margin-top: 1.4rem; font-size: 0.95rem; color: var(--text-dim); }
+
+    /* ---------- footer, as on the other pages ---------- */
+
+    .page-end {
+      padding-top: clamp(2.6rem, 5vw, 4.4rem);
+      padding-bottom: 2rem;
+      border-top: 1px solid var(--line);
+      color: #8d867c;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .footer-inner p { margin: 0; font-size: inherit; line-height: inherit; color: inherit; }
+    .footer-inner .mark { display: inline-block; width: 0.95rem; height: 0.95rem; vertical-align: -0.14em; margin-right: 0.45rem; }
+    .footer-map a[aria-current="page"] { text-decoration: none; color: var(--text); }
+
+    @media (max-width: 860px) {
+      .top-nav { display: none; }
+      .hero, .get, .join { grid-template-columns: minmax(0, 1fr); }
+      .get:nth-child(even) .get-copy { order: 0; }
+      .hearth-fig { max-width: 18rem; order: -1; justify-self: start; }
+      .footer-inner { display: grid; gap: 0.3rem; }
+    }
+
+    @media (max-width: 420px) {
+      .brand small { display: none; }
+      .sheet .two { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="frame">
+    <a class="brand" href="/">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>
+      <span><b>Chama Inteligente</b><small>Intelligent Flame</small></span>
+    </a>
+    <div class="top-right">
+      <nav class="top-nav" aria-label="Pages"><a href="/">Software</a><a href="/coaching">Coaching</a><a href="/about">About</a></nav>
+      <a class="btn small" href="/hearth/sign-in">Members sign in</a>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="frame hero" aria-labelledby="t-hero">
+      <div>
+        <p class="kicker">For our coaching clients</p>
+        <h1 id="t-hero">The Hearth<span class="accent">.</span></h1>
+        <p class="deck">The members&rsquo; room for our coaching clients. Everything that comes out of your sessions with Elliot is kept in one place, and it belongs to you.</p>
+        <div class="actions">
+          <a class="btn primary" href="/hearth/sign-in">Members sign in</a>
+          <a class="btn" href="/coaching">How coaching works</a>
+        </div>
+      </div>
+      <div class="hearth-fig" aria-hidden="true">
+        <svg viewBox="0 0 400 400">
+          <defs>
+            <radialGradient id="heat" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#f4581f" stop-opacity="0.42"/>
+              <stop offset="0.45" stop-color="#f4581f" stop-opacity="0.12"/>
+              <stop offset="1" stop-color="#f4581f" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle class="glow" cx="200" cy="200" r="200" fill="url(#heat)"/>
+          <circle class="ring r4" cx="200" cy="200" r="182" stroke-width="1" stroke-opacity="0.14"/>
+          <circle class="ring r3" cx="200" cy="200" r="146" stroke-width="1" stroke-opacity="0.22"/>
+          <circle class="ring r2" cx="200" cy="200" r="110" stroke-width="1.2" stroke-opacity="0.34"/>
+          <circle class="ring" cx="200" cy="200" r="76" stroke-width="1.5" stroke-opacity="0.5"/>
+          <g transform="translate(152 152) scale(1.5)"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></g>
+          <g fill="#ece7dc">
+            <circle cx="200" cy="54" r="5"/>
+            <circle cx="326" cy="227" r="5" fill-opacity="0.75"/>
+            <circle cx="96" cy="296" r="5" fill-opacity="0.6"/>
+            <circle cx="88" cy="128" r="4" fill-opacity="0.4"/>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <div class="gets">
+      <section class="frame get" aria-labelledby="t-book">
+        <div class="get-copy">
+          <p class="kicker">Times in your own timezone</p>
+          <h2 id="t-book">Book a session.</h2>
+          <p>Pick a time from Elliot&rsquo;s open hours. The Hearth shows every time in your own timezone, so there is nothing to work out.</p>
+        </div>
+        <figure>
+          <div class="panel">
+            <svg viewBox="0 0 560 250" role="img" aria-label="A week of days, each glowing by how open it is. One time is picked, shown in your own timezone.">
+              <g class="fig-label" fill="#9a938a">
+                <text x="40" y="34" text-anchor="middle">Mon</text><text x="120" y="34" text-anchor="middle">Tue</text><text x="200" y="34" text-anchor="middle">Wed</text><text x="280" y="34" text-anchor="middle">Thu</text><text x="360" y="34" text-anchor="middle">Fri</text><text x="440" y="34" text-anchor="middle">Sat</text><text x="520" y="34" text-anchor="middle">Sun</text>
+              </g>
+              <g>
+                <rect x="6" y="50" width="68" height="68" rx="10" fill="#f4581f" fill-opacity="0.55"/>
+                <rect x="86" y="50" width="68" height="68" rx="10" fill="#f4581f" fill-opacity="0.85" stroke="#ece7dc" stroke-width="2"/>
+                <rect x="166" y="50" width="68" height="68" rx="10" fill="#f4581f" fill-opacity="0.3"/>
+                <rect x="246" y="50" width="68" height="68" rx="10" fill="#f4581f" fill-opacity="0.6"/>
+                <rect x="326" y="50" width="68" height="68" rx="10" fill="#f4581f" fill-opacity="0.15"/>
+                <rect x="406" y="50" width="68" height="68" rx="10" fill="#1c1917"/>
+                <rect x="486" y="50" width="68" height="68" rx="10" fill="#1c1917"/>
+              </g>
+              <path d="M120 128 v20" stroke="#ece7dc" stroke-opacity="0.4" stroke-width="1.5"/>
+              <rect x="6" y="152" width="548" height="64" rx="12" fill="#1c1917" stroke="rgba(236,231,220,0.12)"/>
+              <rect x="22" y="166" width="96" height="36" rx="18" fill="none" stroke="rgba(236,231,220,0.24)"/>
+              <rect x="130" y="166" width="96" height="36" rx="18" fill="#f4581f"/>
+              <rect x="238" y="166" width="96" height="36" rx="18" fill="none" stroke="rgba(236,231,220,0.24)"/>
+              <rect x="346" y="166" width="96" height="36" rx="18" fill="none" stroke="rgba(236,231,220,0.24)" stroke-dasharray="3 4"/>
+              <g fill="#ece7dc" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" text-anchor="middle">
+                <text x="70" y="189">09:00</text><text x="178" y="189" fill="#fff" font-weight="700">10:30</text><text x="286" y="189">14:00</text><text x="394" y="189" fill="#6d665e">16:00</text>
+              </g>
+              <text x="548" y="243" text-anchor="end" class="fig-label" fill="#f4581f">In your timezone</text>
+            </svg>
+          </div>
+          <figcaption>An illustration. Days glow by how open they are.</figcaption>
+        </figure>
+      </section>
+
+      <section class="frame get" aria-labelledby="t-record">
+        <div class="get-copy">
+          <p class="kicker">Yours to keep</p>
+          <h2 id="t-record">A record of every session.</h2>
+          <p>After each session you get a record of it: a short summary, what we decided, a playbook of things to try before the next one, and follow-ups for both of us.</p>
+          <p>The record is yours, and so is the transcript it was written from.</p>
+        </div>
+        <figure>
+          <div class="panel">
+            <div class="sheet" role="img" aria-label="The parts of a session record: a summary, what was decided, a playbook, and follow-ups for the member and for Elliot.">
+              <div class="row"><p class="label">Summary</p><div class="bar" style="width:92%"></div><div class="bar" style="width:78%"></div></div>
+              <div class="row"><p class="label">Decided</p><div class="bar" style="width:64%"></div><div class="bar" style="width:52%"></div></div>
+              <div class="row"><p class="label ember">Playbook</p><div class="check"><i></i><div class="bar" style="max-width:80%"></div></div><div class="check"><i></i><div class="bar" style="max-width:62%"></div></div><div class="check"><i></i><div class="bar" style="max-width:70%"></div></div></div>
+              <div class="row"><p class="label">Follow-ups</p><div class="two"><div><p class="who">You</p><div class="check"><i></i><div class="bar"></div></div><div class="check"><i></i><div class="bar" style="max-width:70%"></div></div></div><div><p class="who">Elliot</p><div class="check"><i></i><div class="bar"></div></div><div class="check"><i></i><div class="bar" style="max-width:60%"></div></div></div></div></div>
+            </div>
+          </div>
+          <figcaption>An illustration of a record&rsquo;s parts. Every record is written for its own session.</figcaption>
+        </figure>
+      </section>
+
+      <section class="frame get" aria-labelledby="t-remember">
+        <div class="get-copy">
+          <p class="kicker">Spaced repetition</p>
+          <h2 id="t-remember">Remember what you learned.</h2>
+          <p>A record can come with Remember cards, short questions about what came up. A card comes back after one day, then three, seven, sixteen and thirty-five, just before you would forget it.</p>
+          <p>Get it right and it moves further out. Miss it and it starts again.</p>
+        </div>
+        <figure>
+          <div class="panel">
+            <svg viewBox="0 0 560 250" role="img" aria-label="A card returns after 1, 3, 7, 16 and 35 days, each gap longer than the last.">
+              <rect x="20" y="20" width="200" height="120" rx="12" fill="#1c1917" stroke="rgba(236,231,220,0.24)"/>
+              <rect x="32" y="10" width="200" height="120" rx="12" fill="#f3f0e8"/>
+              <text x="52" y="44" class="fig-label" fill="#f4581f">Remember</text>
+              <rect x="52" y="62" width="150" height="9" rx="4.5" fill="rgba(20,20,18,0.16)"/>
+              <rect x="52" y="80" width="112" height="9" rx="4.5" fill="rgba(20,20,18,0.16)"/>
+              <rect x="52" y="102" width="62" height="16" rx="8" fill="none" stroke="rgba(20,20,18,0.3)"/>
+              <rect x="122" y="102" width="62" height="16" rx="8" fill="#f4581f"/>
+              <line x1="30" y1="196" x2="540" y2="196" stroke="rgba(236,231,220,0.24)" stroke-width="1.5"/>
+              <g fill="#f4581f">
+                <circle cx="44" cy="196" r="7"/>
+                <circle cx="72" cy="196" r="7" fill-opacity="0.85"/>
+                <circle cx="128" cy="196" r="7" fill-opacity="0.7"/>
+                <circle cx="254" cy="196" r="7" fill-opacity="0.55"/>
+                <circle cx="520" cy="196" r="7" fill-opacity="0.4"/>
+              </g>
+              <path d="M44 184 Q58 168 72 184 M72 184 Q100 158 128 184 M128 184 Q191 140 254 184 M254 184 Q387 104 520 184" fill="none" stroke="#ece7dc" stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="3 5"/>
+              <g class="fig-label" fill="#9a938a" text-anchor="middle">
+                <text x="44" y="228">1</text><text x="72" y="228">3</text><text x="128" y="228">7</text><text x="254" y="228">16</text><text x="520" y="228">35 days</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Each gap is longer than the last, so the cards take less of your time as you learn them.</figcaption>
+        </figure>
+      </section>
+
+      <section class="frame get" aria-labelledby="t-agent">
+        <div class="get-copy">
+          <p class="kicker">Through MCP</p>
+          <h2 id="t-agent">Bring your own AI agent.</h2>
+          <p>The Hearth has an MCP server. Connect Claude, or any agent that speaks MCP, and it can read your records and follow-ups and see your sessions, so it can help you with what you are working on between sessions.</p>
+          <p>You approve what it may do, and you can disconnect it at any time.</p>
+        </div>
+        <figure>
+          <div class="panel">
+            <svg viewBox="0 0 560 230" role="img" aria-label="Your agent connects to your records through the Hearth's MCP server, with your approval.">
+              <rect x="10" y="70" width="150" height="90" rx="14" fill="#1c1917" stroke="rgba(236,231,220,0.24)"/>
+              <text x="85" y="122" text-anchor="middle" class="fig-label" fill="#ece7dc">Your agent</text>
+              <rect x="215" y="85" width="130" height="60" rx="30" fill="none" stroke="#f4581f" stroke-width="2"/>
+              <text x="280" y="120" text-anchor="middle" class="fig-label" fill="#f4581f">MCP</text>
+              <rect x="400" y="40" width="150" height="150" rx="10" fill="#f3f0e8"/>
+              <text x="418" y="70" class="fig-label" fill="#66635c"><tspan x="418">Your</tspan><tspan x="418" dy="20">records</tspan></text>
+              <rect x="418" y="110" width="112" height="8" rx="4" fill="rgba(20,20,18,0.16)"/>
+              <rect x="418" y="128" width="90" height="8" rx="4" fill="rgba(20,20,18,0.16)"/>
+              <rect x="418" y="146" width="102" height="8" rx="4" fill="rgba(20,20,18,0.16)"/>
+              <rect x="418" y="164" width="70" height="8" rx="4" fill="rgba(20,20,18,0.16)"/>
+              <path d="M160 115 H215 M345 115 H400" stroke="#ece7dc" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="4 5"/>
+              <g transform="translate(272 26)" fill="none" stroke="#9a938a" stroke-width="1.8">
+                <rect x="0" y="12" width="16" height="13" rx="2.5"/>
+                <path d="M3.5 12 V8 a4.5 4.5 0 0 1 9 0 V12"/>
+              </g>
+              <text x="280" y="190" text-anchor="middle" class="fig-label" fill="#9a938a">You approve</text>
+            </svg>
+          </div>
+          <figcaption>Connecting uses OAuth: you see what the agent may do before you allow it.</figcaption>
+        </figure>
+      </section>
+    </div>
+
+    <section class="frame join" aria-labelledby="t-join">
+      <div>
+        <h2 id="t-private">Private.</h2>
+        <p>Your room is private to you and to the people at Chama who coach you. Nothing in it is sold or shared.</p>
+      </div>
+      <div>
+        <h2 id="t-join">How to join.</h2>
+        <p>Membership comes with coaching. The room is by invitation: when you start coaching with Elliot, he invites you in.</p>
+        <p>Read how coaching works, or start a conversation and ask Elliot to get in touch.</p>
+        <div class="actions">
+          <a class="btn primary" href="/agent">Start a conversation</a>
+          <a class="btn" href="/coaching">How coaching works</a>
+        </div>
+        <p class="member-line">Already a member? <a href="/hearth/sign-in">Sign in</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-end">
+    <div class="frame footer-inner">
+      <p><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</p>
+      <nav class="footer-map" aria-label="Site"><a href="/">Software</a> &middot; <a href="/coaching">Coaching</a> &middot; <a href="/about">About</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/brand">Media kit</a></nav>
+    </div>
+  </footer>
+</body>
+</html>

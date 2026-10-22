@@ -429,6 +429,9 @@
   function render() {
     runViewCleanup();
     if (!state.user) { renderGate(); return; }
+    // /hearth/sign-in is the way in from the public page at /hearth; a
+    // member who is already in lands on Home.
+    if (currentPath() === "/sign-in") history.replaceState(null, "", BASE + location.search);
     if (!state.view) renderFrame();
     renderNav();
     var path = currentPath();

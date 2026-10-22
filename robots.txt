@@ -1,14 +1,16 @@
 # https://chamainteligente.com/robots.txt
 # Everything public is open to every crawler, including AI crawlers and
 # AI search assistants. Only the endpoints, the admin area, the members' room
-# and the internal reports under /docs are closed.
+# and the internal reports under /docs are closed. /hearth itself is a public
+# page about the room; the room behind it lives under /hearth/.
 # See /llms.txt and /llms-full.txt for a plain-text summary written for agents.
 
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 # Search engines
@@ -16,49 +18,56 @@ User-agent: Googlebot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Googlebot-Image
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Google-Extended
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Bingbot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: DuckDuckBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Applebot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Applebot-Extended
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 # AI crawlers and AI search assistants
@@ -66,91 +75,104 @@ User-agent: ClaudeBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Claude-Web
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Claude-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Claude-SearchBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: GPTBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: ChatGPT-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: PerplexityBot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Perplexity-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Meta-ExternalAgent
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: Amazonbot
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: cohere-ai
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 User-agent: MistralAI-User
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /hearth
+Disallow: /hearth/
+Disallow: /hearth-room
 Disallow: /docs
 
 Sitemap: https://chamainteligente.com/sitemap.xml
