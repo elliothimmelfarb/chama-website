@@ -67,7 +67,7 @@ ${feedLink ? `<link rel="alternate" type="application/rss+xml" title="Chama Inte
 <main>
 ${body}
 </main>
-<footer>Chama Inteligente, Lda. Lisbon. <a href="/privacy">Privacy</a> · <a href="/feed.xml">RSS</a> · Agents: <a href="/mcp">MCP</a></footer>
+<footer>Chama Inteligente, Lda. Lisbon. <a href="/privacy">Privacy</a> · <a href="/brand">Media kit</a> · <a href="/feed.xml">RSS</a> · Agents: <a href="/mcp">MCP</a></footer>
 </div>
 </body>
 </html>`;
