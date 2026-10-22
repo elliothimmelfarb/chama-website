@@ -258,3 +258,14 @@ test("every media kit file linked from /brand and llms.txt exists", () => {
   assert.ok(links.length >= 7, "the kit's files are linked");
   for (const link of links) assert.ok(existsSync(path.join(ROOT, link)), `${link} is missing`);
 });
+
+for (const url of PUBLIC) {
+  test(`${url} links the media kit from its footer`, () => {
+    const footer = /<footer\b[\s\S]*<\/footer>/.exec(read(url));
+    assert.ok(footer, "the page has no footer");
+    const a = links(footer[0]).find((x) => x.href === "/brand");
+    assert.ok(a, "the footer has no link to /brand");
+    assert.equal(a.text, "Media kit");
+    assert.equal(a.current, url === "/brand", `the link ${url === "/brand" ? "is not" : "is wrongly"} marked as the current page`);
+  });
+}
