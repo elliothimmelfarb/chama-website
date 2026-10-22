@@ -158,7 +158,7 @@ test("the old /worlds addresses lead to the pages they became", () => {
   assert.ok(!existsSync(path.join(ROOT, "worlds.html")) && !existsSync(path.join(ROOT, "worlds")), "a /worlds page would shadow its redirect");
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/privacy", "/404", "/simple", "/simple/coaching", "/simple/about"];
+const PUBLIC = ["/", "/coaching", "/about", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {
@@ -248,4 +248,13 @@ test("llms.txt names both software and coaching in its summary line", () => {
   const summary = /^> (.+)$/m.exec(readFileSync(path.join(ROOT, "llms.txt"), "utf8"))?.[1] ?? "";
   assert.match(summary, /software/i);
   assert.match(summary, /coach/i);
+});
+
+// The media kit is how people linking to us find the logo. A renamed file
+// would leave the page or llms.txt pointing at nothing.
+test("every media kit file linked from /brand and llms.txt exists", () => {
+  const text = read("/brand") + readFileSync(path.join(ROOT, "llms.txt"), "utf8");
+  const links = [...new Set(text.match(/\/brand\/kit\/[\w.-]+/g))];
+  assert.ok(links.length >= 7, "the kit's files are linked");
+  for (const link of links) assert.ok(existsSync(path.join(ROOT, link)), `${link} is missing`);
 });

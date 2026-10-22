@@ -25,6 +25,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt` | Crawler policy, the canonical URLs, and the site text for AI crawlers. |
 | `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
 | `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
+| `brand/index.html`, `brand/kit/` | The media kit at `/brand`: logo PNGs, the mark, avatars, a zip and `GUIDELINES.txt` for people linking to us. `llms.txt` links the files directly. Rebuild with `sh brand/kit/build.sh` after the mark changes. |
 | `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
 
 Every public page makes zero external requests. `test/pages.test.js` holds that rule, the navigation rules and the sitemap rules.

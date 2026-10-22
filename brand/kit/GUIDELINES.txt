@@ -1,0 +1,57 @@
+Chama Inteligente: media kit
+https://chamainteligente.com/brand
+
+You are welcome to use these files to link to or write about Chama
+Inteligente. There is no need to ask first.
+
+
+LINKING TO US
+
+Name:   Chama Inteligente. "Chama" for short, pronounced "Shama".
+Link:   https://chamainteligente.com/
+        https://chamainteligente.com/coaching for the coaching in particular
+
+Chama does two things, with equal weight: software and coaching. A
+description should name both. Use either of these as they are:
+
+  Chama Inteligente, in Lisbon, builds software shaped for your business and
+  coaches individuals and teams to work with AI.
+
+  Software shaped for your business, and AI coaching for individuals and teams.
+
+
+FILES
+
+chama-logo-light.png          The mark and the name, for light backgrounds.
+chama-logo-dark.png           The same, for dark backgrounds.
+chama-mark.svg                The mark alone, as a vector.
+chama-mark-1024.png           The mark alone, 1024 px, transparent.
+chama-avatar-light-1024.png   The mark on a light square, for profile
+                              pictures and round crops.
+chama-avatar-dark-1024.png    The same on a dark square.
+
+The logo PNGs are transparent and already carry their clear space.
+Alt text for any of them: "Chama Inteligente".
+
+
+USING THE LOGO
+
+- Use the files as they are. The mark is always ember; the name is ink on
+  light backgrounds and paper on dark ones.
+- Keep clear space around the logo of at least half the mark's height.
+- Below about 24 px tall, use the mark alone.
+- Do not stretch, rotate, recolour, outline or add effects to it.
+- To put the mark in a square or circle, use an avatar file rather than
+  centring it yourself. The spark on the right makes a centred mark look
+  off-balance, so the avatars are optically centred for you.
+- In running text, write the name in your own typeface.
+
+
+COLOURS
+
+Ember   #f4581f   the mark
+Ink     #141412   text on light backgrounds
+Paper   #f3f0e8   light background, and text on dark ones
+
+
+Questions: contact@chamainteligente.com
