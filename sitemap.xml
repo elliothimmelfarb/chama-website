@@ -4,7 +4,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://chamainteligente.com/</loc>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/"/>
@@ -17,11 +17,19 @@
   </url>
   <url>
     <loc>https://chamainteligente.com/coaching</loc>
-    <lastmod>2026-10-06</lastmod>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/coaching"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/coaching"/>
+  </url>
+  <url>
+    <loc>https://chamainteligente.com/work</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/work"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/work"/>
   </url>
   <url>
     <loc>https://chamainteligente.com/about</loc>

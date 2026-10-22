@@ -228,6 +228,49 @@ Want to talk it through? Start a conversation and ask Elliot to get in touch
 
 ---
 
+## Work (https://chamainteligente.com/work)
+
+### Who we have worked with.
+
+The businesses we have built software for or coached, and people doing work like ours
+that we would send you to.
+
+### Clients
+
+Newest first. All in 2026.
+
+Toraya Lisboa, Rossio station, Lisbon. Software.
+A Japanese deli and drinks shop in the Rossio station building, run by Hironori Ando
+and founded by Naomi Kawata. We built their website and had it approved in four
+hours, with a feedback tool made for them so the team could comment on the site in
+real time. It went live the day the shop opened, 16 October 2026. https://toraya.pt
+
+Alves Limited Group, Plasencia, Spain and São Paulo, Brazil. Software.
+A family-run group that helps people move, study and do business abroad: citizenship
+and visas, study abroad, athlete management and business internationalisation. For
+their study abroad brand we built the path from an ad to a booked call: a landing
+page, and an AI that asks each enquiry the questions their team would ask before
+anything reaches a calendar. https://alveslimitedgroup.com/
+
+Springlar, Cascais, Portugal. Coaching.
+They design and build healthy, carbon-neutral houses in timber, from cross-laminated
+wood and cork. We work with them through coaching. https://www.springlar.com/en/cha
+
+### Network
+
+People doing work like ours, who we would send you to.
+
+TLC Automation, Chris, in Boulder County, Colorado.
+Chris helps local small businesses get more from the software they already use:
+connecting email, calendars and QuickBooks, building small AI tools, and looking
+after websites. He explains things plainly and quotes a fixed price. If you are near
+Boulder, start with him. https://tlcautomation.org/
+
+We list a client only with their permission and take a listing down the day they ask.
+Nobody pays to be on this page, and nobody pays us to recommend them.
+
+---
+
 ## Privacy (https://chamainteligente.com/privacy)
 
 The privacy notice covers the two things the site does: conversations with the

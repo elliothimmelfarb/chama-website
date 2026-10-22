@@ -1,0 +1,9 @@
+# Pages and the worlds engine
+
+- A section that is not a `.world` (the `/work` ledger) scrolls under the fixed header, which has no background of its own. Pinned worlds never showed this because their words sit low on the screen. `/work` gives the header a strip of paper with `html:has(main .ledger) .top::before`; any new scrolling section needs the same.
+- The router (`worlds.js`) scrolls to a link's `#hash` itself, so CSS `scroll-margin-top` is ignored unless the router reads it (it does since 2026-10-22), and `pushState` never moves `:target`. An entry reached through the router gets `.is-target` instead; style both.
+- A new animated page joins the router through `PAGES` in `worlds.js` and needs a `/simple` twin, both navs, the sitemap and `llms-full.txt`. `test/pages.test.js` holds the pairs and the nav labels.
+- Client logos in the heroes are ink, not colour: `grayscale(1) brightness(0.62) contrast(1.5)` with `mix-blend-mode: multiply`. Plain `grayscale` makes gold marks (Alves) nearly vanish on paper.
+- A logo a company draws in code (inline SVG plus a web font) is best captured from its own site with Playwright at `deviceScaleFactor: 4` and `omitBackground`, after clearing the backgrounds up its ancestors. Check the result for a leftover background box: Alves's header kept one, removed by keying out its colour.
+- This repo is public, so a client's name or logo is published the moment it is committed and pushed, before any deploy. Keep a listing local until that company has said yes in writing.
+- A drawn figure (`kind: "draw"`) is painted on the fixed canvas at its layout every frame, and only fades when a next world arrives. On a page whose last world is followed by ordinary content (`/work`), it would stay on screen over that content. `drawKin` moves itself up with its section's pin (`pin.getBoundingClientRect().top`); a new figure in the same position needs the same.

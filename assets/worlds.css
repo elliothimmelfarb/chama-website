@@ -723,6 +723,84 @@ html.nav-enter body > footer { animation: arrive 0.6s ease 0.9s backwards; }
 @keyframes pop { from { opacity: 0; transform: scale(0.7); } }
 main h1:focus { outline: none; }
 
+/* ---- clients in the hero ---------------------------------------------- */
+/* A quiet row of the clients' marks under the opening words, in ink, not
+   their colours: each opens its entry on /work, where the marks are shown
+   as they are. Colour comes back under the pointer or focus. */
+.clients { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.6rem; margin: 1.9rem 0 0; }
+.clients-all { flex-basis: 100%; color: var(--fg2) !important; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; text-decoration: none; }
+.clients-all:hover { color: var(--accent) !important; }
+.clients a { display: inline-flex; align-items: center; min-height: 44px; border-radius: 6px; }
+.clients img { display: block; width: auto; height: 26px; filter: grayscale(1) brightness(0.62) contrast(1.5); opacity: 0.62; mix-blend-mode: multiply; transition: filter 0.3s ease, opacity 0.3s ease; }
+.clients img.round { height: 44px; }
+.clients img.tall { height: 36px; }
+.clients a:hover img, .clients a:focus-visible img { filter: none; opacity: 1; }
+.clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
+
+/* ---- /work: the ledger ------------------------------------------------- */
+/* After its one world, /work holds still on paper: each entry is a client's
+   mark on its own plate, in its own colours, with what we did beside it. */
+.ledger {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(3.5rem, 8vw, 6rem);
+  padding: clamp(3rem, 7vw, 5.5rem) var(--pad) clamp(7rem, 12vw, 9rem);
+  color: var(--fg);
+}
+html:not(.gl) .ledger { background: var(--bg); }
+/* The ledger scrolls under the fixed header, so on /work the header stands
+   on a strip of paper that fades into the page. */
+html:has(main .ledger) .top::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(env(safe-area-inset-top) + 84px);
+  background: linear-gradient(var(--bg) 62%, color-mix(in srgb, var(--bg) 0%, transparent));
+  pointer-events: none;
+}
+.ledger-group { display: grid; grid-template-columns: minmax(9rem, 15rem) minmax(0, 1fr); gap: 1.5rem clamp(1.5rem, 4vw, 4rem); }
+.ledger-side h2 { margin: 0 0 0.35rem; max-width: none; font-size: 1.05rem; letter-spacing: -0.01em; line-height: 1.2; }
+.ledger-side p { margin: 0; max-width: 20ch; color: var(--fg2); font-size: 0.9rem; line-height: 1.45; }
+.ledger-list { display: grid; }
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2.75rem);
+  align-items: start;
+  padding-block: clamp(1.75rem, 3vw, 2.5rem);
+  border-top: 1px solid var(--track);
+  scroll-margin-top: 7rem;
+}
+.entry:last-child { border-bottom: 1px solid var(--track); }
+.entry:target .entry-text h3, .entry.is-target .entry-text h3 { color: var(--accent); }
+.plate {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  padding: 12% 14%;
+  background: #faf8f3;
+  border: 1px solid rgba(20, 20, 18, 0.08);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 rgba(20, 20, 18, 0.04), 0 18px 40px -26px rgba(20, 20, 18, 0.35);
+}
+.plate img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.peer .plate { aspect-ratio: 2 / 1; padding: 9% 12%; }
+.entry-text { min-width: 0; max-width: 34rem; padding-top: 0.2rem; }
+.entry-text p { margin: 0 0 0.8em; color: var(--fg2); font-size: 1rem; line-height: 1.55; }
+.entry-text .entry-kind { margin-bottom: 0.6rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.entry-text h3 { margin: 0 0 0.2rem; font-size: clamp(1.35rem, 2vw, 1.7rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; transition: color 0.3s ease; }
+.entry-text .entry-place { margin-bottom: 1rem; font-size: 0.9rem; }
+.entry-text .entry-link { margin: 0; }
+.entry-text a, .ledger-note a { color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+.entry-text a:hover { color: var(--accent); }
+.ledger-end { display: grid; grid-template-columns: minmax(9rem, 15rem) minmax(0, 1fr) auto; gap: 1.5rem clamp(1.5rem, 4vw, 4rem); align-items: center; }
+.ledger-note { grid-column: 2; margin: 0; max-width: 46ch; color: var(--fg2); font-size: 0.9rem; line-height: 1.5; }
+.ledger-end p:last-child { margin: 0; }
+
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   .worlds { display: none; }
@@ -753,6 +831,15 @@ main h1:focus { outline: none; }
   .copy p, .copy p.deck { font-size: 1rem; }
   .kicker { margin-bottom: 0.8rem !important; }
   .cue { display: none; }
+  .clients { gap: 0.4rem 0.9rem; margin-top: 1.1rem; }
+  .clients img { height: 18px; }
+  .clients img.round { height: 32px; }
+  .clients img.tall { height: 26px; }
+  .ledger-group, .ledger-end { grid-template-columns: minmax(0, 1fr); }
+  .ledger-note { grid-column: auto; }
+  .entry { grid-template-columns: minmax(0, 1fr); }
+  .plate { max-width: 26rem; }
+  html:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px); }
   .beats { margin-top: 0.9rem; }
   .ticks { margin-bottom: 0.7rem; }
   .qs li { padding-block: 0.16rem; font-size: 1rem; }
