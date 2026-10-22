@@ -118,6 +118,12 @@
 
   // The owner's zone is only told to the page by /admin/availability. Until
   // that answers, the viewer's own zone is the honest fallback.
+  // A shared calendar's event keeps the colour it was given there.
+  function tint(node, color) {
+    if (typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color)) node.style.setProperty("--ev", color);
+    return node;
+  }
+
   function ownerZone() {
     return (H.state.user && H.state.user.timezone) || "UTC";
   }
@@ -1466,7 +1472,7 @@
         scroller.appendChild(grid);
         card.appendChild(scroller);
         var legend = el("div", "dl-legend");
-        [["dl-open", "your week"], ["dl-google", "Google Calendar"], ["dl-booked", "booked"]].forEach(function (x) {
+        [["dl-open", "your week"], ["dl-google", "Google Calendar"], ["dl-google fyi", "shared, does not block"], ["dl-booked", "booked"]].forEach(function (x) {
           append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
         });
         card.appendChild(legend);
@@ -1501,7 +1507,7 @@
             if (seq !== weekSeq) return;
             var g = r[0];
             weekItems = [];
-            (g.events || []).forEach(function (e) { weekItems.push({ kind: "google", starts: e.startsAt, ends: e.endsAt, title: e.title, allDay: e.allDay }); });
+            (g.events || []).forEach(function (e) { weekItems.push({ kind: "google", starts: e.startsAt, ends: e.endsAt, title: e.title, allDay: e.allDay, blocks: e.blocks !== false, color: e.color }); });
             (r[1].bookings || []).filter(function (b) { return b.status === "scheduled"; }).forEach(function (b) {
               weekItems.push({ kind: "booked", starts: b.startsAt, ends: b.endsAt, title: memberName(b.member) });
             });
@@ -1539,12 +1545,15 @@
                 var early = (Math.min(e, dayEnd) - dayStart) / 60000 <= lo;
                 a = early ? lo : hi - 8; b = a + 8;
               }
-              var node = el("span", "ov ov-" + item.kind + (item.allDay ? " all-day" : "") + (clipped ? " clipped" : ""));
+              var node = el("span", "ov ov-" + item.kind + (item.allDay ? " all-day" : "") + (clipped ? " clipped" : "") + (item.blocks === false ? " fyi" : ""));
+              tint(node, item.color);
               node.style.top = (top0 + ((a - lo) / CELL) * cellH) + "px";
               node.style.height = Math.max(6, ((b - a) / CELL) * cellH - 2) + "px";
+              // A shared all-day reminder takes no time: a band at the top.
+              if (item.allDay && item.blocks === false) node.style.height = Math.min(cellH * 2, 34) - 2 + "px";
               node.style.left = col.offsetLeft + "px";
               node.style.width = col.offsetWidth + "px";
-              if (((b - a) / CELL) * cellH >= 22) node.appendChild(el("span", "ov-text", item.title));
+              if (((b - a) / CELL) * cellH >= 22 || (item.allDay && item.blocks === false)) node.appendChild(el("span", "ov-text", item.title));
               overlay.appendChild(node);
             });
           });
@@ -1741,7 +1750,7 @@
             state.bookings = (r[1].bookings || []).filter(function (b) { return b.status === "scheduled"; });
             state.data = r[2];
             state.gcal = r[3];
-            state.gcal.ranges = (r[3].events || []).map(function (e) { return { starts_at: e.startsAt, ends_at: e.endsAt, title: e.title, allDay: e.allDay }; });
+            state.gcal.ranges = (r[3].events || []).map(function (e) { return { starts_at: e.startsAt, ends_at: e.endsAt, title: e.title, allDay: e.allDay, blocks: e.blocks !== false, color: e.color, shared: (r[3].shared || []).indexOf(e.calendarId) >= 0 }; });
             drawStrip();
             draw();
           }, function (error) {
@@ -1770,7 +1779,7 @@
           text.appendChild(el("p", "small", "Google Calendar (" + (g.email || "connected") + "): " + n + (n === 1 ? " event" : " events") + " in these weeks, drawn on each date." + (g.blocks ? " Members cannot book over them." : " They do not block booking.")));
           var cals = (g.calendars || ["primary"]).map(function (c) { return c === "primary" ? (g.email || "your calendar") : c; });
           var shared = g.shared || [];
-          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + (shared.length ? ", and the events with you on " + shared.join(", ") : "") + "."));
+          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + "." + (shared.length ? " Also showing " + shared.join(", ") + " in its own colours; only its events with you, or coloured green, block booking." : "")));
           (g.unread || []).forEach(function (id) {
             text.appendChild(el("p", "small bad-text", "Could not read " + (id === "primary" ? "your main calendar" : id) + ". If it is another account's calendar, share it with " + (g.email || "the connected account") + " first."));
           });
@@ -1809,7 +1818,7 @@
           });
           append(box, [
             field("Calendars to read", field1, "Comma separated. \"primary\" is " + (g.email || "the connected account") + ". To add another account's calendar, share it with " + (g.email || "that account") + " (See all event details) in Google Calendar, then add its address here."),
-            field("Shared calendars", field2, "Someone else's calendar shared with " + (g.email || "the connected account") + ". Only the events with you count: ones you are invited to, or with your first name in the title."),
+            field("Shared calendars", field2, "Someone else's calendar shared with " + (g.email || "the connected account") + ". All its events are shown in their colours. Only the ones with you block booking: you are invited, your first name is in the title, or it is coloured green."),
             append(el("div", "row"), [save, button("Cancel", "btn sm ghost", drawStrip)]),
             line
           ]);
@@ -1862,7 +1871,7 @@
             if (booked) tile.appendChild(el("span", "date-booked", booked + " booked"));
             if (extra) tile.appendChild(el("span", "date-extra", "extra"));
             var gEvents = past ? [] : touching(state.gcal.ranges || [], ymd);
-            if (gEvents.length) tile.appendChild(el("span", "date-gcal", gEvents.some(function (e) { return e.allDay; }) ? "busy all day" : gEvents.length + (gEvents.length === 1 ? " event" : " events")));
+            if (gEvents.length) tile.appendChild(el("span", "date-gcal", gEvents.some(function (e) { return e.allDay && e.blocks; }) ? "busy all day" : gEvents.length + (gEvents.length === 1 ? " event" : " events")));
             if (ymd.day === 1 || n === 0) num.textContent = ymd.day + " " + new Date(Date.UTC(ymd.year, ymd.month - 1, ymd.day)).toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
             tile.setAttribute("aria-label", dayLabel(zonedInstant(ymd, 12 * 60, state.zone).toISOString(), state.zone) + ": " + (off ? "day off" : free + " open times") + (booked ? ", " + booked + " booked" : ""));
             (function (ymd, key) {
@@ -1920,7 +1929,8 @@
             gDay.forEach(function (e) {
               var row = el("div");
               var whenText = e.allDay ? "all day" : clockTime(e.starts_at, state.zone) + " to " + clockTime(e.ends_at, state.zone);
-              append(row, [append(el("div", "grow"), [el("div", "primary", e.title), el("div", "secondary", whenText)]), el("span", "meta", "Google")]);
+              var name = append(el("div", "primary"), [tint(el("span", "gcal-swatch" + (e.blocks ? "" : " fyi")), e.color), document.createTextNode(e.title)]);
+              append(row, [append(el("div", "grow"), [name, el("div", "secondary", whenText)]), el("span", "meta", !e.shared ? "Google" : e.blocks ? "Shared" : "Shared, does not block")]);
               gl.appendChild(row);
             });
             panel.appendChild(el("p", "label", "On your calendar"));
@@ -1985,10 +1995,10 @@
           var line = el("div", "dayline");
           line.setAttribute("role", "img");
           line.setAttribute("aria-label", "This day from " + minutesToClock(lo) + " to " + minutesToClock(hi));
-          function bar(cls, a, b, label) {
+          function bar(cls, a, b, label, color) {
             a = Math.max(lo, a); b = Math.min(hi, b);
             if (b <= a) return;
-            var node = el("span", cls);
+            var node = tint(el("span", cls), color);
             node.style.left = ((a - lo) / span * 100) + "%";
             node.style.width = ((b - a) / span * 100) + "%";
             if (label) { node.title = label; if ((b - a) / span > 0.12) node.appendChild(el("span", "dayline-text", label)); }
@@ -1998,7 +2008,7 @@
           var runs = [];
           free.forEach(function (s) { var a = m(s.startsAt); var last = runs[runs.length - 1]; if (last && a <= last[1]) last[1] = Math.max(last[1], a + minutes); else runs.push([a, a + minutes]); });
           runs.forEach(function (r) { bar("dl-open", r[0], r[1]); });
-          gDay.forEach(function (e) { bar("dl-google", e.allDay ? lo : m(e.starts_at), e.allDay ? hi : m(e.ends_at), e.title); });
+          gDay.forEach(function (e) { bar("dl-google" + (e.blocks ? "" : " fyi"), e.allDay ? lo : m(e.starts_at), e.allDay ? hi : m(e.ends_at), e.title, e.color); });
           booked.forEach(function (b) { bar("dl-booked", m(b.startsAt), m(b.endsAt), memberName(b.member)); });
           for (var h = lo; h <= hi; h += 60) {
             if ((h - lo) % (span > 720 ? 180 : 120) !== 0) continue;
@@ -2007,7 +2017,9 @@
             line.appendChild(t);
           }
           var legend = el("div", "dl-legend");
-          [["dl-usual", "your week"], ["dl-open", "members can book"], ["dl-google", "Google Calendar"], ["dl-booked", "booked"]].forEach(function (x) {
+          var keys = [["dl-usual", "your week"], ["dl-open", "members can book"], ["dl-google", "Google Calendar"]];
+          if (gDay.some(function (e) { return !e.blocks; })) keys.push(["dl-google fyi", "shared, does not block"]);
+          keys.concat([["dl-booked", "booked"]]).forEach(function (x) {
             append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
           });
           append(wrapLine, [line, legend]);
