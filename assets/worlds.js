@@ -11,7 +11,7 @@
                  business's shape (fit, shelf, offer, questions, change,
                  build, mark) or one of the coaching and about figures
                  (coil, curve, session, releases, keepers, family, timeline)
-                 or the work figure (kin).
+                 or the work figures (kin, client0 to client2, peer).
    Shape scenes hand one shape from world to world and morph it; any other
    pair of scenes cross-fades while the fire passes.
 
@@ -269,6 +269,10 @@
     curve: { kind: "draw", box: true, draw: drawCurve },
     session: { kind: "draw", box: true, draw: drawSession },
     releases: { kind: "draw", box: true, draw: drawReleases },
+    client0: { kind: "draw", draw: function (c, l, t, L, a) { drawClient(c, l, t, L, a, 0); } },
+    client1: { kind: "draw", draw: function (c, l, t, L, a) { drawClient(c, l, t, L, a, 1); } },
+    client2: { kind: "draw", draw: function (c, l, t, L, a) { drawClient(c, l, t, L, a, 2); } },
+    peer: { kind: "draw", draw: drawPeer },
     kin: { kind: "draw", at: [0.71, 0.5, 1.0], tall: [0.5, 0.27, 0.82], ext: [1.35, 1.35], draw: drawKin },
     keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
     family: { kind: "draw", draw: drawFamily },
@@ -858,6 +862,79 @@
       strokePart(c, kinPoints(PEER, L, t, 3, 1), pr);
       c.setLineDash([]);
     }
+    c.restore();
+    c.globalAlpha = 1;
+  }
+
+  // Work, a client's world: the client's own shape is the plate their logo
+  // sits on (worlds.css clips .logo-plate to the same points). The shape is
+  // drawn around the plate as the world arrives, then fitted with its ember
+  // outline while the world is held.
+  function shapeAround(r, f, g) {
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2, out = [];
+    for (var j = 0; j <= f.pts.length; j += 2) {
+      var q = j % f.pts.length;
+      out.push(cx + f.pts[q] * r.width / 2 * g, cy + f.pts[q + 1] * r.height / 2 * g);
+    }
+    return out;
+  }
+  function drawClient(c, l, t, L, a, i) {
+    var plate = L.sec.querySelector(".logo-plate");
+    if (!plate) return;
+    var r = plate.getBoundingClientRect();
+    if (r.width < 2) return;
+    var dark = !/^(paper|grid)$/.test(L.sec.getAttribute("data-world") || "");
+    var drawn = RM ? 1 : sm(-0.4, 0.02, l), hug = RM ? 1 : sm(0.02, 0.3, l);
+    c.save();
+    c.lineJoin = "round";
+    c.lineCap = "round";
+    c.globalAlpha = a;
+    c.strokeStyle = rgba(dark ? CREAM : INK, dark ? 0.7 : 1);
+    c.lineWidth = 1.4;
+    strokePart(c, shapeAround(r, KIN[i], 1.03), drawn);
+    if (hug > 0) {
+      c.strokeStyle = EMBER;
+      c.lineWidth = 2;
+      c.shadowColor = EMBER;
+      c.shadowBlur = (dark ? 18 : 8) + 10 * (1 - hug);
+      strokePart(c, shapeAround(r, KIN[i], 1.13), hug);
+    }
+    c.restore();
+    c.globalAlpha = 1;
+  }
+
+  // Work, the network: our fire, and a peer's fire some way off, joined by a
+  // dotted line of light with one ember travelling along it.
+  function drawPeer(c, l, t, L, a) {
+    var plate = L.sec.querySelector(".logo-plate");
+    if (!plate) return;
+    var r = plate.getBoundingClientRect();
+    if (r.width < 2) return;
+    var P = L.portrait;
+    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(AW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
+    var tx = r.left + r.width * 0.12, ty = r.bottom - r.height * 0.1;
+    var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(0.0, 0.3, l);
+    c.save();
+    c.globalAlpha = a * on;
+    glowDot(c, ox, oy, 4.5, EMB, 1);
+    c.globalAlpha = a * 0.7;
+    c.strokeStyle = rgba(STAR, 1);
+    c.lineWidth = 1.3;
+    c.setLineDash([1.5, 7]);
+    c.lineCap = "round";
+    strokePart(c, [ox, oy, tx, ty], line);
+    c.setLineDash([]);
+    if (line >= 1 && !RM) {
+      var k = (t * 0.35) % 1;
+      glowDot(c, ox + (tx - ox) * k, oy + (ty - oy) * k, 2.2, EMB, a * Math.sin(k * Math.PI));
+    }
+    c.globalAlpha = a * (RM ? 1 : sm(-0.2, 0.25, l)) * 0.85;
+    c.strokeStyle = rgba(STAR, 1);
+    c.lineWidth = 1.4;
+    c.setLineDash([4, 6]);
+    var f = { pts: [-0.9, -0.85, 0.95, -0.9, 0.9, 0.88, -0.95, 0.9] };
+    strokePart(c, shapeAround(r, f, 1.1), 1);
+    c.setLineDash([]);
     c.restore();
     c.globalAlpha = 1;
   }
