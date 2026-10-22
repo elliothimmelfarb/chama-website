@@ -786,6 +786,9 @@ body {
 .paint-cell.on:hover { background: #ff6a33; }
 .paint-cell.on.top { border-top-left-radius: 5px; border-top-right-radius: 5px; }
 .paint-cell.on.bottom { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+/* Dates already gone cannot be painted. */
+.paint-cell:disabled { cursor: default; background: transparent; }
+.paint-cell.on:disabled { background: var(--ember); opacity: 0.35; }
 .paint-cell:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; position: relative; z-index: 1; }
 .paint-quick { gap: 0.5rem; }
 .day-panel .input[type="time"] { width: 8.5rem; flex: none; }
