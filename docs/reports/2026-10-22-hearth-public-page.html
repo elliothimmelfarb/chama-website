@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hearth Public Page</title>
+<meta name="description" content="Ship report: /hearth now shows a public page to signed-out visitors and link previews, and the room to members, 2026-10-22.">
+<style>
+  /* A ship report on the site's own paper: ink and ember, the screens doing the talking. */
+  .phone3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; align-items: start; }
+  .phone3 figure img { max-width: 17rem; }
+  .stand { font-size: 0.72rem; font-weight: 700; color: var(--warn); }
+  pre { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; background: var(--ground-2); border: 1px solid var(--line); overflow-x: auto; font-size: 0.82rem; }
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  header { display: grid; gap: 0.9rem; }
+  .meta { margin: 0; color: var(--ember); font-size: 0.8rem; font-weight: 700; }
+  h1 { margin: 0; font-size: clamp(2rem, 5.5vw, 3.6rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.08rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+  figure { margin: 0; display: grid; gap: 0.6rem; }
+  figure img, figure video { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #0e0c0a; }
+  figcaption { font-size: 0.9rem; color: var(--ink-dim); max-width: 62ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+  .three { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 1rem; align-items: start; }
+  .phone { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 1.4rem; align-items: center; }
+  ol.notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; font-size: 0.92rem; }
+  ol.notes li::marker { color: var(--ember); font-weight: 700; }
+  .flow { width: 100%; height: auto; display: block; }
+  .flow text { font-family: var(--sans); fill: var(--ink); }
+  .flow .dim { fill: var(--ink-dim); }
+  .flow .box { fill: var(--ground-2); stroke: var(--line); }
+  .flow .hot { fill: var(--ember); }
+  .flow .arrow { stroke: var(--ink-dim); fill: none; stroke-width: 1.5; }
+  .todo { display: grid; gap: 0.7rem; }
+  .todo > div { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.5rem; align-items: baseline; }
+  .todo span { color: var(--warn); font-weight: 700; }
+  a { color: var(--ink); text-decoration-color: var(--ember); text-underline-offset: 0.2em; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  @media (max-width: 44rem) {
+    .two, .three, .phone, .phone3 { grid-template-columns: minmax(0, 1fr); }
+    .phone figure { max-width: 16rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="meta">Shipped 2026-10-22 · <a href="https://github.com/elliothimmelfarb/chama-website/pull/130">PR #130</a> · <a href="https://chamainteligente.com/hearth">chamainteligente.com/hearth</a></p>
+    <h1>The Hearth has a public page</h1>
+    <p class="lede">Signed-out visitors and link previews now get a page that explains the Hearth to prospective coaching clients. Members with a session get the room at the same address, and LinkedIn links to it.</p>
+    <div class="chips">
+      <span class="chip">✓ Live in production</span>
+      <span class="chip">✓ LinkedInBot gets 200 with OG tags</span>
+      <span class="chip">✓ Room still private and noindex</span>
+      <span class="chip">✓ LinkedIn project links /hearth</span>
+      <span class="chip">✓ 524 tests pass</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>One address, two pages</h2>
+    <svg class="flow" viewBox="0 0 760 230" role="img" aria-label="A request to /hearth goes to the room if it carries the session cookie, otherwise to the public page. /hearth/* always goes to the room.">
+      <rect class="box" x="10" y="75" width="150" height="56" rx="10"/>
+      <text x="85" y="108" text-anchor="middle" font-size="16" font-weight="600">/hearth</text>
+      <path class="arrow" d="M160 95 C 230 95, 230 40, 300 40"/>
+      <path class="arrow" d="M160 112 C 230 112, 230 165, 300 165"/>
+      <text x="200" y="30" class="dim" font-size="13">session cookie</text>
+      <text x="160" y="222" class="dim" font-size="13">no cookie (visitors, crawlers)</text>
+      <rect class="box" x="300" y="14" width="200" height="52" rx="10"/>
+      <text x="400" y="45" text-anchor="middle" font-size="15">The room · noindex</text>
+      <rect class="hot" x="300" y="139" width="200" height="52" rx="10"/>
+      <text x="400" y="170" text-anchor="middle" font-size="15" style="fill:#fff" font-weight="600">Public page · indexable</text>
+      <rect class="box" x="560" y="14" width="190" height="52" rx="10"/>
+      <text x="655" y="37" text-anchor="middle" font-size="14">/hearth/* and /hearth/sign-in</text>
+      <text x="655" y="56" text-anchor="middle" class="dim" font-size="13">always the room</text>
+      <path class="arrow" d="M560 40 H500"/>
+    </svg>
+  </section>
+
+  <section class="two">
+    <figure><img src="2026-10-22-hearth-public-page/desktop-top.png" alt="The public Hearth page at desktop width"><figcaption><b>Desktop.</b> Booking, records, Remember cards and your own agent, each with an illustration. No member data on the page.</figcaption></figure>
+    <div style="display:grid;gap:1.4rem">
+      <figure><img src="2026-10-22-hearth-public-page/card.png" alt="The link preview card for /hearth"><figcaption><b>The preview card.</b> LinkedIn built it on the first retry, and the Hearth project now shows it.</figcaption></figure>
+      <figure style="max-width:15rem"><img src="2026-10-22-hearth-public-page/phone-top.png" alt="The public Hearth page at phone width"><figcaption><b>Phone.</b> No sideways scroll at 375px.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Checked live</h2>
+    <ol class="notes">
+      <li>LinkedInBot on <code>/hearth</code>: 200, robots meta index, og:title, description, image (200 PNG) and url.</li>
+      <li>With a real owner session (made for the test, then revoked): <code>/hearth</code> serves the room and <code>/api/hearth/me</code> answers 200.</li>
+      <li><code>/hearth/sign-in</code> shows the sign-in gate, noindex. <code>www</code> redirects to the bare domain.</li>
+      <li>IndexNow accepted <code>/hearth</code>. Sitemap, llms.txt, robots.txt and the wiki claims ledger are updated.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Worth knowing</h2>
+    <div class="todo">
+      <div><span>!</span><p style="margin:0">Nobody has booked through the room yet, and no client has connected an agent over OAuth, so the page describes those as features and promises no Meet or calendar details.</p></div>
+      <div><span>!</span><p style="margin:0">The click-through as a signed-in member was checked with curl, not in a browser, because setting the session cookie in the browser pane was blocked.</p></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
