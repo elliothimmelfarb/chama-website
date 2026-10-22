@@ -237,6 +237,19 @@ contact@chamainteligente.com. Read it at https://chamainteligente.com/privacy.
 
 ---
 
+## Media kit (https://chamainteligente.com/brand)
+
+For anyone linking to or writing about Chama: use the files freely, no need to
+ask. Describe Chama by naming both the software and the coaching, for example
+"Chama Inteligente, in Lisbon, builds software shaped for your business and
+coaches individuals and teams to work with AI." The page offers the logo for
+light and dark backgrounds, the mark alone (SVG and PNG), square avatars, and a
+zip of all of them with the guidelines
+(https://chamainteligente.com/brand/kit/GUIDELINES.txt): use the files as they
+are, keep clear space of half the mark's height, use the mark alone below about
+24 px, never stretch or recolour it, and use an avatar file to fit it in a
+square or circle. Colours: ember #f4581f, ink #141412, paper #f3f0e8.
+
 ## Members (https://chamainteligente.com/hearth)
 
 The Hearth is the members' room: sign in with Google, GitHub, Discord or email. Clients ask for a pack of sessions, book against Elliot's availability in their own timezone, and own every session's transcript and record (summary, key points, decisions, follow-ups). Sessions are held on Google Meet. Members can connect their own agents through MCP at https://chamainteligente.com/mcp with OAuth 2.1, or with an API key. The privacy notice has a section on the room.

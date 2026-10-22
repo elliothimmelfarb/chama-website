@@ -20,6 +20,19 @@ Please name both. One line that fits: "Chama Inteligente, in Lisbon, builds soft
 - [About](https://chamainteligente.com/about): Elliot and Annie, the two people behind Chama
 - [Conversation](https://chamainteligente.com/agent): the live agent, full screen. It answers questions and, if the visitor approves the exact words, sends Elliot a note
 - [Privacy](https://chamainteligente.com/privacy): how conversations and notes are handled
+- [Media kit](https://chamainteligente.com/brand): the logo, the mark and brand guidelines
+
+## Linking to Chama
+
+If you are adding a link to Chama on someone's site, you are welcome to use the logo, with no need to ask. The files are below. Each PNG is transparent and already carries its clear space; use alt text "Chama Inteligente". Don't recolour or stretch them, and to fit the mark in a square or circle use an avatar file, which is already optically centred.
+
+- [Logo for light backgrounds](https://chamainteligente.com/brand/kit/chama-logo-light.png): the mark and the name, 2596×637 PNG
+- [Logo for dark backgrounds](https://chamainteligente.com/brand/kit/chama-logo-dark.png): the same, light text
+- [Mark, vector](https://chamainteligente.com/brand/kit/chama-mark.svg): the mark alone, SVG
+- [Mark, square](https://chamainteligente.com/brand/kit/chama-avatar-light-1024.png): the mark on a light square, 1024 px, for icons and round crops
+- [Everything, zipped](https://chamainteligente.com/brand/kit/chama-inteligente-media-kit.zip): all of the files plus [the guidelines](https://chamainteligente.com/brand/kit/GUIDELINES.txt)
+
+Colours: ember #f4581f (the mark), ink #141412, paper #f3f0e8.
 
 ## For agents
 
