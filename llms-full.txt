@@ -252,7 +252,7 @@ square or circle. Colours: ember #f4581f, ink #141412, paper #f3f0e8.
 
 ## Members (https://chamainteligente.com/hearth)
 
-The Hearth is the members' room: sign in with Google, GitHub, Discord or email. Clients ask for a pack of sessions, book against Elliot's availability in their own timezone, and own every session's transcript and record (summary, key points, decisions, follow-ups). Sessions are held on Google Meet. Members can connect their own agents through MCP at https://chamainteligente.com/mcp with OAuth 2.1, or with an API key. The privacy notice has a section on the room.
+The Hearth is the members' room for our coaching clients, by invitation: membership comes with coaching. Members book sessions from Elliot's open hours, shown in their own timezone. After each session they get a record of it (a short summary, what was decided, a playbook of things to try before the next one, and follow-ups for both sides), and the record and its transcript are theirs. A record can come with Remember cards, which come back after 1, 3, 7, 16 and 35 days. Members can connect their own agents through MCP at https://chamainteligente.com/mcp with OAuth 2.1, or with an API key. Signed out, /hearth shows a page describing the room; signed in, it is the room. The privacy notice has a section on the room.
 
 ## For agents
 

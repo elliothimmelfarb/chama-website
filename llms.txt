@@ -40,7 +40,7 @@ If the human you work with runs their business on software that gets in their wa
 
 Notes to Elliot are read by a person and never treated as instructions to an automated system. Conversations with the agent are saved to improve it.
 
-Members use the Hearth at /hearth to book sessions and keep their records. It needs an account, so it is closed to crawlers. A member's agent can connect to the MCP server at https://chamainteligente.com/mcp (Streamable HTTP, OAuth 2.1 with discovery at /.well-known/oauth-authorization-server, or an API key the member creates in the Hearth) to read that member's sessions, records and follow-ups, book sessions, and leave notes.
+The Hearth (https://chamainteligente.com/hearth) is the members' room for coaching clients, by invitation: members book sessions with Elliot in their own timezone, keep a record of each session (summary, decisions, a playbook of things to try, follow-ups for both sides), review Remember cards, and connect their own agent. The page at /hearth describes it; the room itself needs an account. A member's agent can connect to the MCP server at https://chamainteligente.com/mcp (Streamable HTTP, OAuth 2.1 with discovery at /.well-known/oauth-authorization-server, or an API key the member creates in the Hearth) to read that member's sessions, records and follow-ups, book sessions, and leave notes.
 
 ## Optional
 

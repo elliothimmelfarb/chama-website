@@ -67,6 +67,11 @@
       "source": "/about-family.jpg",
       "destination": "/assets/about-family.jpg",
       "permanent": true
+    },
+    {
+      "source": "/hearth-public",
+      "destination": "/hearth",
+      "permanent": false
     }
   ],
   "crons": [
@@ -233,6 +238,12 @@
     },
     {
       "source": "/hearth",
+      "has": [
+        {
+          "type": "cookie",
+          "key": "__Host-chama_hearth"
+        }
+      ],
       "headers": [
         {
           "key": "Content-Security-Policy",
@@ -242,6 +253,21 @@
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow, noarchive"
         },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/hearth",
+      "missing": [
+        {
+          "type": "cookie",
+          "key": "__Host-chama_hearth"
+        }
+      ],
+      "headers": [
         {
           "key": "Cache-Control",
           "value": "no-store"
@@ -266,7 +292,7 @@
       ]
     },
     {
-      "source": "/hearth.html",
+      "source": "/hearth-room",
       "headers": [
         {
           "key": "Content-Security-Policy",
@@ -285,8 +311,22 @@
   ],
   "rewrites": [
     {
+      "source": "/hearth",
+      "has": [
+        {
+          "type": "cookie",
+          "key": "__Host-chama_hearth"
+        }
+      ],
+      "destination": "/hearth-room"
+    },
+    {
+      "source": "/hearth",
+      "destination": "/hearth-public"
+    },
+    {
       "source": "/hearth/:path*",
-      "destination": "/hearth"
+      "destination": "/hearth-room"
     },
     {
       "source": "/mcp",

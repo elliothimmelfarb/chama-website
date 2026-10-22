@@ -219,7 +219,7 @@ test("an unknown magic link lands back at the Hearth with an error", async () =>
   useClient(fakeDb([[/update email_tokens/, []]]));
   const response = await handleHearth(hearth("/auth/email/callback?token=nothing"));
   assert.equal(response.status, 302);
-  assert.equal(response.headers.get("Location"), "/hearth?error=link");
+  assert.equal(response.headers.get("Location"), "/hearth/sign-in?error=link");
   assert.equal(response.headers.get("Set-Cookie"), null);
 });
 

@@ -18,7 +18,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
 | `api/watchdog.js` | The cron job that reviews conversations and can put the flame out. |
 | `admin.html`, `assets/admin.*`, `api/admin-auth.js`, `api/admin-data.js` | The private, read-only admin area at `/admin`. |
-| `hearth.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform. See [The Hearth](#the-hearth). |
+| `hearth-public.html`, `hearth-room.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform, and its public page. See [The Hearth](#the-hearth). |
 | `privacy.html` | The privacy notice. |
 | `404.html`, `assets/sparks.js` | The not-found page, with a small catch-the-sparks game. |
 | `vercel.json` | Headers, redirects, rewrites and cron schedules. |
@@ -82,7 +82,8 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 
 | File | What it is |
 |---|---|
-| `hearth.html` | The shell for `/hearth/*`, `noindex`, with its own CSP. |
+| `hearth-public.html` | The public page at `/hearth` for anyone without a session cookie: what the room is, for prospective coaching clients. Indexable, with its own sharing card (`og-hearth-2026-10-22.png` from `brand/og/og-hearth.html`). Static: it loads nothing from the room and calls no endpoint. |
+| `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. |
 | `assets/hearth.js`, `assets/hearth.css` | The core app (router, sign-in, frame, account) and design. No `innerHTML` anywhere in the room. |
 | `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. |
 | `api/hearth.js` | The router behind `/api/hearth/*`. The routes are in `lib/hearth/routes/`. |
@@ -91,6 +92,10 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 | `api/feed.js` | The public feed at `/feed` and `/feed.xml`, off until `feed_public` is on. |
 | `api/hearth-cron.js` | Hourly at `:20`: reminders, Meet transcript pulls, unsettled card checkouts, expired token sweep. |
 | `api/stripe-webhook.js`, `lib/hearth/stripe.js`, `lib/hearth/routes/invoices.js`, `lib/hearth/routes/checkout.js` | Stripe: the client, invoices, card checkout for packs, and the signed webhook at `/api/stripe-webhook`. |
+
+### Routing
+
+`/hearth` is two pages on one address, chosen in `vercel.json` by the session cookie: with `__Host-chama_hearth` it rewrites to the room (`hearth-room.html`, `noindex`, the room's CSP), without it to the public page (`hearth-public.html`). Crawlers and link previews never carry the cookie, so they always get the public page. `/hearth/*` is always the room and stays `noindex` and disallowed in `robots.txt`. Sign-in errors land on `/hearth/sign-in?error=...`, and a signed-in member who opens `/hearth/sign-in` is moved to Home. `vercel dev` ignores `has` conditions, so check the routing on a preview deployment with and without the cookie.
 
 ### Data
 
