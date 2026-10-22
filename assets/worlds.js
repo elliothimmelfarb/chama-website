@@ -864,17 +864,8 @@
     c.globalAlpha = 1;
   }
 
-  // Points of a unit outline laid around an element's box, scaled by g.
-  function shapeAround(r, f, g) {
-    var cx = r.left + r.width / 2, cy = r.top + r.height / 2, out = [];
-    for (var j = 0; j <= f.pts.length; j += 2) {
-      var q = j % f.pts.length;
-      out.push(cx + f.pts[q] * r.width / 2 * g, cy + f.pts[q + 1] * r.height / 2 * g);
-    }
-    return out;
-  }
-  // Work, the network: our fire, and a peer's fire some way off, joined by a
-  // dotted line of light with one ember travelling along it.
+  // Work, friends: our fire, and a friend's some way off, joined by a dotted
+  // line of light with one ember travelling along it.
   function drawPeer(c, l, t, L, a) {
     var plate = L.sec.querySelector(".logo-plate");
     if (!plate) return;
@@ -898,13 +889,6 @@
       var k = (t * 0.35) % 1;
       glowDot(c, ox + (tx - ox) * k, oy + (ty - oy) * k, 2.2, EMB, a * Math.sin(k * Math.PI));
     }
-    c.globalAlpha = a * (RM ? 1 : sm(-0.2, 0.25, l)) * 0.85;
-    c.strokeStyle = rgba(STAR, 1);
-    c.lineWidth = 1.4;
-    c.setLineDash([4, 6]);
-    var f = { pts: [-0.9, -0.85, 0.95, -0.9, 0.9, 0.88, -0.95, 0.9] };
-    strokePart(c, shapeAround(r, f, 1.1), 1);
-    c.setLineDash([]);
     c.restore();
     c.globalAlpha = 1;
   }
@@ -921,27 +905,6 @@
     [-0.7, -0.9, 0.95, -0.75, 0.6, 0.3, 0.9, 0.95, -0.95, 0.7],
     [0, -1, 1, 0, 0.1, 0.95, -0.95, 0.2]
   ]);
-  var WN = 24;
-  // n points evenly along a closed outline, starting from its top
-  function resample(pts) {
-    var m = pts.length / 2, top = 0, i;
-    for (i = 1; i < m; i++) if (pts[2 * i + 1] < pts[2 * top + 1]) top = i;
-    var P = [];
-    for (i = 0; i <= m; i++) { var q = (top + i) % m; P.push(pts[2 * q], pts[2 * q + 1]); }
-    var seg = [], total = 0;
-    for (i = 1; i <= m; i++) { var d = Math.hypot(P[2 * i] - P[2 * i - 2], P[2 * i + 1] - P[2 * i - 1]); seg.push(d); total += d; }
-    var out = [], j = 0, acc = 0;
-    for (var k = 0; k < WN; k++) {
-      var want = total * k / WN;
-      while (j < seg.length - 1 && acc + seg[j] < want) { acc += seg[j]; j++; }
-      var f = seg[j] ? (want - acc) / seg[j] : 0;
-      out.push(P[2 * j] + (P[2 * j + 2] - P[2 * j]) * f, P[2 * j + 1] + (P[2 * j + 3] - P[2 * j + 1]) * f);
-    }
-    return out;
-  }
-  var WHEEL_RESAMPLED = WHEEL_SHAPES.map(resample);
-  var ROUND = [];
-  for (var wq = 0; wq < WN; wq++) { var wa = -Math.PI / 2 + TAU * wq / WN; ROUND.push(Math.cos(wa) * 0.98, Math.sin(wa) * 0.98); }
   function wheelOf(sec) {
     if (!sec._wheel) {
       sec._wheel = {
@@ -953,14 +916,18 @@
     }
     return sec._wheel;
   }
+  // The wheel stands upright and is seen from a little to its right: the
+  // client in focus on its near side, at the left, nearest the words and
+  // largest; the one opposite on its far side, at the right, smallest and
+  // furthest. Clients come up from below, pass the front and go over the top.
   function wheelGeom(P, n) {
     var step = TAU / Math.max(n, 3);
     if (P) {
-      var bigP = Math.min(AW * 0.42, AH * 0.2), RP = Math.min(AW * 0.3, AH * 0.135), ay = AH * 0.42;
-      return { R: RP, big: bigP, small: bigP * 0.38, cx: AW / 2, cy: ay - RP, a0: Math.PI / 2, step: step };
+      var bigP = Math.min(AW * 0.44, AH * 0.19);
+      return { cx: AW * 0.62, cy: AH * 0.31, rx: AW * 0.17, ry: AH * 0.15, big: bigP, far: 0.28, step: step };
     }
-    var bigW = Math.min(AH * 0.4, AW * 0.25), RW = Math.min(AH * 0.33, AW * 0.21);
-    return { R: RW, big: bigW, small: bigW * 0.42, cx: AW * 0.66, cy: AH * 0.53, a0: Math.PI, step: step };
+    var bigW = Math.min(AH * 0.33, AW * 0.23);
+    return { cx: AW * 0.7, cy: AH * 0.53, rx: AW * 0.13, ry: AH * 0.37, big: bigW, far: 0.26, step: step };
   }
   // where along the wheel the page is: each client holds, then the wheel turns
   function wheelPos(l, n) {
@@ -972,79 +939,52 @@
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
     var G = wheelGeom(L.portrait, n), p = wheelPos(l, n), on = Math.round(p);
-    var dark = !/^(paper|grid)$/.test(L.sec.getAttribute("data-world") || "");
-    // the ring, its dots turning with the wheel
-    c.save();
-    c.globalAlpha = a;
-    c.strokeStyle = rgba(dark ? CREAM : INK, dark ? 0.42 : 0.35);
-    c.lineWidth = 1.5;
-    c.setLineDash([1.5, 9]);
-    c.lineDashOffset = p * G.step * G.R;
-    c.beginPath(); c.arc(G.cx, G.cy, G.R, 0, TAU); c.stroke();
-    // a spoke from the hub to every client, and our fire at the hub
-    c.setLineDash([1.5, 6]);
-    c.lineDashOffset = 0;
-    c.strokeStyle = rgba(dark ? CREAM : INK, dark ? 0.24 : 0.2);
-    for (var si = 0; si < n; si++) {
-      var sd = si - p; sd -= Math.round(sd / n) * n;
-      var sa = G.a0 - sd * G.step;
-      c.beginPath(); c.moveTo(G.cx, G.cy); c.lineTo(G.cx + Math.cos(sa) * G.R, G.cy + Math.sin(sa) * G.R); c.stroke();
-    }
-    c.setLineDash([]);
-    c.restore();
-    c.save();
-    c.globalAlpha = a;
-    glowDot(c, G.cx, G.cy, L.portrait ? 4 : 5.5, EMB, 1);
-    c.restore();
-    var focusPts = null, fx = 0, fy = 0, fs = 0, ff = 0;
+    var place = [];
     for (var i = 0; i < n; i++) {
-      var sp = W.spokes[i], d = i - p;
+      var d = i - p;
       d -= Math.round(d / n) * n;
-      var ang = G.a0 - d * G.step;
-      var x = G.cx + Math.cos(ang) * G.R, y = G.cy + Math.sin(ang) * G.R;
+      var th = d * G.step, z = Math.cos(th), near = (z + 1) / 2;
+      var x = G.cx - Math.cos(th) * G.rx, y = G.cy + Math.sin(th) * G.ry;
       var focus = clamp(1 - Math.abs(d)), e = focus * focus * (3 - 2 * focus);
-      var sc = G.small / G.big + (1 - G.small / G.big) * e;
-      var shape = WHEEL_RESAMPLED[(+sp.getAttribute("data-shape") || 0) % WHEEL_RESAMPLED.length], k = sm(0.15, 1, focus);
-      var pts = [], poly = [];
-      for (var j = 0; j < WN; j++) {
-        var px = ROUND[2 * j] + (shape[2 * j] - ROUND[2 * j]) * k, py = ROUND[2 * j + 1] + (shape[2 * j + 1] - ROUND[2 * j + 1]) * k;
-        pts.push(px, py);
-        poly.push((50 + px * 50).toFixed(2) + "% " + (50 + py * 50).toFixed(2) + "%");
-      }
+      // the front is big because it is in focus; the rest shrink fast with distance
+      var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
+      place.push({ x: x, y: y, sc: sc, near: near, e: e });
+      var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
       sp.style.width = sp.style.height = G.big + "px";
-      sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ")";
-      sp.style.clipPath = "polygon(" + poly.join(",") + ")";
-      sp.style.opacity = (0.88 + 0.12 * e).toFixed(3);
-      sp.style.zIndex = focus > 0.5 ? 2 : 1;
-      if (focus > ff) { ff = focus; focusPts = pts; fx = x; fy = y; fs = G.big * sc / 2; }
+      // turned a little away on the far side, as a thing on a wheel would be
+      var turn = (1 - near) * 38;
+      sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
+      sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
+      // the rest are only their logos: further back, smaller, dimmer, darker, softer
+      var dim = 1 - e;
+      img.style.opacity = (e + dim * (0.1 + 0.62 * near * near)).toFixed(3);
+      img.style.filter = dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none";
+      plate.style.opacity = sm(0.6, 1, focus).toFixed(3);
+      img.style.transform = "scale(" + (1 + 0.25 * dim).toFixed(3) + ")";
+      sp.classList.toggle("focus", focus > 0.5);
     }
     if (on !== W.on) {
       W.on = on;
       W.turns.forEach(function (tn, j) { tn.classList.toggle("on", j === on); tn.setAttribute("aria-hidden", j === on ? "false" : "true"); });
       if (W.count) W.count.textContent = on + 1;
     }
-    // the client in focus: its outline, then the ember fit
-    if (focusPts && ff > 0.3) {
-      var outline = function (g) { var o = []; for (var j = 0; j <= WN; j++) { var q = j % WN; o.push(fx + focusPts[2 * q] * fs * g, fy + focusPts[2 * q + 1] * fs * g); } return o; };
-      c.save();
-      c.lineJoin = "round";
-      c.lineCap = "round";
-      c.globalAlpha = a * sm(0.3, 0.7, ff);
-      c.strokeStyle = rgba(dark ? CREAM : INK, dark ? 0.7 : 1);
-      c.lineWidth = 1.4;
-      strokePart(c, outline(1.04), 1);
-      var hug = RM ? 1 : sm(0.6, 0.98, ff);
-      if (hug > 0) {
-        c.globalAlpha = a;
-        c.strokeStyle = EMBER;
-        c.lineWidth = 2;
-        c.shadowColor = EMBER;
-        c.shadowBlur = dark ? 18 : 8;
-        strokePart(c, outline(1.14), hug);
-      }
-      c.restore();
-      c.globalAlpha = 1;
-    }
+    // the client in focus: the ember fit drawn round its plate
+    var best = -1, bf = 0;
+    for (var m = 0; m < n; m++) if (place[m].e > bf) { bf = place[m].e; best = m; }
+    if (best < 0 || bf < 0.6) return;
+    var f = place[best], shape = WHEEL_SHAPES[(+W.spokes[best].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length], half = G.big * f.sc / 2;
+    var out = [];
+    for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + shape[qq + 1] * half * 1.12); }
+    c.save();
+    c.lineJoin = "round";
+    c.lineCap = "round";
+    c.globalAlpha = a * (RM ? 1 : sm(0.6, 0.95, bf));
+    c.strokeStyle = EMBER;
+    c.lineWidth = 2;
+    c.shadowColor = EMBER;
+    c.shadowBlur = 10;
+    strokePart(c, out, 1);
+    c.restore();
   }
   // the scroll position at which a client is in focus
   function wheelY(el) {

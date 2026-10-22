@@ -25,7 +25,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt` | Crawler policy, the canonical URLs, and the site text for AI crawlers. |
 | `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
 | `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
-| `assets/work/` | The client and network logos for `/work` and the heroes' logo rows, self-hosted WebP. Each one is listed with that company's permission; see Work below. |
+| `assets/work/` | The client and friends' logos for `/work` and the heroes' logo rows, self-hosted WebP. Each one is listed with that company's permission; see Work below. |
 | `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
 
 Every public page makes zero external requests. `test/pages.test.js` holds that rule, the navigation rules and the sitemap rules.
@@ -36,9 +36,9 @@ Copy is written here. The brain keeps its history and the reasons for each chang
 
 ## Work
 
-`/work` lists the clients we have built software for or coached, newest first, and the network: peers we would send a visitor to. Each entry is a logo on a plate, two sentences and a link, and its `id` is the anchor the logo rows on `/` and `/coaching` (and their `/simple` twins) link to. The rows show the marks in ink; `/work` shows them in their own colours.
+`/work` shows the clients we have built software for or coached as a wheel of their logos that turns as the page scrolls (`drawWheel` in `assets/worlds.js`), then our friends: people who help businesses the way we do. Each client's words are a `.turn` whose `id` is the anchor the logo rows on `/` and `/coaching` link to, and a link to it turns the wheel to that client. `/simple/work` is the same content as a still ledger.
 
-A company goes on only with its written OK to its name, logo and exact words, and comes off the day it asks. To add one: its logo as `assets/work/<slug>.webp` (transparent, about 240px tall), an entry in `work.html`, `simple/work.html` and `llms-full.txt`, and, for a client, a logo in the four hero rows.
+A company goes on only with its written OK to its name, logo and exact words, and comes off the day it asks. To add one: its logo as `assets/work/<slug>.webp` (transparent, about 240px tall), a `.spoke` and a `.turn` in `work.html` (raise the section's `--h` by 95 per client), an entry in `simple/work.html` and `llms-full.txt`, and a logo in the four hero rows.
 
 ## The flame
 
