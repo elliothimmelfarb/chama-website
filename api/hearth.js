@@ -91,6 +91,9 @@ export const SETTING_DEFAULTS = {
   // connected and google_busy is on. "primary" is the connected account's own.
   google_busy: true,
   google_calendars: ["primary"],
+  // Other people's calendars shared with the connected account. Only their
+  // events that involve the owner (invited, or named in the title) count.
+  google_shared_calendars: [],
   // Members can pay for a pack by card through Stripe Checkout. Off until
   // the owner turns it on under Purchases, and only shown while Stripe is
   // connected.
@@ -126,7 +129,8 @@ function validSetting(key, value) {
     case "card_checkout":
       return typeof value === "boolean";
     case "google_calendars":
-      return Array.isArray(value) && value.length >= 1 && value.length <= 10 &&
+    case "google_shared_calendars":
+      return Array.isArray(value) && value.length >= (key === "google_calendars" ? 1 : 0) && value.length <= 10 &&
         value.every((id) => typeof id === "string" && /^[^\s<>"']{1,200}$/.test(id));
     case "owner_timezone":
       // The slot calculator does date arithmetic in this zone; a name it
