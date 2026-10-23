@@ -186,7 +186,7 @@
   }
 
   // ---- shape scenes: one shape, handed from world to world ---------------------
-  var INK = [20, 20, 18], EMB = [244, 88, 31], CREAM = [246, 240, 230], FOAM = [226, 245, 240], STAR = [214, 222, 255], COLD = [16, 28, 40];
+  var INK = [20, 20, 18], EMB = [244, 88, 31], SHELF = [43, 108, 155], CREAM = [246, 240, 230], FOAM = [226, 245, 240], STAR = [214, 222, 255], COLD = [16, 28, 40];
   var STAR_AT = [0.05, 0.19, 0.33, 0.47, 0.64];
 
   function shapeBase(L) {
@@ -196,7 +196,7 @@
       fill: INK, fillA: 0.05,
       hug: EMB, hugA: 0, hugDraw: 1, hugScale: 1.12, follow: 10,
       glow: 0, wob: 0,
-      sq: 1.45, sqA: 0, ghost: 0,
+      sq: 1.45, sqA: 0, ghost: 0, lab: 0,
       stars: [0, 0, 0, 0, 0], edges: 0, constA: 0,
       mark: 0, spark: 0,
       attract: 0, heat: 0, flame: 0
@@ -221,11 +221,11 @@
       s.draw = RM ? 1 : sm(0.2, 1.7, t); s.fillA = 0.05 * s.draw;
       s.hugA = 1; s.hugDraw = RM ? 1 : sm(1.6, 2.7, t); s.wob = 0.016; s.follow = 4;
     } },
-    // off the shelf: a square closes on it, cuts what does not fit, and its
-    // corners cover what the business never uses
+    // off the shelf: a square closes on it; its corners are what the business
+    // never uses, and what it cuts off is what the business is missing
     shelf: { kind: "shape", at: [0.7, 0.45, 0.95], cap: 1.2, state: function (s, l) {
       s.ink = COLD; s.fill = COLD; s.fillA = 0.06; s.lw = 1.7;
-      s.sqA = sm(0, 0.14, l); s.sq = lerp(1.45, 0.66, sm(0.06, 0.4, l)); s.ghost = sm(0.28, 0.5, l); s.follow = 12;
+      s.sqA = sm(0, 0.14, l); s.sq = lerp(1.45, 0.66, sm(0.06, 0.4, l)); s.ghost = sm(0.28, 0.5, l); s.lab = sm(0.42, 0.56, l); s.follow = 12;
     } },
     // the offer: built, then supported, then owned
     offer: { kind: "shape", at: [0.7, 0.5, 1.05], state: function (s, l) {
@@ -319,6 +319,9 @@
   }
   function trace(p) {
     ctx.beginPath();
+    addTrace(p);
+  }
+  function addTrace(p) {
     ctx.moveTo(p[0], p[1]);
     for (var i = 1; i < NP; i++) ctx.lineTo(p[2 * i], p[2 * i + 1]);
     ctx.closePath();
@@ -347,33 +350,62 @@
     }
     ctx.globalAlpha = 1;
   }
+  // Once the square settles (ghost): its corners outside the shape are hatched
+  // and dashed blue, unused; the shape outside it turns dashed ember, missing.
   function drawCropped(s) {
-    var h = s.sq * s.R, x0 = s.cx - h, y0 = s.cy - h;
+    var h = s.sq * s.R, x0 = s.cx - h, y0 = s.cy - h, w = 2 * h, g = s.ghost, d;
     ctx.save();
-    ctx.beginPath(); ctx.rect(x0, y0, 2 * h, 2 * h); ctx.clip();
-    ctx.globalAlpha = 0.05 * s.sqA * SA; ctx.fillStyle = "#2b6c9b"; ctx.fillRect(x0, y0, 2 * h, 2 * h);
+    ctx.beginPath(); ctx.rect(x0, y0, w, w); ctx.clip();
+    ctx.globalAlpha = 0.05 * s.sqA * SA; ctx.fillStyle = rgba(SHELF, 1); ctx.fillRect(x0, y0, w, w);
+    if (g > 0.001) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x0, y0, w, w); addTrace(sp); ctx.clip("evenodd");
+      ctx.beginPath();
+      for (d = -w; d < w; d += 5) { ctx.moveTo(x0 + d, y0 + w); ctx.lineTo(x0 + d + w, y0); }
+      ctx.globalAlpha = 0.45 * g * s.sqA * SA; ctx.strokeStyle = rgba(SHELF, 1); ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
     drawShape(s, 1);
     ctx.restore();
     ctx.save();
-    ctx.beginPath(); ctx.rect(-20, -20, AW + 40, AH + 40); ctx.rect(x0, y0, 2 * h, 2 * h); ctx.clip("evenodd");
-    if (s.ghost < 0.999) drawShape(s, 1 - s.ghost);
-    if (s.ghost > 0.001) {
+    ctx.beginPath(); ctx.rect(-20, -20, AW + 40, AH + 40); ctx.rect(x0, y0, w, w); ctx.clip("evenodd");
+    if (g < 0.999) drawShape(s, 1 - g);
+    if (g > 0.001) {
       trace(sp);
-      ctx.globalAlpha = s.ghost * 0.5 * s.inkA * SA;
-      ctx.setLineDash([3, 5]);
-      ctx.strokeStyle = rgba(s.ink, 1);
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.1 * g * SA; ctx.fillStyle = rgba(EMB, 1); ctx.fill();
+      ctx.globalAlpha = 0.9 * g * SA; ctx.strokeStyle = rgba(EMB, 1); ctx.lineWidth = 1.3;
+      ctx.setLineDash([3, 5]); ctx.lineJoin = "round"; ctx.stroke(); ctx.setLineDash([]);
     }
     ctx.restore();
     if (s.sqA > 0.002) {
-      ctx.globalAlpha = s.sqA * SA;
-      ctx.strokeStyle = rgba(s.ink, 1);
       ctx.lineWidth = 1.5;
-      ctx.strokeRect(x0, y0, 2 * h, 2 * h);
+      ctx.save(); trace(sp); ctx.clip();
+      ctx.globalAlpha = s.sqA * SA; ctx.strokeStyle = rgba(s.ink, 1); ctx.strokeRect(x0, y0, w, w);
+      ctx.restore();
+      ctx.save();
+      ctx.beginPath(); ctx.rect(-20, -20, AW + 40, AH + 40); addTrace(sp); ctx.clip("evenodd");
+      if (g < 0.999) { ctx.globalAlpha = (1 - g) * s.sqA * SA; ctx.strokeStyle = rgba(s.ink, 1); ctx.strokeRect(x0, y0, w, w); }
+      if (g > 0.001) {
+        ctx.globalAlpha = 0.9 * g * s.sqA * SA; ctx.strokeStyle = rgba(SHELF, 1); ctx.lineWidth = 1.3;
+        ctx.setLineDash([3, 5]); ctx.strokeRect(x0, y0, w, w); ctx.setLineDash([]);
+      }
+      ctx.restore();
+    }
+    if (s.lab * SA > 0.002) {
+      var R = s.R;
+      ctx.globalAlpha = s.lab * SA;
+      pointer(x0 + 0.09 * R, y0 + 0.12 * R, x0 - 0.24 * R, y0 - 0.12 * R, "UNUSED", SHELF, "right");
+      pointer(s.cx + 0.01 * R, s.cy - 0.84 * R, s.cx + 0.46 * R, s.cy - 1.04 * R, "MISSING", EMB, "left");
     }
     ctx.globalAlpha = 1;
+  }
+  function pointer(x1, y1, x2, y2, str, col, align) {
+    ctx.fillStyle = ctx.strokeStyle = rgba(col, 1);
+    ctx.beginPath(); ctx.arc(x1, y1, 2, 0, TAU); ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    label(ctx, str, x2 + (align === "right" ? -5 : 5), y2 + 4, 11, 700, rgba(col, 1), align, 1.3);
   }
   function drawHug(s) {
     if (s.hugA * SA < 0.002 || s.hugDraw < 0.002) return;
