@@ -892,10 +892,11 @@
   function wheelIntro(n) { return 1.1 / (0.95 * n + 1.1); }
   function wheelPos(l, n) {
     var a = wheelIntro(n);
-    if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k) }; }
-    if (n < 2) return { p: 0, lit: 1 };
+    // the wheel is not there at first: it fades in over the introduction
+    if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k), show: sm(0.12, 0.78, k) }; }
+    if (n < 2) return { p: 0, lit: 1, show: 1 };
     var q = clamp((l - a) / (1 - a)) * (n - 1), f = Math.min(Math.floor(q), n - 2);
-    return { p: f + sm(0.3, 0.7, q - f), lit: 1 };
+    return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1 };
   }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
@@ -917,6 +918,8 @@
       var turn = (1 - near) * 38;
       sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
       sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
+      sp.style.opacity = wp.show.toFixed(3);
+      sp.style.visibility = wp.show > 0.01 ? "visible" : "hidden";
       // the rest are only their logos: further back, smaller, dimmer, darker, softer
       var dim = 1 - e;
       img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
