@@ -91,6 +91,9 @@ export const SETTING_DEFAULTS = {
   // connected and google_busy is on. "primary" is the connected account's own.
   google_busy: true,
   google_calendars: ["primary"],
+  // Other people's calendars shared with the connected account. Only their
+  // events that involve the owner (invited, or named in the title) count.
+  google_shared_calendars: [],
   // Members can pay for a pack by card through Stripe Checkout. Off until
   // the owner turns it on under Purchases, and only shown while Stripe is
   // connected.
@@ -126,7 +129,8 @@ function validSetting(key, value) {
     case "card_checkout":
       return typeof value === "boolean";
     case "google_calendars":
-      return Array.isArray(value) && value.length >= 1 && value.length <= 10 &&
+    case "google_shared_calendars":
+      return Array.isArray(value) && value.length >= (key === "google_calendars" ? 1 : 0) && value.length <= 10 &&
         value.every((id) => typeof id === "string" && /^[^\s<>"']{1,200}$/.test(id));
     case "owner_timezone":
       // The slot calculator does date arithmetic in this zone; a name it
@@ -317,7 +321,7 @@ route("GET", "/auth/:provider/callback", async (context, params) => {
   const meta = await consumeState(provider, url.searchParams.get("state"));
   const code = url.searchParams.get("code");
   const clearNonce = cookie(NONCE_COOKIE, "", { maxAge: 0, path: "/api/hearth/auth", sameSite: "Lax" });
-  const failed = () => redirect(`${HEARTH_PATH}?error=signin`, 302, { "Set-Cookie": clearNonce });
+  const failed = () => redirect(`${HEARTH_PATH}/sign-in?error=signin`, 302, { "Set-Cookie": clearNonce });
   if (!meta || typeof code !== "string" || !code) return failed();
   const nonce = readCookie(context.request.headers.get("cookie"), NONCE_COOKIE);
   if (!nonce || !meta.nonce || hashToken(nonce) !== meta.nonce) return failed();
@@ -379,7 +383,7 @@ route("GET", "/auth/email/callback", async (context) => {
   const url = new URL(context.request.url);
   const token = url.searchParams.get("token");
   const row = (await consumeEmailToken(token, "magic")) || (await consumeEmailToken(token, "invite"));
-  if (!row) return redirect(`${HEARTH_PATH}?error=link`);
+  if (!row) return redirect(`${HEARTH_PATH}/sign-in?error=link`);
   let user = row.user_id ? await findUserById(row.user_id) : await findUserByEmail(row.email);
   let created = false;
   if (!user) {
@@ -391,7 +395,7 @@ route("GET", "/auth/email/callback", async (context) => {
     if (!user.email_verified_at) await sql()`update users set email_verified_at = now() where id = ${user.id}`;
     user = await promoteIfAdmin(user);
   }
-  if (user.status !== "active") return redirect(`${HEARTH_PATH}?error=suspended`);
+  if (user.status !== "active") return redirect(`${HEARTH_PATH}/sign-in?error=suspended`);
   const { cookie, to } = await finishSignIn(context, user, { created, provider: "email", next: row.meta?.next });
   return redirect(created ? `${to}?welcome=1` : to, 302, { "Set-Cookie": cookie });
 });

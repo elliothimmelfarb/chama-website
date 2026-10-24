@@ -786,6 +786,9 @@ body {
 .paint-cell.on:hover { background: #ff6a33; }
 .paint-cell.on.top { border-top-left-radius: 5px; border-top-right-radius: 5px; }
 .paint-cell.on.bottom { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
+/* Dates already gone cannot be painted. */
+.paint-cell:disabled { cursor: default; background: transparent; }
+.paint-cell.on:disabled { background: var(--ember); opacity: 0.35; }
 .paint-cell:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; position: relative; z-index: 1; }
 .paint-quick { gap: 0.5rem; }
 .day-panel .input[type="time"] { width: 8.5rem; flex: none; }
@@ -943,6 +946,8 @@ body {
 .date-gcal { font-size: 0.66rem; color: #8fb3e6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gcal-list > * { padding-inline: 0; }
 .gcal-list .meta { color: #8fb3e6; }
+.gcal-swatch { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 3px; margin-right: 0.5rem; vertical-align: 0.05em; background: var(--ev, #8fb3e6); }
+.gcal-swatch.fyi { background: transparent; box-shadow: inset 0 0 0 2px var(--ev, #a39a90); }
 
 .dayline-wrap { display: grid; gap: 1.6rem; }
 .dayline { position: relative; height: 2.6rem; border-radius: 8px; background: var(--ground-2); box-shadow: inset 0 0 0 1px var(--line); margin-top: 0.2rem; }
@@ -951,6 +956,10 @@ body {
 .dl-open { top: 10px; bottom: 10px; background: var(--ember); }
 .dl-google { top: 6px; bottom: 6px; background: repeating-linear-gradient(-45deg, rgba(143, 179, 230, 0.55) 0 5px, rgba(143, 179, 230, 0.35) 5px 10px); box-shadow: inset 0 0 0 1px #8fb3e6; z-index: 1; }
 .dl-booked { top: 6px; bottom: 6px; background: var(--good); z-index: 2; }
+.dl-google[style*="--ev"] { background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--ev) 75%, transparent) 0 5px, color-mix(in srgb, var(--ev) 50%, transparent) 5px 10px); box-shadow: inset 0 0 0 1px var(--ev); }
+.dl-google.fyi { top: 14px; bottom: 14px; z-index: 0; background: color-mix(in srgb, var(--ev, #a39a90) 40%, var(--ground-2)); box-shadow: inset 3px 0 0 var(--ev, #a39a90), inset 0 0 0 1px color-mix(in srgb, var(--ev, #a39a90) 70%, transparent); }
+.dl-google.fyi .dayline-text { color: var(--text); line-height: calc(2.6rem - 28px); font-size: 0.64rem; }
+.dl-key > .dl-google.fyi { box-shadow: inset 2px 0 0 #a39a90, inset 0 0 0 1px rgba(163, 154, 144, 0.55); }
 .dayline-text { display: block; padding: 0 0.4rem; font-size: 0.7rem; line-height: calc(2.6rem - 12px); color: #0e0c0a; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-tick { position: absolute; top: calc(100% + 0.3rem); transform: translateX(-50%); font-size: 0.66rem; color: var(--text-faint); font-variant-numeric: tabular-nums; }
 .dl-tick.first { transform: none; }
@@ -983,6 +992,10 @@ body {
 .ov.clipped { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .ov-text { display: block; padding: 2px 4px; font-size: 0.64rem; line-height: 1.2; font-weight: 600; color: #0e0c0a; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-word; }
 .ov-google.all-day .ov-text { color: #cfe0f7; }
+.ov-google[style*="--ev"] { background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--ev) 80%, transparent) 0 5px, color-mix(in srgb, var(--ev) 58%, transparent) 5px 10px); box-shadow: inset 0 0 0 1px var(--ev); z-index: 1; }
+.ov-google.fyi, .ov-google.fyi.all-day { background: color-mix(in srgb, var(--ev, #a39a90) 40%, #0e0c0a); box-shadow: inset 4px 0 0 var(--ev, #a39a90), inset 0 0 0 1px color-mix(in srgb, var(--ev, #a39a90) 70%, transparent); z-index: 0; }
+.ov-google.fyi .ov-text { color: var(--text); font-weight: 500; padding-left: 7px; }
+.ov-google.fyi.all-day .ov-text { -webkit-line-clamp: 1; white-space: nowrap; }
 @media (max-width: 34rem) {
   .week-note { flex-basis: 100%; text-align: left; }
   .ov-text { font-size: 0.56rem; padding: 1px 2px; }

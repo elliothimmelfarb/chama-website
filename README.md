@@ -18,7 +18,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
 | `api/watchdog.js` | The cron job that reviews conversations and can put the flame out. |
 | `admin.html`, `assets/admin.*`, `api/admin-auth.js`, `api/admin-data.js` | The private, read-only admin area at `/admin`. |
-| `hearth.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform. See [The Hearth](#the-hearth). |
+| `hearth-public.html`, `hearth-room.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform, and its public page. See [The Hearth](#the-hearth). |
 | `privacy.html` | The privacy notice. |
 | `404.html`, `assets/sparks.js` | The not-found page, with a small catch-the-sparks game. |
 | `vercel.json` | Headers, redirects, rewrites and cron schedules. |
@@ -26,6 +26,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
 | `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
 | `assets/work/` | The client and friends' logos for `/work` and the heroes' logo rows, self-hosted WebP. Each one is listed with that company's permission; see Work below. |
+| `brand/index.html`, `brand/kit/` | The media kit at `/brand`: logo PNGs, the mark, avatars, a zip and `GUIDELINES.txt` for people linking to us. `llms.txt` links the files directly. Rebuild with `sh brand/kit/build.sh` after the mark changes. |
 | `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
 
 Every public page makes zero external requests. `test/pages.test.js` holds that rule, the navigation rules and the sitemap rules.
@@ -88,7 +89,8 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 
 | File | What it is |
 |---|---|
-| `hearth.html` | The shell for `/hearth/*`, `noindex`, with its own CSP. |
+| `hearth-public.html` | The public page at `/hearth` for anyone without a session cookie: what the room is, for prospective coaching clients. Indexable, with its own sharing card (`og-hearth-2026-10-22.png` from `brand/og/og-hearth.html`). Static: it loads nothing from the room and calls no endpoint. |
+| `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. |
 | `assets/hearth.js`, `assets/hearth.css` | The core app (router, sign-in, frame, account) and design. No `innerHTML` anywhere in the room. |
 | `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. |
 | `api/hearth.js` | The router behind `/api/hearth/*`. The routes are in `lib/hearth/routes/`. |
@@ -97,6 +99,10 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 | `api/feed.js` | The public feed at `/feed` and `/feed.xml`, off until `feed_public` is on. |
 | `api/hearth-cron.js` | Hourly at `:20`: reminders, Meet transcript pulls, unsettled card checkouts, expired token sweep. |
 | `api/stripe-webhook.js`, `lib/hearth/stripe.js`, `lib/hearth/routes/invoices.js`, `lib/hearth/routes/checkout.js` | Stripe: the client, invoices, card checkout for packs, and the signed webhook at `/api/stripe-webhook`. |
+
+### Routing
+
+`/hearth` is two pages on one address, chosen in `vercel.json` by the session cookie: with `__Host-chama_hearth` it rewrites to the room (`hearth-room.html`, `noindex`, the room's CSP), without it to the public page (`hearth-public.html`). Crawlers and link previews never carry the cookie, so they always get the public page. `/hearth/*` is always the room and stays `noindex` and disallowed in `robots.txt`. Sign-in errors land on `/hearth/sign-in?error=...`, and a signed-in member who opens `/hearth/sign-in` is moved to Home. `vercel dev` ignores `has` conditions, so check the routing on a preview deployment with and without the cookie.
 
 ### Data
 
@@ -141,7 +147,7 @@ Three paths settle it, all through `settleCheckout` and the same compare-and-set
 
 Before turning card payment on: add `checkout.session.completed` and `checkout.session.async_payment_succeeded` to the webhook endpoint `we_1UQsBvKIjHJB7AoptnkdEcEw` (without them the return page and the cron still settle payments, only later), and make sure the restricted key can write Checkout Sessions and read and write Customers and Invoices. The site has no terms or refund page yet.
 
-Availability is painted on a weekly grid of half hours in the owner's zone (each painted run is one row in `availability_rules`). A real week, chosen with arrows, is laid over the grid: the Google Calendar events and booked sessions of those dates, so the week is painted around them. Under it, the coming weeks as dates: a day can be taken off (a whole-day block), given extra time (`availability_openings`), or blocked in part, and the panel shows exactly which times members are offered (`GET /admin/slots`, the same calculator they use). When Google is connected, the coming weeks also show the events on Elliot's Google calendars (titles only on the owner's side), and with Block booking on (`google_busy`, default on) members are not offered times that overlap them. The calendars read are `google_calendars` (default the connected account's `primary`); another account's calendar must be shared with the connected account first. Events are read with the existing `calendar.events` scope, cached two minutes per instance, and a failed read blocks nothing. Members book from a strip of days that glow by how open they are, see the chosen day as a daylight bar, and confirm with the cost spelled out. Booking emails both sides a calendar file. Once the owner connects Google in Settings, each booking gets a Calendar event with a Meet room, and the hourly cron pulls the Meet transcript after the session and writes the record.
+Availability is painted date by date on a grid of half hours in the owner's zone: the grid is always a real week, chosen with arrows, and each painted run is one row in `availability_days` for that date alone, so nothing repeats into the next week (since 2026-10-22; the old weekly `availability_rules` were laid onto the next 60 days by migration 010 and are no longer read). Quick fills work on the week shown, and "Same as last week" and "Copy to next week" copy a whole week when it should repeat. Past dates are locked. The Google Calendar events and booked sessions of those dates are drawn over the grid, so the week is painted around them. Under it, the coming weeks as dates: picking one shows its week in the grid, and a day can be taken off (a whole-day block), given more hours, or blocked in part (older one-off `availability_openings` still count), and the panel shows exactly which times members are offered (`GET /admin/slots`, the same calculator they use). When Google is connected, the coming weeks also show the events on Elliot's Google calendars (titles only on the owner's side), and with Block booking on (`google_busy`, default on) members are not offered times that overlap them. The calendars read are `google_calendars` (default the connected account's `primary`); another account's calendar must be shared with the connected account first. Someone else's calendar shared with him (Youngjuen's) goes in `google_shared_calendars` instead, the second field under Calendars: every event on those is drawn in the colour she gave it, so he knows what is going on at home, but only the ones that involve him block booking: they invite one of his addresses, name him in the title, or are coloured green (Sage or Basil, her mark for both of them). The rest, and anything she marked free, are outlined boxes marked "shared, does not block". An event seen on two calendars is kept once. Events are read with the existing `calendar.events` scope, cached two minutes per instance, and a failed read blocks nothing. Members book from a strip of days that glow by how open they are, see the chosen day as a daylight bar, and confirm with the cost spelled out. Booking emails both sides a calendar file. Once the owner connects Google in Settings, each booking gets a Calendar event with a Meet room, and the hourly cron pulls the Meet transcript after the session and writes the record.
 
 Through MCP, `add_transcript` with `draft` attaches a transcript without writing the record or telling the member, and `write_record` writes it without mail, so the owner can read a record before the client is told. Without `draft`, adding a transcript writes the record and emails the member.
 

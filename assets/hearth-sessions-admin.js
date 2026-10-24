@@ -118,6 +118,12 @@
 
   // The owner's zone is only told to the page by /admin/availability. Until
   // that answers, the viewer's own zone is the honest fallback.
+  // A shared calendar's event keeps the colour it was given there.
+  function tint(node, color) {
+    if (typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color)) node.style.setProperty("--ev", color);
+    return node;
+  }
+
   function ownerZone() {
     return (H.state.user && H.state.user.timezone) || "UTC";
   }
@@ -1303,10 +1309,10 @@
 
   /* ---------- availability ---------- */
 
-  // The week is painted on a grid of half hours. Each run of painted cells
-  // in a column is saved as one weekly window, in the owner's zone. Below it,
-  // the coming weeks as dates, where one day can be taken off or given extra
-  // time without touching the week.
+  // A real week of dates is painted on a grid of half hours. Each run of
+  // painted cells is saved as a window on that date alone, in the owner's
+  // zone; next week starts empty unless it is painted or copied. Below it,
+  // the coming weeks as dates, each with exactly what members are offered.
 
   var CELL = 30;
   var SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -1373,7 +1379,7 @@
       state.data = data;
       state.zone = data.timezone || ownerZone();
       var wrap = el("div", "stack");
-      wrap.appendChild(H.viewHead("Availability", "Paint the hours you take sessions. Members see these times, less anything already booked, in their own timezone."));
+      wrap.appendChild(H.viewHead("Availability", "Paint the hours you take sessions, date by date. Members see these times, less anything already booked, in their own timezone."));
 
       var week = weekPainter();
       var dates = datesCard();
@@ -1387,14 +1393,17 @@
 
       function weekPainter() {
         var sessionMinutes = data.sessionMinutes || defaultMinutes();
+        // Painted half hours by date ("YYYY-MM-DD"). A date nobody painted
+        // is closed; nothing carries from one week to the next.
         var cells = {};
-        WEEK.forEach(function (d) { cells[d.weekday] = []; for (var i = 0; i < 48; i += 1) cells[d.weekday].push(false); });
+        function cellsOf(key) {
+          if (!cells[key]) { cells[key] = []; for (var i = 0; i < 48; i += 1) cells[key].push(false); }
+          return cells[key];
+        }
         var lo = 7 * 60, hi = 21 * 60;
-        (data.rules || []).forEach(function (r) {
-          if (r.active === false) return;
-          var wd = Number(r.weekday);
-          if (!cells[wd]) return;
-          for (var i = Math.floor(r.start_minute / CELL); i < Math.ceil(r.end_minute / CELL) && i < 48; i += 1) cells[wd][i] = true;
+        (data.days || []).forEach(function (r) {
+          var c = cellsOf(r.day);
+          for (var i = Math.floor(r.start_minute / CELL); i < Math.ceil(r.end_minute / CELL) && i < 48; i += 1) c[i] = true;
           lo = Math.min(lo, Math.floor(r.start_minute / 60) * 60);
           hi = Math.max(hi, Math.ceil(r.end_minute / 60) * 60);
         });
@@ -1410,17 +1419,19 @@
         append(head, [titleBox, status]);
         card.appendChild(head);
 
-        // A real week laid over the template: what is on your Google
-        // calendars and what is booked, so the week is painted around them.
-        // The painting itself stays the same for every week.
+        // The grid is always a real week: paint a date and only that date
+        // opens. Your Google calendars and booked sessions for those dates
+        // are drawn over it, so the hours are painted around them.
         var today = zoneParts(new Date(), state.zone);
+        var todayKey = ymdKey(today);
         var thisMonday = addDays(today, -((today.weekday + 6) % 7));
         var weekOffset = 0;
+        var colKey = {};
         var weekBar = el("div", "row week-bar");
         var prevWeek = button("Previous week", "btn sm icon-btn", function () { weekOffset -= 1; loadWeek(); });
         var nextWeek = button("Next week", "btn sm icon-btn", function () { weekOffset += 1; loadWeek(); });
-        prevWeek.textContent = "\u2039";
-        nextWeek.textContent = "\u203A";
+        prevWeek.textContent = "‹";
+        nextWeek.textContent = "›";
         prevWeek.setAttribute("aria-label", "Previous week");
         nextWeek.setAttribute("aria-label", "Next week");
         var weekLabel = el("p", "small week-label");
@@ -1431,7 +1442,7 @@
 
         var grid = el("div", "paint");
         grid.setAttribute("role", "grid");
-        grid.setAttribute("aria-label", "Weekly availability in " + state.zone + ", half hour cells");
+        grid.setAttribute("aria-label", "Availability by date in " + state.zone + ", half hour cells");
         var buttons = {};
         var dayTotals = {};
         var dayDates = {};
@@ -1454,7 +1465,6 @@
             b.type = "button";
             b.dataset.wd = String(d.weekday);
             b.dataset.i = String(i);
-            b.setAttribute("aria-label", d.label + " " + minutesToClock(i * CELL) + " to " + minutesToClock(i * CELL + CELL));
             buttons[d.weekday + ":" + i] = b;
             grid.appendChild(b);
           });
@@ -1466,7 +1476,7 @@
         scroller.appendChild(grid);
         card.appendChild(scroller);
         var legend = el("div", "dl-legend");
-        [["dl-open", "your week"], ["dl-google", "Google Calendar"], ["dl-booked", "booked"]].forEach(function (x) {
+        [["dl-open", "open for booking"], ["dl-google", "Google Calendar"], ["dl-google fyi", "shared, does not block"], ["dl-booked", "booked"]].forEach(function (x) {
           append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
         });
         card.appendChild(legend);
@@ -1474,7 +1484,13 @@
         var weekItems = [];
         var weekSeq = 0;
 
-        function weekStart() { return addDays(thisMonday, weekOffset * 7); }
+        function weekStart(offset) { return addDays(thisMonday, (offset === undefined ? weekOffset : offset) * 7); }
+        function keysOf(offset) {
+          var monday = weekStart(offset), out = {};
+          WEEK.forEach(function (d) { out[d.weekday] = ymdKey(addDays(monday, (d.weekday + 6) % 7)); });
+          return out;
+        }
+        function isPast(wd) { return colKey[wd] < todayKey; }
 
         function loadWeek() {
           var monday = weekStart();
@@ -1485,13 +1501,22 @@
           weekLabel.textContent = fmt(monday, monday.month !== sunday.month) + " to " + fmt(sunday, true);
           backToday.hidden = weekOffset === 0;
           prevWeek.disabled = weekOffset <= -1;
+          colKey = keysOf();
           WEEK.forEach(function (d) {
             var ymd = addDays(monday, (d.weekday + 6) % 7);
             dayDates[d.weekday].textContent = String(ymd.day);
-            var key = ymdKey(ymd);
-            dayDates[d.weekday].classList.toggle("today", key === ymdKey(today));
+            dayDates[d.weekday].classList.toggle("today", colKey[d.weekday] === todayKey);
+            var label = new Date(Date.UTC(ymd.year, ymd.month - 1, ymd.day)).toLocaleDateString(undefined, { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" });
+            for (var i = first; i < last; i += 1) {
+              var b = buttons[d.weekday + ":" + i];
+              b.disabled = isPast(d.weekday);
+              b.setAttribute("aria-label", label + " " + minutesToClock(i * CELL) + " to " + minutesToClock(i * CELL + CELL));
+            }
           });
+          drawAll();
           var seq = ++weekSeq;
+          weekItems = [];
+          clear(overlay);
           weekNote.textContent = "Reading your calendar...";
           var q = "?from=" + encodeURIComponent(from.toISOString()) + "&to=" + encodeURIComponent(to.toISOString());
           Promise.all([
@@ -1501,7 +1526,7 @@
             if (seq !== weekSeq) return;
             var g = r[0];
             weekItems = [];
-            (g.events || []).forEach(function (e) { weekItems.push({ kind: "google", starts: e.startsAt, ends: e.endsAt, title: e.title, allDay: e.allDay }); });
+            (g.events || []).forEach(function (e) { weekItems.push({ kind: "google", starts: e.startsAt, ends: e.endsAt, title: e.title, allDay: e.allDay, blocks: e.blocks !== false, color: e.color }); });
             (r[1].bookings || []).filter(function (b) { return b.status === "scheduled"; }).forEach(function (b) {
               weekItems.push({ kind: "booked", starts: b.startsAt, ends: b.endsAt, title: memberName(b.member) });
             });
@@ -1539,12 +1564,15 @@
                 var early = (Math.min(e, dayEnd) - dayStart) / 60000 <= lo;
                 a = early ? lo : hi - 8; b = a + 8;
               }
-              var node = el("span", "ov ov-" + item.kind + (item.allDay ? " all-day" : "") + (clipped ? " clipped" : ""));
+              var node = el("span", "ov ov-" + item.kind + (item.allDay ? " all-day" : "") + (clipped ? " clipped" : "") + (item.blocks === false ? " fyi" : ""));
+              tint(node, item.color);
               node.style.top = (top0 + ((a - lo) / CELL) * cellH) + "px";
               node.style.height = Math.max(6, ((b - a) / CELL) * cellH - 2) + "px";
+              // A shared all-day reminder takes no time: a band at the top.
+              if (item.allDay && item.blocks === false) node.style.height = Math.min(cellH * 2, 34) - 2 + "px";
               node.style.left = col.offsetLeft + "px";
               node.style.width = col.offsetWidth + "px";
-              if (((b - a) / CELL) * cellH >= 22) node.appendChild(el("span", "ov-text", item.title));
+              if (((b - a) / CELL) * cellH >= 22 || (item.allDay && item.blocks === false)) node.appendChild(el("span", "ov-text", item.title));
               overlay.appendChild(node);
             });
           });
@@ -1553,8 +1581,11 @@
         window.addEventListener("resize", onResize);
 
         function paintCell(wd, i, on) {
-          if (cells[wd][i] === on) return false;
-          cells[wd][i] = on;
+          if (isPast(wd)) return false;
+          var c = cellsOf(colKey[wd]);
+          if (c[i] === on) return false;
+          c[i] = on;
+          dirtyDays[colKey[wd]] = true;
           draw(wd, i);
           return true;
         }
@@ -1562,10 +1593,11 @@
         function draw(wd, i) {
           var b = buttons[wd + ":" + i];
           if (!b) return;
-          var on = cells[wd][i];
+          var c = cellsOf(colKey[wd]);
+          var on = c[i];
           b.classList.toggle("on", on);
-          b.classList.toggle("top", on && !cells[wd][i - 1]);
-          b.classList.toggle("bottom", on && !cells[wd][i + 1]);
+          b.classList.toggle("top", on && !c[i - 1]);
+          b.classList.toggle("bottom", on && !c[i + 1]);
           b.setAttribute("aria-pressed", String(on));
         }
 
@@ -1578,13 +1610,13 @@
           var weekMinutes = 0, sessions = 0;
           WEEK.forEach(function (d) {
             var m = 0;
-            runsOf(cells[d.weekday]).forEach(function (r) { m += r[1] - r[0]; sessions += Math.floor((r[1] - r[0]) / sessionMinutes); });
+            runsOf(cellsOf(colKey[d.weekday])).forEach(function (r) { m += r[1] - r[0]; sessions += Math.floor((r[1] - r[0]) / sessionMinutes); });
             weekMinutes += m;
             dayTotals[d.weekday].textContent = m ? (m / 60 % 1 === 0 ? m / 60 : (m / 60).toFixed(1)) + "h" : "";
           });
           total.textContent = weekMinutes
-            ? hoursText(weekMinutes) + " a week, room for up to " + sessions + " session" + (sessions === 1 ? "" : "s") + ". In " + state.zone + "."
-            : "Nothing painted yet, so nobody can book. Drag across the grid to open some hours.";
+            ? hoursText(weekMinutes) + " open this week, room for up to " + sessions + " session" + (sessions === 1 ? "" : "s") + ". In " + state.zone + "."
+            : "Nothing open this week. Drag across a day to open hours on that date only.";
         }
 
         // Mouse and pen paint by dragging; the first cell decides whether the
@@ -1595,10 +1627,10 @@
         grid.addEventListener("pointerdown", function (e) {
           if (e.pointerType === "touch" || e.button !== 0) return;
           var b = e.target.closest && e.target.closest(".paint-cell");
-          if (!b) return;
+          if (!b || b.disabled) return;
           e.preventDefault();
           var wd = +b.dataset.wd, i = +b.dataset.i;
-          stroke = { on: !cells[wd][i], changed: false };
+          stroke = { on: !cellsOf(colKey[wd])[i], changed: false };
           if (paintCell(wd, i, stroke.on)) stroke.changed = true;
           grid.classList.add("painting");
           swallowClick = true;
@@ -1624,17 +1656,28 @@
           var b = e.target.closest && e.target.closest(".paint-cell");
           if (!b) return;
           var wd = +b.dataset.wd, i = +b.dataset.i;
-          paintCell(wd, i, !cells[wd][i]);
+          if (!paintCell(wd, i, !cellsOf(colKey[wd])[i])) return;
           drawNeighbours(wd, i);
           totals();
           changedWeek();
         });
         function drawNeighbours(wd, i) { draw(wd, i - 1); draw(wd, i + 1); }
 
-        /* ---------- quick fills ---------- */
+        /* ---------- quick fills, on the dates shown ---------- */
 
+        function setDay(key, from, to) {
+          if (key < todayKey) return;
+          var c = cellsOf(key);
+          for (var i = 0; i < 48; i += 1) c[i] = i >= from / CELL && i < to / CELL;
+          dirtyDays[key] = true;
+        }
+        function copyDay(fromKey, toKey) {
+          if (toKey < todayKey) return;
+          cells[toKey] = cellsOf(fromKey).slice();
+          dirtyDays[toKey] = true;
+        }
         function fill(days, from, to) {
-          days.forEach(function (wd) { for (var i = 0; i < 48; i += 1) cells[wd][i] = i >= from / CELL && i < to / CELL; });
+          days.forEach(function (wd) { setDay(colKey[wd], from, to); });
           drawAll();
           changedWeek();
         }
@@ -1644,12 +1687,25 @@
           button("Weekdays 9 to 5", "btn sm", function () { fill(weekdays, 9 * 60, 17 * 60); }),
           button("Weekday mornings", "btn sm", function () { fill(weekdays, 9 * 60, 12 * 60); }),
           button("Copy Monday to the weekdays", "btn sm", function () {
-            [2, 3, 4, 5].forEach(function (wd) { cells[wd] = cells[1].slice(); });
+            [2, 3, 4, 5].forEach(function (wd) { copyDay(colKey[1], colKey[wd]); });
             drawAll();
             changedWeek();
           }),
-          button("Clear the week", "btn sm ghost", function () {
-            if (!window.confirm("Close every hour of the week? Booked sessions stay booked.")) return;
+          button("Same as last week", "btn sm", function () {
+            var before = keysOf(weekOffset - 1);
+            WEEK.forEach(function (d) { copyDay(before[d.weekday], colKey[d.weekday]); });
+            drawAll();
+            changedWeek();
+          }),
+          button("Copy to next week", "btn sm", function () {
+            var after = keysOf(weekOffset + 1);
+            WEEK.forEach(function (d) { copyDay(colKey[d.weekday], after[d.weekday]); });
+            changedWeek();
+            weekOffset += 1;
+            loadWeek();
+          }),
+          button("Clear this week", "btn sm ghost", function () {
+            if (!window.confirm("Close every hour of this week? Booked sessions stay booked.")) return;
             fill([0, 1, 2, 3, 4, 5, 6], 0, 0);
           })
         ]);
@@ -1658,6 +1714,7 @@
         /* ---------- saving ---------- */
 
         var timer = null, saving = null, dirty = false;
+        var dirtyDays = {};
         function changedWeek() {
           dirty = true;
           status.textContent = "Unsaved";
@@ -1665,22 +1722,17 @@
           clearTimeout(timer);
           timer = setTimeout(save, 700);
         }
-        function body() {
-          var rules = [];
-          WEEK.forEach(function (d) {
-            runsOf(cells[d.weekday]).forEach(function (r) {
-              rules.push({ weekday: d.weekday, startMinute: r[0], endMinute: r[1], timezone: state.zone, active: true });
-            });
-          });
-          return { rules: rules };
-        }
         function save() {
           clearTimeout(timer);
           if (!dirty) return saving || Promise.resolve();
           if (saving) { timer = setTimeout(save, 300); return saving; }
           dirty = false;
+          var sent = dirtyDays;
+          dirtyDays = {};
+          var days = {};
+          Object.keys(sent).forEach(function (key) { days[key] = runsOf(cellsOf(key)); });
           status.textContent = "Saving";
-          saving = api("/admin/availability", { method: "PUT", body: body() }).then(function () {
+          saving = api("/admin/availability", { method: "PUT", body: { timezone: state.zone, days: days } }).then(function () {
             saving = null;
             status.textContent = "Saved";
             status.className = "save-state small good";
@@ -1688,6 +1740,7 @@
           }, function (error) {
             saving = null;
             dirty = true;
+            Object.keys(sent).forEach(function (key) { dirtyDays[key] = true; });
             status.textContent = "Not saved: " + error.message;
             status.className = "save-state small bad";
             toast(error.message, "bad");
@@ -1695,12 +1748,36 @@
           return saving;
         }
 
+        // Shows the week holding a date, so a date picked below can be painted.
+        function showDate(key) {
+          var p = key.split("-");
+          var ymd = { year: +p[0], month: +p[1], day: +p[2] };
+          var days = Math.round((Date.UTC(ymd.year, ymd.month - 1, ymd.day) - Date.UTC(thisMonday.year, thisMonday.month - 1, thisMonday.day)) / DAY);
+          var offset = Math.floor(days / 7);
+          if (offset === weekOffset) return;
+          weekOffset = offset;
+          loadWeek();
+        }
+
+        // Adds a window to one date, from the date panel below.
+        function open(key, from, to) {
+          var c = cellsOf(key);
+          for (var i = Math.floor(from / CELL); i < Math.ceil(to / CELL) && i < 48; i += 1) c[i] = true;
+          dirtyDays[key] = true;
+          changedWeek();
+          drawAll();
+          return save();
+        }
+
+        colKey = keysOf();
         drawAll();
         requestAnimationFrame(loadWeek);
         return {
           node: card,
           flush: function () { if (dirty) save(); window.removeEventListener("pointerup", endStroke); window.removeEventListener("pointercancel", endStroke); window.removeEventListener("resize", onResize); },
-          runsFor: function (wd) { return runsOf(cells[wd]); }
+          runsFor: function (key) { return runsOf(cellsOf(key)); },
+          showDate: showDate,
+          open: open
         };
       }
 
@@ -1711,7 +1788,7 @@
         var head = el("div");
         append(head, [
           el("h2", null, "The coming weeks"),
-          el("p", "small dim", "Pick a date to take it off, add extra time, or see the exact times members are offered. Members book from " + (data.noticeHours || 0) + " hours ahead, up to " + (data.horizonDays || 60) + " days out; change that in Settings.")
+          el("p", "small dim", "Pick a date to paint it above, take it off, or see the exact times members are offered. Members book from " + (data.noticeHours || 0) + " hours ahead, up to " + (data.horizonDays || 60) + " days out; change that in Settings.")
         ]);
         card.appendChild(head);
         var gStrip = el("div", "gcal-strip");
@@ -1741,7 +1818,7 @@
             state.bookings = (r[1].bookings || []).filter(function (b) { return b.status === "scheduled"; });
             state.data = r[2];
             state.gcal = r[3];
-            state.gcal.ranges = (r[3].events || []).map(function (e) { return { starts_at: e.startsAt, ends_at: e.endsAt, title: e.title, allDay: e.allDay }; });
+            state.gcal.ranges = (r[3].events || []).map(function (e) { return { starts_at: e.startsAt, ends_at: e.endsAt, title: e.title, allDay: e.allDay, blocks: e.blocks !== false, color: e.color, shared: (r[3].shared || []).indexOf(e.calendarId) >= 0 }; });
             drawStrip();
             draw();
           }, function (error) {
@@ -1769,7 +1846,8 @@
           var n = (g.events || []).length;
           text.appendChild(el("p", "small", "Google Calendar (" + (g.email || "connected") + "): " + n + (n === 1 ? " event" : " events") + " in these weeks, drawn on each date." + (g.blocks ? " Members cannot book over them." : " They do not block booking.")));
           var cals = (g.calendars || ["primary"]).map(function (c) { return c === "primary" ? (g.email || "your calendar") : c; });
-          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + "."));
+          var shared = g.shared || [];
+          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + "." + (shared.length ? " Also showing " + shared.join(", ") + " in its own colours; only its events with you, or coloured green, block booking." : "")));
           (g.unread || []).forEach(function (id) {
             text.appendChild(el("p", "small bad-text", "Could not read " + (id === "primary" ? "your main calendar" : id) + ". If it is another account's calendar, share it with " + (g.email || "the connected account") + " first."));
           });
@@ -1796,16 +1874,19 @@
           var g = state.gcal;
           var box = el("div", "stack tight gcal-form");
           var field1 = input("text", "calendars", "primary, someone@example.com", (g.calendars || ["primary"]).join(", "));
+          var field2 = input("text", "shared-calendars", "partner@example.com", (g.shared || []).join(", "));
           var line = el("p", "form-error");
+          var list = function (f) { return f.value.split(",").map(function (x) { return x.trim(); }).filter(Boolean); };
           var save = button("Save calendars", "btn sm primary", function () {
-            var ids = field1.value.split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+            var ids = list(field1);
             if (!ids.length) ids = ["primary"];
-            busy(save, api("/admin/settings", { method: "PUT", body: { google_calendars: ids } }))
+            busy(save, api("/admin/settings", { method: "PUT", body: { google_calendars: ids, google_shared_calendars: list(field2) } }))
               .then(function () { toast("Calendars saved.", "good"); return load(true); })
               .catch(function (error) { line.textContent = error.message; });
           });
           append(box, [
             field("Calendars to read", field1, "Comma separated. \"primary\" is " + (g.email || "the connected account") + ". To add another account's calendar, share it with " + (g.email || "that account") + " (See all event details) in Google Calendar, then add its address here."),
+            field("Shared calendars", field2, "Someone else's calendar shared with " + (g.email || "the connected account") + ". All its events are shown in their colours. Only the ones with you block booking: you are invited, your first name is in the title, or it is coloured green."),
             append(el("div", "row"), [save, button("Cancel", "btn sm ghost", drawStrip)]),
             line
           ]);
@@ -1858,11 +1939,11 @@
             if (booked) tile.appendChild(el("span", "date-booked", booked + " booked"));
             if (extra) tile.appendChild(el("span", "date-extra", "extra"));
             var gEvents = past ? [] : touching(state.gcal.ranges || [], ymd);
-            if (gEvents.length) tile.appendChild(el("span", "date-gcal", gEvents.some(function (e) { return e.allDay; }) ? "busy all day" : gEvents.length + (gEvents.length === 1 ? " event" : " events")));
+            if (gEvents.length) tile.appendChild(el("span", "date-gcal", gEvents.some(function (e) { return e.allDay && e.blocks; }) ? "busy all day" : gEvents.length + (gEvents.length === 1 ? " event" : " events")));
             if (ymd.day === 1 || n === 0) num.textContent = ymd.day + " " + new Date(Date.UTC(ymd.year, ymd.month - 1, ymd.day)).toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
             tile.setAttribute("aria-label", dayLabel(zonedInstant(ymd, 12 * 60, state.zone).toISOString(), state.zone) + ": " + (off ? "day off" : free + " open times") + (booked ? ", " + booked + " booked" : ""));
             (function (ymd, key) {
-              tile.addEventListener("click", function () { state.selected = key; draw(); });
+              tile.addEventListener("click", function () { state.selected = key; week.showDate(key); draw(); });
             })(ymd, key);
             cal.appendChild(tile);
           }
@@ -1894,8 +1975,8 @@
           top.appendChild(toggleOff);
           panel.appendChild(top);
 
-          var usual = week.runsFor(wd).map(function (r) { return minutesToClock(r[0]) + " to " + minutesToClock(r[1]); });
-          panel.appendChild(el("p", "small dim", usual.length ? "Your usual " + WEEK.filter(function (d) { return d.weekday === wd; })[0].label + ": " + usual.join(", ") + "." : "Nothing in your week on this day."));
+          var usual = week.runsFor(state.selected).map(function (r) { return minutesToClock(r[0]) + " to " + minutesToClock(r[1]); });
+          panel.appendChild(el("p", "small dim", usual.length ? "Open on this date: " + usual.join(", ") + "." : "No hours painted on this date."));
 
           var list = el("div", "list day-changes");
           touching(state.data.openings || [], ymd).forEach(function (o) {
@@ -1910,13 +1991,14 @@
           var free = state.slots.filter(function (s) { return dayKey(s.startsAt, state.zone) === state.selected; });
           var booked = state.bookings.filter(function (b) { return dayKey(b.startsAt, state.zone) === state.selected; });
           var gDay = touching(state.gcal.ranges || [], ymd);
-          panel.appendChild(dayLine(ymd, wd, free, booked, gDay, dayStart, dayEnd));
+          panel.appendChild(dayLine(state.selected, free, booked, gDay, dayStart, dayEnd));
           if (gDay.length) {
             var gl = el("div", "list gcal-list");
             gDay.forEach(function (e) {
               var row = el("div");
               var whenText = e.allDay ? "all day" : clockTime(e.starts_at, state.zone) + " to " + clockTime(e.ends_at, state.zone);
-              append(row, [append(el("div", "grow"), [el("div", "primary", e.title), el("div", "secondary", whenText)]), el("span", "meta", "Google")]);
+              var name = append(el("div", "primary"), [tint(el("span", "gcal-swatch" + (e.blocks ? "" : " fyi")), e.color), document.createTextNode(e.title)]);
+              append(row, [append(el("div", "grow"), [name, el("div", "secondary", whenText)]), el("span", "meta", !e.shared ? "Google" : e.blocks ? "Shared" : "Shared, does not block")]);
               gl.appendChild(row);
             });
             panel.appendChild(el("p", "label", "On your calendar"));
@@ -1947,10 +2029,9 @@
             line.textContent = "";
             return { startsAt: zonedInstant(ymd, a, state.zone).toISOString(), endsAt: zonedInstant(ymd, b, state.zone).toISOString() };
           }
-          var addExtra = button("Add extra time", "btn sm primary", function () {
+          var addExtra = button("Open this time", "btn sm primary", function () {
             var r = range(); if (!r) return;
-            busy(addExtra, api("/admin/openings", { method: "POST", body: r })).then(function () { toast("Extra time added.", "good"); flare(); return load(); })
-              .catch(function (error) { line.textContent = error.message; });
+            busy(addExtra, week.open(state.selected, clockToMinutes(from.value), clockToMinutes(to.value))).then(function () { toast("Opened.", "good"); flare(); });
           });
           var blockIt = button("Block this time", "btn sm", function () {
             var r = range(); if (!r) return;
@@ -1966,12 +2047,12 @@
 
         // The selected day as one line: your usual hours, what members can
         // book, your Google events and booked sessions, on the same clock.
-        function dayLine(ymd, wd, free, booked, gDay, dayStart, dayEnd) {
+        function dayLine(key, free, booked, gDay, dayStart, dayEnd) {
           var minutes = state.data.sessionMinutes || defaultMinutes();
           var startMs = dayStart.getTime();
           function m(iso) { return Math.max(0, Math.min(1440, (new Date(iso).getTime() - startMs) / 60000)); }
           var lo = 7 * 60, hi = 21 * 60;
-          var usual = week.runsFor(wd);
+          var usual = week.runsFor(key);
           usual.forEach(function (r) { lo = Math.min(lo, r[0]); hi = Math.max(hi, r[1]); });
           free.forEach(function (s) { lo = Math.min(lo, m(s.startsAt)); hi = Math.max(hi, m(s.startsAt) + minutes); });
           gDay.forEach(function (e) { if (!e.allDay) { lo = Math.min(lo, m(e.starts_at)); hi = Math.max(hi, m(e.ends_at)); } });
@@ -1981,10 +2062,10 @@
           var line = el("div", "dayline");
           line.setAttribute("role", "img");
           line.setAttribute("aria-label", "This day from " + minutesToClock(lo) + " to " + minutesToClock(hi));
-          function bar(cls, a, b, label) {
+          function bar(cls, a, b, label, color) {
             a = Math.max(lo, a); b = Math.min(hi, b);
             if (b <= a) return;
-            var node = el("span", cls);
+            var node = tint(el("span", cls), color);
             node.style.left = ((a - lo) / span * 100) + "%";
             node.style.width = ((b - a) / span * 100) + "%";
             if (label) { node.title = label; if ((b - a) / span > 0.12) node.appendChild(el("span", "dayline-text", label)); }
@@ -1994,7 +2075,7 @@
           var runs = [];
           free.forEach(function (s) { var a = m(s.startsAt); var last = runs[runs.length - 1]; if (last && a <= last[1]) last[1] = Math.max(last[1], a + minutes); else runs.push([a, a + minutes]); });
           runs.forEach(function (r) { bar("dl-open", r[0], r[1]); });
-          gDay.forEach(function (e) { bar("dl-google", e.allDay ? lo : m(e.starts_at), e.allDay ? hi : m(e.ends_at), e.title); });
+          gDay.forEach(function (e) { bar("dl-google" + (e.blocks ? "" : " fyi"), e.allDay ? lo : m(e.starts_at), e.allDay ? hi : m(e.ends_at), e.title, e.color); });
           booked.forEach(function (b) { bar("dl-booked", m(b.startsAt), m(b.endsAt), memberName(b.member)); });
           for (var h = lo; h <= hi; h += 60) {
             if ((h - lo) % (span > 720 ? 180 : 120) !== 0) continue;
@@ -2003,7 +2084,9 @@
             line.appendChild(t);
           }
           var legend = el("div", "dl-legend");
-          [["dl-usual", "your week"], ["dl-open", "members can book"], ["dl-google", "Google Calendar"], ["dl-booked", "booked"]].forEach(function (x) {
+          var keys = [["dl-usual", "painted"], ["dl-open", "members can book"], ["dl-google", "Google Calendar"]];
+          if (gDay.some(function (e) { return !e.blocks; })) keys.push(["dl-google fyi", "shared, does not block"]);
+          keys.concat([["dl-booked", "booked"]]).forEach(function (x) {
             append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
           });
           append(wrapLine, [line, legend]);
@@ -2033,7 +2116,7 @@
       function longOffCard() {
         var blocksCard = el("section", "card stack tight");
         blocksCard.appendChild(el("h2", null, "Longer time off"));
-        blocksCard.appendChild(el("p", "small dim", "A holiday or a trip, across several days. It overrides the week."));
+        blocksCard.appendChild(el("p", "small dim", "A holiday or a trip, across several days. It closes those dates even where hours are painted."));
         var fromField = input("datetime-local", "startsAt", "");
         var toField = input("datetime-local", "endsAt", "");
         var reason = input("text", "reason", "Reason (optional)");

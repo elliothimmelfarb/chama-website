@@ -27,8 +27,10 @@ const PAIRS = [
 
 // The same mapping Vercel's cleanUrls applies: /x serves x.html, and a
 // folder serves its index.html.
+// /hearth is the public page for anyone signed out (see vercel.json).
 function fileFor(url) {
   if (url === "/") return path.join(ROOT, "index.html");
+  if (url === "/hearth") return path.join(ROOT, "hearth-public.html");
   const flat = path.join(ROOT, url.slice(1) + ".html");
   if (existsSync(flat)) return flat;
   return path.join(ROOT, url.slice(1), "index.html");
@@ -167,6 +169,40 @@ test("/coaching keeps the way into the Hearth", () => {
   assert.ok(links(read("/coaching")).some((a) => a.href === "/hearth"), "no link to /hearth");
 });
 
+// /hearth is two pages on one address: the public page about the Hearth
+// for anyone without a session cookie (crawlers and link previews included),
+// and the members' room for anyone with one. The room's own paths stay private.
+test("/hearth serves the room only with the session cookie, and the public page otherwise", async () => {
+  const { SESSION_COOKIE } = await import("../lib/hearth/auth.js");
+  const { rewrites } = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8"));
+  const forHearth = rewrites.filter((r) => r.source === "/hearth");
+  assert.equal(forHearth.length, 2, "expected two rewrites for /hearth");
+  const [room, pub] = forHearth;
+  assert.deepEqual(room.has, [{ type: "cookie", key: SESSION_COOKIE }], "the first /hearth rewrite must require the session cookie");
+  assert.equal(room.destination, "/hearth-room");
+  assert.ok(!pub.has && !pub.missing, "the fallback /hearth rewrite must be unconditional");
+  assert.equal(pub.destination, "/hearth-public");
+  assert.ok(rewrites.some((r) => r.source === "/hearth/:path*" && r.destination === "/hearth-room"), "the room's paths must reach the room");
+  assert.ok(!existsSync(path.join(ROOT, "hearth.html")), "a hearth.html would be served at /hearth before the rewrites");
+});
+
+test("/hearth is indexable without a session and private with one", () => {
+  const { headers } = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8"));
+  const robotsTag = (h) => h.headers.find((x) => x.key === "X-Robots-Tag");
+  for (const h of headers.filter((x) => x.source === "/hearth")) {
+    if (robotsTag(h)) assert.ok(h.has && h.has.some((c) => c.type === "cookie"), "an unconditional noindex on /hearth hides the public page");
+  }
+  assert.ok(headers.some((h) => h.source === "/hearth/(.*)" && robotsTag(h)), "the room's paths lost their noindex");
+  const html = read("/hearth-public");
+  assert.ok(!/<meta name="robots" content="[^"]*noindex/.test(html), "the public page says noindex");
+  for (const prop of ["og:title", "og:description", "og:image", "og:url"]) assert.ok(new RegExp(`<meta property="${prop}" content="[^"]+"`).test(html), `no ${prop}`);
+  assert.ok(html.includes('<link rel="canonical" href="https://chamainteligente.com/hearth">'), "the canonical is not /hearth");
+  assert.ok(!/\/assets\/hearth|\/api\//.test(html), "the public page loads the room or calls the API");
+  const robots = readFileSync(path.join(ROOT, "robots.txt"), "utf8");
+  assert.ok(!/^Disallow: \/hearth\s*$/m.test(robots), "robots.txt still disallows /hearth itself");
+  assert.ok(/^Disallow: \/hearth\/$/m.test(robots), "robots.txt no longer disallows the room's paths");
+});
+
 test("the old /worlds addresses lead to the pages they became", () => {
   const { redirects } = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8"));
   for (const [from, to] of [["/worlds", "/"], ["/worlds/coaching", "/coaching"], ["/worlds/about", "/about"]]) {
@@ -177,7 +213,7 @@ test("the old /worlds addresses lead to the pages they became", () => {
   assert.ok(!existsSync(path.join(ROOT, "worlds.html")) && !existsSync(path.join(ROOT, "worlds")), "a /worlds page would shadow its redirect");
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/work", "/privacy", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/work"];
+const PUBLIC = ["/", "/coaching", "/about", "/work", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/work", "/hearth-public"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {
@@ -248,4 +284,43 @@ for (const [, entry] of SITEMAP.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
       assert.equal(image, /<meta property="og:image" content="([^"]+)"/.exec(read(url))?.[1]);
     });
   }
+}
+
+// Software and coaching carry equal weight. A link preview or an agent's
+// summary built from any of these should name both.
+for (const url of ["/", "/simple"]) {
+  test(`${url} names both software and coaching in every description a link preview reads`, () => {
+    const html = read(url);
+    for (const tag of ['name="description"', 'property="og:description"', 'name="twitter:description"']) {
+      const content = new RegExp(`<meta ${tag} content="([^"]+)"`).exec(html)?.[1] ?? "";
+      assert.match(content, /software/i, `${tag} on ${url}`);
+      assert.match(content, /coach/i, `${tag} on ${url}`);
+    }
+  });
+}
+
+test("llms.txt names both software and coaching in its summary line", () => {
+  const summary = /^> (.+)$/m.exec(readFileSync(path.join(ROOT, "llms.txt"), "utf8"))?.[1] ?? "";
+  assert.match(summary, /software/i);
+  assert.match(summary, /coach/i);
+});
+
+// The media kit is how people linking to us find the logo. A renamed file
+// would leave the page or llms.txt pointing at nothing.
+test("every media kit file linked from /brand and llms.txt exists", () => {
+  const text = read("/brand") + readFileSync(path.join(ROOT, "llms.txt"), "utf8");
+  const links = [...new Set(text.match(/\/brand\/kit\/[\w.-]+/g))];
+  assert.ok(links.length >= 7, "the kit's files are linked");
+  for (const link of links) assert.ok(existsSync(path.join(ROOT, link)), `${link} is missing`);
+});
+
+for (const url of PUBLIC) {
+  test(`${url} links the media kit from its footer`, () => {
+    const footer = /<footer\b[\s\S]*<\/footer>/.exec(read(url));
+    assert.ok(footer, "the page has no footer");
+    const a = links(footer[0]).find((x) => x.href === "/brand");
+    assert.ok(a, "the footer has no link to /brand");
+    assert.equal(a.text, "Media kit");
+    assert.equal(a.current, url === "/brand", `the link ${url === "/brand" ? "is not" : "is wrongly"} marked as the current page`);
+  });
 }

@@ -40,6 +40,27 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/about"/>
   </url>
   <url>
+    <loc>https://chamainteligente.com/hearth</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/hearth"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/hearth"/>
+    <image:image>
+      <image:loc>https://chamainteligente.com/og-hearth-2026-10-22.png</image:loc>
+      <image:title>The Hearth</image:title>
+      <image:caption>The Hearth. For our coaching clients: book sessions with Elliot, keep a record of each one, and connect your own AI agent.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://chamainteligente.com/brand</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/brand"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/brand"/>
+  </url>
+  <url>
     <loc>https://chamainteligente.com/privacy</loc>
     <lastmod>2026-09-14</lastmod>
     <changefreq>yearly</changefreq>
