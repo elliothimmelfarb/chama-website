@@ -1120,6 +1120,10 @@ footer {
 .clients img.tall { height: 36px; }
 .clients a:hover img, .clients a:focus-visible img { filter: none; opacity: 1; }
 .clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
+/* the clients and our friends, one line each: a label, then their marks */
+.worked { display: grid; gap: 0.7rem; margin: 1.9rem 0 0; }
+.worked .clients { display: grid; grid-template-columns: 16rem; grid-auto-flow: column; justify-content: start; align-items: center; gap: 0 1.6rem; margin: 0; }
+.clients img.mark-wide { height: 30px; }
 
 .ledger-aside { margin: 0.5rem 0 0; max-width: 18ch; color: var(--quiet); font-size: 0.9rem; line-height: 1.45; }
 .ledger-list { display: grid; }
@@ -1159,6 +1163,9 @@ footer {
   .clients img { height: 18px; }
   .clients img.round { height: 32px; }
   .clients img.tall { height: 26px; }
+  .clients img.mark-wide { height: 22px; }
+  .worked { gap: 0.5rem; }
+  .worked .clients { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; }
   .entry { grid-template-columns: minmax(0, 1fr); }
   .plate { max-width: 26rem; }
 }

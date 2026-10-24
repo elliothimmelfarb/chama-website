@@ -736,6 +736,10 @@ main h1:focus { outline: none; }
 .clients img.tall { height: 36px; }
 .clients a:hover img, .clients a:focus-visible img { filter: none; opacity: 1; }
 .clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
+/* the clients and our friends, one line each: a label, then their marks */
+.worked { display: grid; gap: 0.7rem; margin: 1.9rem 0 0; }
+.worked .clients { display: grid; grid-template-columns: 16rem; grid-auto-flow: column; justify-content: start; align-items: center; gap: 0 1.6rem; margin: 0; }
+.clients img.mark-wide { height: 30px; }
 
 /* ---- /work: the wheel of clients ---------------------------------------- */
 /* A ring of the clients' logos standing upright, seen from a little to its
@@ -810,6 +814,8 @@ html:not(.js) .wheel { display: none; }
 .copy .visit { margin-top: 1.2rem; }
 .copy .visit a { font-weight: 600; }
 .peer-name { color: var(--fg); font-weight: 600; }
+/* a link to #tlc-automation lands once the friends' words are in */
+.peers { scroll-margin-top: -30vh; }
 .copy p.permission { max-width: 40ch; margin-top: 1.4rem; font-size: 0.82rem; }
 
 /* The logo row in the heroes catches like embers, one mark after another,
@@ -820,6 +826,7 @@ html:not(.js) .wheel { display: none; }
   .clients a:nth-of-type(4) img { animation-delay: 1.4s; }
   .clients a:nth-of-type(5) img { animation-delay: 1.75s; }
   .clients a:nth-of-type(6) img { animation-delay: 2.1s; }
+  .clients.friends a:nth-of-type(2) img { animation-delay: 2.1s; }
 }
 @keyframes catch {
   0% { opacity: 0; filter: grayscale(1) brightness(0.62) contrast(1.5); }
@@ -926,6 +933,9 @@ html:has(main .ledger) .top::before {
   .clients img { height: 18px; }
   .clients img.round { height: 32px; }
   .clients img.tall { height: 26px; }
+  .clients img.mark-wide { height: 22px; }
+  .worked { margin-top: 1.1rem; gap: 0.5rem; }
+  .worked .clients { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; }
   .ledger-group, .ledger-end { grid-template-columns: minmax(0, 1fr); }
   .ledger-note { grid-column: auto; }
   .entry { grid-template-columns: minmax(0, 1fr); }

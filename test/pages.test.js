@@ -165,6 +165,19 @@ for (const [page, work] of [["/", "/work"], ["/coaching", "/work"], ["/simple", 
   });
 }
 
+for (const [page, work] of [["/", "/work"], ["/coaching", "/work"], ["/simple", "/simple/work"], ["/simple/coaching", "/simple/work"]]) {
+  test(`${page} shows our friends under the clients, each opening their entry on ${work}`, () => {
+    const row = /<div\b[^>]*\bclass="[^"]*\bfriends\b[^"]*"[\s\S]*?<\/div>/.exec(read(page));
+    assert.ok(row, "no friends row (class=\"clients friends\")");
+    const target = read(work);
+    for (const a of links(row[0]).filter((x) => x.href)) {
+      const [where, id] = a.href.split("#");
+      assert.equal(where, work, `${a.href} leaves this version of the site`);
+      assert.ok(new RegExp(`\\bid="${id}"`).test(target), `${work} has no entry #${id}`);
+    }
+  });
+}
+
 test("/coaching keeps the way into the Hearth", () => {
   assert.ok(links(read("/coaching")).some((a) => a.href === "/hearth"), "no link to /hearth");
 });
