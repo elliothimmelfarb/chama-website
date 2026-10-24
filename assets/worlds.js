@@ -893,10 +893,10 @@
   function wheelPos(l, n) {
     var a = wheelIntro(n);
     // the wheel is not there at first: it fades in over the introduction
-    if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k), show: sm(0.12, 0.78, k) }; }
-    if (n < 2) return { p: 0, lit: 1, show: 1 };
+    if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k), show: sm(0.12, 0.78, k), k: k }; }
+    if (n < 2) return { p: 0, lit: 1, show: 1, k: 1 };
     var q = clamp((l - a) / (1 - a)) * (n - 1), f = Math.min(Math.floor(q), n - 2);
-    return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1 };
+    return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1, k: 1 };
   }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
@@ -928,6 +928,7 @@
       img.style.transform = "scale(" + (1 + 0.25 * dim).toFixed(3) + ")";
       sp.classList.toggle("focus", focus > 0.5);
     }
+    if (wp.k < 1) drawIntroShapes(c, t, L, a, W, G, place, wp.k);
     if (on !== W.on) {
       W.on = on;
       W.turns.forEach(function (tn) { var me = +tn.getAttribute("data-i") === on; tn.classList.toggle("on", me); tn.setAttribute("aria-hidden", me ? "false" : "true"); });
@@ -953,6 +954,62 @@
     strokePart(c, out, 1);
     c.restore();
   }
+  // Before the wheel: every business a different shape. One shape for each
+  // client draws itself in ink in the empty space and is fitted with its
+  // ember outline; as the introduction scrolls, each flies to its client's
+  // place on the wheel and shrinks into it while the logos fade in, so the
+  // shapes become the clients.
+  var INTRO_AT = [[-0.55, -0.28, 0.5], [0.55, -0.55, 0.36], [0.32, 0.5, 0.44], [-0.62, 0.62, 0.3], [0.95, 0.25, 0.28], [-0.1, -0.95, 0.26]];
+  function drawIntroShapes(c, t, L, a, W, G, place, k) {
+    var P = L.portrait, n = W.spokes.length;
+    var hx = P ? AW / 2 : AW * 0.66, hy = P ? AH * 0.3 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15) : Math.min(AW * 0.16, AH * 0.27);
+    var fly = sm(0.08, 0.82, k), fade = 1 - sm(0.42, 0.86, k);
+    if (fade <= 0.002) return;
+    c.save();
+    c.lineJoin = "round";
+    c.lineCap = "round";
+    for (var i = 0; i < n; i++) {
+      var at = INTRO_AT[i % INTRO_AT.length], d0 = 0.2 + 0.45 * i;
+      var drawn = RM ? 1 : sm(d0, d0 + 1.1, t), hug = RM ? 1 : sm(d0 + 1.0, d0 + 1.8, t);
+      if (drawn <= 0) continue;
+      var drift = RM ? 0 : 0.02 * Math.sin(t * 0.45 + i * 1.7);
+      var x0 = hx + (at[0] + drift) * R0, y0 = hy + (at[1] - drift) * R0, r0 = at[2] * R0;
+      var q = place[i], r1 = G.big * q.sc / 2;
+      var x = x0 + (q.x - x0) * fly, y = y0 + (q.y - y0) * fly, r = r0 + (r1 - r0) * fly;
+      var shape = WHEEL_SHAPES[(+W.spokes[i].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length];
+      var spin = RM ? 0 : (1 - fly) * 0.12 * Math.sin(t * 0.3 + i);
+      var cs = Math.cos(spin), sn = Math.sin(spin);
+      var outline = function (g) {
+        var o = [];
+        for (var j = 0; j <= shape.length; j += 2) {
+          var qq = j % shape.length, ux = shape[qq] * r * g, uy = shape[qq + 1] * r * g;
+          o.push(x + ux * cs - uy * sn, y + ux * sn + uy * cs);
+        }
+        return o;
+      };
+      var pts = outline(1);
+      c.globalAlpha = a * fade * 0.07 * drawn;
+      c.fillStyle = rgba(COLD, 1);
+      c.beginPath(); c.moveTo(pts[0], pts[1]);
+      for (var m = 2; m < pts.length; m += 2) c.lineTo(pts[m], pts[m + 1]);
+      c.fill();
+      c.globalAlpha = a * fade;
+      c.strokeStyle = rgba(COLD, 0.9);
+      c.lineWidth = 1.6;
+      strokePart(c, pts, drawn);
+      if (hug > 0) {
+        c.strokeStyle = EMBER;
+        c.lineWidth = 1.8;
+        c.shadowColor = EMBER;
+        c.shadowBlur = 8;
+        strokePart(c, outline(1.16), hug);
+        c.shadowBlur = 0;
+      }
+    }
+    c.restore();
+    c.globalAlpha = 1;
+  }
+
   // the scroll position at which a client is in focus
   function wheelY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
