@@ -6,8 +6,8 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 
 | File | What it is |
 |---|---|
-| `index.html`, `coaching.html`, `about.html` | The three public pages at `/`, `/coaching` and `/about`, in the animated version. They carry the full search and sharing metadata (canonical, hreflang, Open Graph, JSON-LD) and are the URLs in the sitemap. The home page ends in the flame room. `/coaching` holds the Members link into the Hearth. |
-| `simple.html`, `simple/coaching.html`, `simple/about.html` | The low motion version of the same three pages at `/simple/*`: the same copy as plain pages. They canonicalise to their animated counterparts and are not in the sitemap. |
+| `index.html`, `coaching.html`, `about.html`, `work.html` | The four public pages at `/`, `/coaching`, `/about` and `/work`, in the animated version. They carry the full search and sharing metadata (canonical, hreflang, Open Graph, JSON-LD) and are the URLs in the sitemap. The home page ends in the flame room. `/coaching` holds the Members link into the Hearth. |
+| `simple.html`, `simple/coaching.html`, `simple/about.html`, `simple/work.html` | The low motion version of the same four pages at `/simple/*`: the same copy as plain pages. They canonicalise to their animated counterparts and are not in the sitemap. |
 | `assets/worlds.css`, `assets/worlds.js`, `assets/sky.js` | The animated version's engine. Each `<section class="world">` names its ground (`data-world`) and figure (`data-scene`). `sky.js` paints the ground with one WebGL shader, `worlds.js` draws the figures and writes `--u` per section, which every `.r` element reads against its own `--in` and `--out`, so the choreography lives in the markup. `worlds.js` also runs the site nav and moves between the three pages without a full load. |
 | `assets/site.css` | The low motion pages' shared stylesheet. The footer is repeated in each low motion page and `privacy.html`; change all four together. |
 | `assets/figures.css`, `assets/figures.js` | The section figures' motion system for the low motion pages and `privacy.html`. Without JavaScript or under reduced motion every figure is drawn complete. |
@@ -25,6 +25,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt` | Crawler policy, the canonical URLs, and the site text for AI crawlers. |
 | `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
 | `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
+| `assets/work/` | The client and friends' logos for `/work` and the heroes' logo rows, self-hosted WebP. Each one is listed with that company's permission; see Work below. |
 | `brand/index.html`, `brand/kit/` | The media kit at `/brand`: logo PNGs, the mark, avatars, a zip and `GUIDELINES.txt` for people linking to us. `llms.txt` links the files directly. Rebuild with `sh brand/kit/build.sh` after the mark changes. |
 | `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
 
@@ -33,6 +34,12 @@ Every public page makes zero external requests. `test/pages.test.js` holds that 
 ## Copy
 
 Copy is written here. The brain keeps its history and the reasons for each change in `wiki/topics/website-content-chamainteligente-com.md`. These retired lines must not come back: "Your process, your words, your rules", "Your business, your rules", "whenever you ask", the export line, and the olden-days framing.
+
+## Work
+
+`/work` shows the clients we have built software for or coached as a wheel of their logos that turns as the page scrolls (`drawWheel` in `assets/worlds.js`), then our friends: people who help businesses the way we do. Each client's words are a `.turn` whose `id` is the anchor the logo rows on `/` and `/coaching` link to, and a link to it turns the wheel to that client. `/simple/work` is the same content as a still ledger.
+
+A company goes on only with its written OK to its name, logo and exact words, and comes off the day it asks. To add one: its logo as `assets/work/<slug>.webp` (transparent, about 240px tall), a `.spoke` and a `.turn` in `work.html` (raise the section's `--h` by 95 per client), an entry in `simple/work.html` and `llms-full.txt`, and a logo in the four hero rows.
 
 ## The flame
 

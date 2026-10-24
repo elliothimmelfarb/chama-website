@@ -22,6 +22,7 @@ const PAIRS = [
   { words: "/simple", worlds: "/" },
   { words: "/simple/coaching", worlds: "/coaching" },
   { words: "/simple/about", worlds: "/about" },
+  { words: "/simple/work", worlds: "/work" },
 ];
 
 // The same mapping Vercel's cleanUrls applies: /x serves x.html, and a
@@ -63,6 +64,7 @@ const SITE = [
   { label: "Software", url: "/" },
   { label: "Coaching", url: "/coaching" },
   { label: "About", url: "/about" },
+  { label: "Work", url: "/work" },
 ];
 
 function siteNavs(html) {
@@ -120,7 +122,7 @@ for (const { words, worlds } of PAIRS) {
     assert.ok(footer && links(footer[0]).some((a) => a.simple), "the footer has no simple-version link");
   });
 
-  test(`${worlds} reaches Software, Coaching and About from the top and the bottom`, () => {
+  test(`${worlds} reaches Software, Coaching, About and Work from the top and the bottom`, () => {
     const html = read(worlds);
     const navs = siteNavs(html);
     assert.equal(navs.length, 2, "expected one site nav at the top and one in the footer");
@@ -143,6 +145,23 @@ for (const { words, worlds } of PAIRS) {
       .filter((a) => !a.simple && wordsUrls.has((a.href || "").replace(/[#?].*$/, "")))
       .map((a) => a.href);
     assert.deepEqual(strays, [], `links back into the simple version: ${strays.join(", ")}`);
+  });
+}
+
+// The client logos on the Software and Coaching pages are a way into /work:
+// each one opens that client's entry, in the same version of the site.
+for (const [page, work] of [["/", "/work"], ["/coaching", "/work"], ["/simple", "/simple/work"], ["/simple/coaching", "/simple/work"]]) {
+  test(`${page} shows client logos that each open their entry on ${work}`, () => {
+    const row = /<(?:div|p|ul)\b[^>]*\bclass="[^"]*\bclients\b[^"]*"[\s\S]*?<\/(?:div|p|ul)>/.exec(read(page));
+    assert.ok(row, "no client logo row (class=\"clients\")");
+    const as = links(row[0]).filter((a) => /<img\b/.test(row[0]) && a.href && a.href.includes("#"));
+    assert.ok(as.length >= 3, "expected at least three client logos linking to /work");
+    const target = read(work);
+    for (const a of as) {
+      const [where, id] = a.href.split("#");
+      assert.equal(where, work, `${a.href} leaves this version of the site`);
+      assert.ok(new RegExp(`\\bid="${id}"`).test(target), `${work} has no entry #${id}`);
+    }
   });
 }
 
@@ -194,7 +213,7 @@ test("the old /worlds addresses lead to the pages they became", () => {
   assert.ok(!existsSync(path.join(ROOT, "worlds.html")) && !existsSync(path.join(ROOT, "worlds")), "a /worlds page would shadow its redirect");
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/hearth-public"];
+const PUBLIC = ["/", "/coaching", "/about", "/work", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/work", "/hearth-public"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {

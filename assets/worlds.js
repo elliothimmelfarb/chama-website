@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Worlds: the engine behind /, /coaching and /about, and the router that
+   Worlds: the engine behind /, /coaching, /about and /work, and the router that
    moves between them without loading a new page.
 
    Each <section class="world"> names two things in its markup:
@@ -10,7 +10,8 @@
      data-scene  the figure drawn over that ground, on a 2D canvas: the
                  business's shape (fit, shelf, offer, questions, change,
                  build, mark) or one of the coaching and about figures
-                 (coil, curve, session, releases, keepers, family, timeline).
+                 (coil, curve, session, releases, keepers, family, timeline)
+                 or the work figures (wheel, peer).
    Shape scenes hand one shape from world to world and morph it; any other
    pair of scenes cross-fades while the fire passes.
 
@@ -269,6 +270,8 @@
     curve: { kind: "draw", box: true, draw: drawCurve },
     session: { kind: "draw", box: true, draw: drawSession },
     releases: { kind: "draw", box: true, draw: drawReleases },
+    peer: { kind: "draw", draw: drawPeer },
+    wheel: { kind: "draw", draw: drawWheel },
     keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
     family: { kind: "draw", draw: drawFamily },
     timeline: { kind: "draw", draw: drawTimeline }
@@ -812,6 +815,149 @@
     if (la > 0.01) orbitLights(c, L.cx, L.cy, L.R * 1.65, L.R * 0.55, -0.28, RM ? 1 : t, la, 2, [4.2, 4.2]);
   }
 
+  // Work: every business a different shape. A client in focus on the wheel
+  // stands on a plate cut to one of these (WHEEL_SHAPES below).
+  var KIN = [
+    { at: [-0.5, -0.22], r: 0.5, pts: [0, -1, 0.82, -0.42, 0.62, 0.74, -0.38, 0.92, -0.95, 0.1] },
+    { at: [0.56, -0.5], r: 0.36, pts: [-0.55, -0.95, 0.9, -0.5, 0.6, 0.95, -0.95, 0.55] },
+    { at: [0.3, 0.52], r: 0.44, pts: [-1, 0.05, -0.55, -0.75, 0.35, -0.85, 1, -0.15, 0.7, 0.7, -0.4, 0.8] }
+  ];
+  // Work, friends: our fire, and a friend's some way off, joined by a dotted
+  // line of light with one ember travelling along it.
+  function drawPeer(c, l, t, L, a) {
+    var plate = L.sec.querySelector(".logo-plate");
+    if (!plate) return;
+    var r = plate.getBoundingClientRect();
+    if (r.width < 2) return;
+    var P = L.portrait;
+    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(AW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
+    var tx = r.left + r.width * 0.12, ty = r.bottom - r.height * 0.1;
+    var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(0.0, 0.3, l);
+    c.save();
+    c.globalAlpha = a * on;
+    glowDot(c, ox, oy, 4.5, EMB, 1);
+    c.globalAlpha = a * 0.7;
+    c.strokeStyle = rgba(STAR, 1);
+    c.lineWidth = 1.3;
+    c.setLineDash([1.5, 7]);
+    c.lineCap = "round";
+    strokePart(c, [ox, oy, tx, ty], line);
+    c.setLineDash([]);
+    if (line >= 1 && !RM) {
+      var k = (t * 0.35) % 1;
+      glowDot(c, ox + (tx - ox) * k, oy + (ty - oy) * k, 2.2, EMB, a * Math.sin(k * Math.PI));
+    }
+    c.restore();
+    c.globalAlpha = 1;
+  }
+
+  // Work, the clients: a wheel of their logos that turns as the page
+  // scrolls. The client in focus sits big at the point nearest the words, on
+  // a plate cut to their own shape and fitted with an ember outline; the
+  // rest wait round the ring on small round plates. Their words change with
+  // the wheel. On a wide screen the ring runs off the right edge and the
+  // client in focus sits at its left; on a phone it hangs from the top and
+  // the client in focus sits at its bottom, above the words.
+  var WHEEL_SHAPES = KIN.map(function (f) { return f.pts; }).concat([
+    [-0.9, -0.6, 0.2, -1, 1, -0.3, 0.75, 0.8, -0.5, 0.95],
+    [-0.7, -0.9, 0.95, -0.75, 0.6, 0.3, 0.9, 0.95, -0.95, 0.7],
+    [0, -1, 1, 0, 0.1, 0.95, -0.95, 0.2]
+  ]);
+  function wheelOf(sec) {
+    if (!sec._wheel) {
+      sec._wheel = {
+        spokes: [].slice.call(sec.querySelectorAll(".spoke")),
+        turns: [].slice.call(sec.querySelectorAll(".turn")),
+        count: sec.querySelector("[data-wheel-count]"),
+        on: -1
+      };
+    }
+    return sec._wheel;
+  }
+  // The wheel stands upright and is seen from a little to its right: the
+  // client in focus on its near side, at the left, nearest the words and
+  // largest; the one opposite on its far side, at the right, smallest and
+  // furthest. Clients come up from below, pass the front and go over the top.
+  function wheelGeom(P, n) {
+    var step = TAU / Math.max(n, 3);
+    if (P) {
+      var bigP = Math.min(AW * 0.44, AH * 0.19);
+      return { cx: AW * 0.6, cy: AH * 0.31, rx: AW * 0.145, ry: AH * 0.128, big: bigP, far: 0.28, step: step };
+    }
+    var bigW = Math.min(AH * 0.33, AW * 0.23);
+    return { cx: AW * 0.68, cy: AH * 0.53, rx: AW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
+  }
+  // where along the wheel the page is: first the introduction, the wheel
+  // turning in with no one in focus; then each client holds and the wheel turns
+  function wheelIntro(n) { return 1.1 / (0.95 * n + 1.1); }
+  function wheelPos(l, n) {
+    var a = wheelIntro(n);
+    if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k) }; }
+    if (n < 2) return { p: 0, lit: 1 };
+    var q = clamp((l - a) / (1 - a)) * (n - 1), f = Math.min(Math.floor(q), n - 2);
+    return { p: f + sm(0.3, 0.7, q - f), lit: 1 };
+  }
+  function drawWheel(c, l, t, L, a) {
+    var W = wheelOf(L.sec), n = W.spokes.length;
+    if (!n) return;
+    var G = wheelGeom(L.portrait, n), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
+    var place = [];
+    for (var i = 0; i < n; i++) {
+      var d = i - p;
+      d -= Math.round(d / n) * n;
+      var th = d * G.step, z = Math.cos(th), near = (z + 1) / 2;
+      var x = G.cx - Math.cos(th) * G.rx, y = G.cy + Math.sin(th) * G.ry;
+      var focus = clamp(1 - Math.abs(d)) * wp.lit, e = focus * focus * (3 - 2 * focus);
+      // the front is big because it is in focus; the rest shrink fast with distance
+      var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
+      place.push({ x: x, y: y, sc: sc, near: near, e: e });
+      var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
+      sp.style.width = sp.style.height = G.big + "px";
+      // turned a little away on the far side, as a thing on a wheel would be
+      var turn = (1 - near) * 38;
+      sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
+      sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
+      // the rest are only their logos: further back, smaller, dimmer, darker, softer
+      var dim = 1 - e;
+      img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
+      img.style.filter = dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none";
+      plate.style.opacity = sm(0.6, 1, focus).toFixed(3);
+      img.style.transform = "scale(" + (1 + 0.25 * dim).toFixed(3) + ")";
+      sp.classList.toggle("focus", focus > 0.5);
+    }
+    if (on !== W.on) {
+      W.on = on;
+      W.turns.forEach(function (tn) { var me = +tn.getAttribute("data-i") === on; tn.classList.toggle("on", me); tn.setAttribute("aria-hidden", me ? "false" : "true"); });
+      if (W.count) W.count.textContent = on + 1;
+    }
+    // the client in focus: the ember fit drawn round its plate
+    var best = -1, bf = 0;
+    for (var m = 0; m < n; m++) if (place[m].e > bf) { bf = place[m].e; best = m; }
+    if (best < 0 || bf < 0.6) return;
+    // the logos ride the pin as the next world arrives; the outline goes with them
+    var pin = L.sec.querySelector(".pin"), dy = pin ? Math.min(0, pin.getBoundingClientRect().top) : 0;
+    var f = place[best], shape = WHEEL_SHAPES[(+W.spokes[best].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length], half = G.big * f.sc / 2;
+    var out = [];
+    for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + dy + shape[qq + 1] * half * 1.12); }
+    c.save();
+    c.lineJoin = "round";
+    c.lineCap = "round";
+    c.globalAlpha = a * (RM ? 1 : sm(0.6, 0.95, bf));
+    c.strokeStyle = EMBER;
+    c.lineWidth = 2;
+    c.shadowColor = EMBER;
+    c.shadowBlur = 10;
+    strokePart(c, out, 1);
+    c.restore();
+  }
+  // the scroll position at which a client is in focus
+  function wheelY(el) {
+    var sec = el.closest(".world"), k = sections.indexOf(sec);
+    if (k < 0) return null;
+    var n = wheelOf(sec).spokes.length, i = +el.getAttribute("data-i") || 0, a = wheelIntro(n);
+    return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (n > 1 ? i / (n - 1) : 0));
+  }
+
   // About us: the two lights circle the family's photograph, and a third,
   // smaller one joins them.
   function drawFamily(c, l, t, L, a) {
@@ -1298,15 +1444,15 @@
   // header's switch flips before it goes, so the reader sees it take.
   function rememberMotion(v) { try { window.localStorage.setItem("chama-motion", v); } catch (e) {} }
 
-  // ---- the router: the three pages without leaving the page -----------------------
-  // Software, Coaching and About are one place. A link between them does not
+  // ---- the router: the four pages without leaving the page -----------------------
+  // Software, Coaching, About and Work are one place. A link between them does not
   // load a new document: the words in view lift away, the new page is
   // fetched (usually already, on hover or when the browser is idle) and put
   // in place, and the sky burns from the world that was on screen into the
   // new page's first world while the new words rise behind the fire. Any
   // other link (the flame's own page, privacy, the Hearth, the low motion
   // version) is an ordinary navigation.
-  var PAGES = { "/": 1, "/coaching": 1, "/about": 1 };
+  var PAGES = { "/": 1, "/coaching": 1, "/about": 1, "/work": 1 };
   var cache = {}, navSeq = 0, burnIn = null, keptRoom = null, leaveAt = 0;
   function pathOf(u) {
     var p = u.pathname.replace(/\/index(\.html)?$/, "/").replace(/\.html$/, "");
@@ -1447,7 +1593,12 @@
       resize();
       var y = push ? 0 : (history.state && history.state.y) || 0;
       var target = u.hash && document.getElementById(u.hash.slice(1));
-      if (target) y = target.getBoundingClientRect().top + window.scrollY;
+      // honour the target's scroll-margin, so an entry on /work lands below
+      // the header; pushState does not move :target, so mark it by hand
+      if (target) {
+        y = target.classList.contains("turn") ? wheelY(target) : target.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
+        target.classList.add("is-target");
+      }
       window.scrollTo({ top: y, behavior: "instant" });
       root.classList.remove("nav-leave");
       leaveAt = 0;
@@ -1487,7 +1638,8 @@
       e.preventDefault();
       if (pathOf(u) === here) {
         var t = u.hash && document.getElementById(u.hash.slice(1));
-        if (t) t.scrollIntoView({ behavior: RM ? "auto" : "smooth" });
+        if (t && t.classList.contains("turn")) window.scrollTo({ top: wheelY(t), behavior: RM ? "auto" : "smooth" });
+        else if (t) t.scrollIntoView({ behavior: RM ? "auto" : "smooth" });
         else window.scrollTo({ top: 0, behavior: RM ? "auto" : "smooth" });
         return;
       }
@@ -1513,6 +1665,21 @@
 
   bind();
   resize();
+  // a link straight to a client on the wheel (/work#toraya-lisboa) turns
+  // the wheel to them, rather than the browser's jump to the top of it
+  function toHashTurn() {
+    var t = location.hash && document.getElementById(location.hash.slice(1));
+    if (t && t.classList.contains("turn")) { measure(); window.scrollTo(0, wheelY(t)); }
+  }
+  requestAnimationFrame(toHashTurn);
+  window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });
+  // a small logo on the wheel turns the wheel to that client
+  document.addEventListener("click", function (e) {
+    var sp = e.target.closest && e.target.closest(".spoke");
+    if (!sp) return;
+    var y = wheelY(sp);
+    if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+  });
   seedParticles();
   ptr.sx = AW / 2;
   ptr.sy = AH / 2;
