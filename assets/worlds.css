@@ -868,8 +868,8 @@ html:has(main .directory) .top[data-theme="night"]::before {
   top: 0;
   left: 0;
   right: 0;
-  height: calc(env(safe-area-inset-top) + 92px);
-  background: linear-gradient(var(--bg) 58%, color-mix(in srgb, var(--bg) 0%, transparent));
+  height: calc(env(safe-area-inset-top) + 104px);
+  background: linear-gradient(var(--bg) 70%, color-mix(in srgb, var(--bg) 0%, transparent));
   pointer-events: none;
 }
 .dir-head h2 { max-width: 14ch; margin-bottom: 0.45em; }
@@ -1057,7 +1057,8 @@ html:has(main .ledger) .top::before {
   .entry { grid-template-columns: minmax(0, 1fr); }
   .plate { max-width: 26rem; }
   .dir { padding-top: calc(env(safe-area-inset-top) + 9.5rem); }
-  html:has(main .directory) .top[data-theme="night"]::before { height: calc(env(safe-area-inset-top) + 124px); }
+  /* on a phone the nav wraps to a second row, so the strip stays solid past it */
+  html:has(main .directory) .top[data-theme="night"]::before { height: calc(env(safe-area-inset-top) + 150px); background: linear-gradient(var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); }
   .letter { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; padding: 1.4rem 1.1rem 1.6rem; }
   .letter-quote blockquote p { font-size: clamp(1.35rem, 6vw, 1.75rem); }
   .letter-quote blockquote p::before { margin-left: 0; }
