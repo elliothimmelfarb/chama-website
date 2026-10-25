@@ -889,13 +889,15 @@
   }
   // where along the wheel the page is: first the introduction, the wheel
   // turning in with no one in focus; then each client holds and the wheel turns
+  // the last place holds still for a while before the next world arrives
+  var WHEEL_HOLD = 0.12;
   function wheelIntro(n) { return 1.1 / (0.95 * n + 1.1); }
   function wheelPos(l, n) {
     var a = wheelIntro(n);
     // the wheel is not there at first: it fades in over the introduction
     if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k), show: sm(0.12, 0.78, k), k: k }; }
     if (n < 2) return { p: 0, lit: 1, show: 1, k: 1 };
-    var q = clamp((l - a) / (1 - a)) * (n - 1), f = Math.min(Math.floor(q), n - 2);
+    var q = clamp((l - a) / ((1 - a) * (1 - WHEEL_HOLD))) * (n - 1), f = Math.min(Math.floor(q), n - 2);
     return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1, k: 1 };
   }
   function drawWheel(c, l, t, L, a) {
@@ -912,7 +914,7 @@
       // the front is big because it is in focus; the rest shrink fast with distance
       var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
       place.push({ x: x, y: y, sc: sc, near: near, e: e });
-      var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
+      var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img, .spoke-mark")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
       sp.style.width = sp.style.height = G.big + "px";
       // turned a little away on the far side, as a thing on a wheel would be
       var turn = (1 - near) * 38;
@@ -947,6 +949,8 @@
     c.lineJoin = "round";
     c.lineCap = "round";
     c.globalAlpha = a * (RM ? 1 : sm(0.6, 0.95, bf));
+    // the open place, for the next client: no plate yet, only its outline in dashes
+    if (W.spokes[best].classList.contains("spoke-open")) c.setLineDash([7, 7]);
     c.strokeStyle = EMBER;
     c.lineWidth = 2;
     c.shadowColor = EMBER;
@@ -1015,7 +1019,7 @@
     var sec = el.closest(".world"), k = sections.indexOf(sec);
     if (k < 0) return null;
     var n = wheelOf(sec).spokes.length, i = +el.getAttribute("data-i") || 0, a = wheelIntro(n);
-    return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (n > 1 ? i / (n - 1) : 0));
+    return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - WHEEL_HOLD) * (n > 1 ? i / (n - 1) : 0));
   }
 
   // About us: the two lights circle the family's photograph, and a third,
@@ -1729,7 +1733,13 @@
   // the wheel to them, rather than the browser's jump to the top of it
   function toHashTurn() {
     var t = location.hash && document.getElementById(location.hash.slice(1));
-    if (t && t.classList.contains("turn")) { measure(); window.scrollTo(0, wheelY(t)); }
+    if (!t || !t.classList.contains("turn")) return;
+    // the browser's own jump to the anchor scrolls the clipped pin itself,
+    // which lifts the logos off the outline drawn round them
+    var pin = t.closest(".pin");
+    if (pin) pin.scrollTop = 0;
+    measure();
+    window.scrollTo(0, wheelY(t));
   }
   requestAnimationFrame(toHashTurn);
   window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });

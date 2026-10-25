@@ -769,6 +769,12 @@ main h1:focus { outline: none; }
 .spoke img { position: relative; display: block; width: 58%; height: 46%; object-fit: contain; will-change: opacity, filter; }
 .spoke img.round { width: 52%; height: 54%; }
 .spoke img.wide { width: 66%; }
+/* the open place on the wheel, for the next client: no logo and no plate */
+.spoke-open .spoke-plate { background: rgba(250, 248, 243, 0.5); box-shadow: none; }
+.spoke-mark { position: relative; color: var(--fg); font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 500; letter-spacing: -0.04em; will-change: opacity, filter; }
+.turn .accent { color: var(--accent); }
+.copy .turn-cta { margin-top: 1.5rem; }
+.copy .turn-more { margin-top: 1rem; font-size: 0.9rem; color: var(--fg2); }
 .spoke:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
 .wheel-world .copy { width: min(40vw, 35rem); }
 .copy .turn-count { margin: 0 0 0.5rem; color: var(--fg2); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
