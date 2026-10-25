@@ -824,28 +824,57 @@
   ];
   // Work, friends: our fire, and a friend's some way off, joined by a dotted
   // line of light with one ember travelling along it.
+  // Work, the friends: our fire sits just above their cards, and a dotted
+  // ember line runs from it to each friend; a fainter dashed one runs to the
+  // open place beside them. On a phone the column is taller than the screen
+  // and slides up inside the pin, by --over.
+  function peerArc(x0, y0, x1, y1, lift) {
+    var pts = [], mx = (x0 + x1) / 2, my = Math.min(y0, y1) - lift;
+    for (var i = 0; i <= 24; i++) {
+      var k = i / 24, u = 1 - k;
+      pts.push(u * u * x0 + 2 * u * k * mx + k * k * x1, u * u * y0 + 2 * u * k * my + k * k * y1);
+    }
+    return pts;
+  }
   function drawPeer(c, l, t, L, a) {
-    var plate = L.sec.querySelector(".logo-plate");
-    if (!plate) return;
-    var r = plate.getBoundingClientRect();
+    var sec = L.sec, wrap = sec._friends || (sec._friends = sec.querySelector(".friends"));
+    var card = sec._friend || (sec._friend = sec.querySelector(".friend")), open = sec._open || (sec._open = sec.querySelector(".friend-open"));
+    if (!card) return;
+    if (wrap) {
+      var over = L.portrait ? Math.max(0, Math.round(wrap.offsetHeight - (AH - 24))) : 0;
+      if (over !== sec._over) { sec._over = over; sec.style.setProperty("--over", over + "px"); }
+    }
+    var r = card.getBoundingClientRect();
     if (r.width < 2) return;
-    var P = L.portrait;
-    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(AW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
-    var tx = r.left + r.width * 0.12, ty = r.bottom - r.height * 0.1;
-    var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(0.0, 0.3, l);
+    var o = open ? open.getBoundingClientRect() : null, gap = o ? o.left - r.right : 0;
+    // side by side the fire sits over the gap between the cards; stacked, over the first
+    var ox = o && gap > 0 ? r.right + gap / 2 : r.left + r.width * 0.5, oy = r.top - 26;
+    var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(-0.05, 0.3, l);
+    // on a phone the fire slides up behind the header and goes out there
+    if (L.portrait) { var hb = headBottom(); on *= sm(hb + 10, hb + 50, oy); }
+    if (on < 0.01) return;
+    var toCard = peerArc(ox, oy, r.left + r.width * (o && gap > 0 ? 0.62 : 0.3), r.top, 16);
     c.save();
     c.globalAlpha = a * on;
     glowDot(c, ox, oy, 4.5, EMB, 1);
-    c.globalAlpha = a * 0.7;
-    c.strokeStyle = rgba(STAR, 1);
-    c.lineWidth = 1.3;
-    c.setLineDash([1.5, 7]);
     c.lineCap = "round";
-    strokePart(c, [ox, oy, tx, ty], line);
+    c.lineWidth = 1.3;
+    c.globalAlpha = a * 0.75 * on;
+    c.strokeStyle = rgba(STAR, 1);
+    c.setLineDash([1.5, 7]);
+    strokePart(c, toCard, line);
+    if (o && o.width > 2) {
+      var toOpen = gap > 0 ? peerArc(ox, oy, o.left + o.width * 0.4, o.top, 16) : peerArc(ox, oy, r.left + r.width * 0.7, r.top, 16);
+      if (gap > 0) {
+        c.globalAlpha = a * 0.4 * on;
+        c.setLineDash([5, 7]);
+        strokePart(c, toOpen, line);
+      }
+    }
     c.setLineDash([]);
     if (line >= 1 && !RM) {
-      var k = (t * 0.35) % 1;
-      glowDot(c, ox + (tx - ox) * k, oy + (ty - oy) * k, 2.2, EMB, a * Math.sin(k * Math.PI));
+      var k = (t * 0.35) % 1, n = toCard.length / 2 - 1, j = Math.floor(k * n) * 2;
+      glowDot(c, toCard[j], toCard[j + 1], 2.2, EMB, a * on * Math.sin(k * Math.PI));
     }
     c.restore();
     c.globalAlpha = 1;

@@ -824,6 +824,81 @@ html:not(.js) .wheel { display: none; }
 .peers { scroll-margin-top: -30vh; }
 .copy p.permission { max-width: 40ch; margin-top: 1.4rem; font-size: 0.82rem; }
 
+/* ---- /work: friends, each one introduced -------------------------------- */
+/* The words on the left; on the right each friend on a card of their own,
+   the open place beside them in dashes, and the three rules underneath.
+   worlds.js draws the ember line from our fire to each card. On a phone the
+   whole column slides up inside the pin as the page scrolls (--over is set
+   by drawPeer). */
+.friends {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.7fr);
+  align-items: center;
+  gap: clamp(1.5rem, 3.5vw, 3.5rem);
+  padding: calc(76px + 1.5vh) var(--pad) 3vh;
+}
+.friends-copy h2 { max-width: 11ch; }
+.friends-copy p.deck { max-width: 32ch; margin: 0; color: var(--fg2); font-size: clamp(1rem, 1.3vw, 1.28rem); line-height: 1.45; }
+.board { padding-top: 2.6rem; }
+.friend-row { display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+.friend,
+.friend-open {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.1rem, 1.6vw, 1.6rem);
+  border-radius: 14px;
+  color: var(--fg2);
+  font-size: clamp(0.86rem, 0.92vw, 0.95rem);
+  line-height: 1.5;
+}
+.friend {
+  background: rgba(10, 13, 38, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(239, 241, 255, 0.13), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.friend-open {
+  background: rgba(10, 13, 38, 0.3);
+  border: 1.5px dashed rgba(239, 241, 255, 0.28);
+}
+.friend p,
+.friend-open p { margin: 0 0 0.85em; max-width: none; }
+.friend h3,
+.friend-open h3 { margin: 0; color: var(--fg); font-size: clamp(1.15rem, 1.45vw, 1.45rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.15; }
+.friend-place { margin: 0.2rem 0 0.9rem !important; color: var(--fg2); font-size: 0.82rem; opacity: 0.85; }
+.friend-head { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.9rem; }
+.friend-head .friend-place { margin-bottom: 0 !important; }
+.friend-plate { flex: none; display: grid; place-items: center; width: clamp(7.5rem, 10vw, 9.5rem); aspect-ratio: 2.6; padding: 0.4rem 0.7rem; border-radius: 8px; background: #faf8f3; }
+.friend-plate img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.friend-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.friend-tags li { padding: 0.22rem 0.6rem; border-radius: 999px; background: rgba(239, 241, 255, 0.08); color: var(--fg); font-size: 0.74rem; font-weight: 500; }
+.friend-why { margin: 0 0 0.9rem; padding: 0.75rem 0.95rem; border-left: 2px solid var(--ember, #f4581f); border-radius: 0 8px 8px 0; background: rgba(244, 88, 31, 0.09); }
+.friend-why p { margin: 0 !important; color: var(--fg); }
+.friend-why .friend-why-label { margin-bottom: 0.3rem !important; color: var(--accent); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; }
+.friend-link { margin: auto 0 0 !important; }
+.friend a,
+.friend-open a:not(.cta) { color: var(--fg); font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 0.18em; }
+.friend-plus { position: relative; width: 2.6rem; height: 2.6rem; margin-bottom: 0.9rem; border-radius: 10px; background: rgba(239, 241, 255, 0.08); }
+.friend-plus::before,
+.friend-plus::after { content: ""; position: absolute; left: 50%; top: 50%; width: 1rem; height: 1.5px; background: var(--fg); translate: -50% -50%; }
+.friend-plus::after { rotate: 90deg; }
+.friend-cta { margin: auto 0 0 !important; padding-top: 0.4rem; }
+.friend-cta .cta { padding: 0.75rem 1.15rem; font-size: 0.92rem; }
+.tenets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1.3rem 0 0; padding: 0; list-style: none; color: var(--fg2); font-size: 0.82rem; line-height: 1.45; }
+.tenets li { padding-top: 0.7rem; border-top: 1px solid rgba(244, 88, 31, 0.6); }
+.tenets strong { display: block; margin-bottom: 0.2rem; color: var(--fg); font-size: 0.9rem; font-weight: 600; }
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) and (max-height: 760px) {
+  .friends-copy h2 { font-size: clamp(2rem, 3.6vw, 3.4rem); }
+  .friend, .friend-open { padding: 1rem 1.15rem; font-size: 0.84rem; line-height: 1.45; }
+  .friend-head { margin-bottom: 0.7rem; }
+  .friend-why { padding: 0.6rem 0.8rem; }
+  .friend-tags { margin-bottom: 0.75rem; }
+  .board { padding-top: 2rem; }
+  .tenets { margin-top: 1rem; font-size: 0.78rem; }
+}
+
 /* The logo row in the heroes catches like embers, one mark after another,
    then settles into ink. */
 @media (prefers-reduced-motion: no-preference) {
@@ -949,6 +1024,20 @@ html:has(main .ledger) .top::before {
   .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
   .peer-plate { width: min(62vw, 16rem); }
   .copy p.permission { font-size: 0.78rem; }
+  .world.peers { --h: 360 !important; }
+  .friends {
+    inset: 0 0 auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.4rem;
+    padding: calc(166px + env(safe-area-inset-top)) 16px 40px;
+    transform: translate3d(0, calc(clamp(0, var(--u) * 1.15, 1) * var(--over, 0px) * -1), 0);
+  }
+  /* the column slides up under the header, which has no ground of its own */
+  .peers .pin { -webkit-mask-image: linear-gradient(to bottom, transparent calc(env(safe-area-inset-top) + 104px), #000 calc(env(safe-area-inset-top) + 150px)); mask-image: linear-gradient(to bottom, transparent calc(env(safe-area-inset-top) + 104px), #000 calc(env(safe-area-inset-top) + 150px)); }
+  .board { padding-top: 2.2rem; }
+  .friend-row { grid-template-columns: minmax(0, 1fr); }
+  .friend, .friend-open { font-size: 0.95rem; }
+  .tenets { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
   .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
   .copy .turn-kind { margin-bottom: 0.6rem; }
   html:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px); }
