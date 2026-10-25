@@ -841,6 +841,116 @@ html:not(.js) .wheel { display: none; }
   100% { opacity: 0.62; filter: grayscale(1) brightness(0.62) contrast(1.5); }
 }
 
+/* ---- /work: the friends directory -------------------------------------- */
+/* Friends is a world without a pinned scene: its pin is empty and pulls the
+   page back up over itself, so the directory scrolls over the night sky in
+   ordinary flow while worlds.js still counts the night as on screen. The
+   flame world arrives as the directory's last screen leaves, as it would
+   after any world. */
+.world.directory { height: auto; }
+.directory > .pin { margin-bottom: -100vh; margin-bottom: -100svh; }
+.dir {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(3.5rem, 8vw, 7rem);
+  width: min(100%, 78rem);
+  margin-inline: auto;
+  padding: clamp(8rem, 18vh, 12rem) var(--pad) clamp(8rem, 20vh, 14rem);
+}
+html:not(.gl) .directory { background: var(--bg); }
+/* the directory scrolls under the fixed header, so while the night is the
+   header's world it stands on a strip of night that fades into the page */
+html:has(main .directory) .top[data-theme="night"]::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(env(safe-area-inset-top) + 104px);
+  background: linear-gradient(var(--bg) 70%, color-mix(in srgb, var(--bg) 0%, transparent));
+  pointer-events: none;
+}
+.dir-head h2 { max-width: 14ch; margin-bottom: 0.45em; }
+.dir-deck { max-width: 40ch; margin: 0; color: var(--fg2); font-size: clamp(1.08rem, 1.45vw, 1.42rem); line-height: 1.45; }
+
+/* a letter of introduction: who they are on the left, why we send people
+   to them on the right, the reason set big */
+.letter {
+  display: grid;
+  grid-template-columns: minmax(14rem, 21rem) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+  padding: clamp(1.75rem, 3.5vw, 3rem);
+  border-top: 2px solid var(--ember);
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(rgba(16, 19, 52, 0.72), rgba(9, 11, 34, 0.55));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  scroll-margin-top: 7rem;
+}
+.letter .letter-plate { aspect-ratio: 2 / 1; padding: 9% 12%; margin-bottom: 1.4rem; }
+.letter-who h3 { margin: 0 0 0.25rem; font-size: clamp(1.5rem, 2.2vw, 2rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; transition: color 0.3s ease; }
+.letter:target .letter-who h3, .letter.is-target .letter-who h3 { color: var(--accent); }
+.letter-place { margin: 0 0 1rem; color: var(--fg2); font-size: 0.95rem; }
+.letter-link { margin: 0; }
+.letter a:not(.plate), .open-place p a:not(.cta) { color: var(--fg); font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+.letter a:not(.plate):hover { color: var(--accent); }
+.letter-quote { margin: 0 0 clamp(1.5rem, 3vw, 2.25rem); }
+.letter-quote figcaption { margin-bottom: 1rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.letter-quote blockquote { margin: 0; }
+.letter-quote blockquote p {
+  margin: 0;
+  max-width: 26ch;
+  color: var(--fg);
+  font-size: clamp(1.5rem, 2.55vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  text-wrap: pretty;
+}
+.letter-quote blockquote p::before { content: "\201C"; margin-left: -0.45em; color: var(--ember); }
+.letter-quote blockquote p::after { content: "\201D"; color: var(--ember); }
+.letter-what { max-width: 52ch; margin: 0 0 1.25rem; color: var(--fg2); font-size: 1.05rem; line-height: 1.55; }
+.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.tags li { padding: 0.38rem 0.75rem; border: 1px solid var(--track); border-radius: 999px; color: var(--fg); font-size: 0.82rem; line-height: 1.2; }
+
+/* how we list them: three rules, each under an ember line */
+.principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.5rem, 3vw, 3rem); margin: 0; padding: 0; list-style: none; }
+.principles li { padding-top: 1rem; border-top: 2px solid var(--ember); }
+.principles h3 { margin: 0 0 0.45rem; font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+.principles p { max-width: 32ch; margin: 0; color: var(--fg2); font-size: 0.98rem; line-height: 1.5; }
+
+/* the open place, waiting for the next friend */
+.open-place {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "kick ." "head body" "head cta";
+  align-items: start;
+  justify-items: start;
+  column-gap: clamp(2rem, 5vw, 5rem);
+  padding: clamp(2rem, 5vw, 4.5rem);
+  border: 1.5px dashed color-mix(in srgb, var(--accent) 70%, transparent);
+  border-radius: 6px;
+}
+.open-place .kicker { grid-area: kick; margin-bottom: 1rem !important; }
+.open-place h3 { grid-area: head; }
+.open-place > p:not(.kicker):not(.open-cta) { grid-area: body; }
+.open-place .open-cta { grid-area: cta; }
+.open-place h3 { max-width: 16ch; margin: 0 0 0.5em; font-size: clamp(1.9rem, 3.6vw, 3.6rem); font-weight: 500; letter-spacing: -0.045em; line-height: 0.98; text-wrap: balance; }
+.open-place p { max-width: 50ch; margin: 0; color: var(--fg2); font-size: clamp(1.02rem, 1.22vw, 1.18rem); line-height: 1.5; }
+.open-place .open-cta { margin-top: 1.8rem; }
+
+/* each part settles in as it scrolls into view, where the browser can tie
+   it to the scroll; reduced motion keeps it still */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .dir > * { animation: settle linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+  }
+}
+@keyframes settle { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+
 /* ---- /work: the ledger ------------------------------------------------- */
 /* After its one world, /work holds still on paper: each entry is a client's
    mark on its own plate, in its own colours, with what we did beside it. */
@@ -946,6 +1056,15 @@ html:has(main .ledger) .top::before {
   .ledger-note { grid-column: auto; }
   .entry { grid-template-columns: minmax(0, 1fr); }
   .plate { max-width: 26rem; }
+  .dir { padding-top: calc(env(safe-area-inset-top) + 9.5rem); }
+  /* on a phone the nav wraps to a second row, so the strip stays solid past it */
+  html:has(main .directory) .top[data-theme="night"]::before { height: calc(env(safe-area-inset-top) + 150px); background: linear-gradient(var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); }
+  .letter { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; padding: 1.4rem 1.1rem 1.6rem; }
+  .letter-quote blockquote p { font-size: clamp(1.35rem, 6vw, 1.75rem); }
+  .letter-quote blockquote p::before { margin-left: 0; }
+  .principles { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+  .open-place { grid-template-columns: minmax(0, 1fr); grid-template-areas: "kick" "head" "body" "cta"; padding: 1.6rem 1.25rem 1.8rem; }
+  .letter .letter-plate { max-width: 15rem; }
   .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
   .peer-plate { width: min(62vw, 16rem); }
   .copy p.permission { font-size: 0.78rem; }
