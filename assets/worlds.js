@@ -944,10 +944,10 @@
     // Chris's logo, on its plate under his star
     if (F.plate) {
       var pw = F.plate.offsetWidth;
-      F.plate.style.transform = "translate(" + (bo[0] - pw / 2).toFixed(1) + "px," + (bo[1] + (P ? 16 : 24)).toFixed(1) + "px)";
+      // he stays lit when the open places come up; the plate only settles a little smaller
+      F.plate.style.transformOrigin = "50% 0";
+      F.plate.style.transform = "translate(" + (bo[0] - pw / 2).toFixed(1) + "px," + (bo[1] + (P ? 16 : 24)).toFixed(1) + "px) scale(" + (1 - 0.1 * open).toFixed(3) + ")";
       F.plate.style.opacity = tlc.toFixed(3);
-      // stepping back for the open places: darker, as a light would in the dark
-      F.plate.style.filter = open > 0.01 ? "brightness(" + (1 - 0.4 * open).toFixed(3) + ")" : "none";
     }
   }
 
