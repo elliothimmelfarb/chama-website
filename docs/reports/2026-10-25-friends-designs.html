@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Friends Page Designs</title>
+<meta name="description" content="Three designs for the Friends part of /work, and the new client call to action, 2026-10-25.">
+<style>
+  /* Three options side by side, on the site's own paper. */
+  .opt { display: grid; gap: 1rem; padding-top: 1.4rem; border-top: 2px solid var(--ember); }
+  .opt h2 { margin: 0; }
+  .opt .tag { font-size: 0.8rem; font-weight: 700; color: var(--ember); margin: 0; }
+  .opt .links { font-size: 0.9rem; margin: 0; }
+  .pros { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  .withphone { display: grid; grid-template-columns: minmax(0, 1fr) 13rem; gap: 1rem; align-items: start; }
+  .pick { padding: 1.2rem 1.4rem; border-radius: 12px; background: var(--ground-2); border: 1px solid var(--line); display: grid; gap: 0.5rem; }
+  .pick p { margin: 0; }
+  @media (max-width: 44rem) { .steps, .withphone { grid-template-columns: minmax(0, 1fr); } .withphone figure:last-child { max-width: 14rem; } }
+  .phone3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; align-items: start; }
+  .phone3 figure img { max-width: 17rem; }
+  .stand { font-size: 0.72rem; font-weight: 700; color: var(--warn); }
+  pre { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; background: var(--ground-2); border: 1px solid var(--line); overflow-x: auto; font-size: 0.82rem; }
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  header { display: grid; gap: 0.9rem; }
+  .meta { margin: 0; color: var(--ember); font-size: 0.8rem; font-weight: 700; }
+  h1 { margin: 0; font-size: clamp(2rem, 5.5vw, 3.6rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.08rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+  figure { margin: 0; display: grid; gap: 0.6rem; }
+  figure img, figure video { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #0e0c0a; }
+  figcaption { font-size: 0.9rem; color: var(--ink-dim); max-width: 62ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+  .three { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 1rem; align-items: start; }
+  .phone { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 1.4rem; align-items: center; }
+  ol.notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; font-size: 0.92rem; }
+  ol.notes li::marker { color: var(--ember); font-weight: 700; }
+  .flow { width: 100%; height: auto; display: block; }
+  .flow text { font-family: var(--sans); fill: var(--ink); }
+  .flow .dim { fill: var(--ink-dim); }
+  .flow .box { fill: var(--ground-2); stroke: var(--line); }
+  .flow .hot { fill: var(--ember); }
+  .flow .arrow { stroke: var(--ink-dim); fill: none; stroke-width: 1.5; }
+  .todo { display: grid; gap: 0.7rem; }
+  .todo > div { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.5rem; align-items: baseline; }
+  .todo span { color: var(--warn); font-weight: 700; }
+  a { color: var(--ink); text-decoration-color: var(--ember); text-underline-offset: 0.2em; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  @media (max-width: 44rem) {
+    .two, .three, .phone, .phone3 { grid-template-columns: minmax(0, 1fr); }
+    .phone figure { max-width: 16rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="meta">2026-10-25 · chamainteligente.com/work</p>
+    <h1>Three ways to do justice to our friends</h1>
+    <p class="lede">The client call to action is live. The Friends section has three designs on preview branches, each with a partner call to action. Pick one and I finish it.</p>
+    <div class="chips">
+      <span class="chip">✓ Client call to action live</span>
+      <span class="chip">✓ Anchor outline bug fixed in production</span>
+      <span class="chip">✓ 3 designs on draft PRs</span>
+      <span class="chip">✓ Tests pass on all four branches</span>
+      <span class="chip open">Waiting: your pick</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Live now: "Yours could be next"</h2>
+    <div class="withphone">
+      <figure><img src="2026-10-25-friends-designs/client-desktop.jpg" alt="The client wheel turned to an open dashed place labelled Yours?, with the words Yours could be next and a Become a client button"><figcaption>The wheel turns on past Springlar to an <b>open dashed place</b>. <b>Become a client</b> opens the flame with "I'd like to talk about becoming a client." <a href="https://github.com/elliothimmelfarb/chama-website/pull/140">PR #140</a></figcaption></figure>
+      <figure><img src="2026-10-25-friends-designs/client-phone.jpg" alt="The same on a phone"><figcaption>Phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why Friends felt thin</h2>
+    <div class="two">
+      <figure><img src="2026-10-25-friends-designs/now-friends.jpg" alt="Our current Friends section: a lone logo plate in a starfield and two sentences"><figcaption><b>Ours today:</b> one logo floating in space, two sentences, no reason to trust him, no way to join.</figcaption></figure>
+      <figure><img src="2026-10-25-friends-designs/tlc-network.jpg" alt="Chris's network page with a rich card for Chama Inteligente and a Your business here card"><figcaption><b>Chris's page:</b> what we do, why he recommends us, an open "Your business here?" card, three rules, a closing ask.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="opt">
+    <p class="tag">Design A</p>
+    <h2>Introductions: two cards on the night</h2>
+    <div class="pros"><span class="chip">Everything on one screen</span><span class="chip">Mirrors Chris's page</span><span class="chip open">Busiest of the three</span></div>
+    <div class="withphone">
+      <figure><img src="2026-10-25-friends-designs/a-desktop.jpg" alt="Design A: heading on the left, TLC card and a dashed Your business here card on the right, three rules below"></figure>
+      <figure><img src="2026-10-25-friends-designs/a-phone.jpg" alt="Design A on a phone"></figure>
+    </div>
+    <p class="links"><a href="https://github.com/elliothimmelfarb/chama-website/pull/142">PR #142</a> · <a href="https://chama-inteligente-dlyq0ltsl-chama-inteligente.vercel.app/work#tlc-automation">preview</a></p>
+  </section>
+
+  <section class="opt">
+    <p class="tag">Design B</p>
+    <h2>Constellation: told as you scroll</h2>
+    <div class="pros"><span class="chip">Most like the rest of the site</span><span class="chip">Lisbon to Boulder, drawn</span><span class="chip open">Chris's details only on step 2</span></div>
+    <div class="steps">
+      <figure><img src="2026-10-25-friends-designs/b-1.jpg" alt="Step 1: Fires of their own"><figcaption>1 · Fires of their own</figcaption></figure>
+      <figure><img src="2026-10-25-friends-designs/b-2.jpg" alt="Step 2: the ember line reaches TLC in Boulder County, with his details"><figcaption>2 · The line reaches Chris</figcaption></figure>
+      <figure><img src="2026-10-25-friends-designs/b-3.jpg" alt="Step 3: empty dashed rings and Doing work like ours with a partner button"><figcaption>3 · Open places, partner ask</figcaption></figure>
+    </div>
+    <p class="links"><a href="https://github.com/elliothimmelfarb/chama-website/pull/143">PR #143</a> · <a href="https://chama-inteligente-638ethez6-chama-inteligente.vercel.app/work#tlc-automation">preview</a></p>
+  </section>
+
+  <section class="opt">
+    <p class="tag">Design C</p>
+    <h2>Letters of introduction: a directory you read</h2>
+    <div class="pros"><span class="chip">Chris gets the biggest voice</span><span class="chip">Grows to many friends</span><span class="chip open">Stops being a pinned scene</span></div>
+    <div class="two">
+      <figure><img src="2026-10-25-friends-designs/c-1.jpg" alt="Design C: TLC letter with a large pull quote, why we recommend Chris"></figure>
+      <figure><img src="2026-10-25-friends-designs/c-2.jpg" alt="Design C: three rules and a large dashed This space is for the next friend box"></figure>
+    </div>
+    <p class="links"><a href="https://github.com/elliothimmelfarb/chama-website/pull/141">PR #141</a> · <a href="https://chama-inteligente-9ymd4z18p-chama-inteligente.vercel.app/work#tlc-automation">preview</a></p>
+  </section>
+
+  <section class="pick">
+    <h2>My pick: C</h2>
+    <p>It gives Chris the most room and a real endorsement, and it keeps working when we have five friends instead of one. A is the safe choice if you want it all on one screen. B is the prettiest but hides Chris behind a scroll step.</p>
+    <p>Previews sit behind Vercel sign-in, so open them in a browser where you are signed in to Vercel.</p>
+  </section>
+</div>
+</body>
+</html>
