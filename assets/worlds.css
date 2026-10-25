@@ -824,6 +824,14 @@ html:not(.js) .wheel { display: none; }
 .peers { scroll-margin-top: -30vh; }
 .copy p.permission { max-width: 40ch; margin-top: 1.4rem; font-size: 0.82rem; }
 
+/* /work, the friends: a small star map. worlds.js draws the fires and the
+   line between them and moves the plate to sit under Chris's star. */
+.friends-map .copy { width: min(40vw, 34rem); }
+.map-plate { left: 0; right: auto; top: 0; width: min(17vw, 15rem); translate: none; opacity: 0; will-change: transform, opacity; }
+.copy .why { padding-left: 1rem; border-left: 2px solid var(--ember); color: var(--fg); }
+.copy .why strong { display: block; margin-bottom: 0.25rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.copy p.principles { margin-top: 1.3rem; max-width: 42ch; color: var(--fg2); font-size: 0.82rem; }
+
 /* The logo row in the heroes catches like embers, one mark after another,
    then settles into ink. */
 @media (prefers-reduced-motion: no-preference) {
@@ -948,6 +956,10 @@ html:has(main .ledger) .top::before {
   .plate { max-width: 26rem; }
   .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
   .peer-plate { width: min(62vw, 16rem); }
+  .friends-map .copy { width: auto; }
+  .map-plate { left: 0; top: 0; translate: none; width: min(34vw, 9rem); }
+  .copy .why { padding-left: 0.8rem; }
+  .copy p.principles { font-size: 0.76rem; margin-top: 1rem; }
   .copy p.permission { font-size: 0.78rem; }
   .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
   .copy .turn-kind { margin-bottom: 0.6rem; }

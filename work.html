@@ -145,17 +145,36 @@
       </div>
     </section>
 
-    <!-- The night: friends, fires of their own -->
-    <section class="world peers" id="tlc-automation" data-theme="night" data-world="night" data-scene="peer" data-label="Friends" style="--h:230" aria-labelledby="t-friends">
+    <!-- The night: friends, fires of their own. A small star map: our fire in
+         Lisbon, Chris's across the dark in Boulder County, a dotted line
+         between them, and empty places waiting for the next friends. The
+         words change in three steps as the page scrolls. -->
+    <section class="world peers friends-map" data-theme="night" data-world="night" data-scene="friends" data-label="Friends" style="--h:400" aria-labelledby="t-friends">
       <div class="pin">
         <div class="copy">
-          <p class="kicker r">Friends</p>
-          <h2 id="t-friends" class="r" style="--in:-0.25">Friends doing work <span class="accent">like ours</span>.</h2>
-          <p class="r" style="--in:-0.05">We know good people who help businesses the way we do. When one of them is closer to you, or right for what you need, we are glad to point you their way.</p>
-          <p class="r" style="--in:0.14"><strong class="peer-name">TLC Automation</strong>, Chris, in Boulder County, Colorado. He helps local small businesses get more from the software they already use, explains things plainly and quotes a fixed price. If you are near Boulder, start with him.</p>
-          <p class="visit r" style="--in:0.28"><a href="https://tlcautomation.org/" rel="noopener" target="_blank">tlcautomation.org</a></p>
+          <div class="turns r" style="--in:-0.25">
+            <div class="turn on" data-at="0.1" aria-hidden="false">
+              <p class="kicker">Friends</p>
+              <h2 id="t-friends">Fires of <span class="accent">their own</span>.</h2>
+              <p>We know good people who help businesses the way we do. We know each of them personally, and when one is closer to you or a better fit for what you need, we introduce you.</p>
+            </div>
+            <div class="turn" id="tlc-automation" data-at="0.48" aria-hidden="true">
+              <p class="turn-kind">Friend &middot; Boulder County, Colorado</p>
+              <h3>TLC Automation</h3>
+              <p>Chris helps local small businesses get more from the software they already use: connecting email, calendars and QuickBooks, building small AI tools, and looking after websites. He explains things plainly and quotes a fixed price.</p>
+              <p class="why"><strong>Why we recommend him</strong>Chris and Elliot share one idea: software should fit how a business already works, not the other way round. For a small business in the US, especially near Boulder, he is who we would call.</p>
+              <p class="visit"><a href="https://tlcautomation.org/" rel="noopener" target="_blank">tlcautomation.org</a></p>
+            </div>
+            <div class="turn" id="become-a-friend" data-at="0.86" aria-hidden="true">
+              <p class="turn-kind">Open places</p>
+              <h3>Doing work like <span class="accent">ours</span>?</h3>
+              <p>If your business serves the same kind of owners we do, in bookkeeping, IT support, marketing, web design or software like ours, let's talk about working together and sending each other the work that fits.</p>
+              <p class="turn-cta"><a class="cta" href="/agent?say=I%20run%20a%20business%20doing%20work%20like%20yours%20and%20would%20like%20to%20talk%20about%20partnering.">Talk about partnering <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4 12.5 8l-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+              <p class="principles">We only list people we know. An introduction is only a suggestion. Nobody pays to be listed or recommended.</p>
+            </div>
+          </div>
         </div>
-        <figure class="logo-plate peer-plate r" style="--in:-0.3"><img src="/assets/work/tlc-automation.webp" alt="TLC Automation logo" width="776" height="152" decoding="async"></figure>
+        <figure class="logo-plate peer-plate map-plate" aria-hidden="true"><img src="/assets/work/tlc-automation.webp" alt="" width="776" height="152" decoding="async"></figure>
       </div>
     </section>
 

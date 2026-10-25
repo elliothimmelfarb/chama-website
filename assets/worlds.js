@@ -271,6 +271,7 @@
     session: { kind: "draw", box: true, draw: drawSession },
     releases: { kind: "draw", box: true, draw: drawReleases },
     peer: { kind: "draw", draw: drawPeer },
+    friends: { kind: "draw", tall: [0.5, 0.3, 1], ext: [0.95, 1.05], draw: drawFriends },
     wheel: { kind: "draw", draw: drawWheel },
     keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
     family: { kind: "draw", draw: drawFamily },
@@ -851,6 +852,105 @@
     c.globalAlpha = 1;
   }
 
+  // Work, the friends: a small star map. Our fire in Lisbon on the right,
+  // Chris's star in Boulder County on the left, and a dotted ember line
+  // that draws itself across the dark between them. A few empty dashed
+  // rings wait for the next friends and brighten in the last step. The
+  // words change in three steps; each .turn carries the point of the
+  // scroll (data-at) where it is in focus, for links to it.
+  var FRIEND_STEPS = [0.3, 0.66];
+  var FRIEND_RINGS = [[-0.3, -0.8, 1], [0.18, 0.74, 0.8], [0.98, -0.6, 0.7]];
+  var MAP_FONT = "";
+  function friendsOf(sec) {
+    if (!sec._friends) sec._friends = { turns: [].slice.call(sec.querySelectorAll(".turn")), plate: sec.querySelector(".map-plate"), on: 0 };
+    return sec._friends;
+  }
+  function mapLabel(c, text, x, y, alpha) {
+    if (!MAP_FONT) MAP_FONT = "700 10.5px " + (getComputedStyle(document.body).fontFamily || "sans-serif");
+    c.save();
+    c.globalAlpha *= alpha;
+    c.font = MAP_FONT;
+    if ("letterSpacing" in c) c.letterSpacing = "1.8px";
+    c.fillStyle = rgba(STAR, 0.9);
+    c.textAlign = "center";
+    c.textBaseline = "top";
+    c.fillText(text.toUpperCase(), x, y);
+    c.restore();
+  }
+  function drawFriends(c, l, t, L, a) {
+    var F = friendsOf(L.sec), P = L.portrait;
+    var on = l < FRIEND_STEPS[0] ? 0 : l < FRIEND_STEPS[1] ? 1 : 2;
+    if (on !== F.on) {
+      F.on = on;
+      F.turns.forEach(function (tn, i) { var me = i === on; tn.classList.toggle("on", me); tn.setAttribute("aria-hidden", me ? "false" : "true"); });
+    }
+    // the map rides the pin as the next world arrives
+    var pin = L.sec.querySelector(".pin"), dy = pin ? Math.min(0, pin.getBoundingClientRect().top) : 0;
+    var cx, cy, sx, sy;
+    if (P) { cx = L.cx; cy = L.cy; sx = AW * 0.36; sy = L.R * 0.95; }
+    else { cx = AW * 0.7; cy = AH * 0.47; sx = Math.min(AW * 0.23, 400); sy = Math.min(AH * 0.3, 270); }
+    function at(u, v) { return [cx + u * sx, cy + v * sy]; }
+    var bo = at(-0.78, 0.08), li = at(0.8, 0.2), ctl = at(0, -0.95);
+    var arc = RM ? 1 : sm(0.14, 0.42, l), tlc = RM ? 1 : sm(0.28, 0.42, l);
+    var open = RM ? (on === 2 ? 1 : 0) : sm(0.6, 0.74, l), fade = RM ? 1 : sm(-0.35, 0.05, l);
+    c.save();
+    c.translate(0, dy);
+    c.lineCap = "round";
+    // the empty places: faint dashed rings, brighter once they are the subject
+    FRIEND_RINGS.forEach(function (r, i) {
+      var p = at(r[0], r[1]), rad = (P ? 9 : 13) * r[2] * (1 + 0.15 * open);
+      c.globalAlpha = a * fade * (0.22 + 0.7 * open);
+      c.strokeStyle = open > 0.5 ? EMBER : rgba(STAR, 1);
+      c.lineWidth = 1.3;
+      c.setLineDash([3, 4]);
+      c.beginPath(); c.arc(p[0], p[1], rad, 0, TAU); c.stroke();
+      // dotted threads from our fire to the open places, in the last step
+      if (open > 0.01) {
+        c.globalAlpha = a * 0.55 * open;
+        c.strokeStyle = rgba(STAR, 1);
+        c.setLineDash([1.5, 7]);
+        var d = Math.hypot(p[0] - li[0], p[1] - li[1]), k = (d - rad - 14) / d;
+        strokePart(c, [li[0], li[1], li[0] + (p[0] - li[0]) * k, li[1] + (p[1] - li[1]) * k], RM ? 1 : sm(0.64 + i * 0.04, 0.8 + i * 0.04, l));
+        if (i === 0) { c.globalAlpha = a; mapLabel(c, "Yours?", p[0], p[1] + rad + 8, open); }
+      }
+      c.setLineDash([]);
+    });
+    // the line across the dark, Lisbon to Boulder County
+    var pts = [];
+    for (var j = 0; j <= 40; j++) {
+      var q = j / 40, w = 1 - q;
+      pts.push(w * w * li[0] + 2 * w * q * ctl[0] + q * q * bo[0], w * w * li[1] + 2 * w * q * ctl[1] + q * q * bo[1]);
+    }
+    c.globalAlpha = a * fade * 0.85;
+    c.strokeStyle = EMBER;
+    c.lineWidth = 1.4;
+    c.setLineDash([1.5, 7]);
+    strokePart(c, pts, arc);
+    c.setLineDash([]);
+    if (arc >= 1 && !RM) {
+      var s = (t * 0.22) % 1, m = Math.min(39, Math.floor(s * 40)), f = s * 40 - m;
+      glowDot(c, pts[2 * m] + (pts[2 * m + 2] - pts[2 * m]) * f, pts[2 * m + 1] + (pts[2 * m + 3] - pts[2 * m + 1]) * f, 2.2, EMB, a * fade * Math.sin(s * Math.PI));
+    }
+    // Chris's star, waiting dim until the line reaches it; and our fire
+    var tw = RM ? 1 : 0.85 + 0.15 * Math.sin(t * 2.1);
+    c.globalAlpha = a * fade;
+    glowDot(c, bo[0], bo[1], (P ? 3.6 : 4.6) * (0.7 + 0.3 * tlc), [255, 196, 138], (0.35 + 0.65 * tlc) * tw);
+    glowDot(c, li[0], li[1], P ? 5 : 6.5, EMB, 1);
+    c.globalAlpha = a * fade;
+    mapLabel(c, "Lisbon", li[0], li[1] + (P ? 14 : 18), 0.75);
+    mapLabel(c, "Boulder County", bo[0], bo[1] - (P ? 26 : 32), 0.4 + 0.45 * tlc);
+    c.restore();
+    c.globalAlpha = 1;
+    // Chris's logo, on its plate under his star
+    if (F.plate) {
+      var pw = F.plate.offsetWidth;
+      F.plate.style.transform = "translate(" + (bo[0] - pw / 2).toFixed(1) + "px," + (bo[1] + (P ? 16 : 24)).toFixed(1) + "px)";
+      F.plate.style.opacity = tlc.toFixed(3);
+      // stepping back for the open places: darker, as a light would in the dark
+      F.plate.style.filter = open > 0.01 ? "brightness(" + (1 - 0.4 * open).toFixed(3) + ")" : "none";
+    }
+  }
+
   // Work, the clients: a wheel of their logos that turns as the page
   // scrolls. The client in focus sits big at the point nearest the words, on
   // a plate cut to their own shape and fitted with an ember outline; the
@@ -1018,6 +1118,8 @@
   function wheelY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
     if (k < 0) return null;
+    // a step marked with its own point of the scroll (the friends)
+    if (el.hasAttribute("data-at")) return tops[k] + (hs[k] - pins[k]) * +el.getAttribute("data-at");
     var n = wheelOf(sec).spokes.length, i = +el.getAttribute("data-i") || 0, a = wheelIntro(n);
     return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - WHEEL_HOLD) * (n > 1 ? i / (n - 1) : 0));
   }
