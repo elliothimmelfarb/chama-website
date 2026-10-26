@@ -49,6 +49,26 @@
       "permanent": true
     },
     {
+      "source": "/work",
+      "destination": "/clients",
+      "permanent": true
+    },
+    {
+      "source": "/work.html",
+      "destination": "/clients",
+      "permanent": true
+    },
+    {
+      "source": "/simple/work",
+      "destination": "/simple/clients",
+      "permanent": true
+    },
+    {
+      "source": "/simple/work.html",
+      "destination": "/simple/clients",
+      "permanent": true
+    },
+    {
       "source": "/training",
       "destination": "/coaching",
       "permanent": true
