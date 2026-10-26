@@ -725,7 +725,7 @@ main h1:focus { outline: none; }
 
 /* ---- clients in the hero ---------------------------------------------- */
 /* A quiet row of the clients' marks under the opening words, in ink, not
-   their colours: each opens its entry on /work, where the marks are shown
+   their colours: each opens its entry on /clients, where the marks are shown
    as they are. Colour comes back under the pointer or focus. */
 .clients { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.6rem; margin: 1.9rem 0 0; }
 .clients-all { flex-basis: 100%; color: var(--fg2) !important; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; text-decoration: none; }
@@ -741,7 +741,7 @@ main h1:focus { outline: none; }
 .worked .clients { display: grid; grid-template-columns: 16rem; grid-auto-flow: column; justify-content: start; align-items: center; gap: 0 1.6rem; margin: 0; }
 .clients img.mark-wide { height: 30px; }
 
-/* ---- /work: the wheel of clients ---------------------------------------- */
+/* ---- /clients: the wheel of clients ------------------------------------- */
 /* A ring of the clients' logos standing upright, seen from a little to its
    right. worlds.js places every .spoke round it by depth and dims the ones
    further back; only the client in focus stands on a plate cut to
@@ -796,7 +796,7 @@ html:not(.js) .wheel { display: none; }
   .turn, .turn.on { transition: none; transform: none; }
 }
 
-/* ---- /work: a world for each client ------------------------------------ */
+/* ---- /clients: a world for each client --------------------------------- */
 /* The client's logo sits on a plate cut to that client's shape (the same
    points worlds.js draws its outline and ember fit around). The plate is
    light on every ground, so each logo keeps its own colours. */
@@ -841,10 +841,10 @@ html:not(.js) .wheel { display: none; }
   100% { opacity: 0.62; filter: grayscale(1) brightness(0.62) contrast(1.5); }
 }
 
-/* ---- /work: the friends directory -------------------------------------- */
+/* ---- /about: the friends directory ------------------------------------ */
 /* Friends is a world without a pinned scene: its pin is empty and pulls the
-   page back up over itself, so the directory scrolls over the night sky in
-   ordinary flow while worlds.js still counts the night as on screen. The
+   page back up over itself, so the directory scrolls over the forge in
+   ordinary flow while worlds.js still counts the forge as on screen. The
    flame world arrives as the directory's last screen leaves, as it would
    after any world. */
 .world.directory { height: auto; }
@@ -859,9 +859,9 @@ html:not(.js) .wheel { display: none; }
   padding: clamp(8rem, 18vh, 12rem) var(--pad) clamp(8rem, 20vh, 14rem);
 }
 html:not(.gl) .directory { background: var(--bg); }
-/* the directory scrolls under the fixed header, so while the night is the
-   header's world it stands on a strip of night that fades into the page */
-html:has(main .directory) .top[data-theme="night"]::before {
+/* the directory scrolls under the fixed header, so while the forge is the
+   header's world it stands on a strip of forge that fades into the page */
+html:has(main .directory) .top[data-theme="forge"]::before {
   content: "";
   position: fixed;
   z-index: -1;
@@ -885,7 +885,7 @@ html:has(main .directory) .top[data-theme="night"]::before {
   padding: clamp(1.75rem, 3.5vw, 3rem);
   border-top: 2px solid var(--ember);
   border-radius: 0 0 6px 6px;
-  background: linear-gradient(rgba(16, 19, 52, 0.72), rgba(9, 11, 34, 0.55));
+  background: linear-gradient(rgba(36, 29, 23, 0.78), rgba(20, 16, 13, 0.6));
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   scroll-margin-top: 7rem;
@@ -895,7 +895,7 @@ html:has(main .directory) .top[data-theme="night"]::before {
 .letter:target .letter-who h3, .letter.is-target .letter-who h3 { color: var(--accent); }
 .letter-place { margin: 0 0 1rem; color: var(--fg2); font-size: 0.95rem; }
 .letter-link { margin: 0; }
-.letter a:not(.plate), .open-place p a:not(.cta) { color: var(--fg); font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+.letter a:not(.plate), .dir-note a { color: var(--fg); font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
 .letter a:not(.plate):hover { color: var(--accent); }
 .letter-quote { margin: 0 0 clamp(1.5rem, 3vw, 2.25rem); }
 .letter-quote figcaption { margin-bottom: 1rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
@@ -916,31 +916,10 @@ html:has(main .directory) .top[data-theme="night"]::before {
 .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
 .tags li { padding: 0.38rem 0.75rem; border: 1px solid var(--track); border-radius: 999px; color: var(--fg); font-size: 0.82rem; line-height: 1.2; }
 
-/* how we list them: three rules, each under an ember line */
-.principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.5rem, 3vw, 3rem); margin: 0; padding: 0; list-style: none; }
-.principles li { padding-top: 1rem; border-top: 2px solid var(--ember); }
-.principles h3 { margin: 0 0 0.45rem; font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
-.principles p { max-width: 32ch; margin: 0; color: var(--fg2); font-size: 0.98rem; line-height: 1.5; }
-
-/* the open place, waiting for the next friend */
-.open-place {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "kick ." "head body" "head cta";
-  align-items: start;
-  justify-items: start;
-  column-gap: clamp(2rem, 5vw, 5rem);
-  padding: clamp(2rem, 5vw, 4.5rem);
-  border: 1.5px dashed color-mix(in srgb, var(--accent) 70%, transparent);
-  border-radius: 6px;
-}
-.open-place .kicker { grid-area: kick; margin-bottom: 1rem !important; }
-.open-place h3 { grid-area: head; }
-.open-place > p:not(.kicker):not(.open-cta) { grid-area: body; }
-.open-place .open-cta { grid-area: cta; }
-.open-place h3 { max-width: 16ch; margin: 0 0 0.5em; font-size: clamp(1.9rem, 3.6vw, 3.6rem); font-weight: 500; letter-spacing: -0.045em; line-height: 0.98; text-wrap: balance; }
-.open-place p { max-width: 50ch; margin: 0; color: var(--fg2); font-size: clamp(1.02rem, 1.22vw, 1.18rem); line-height: 1.5; }
-.open-place .open-cta { margin-top: 1.8rem; }
+/* how we introduce people, and the way in for the next friend: one quiet
+   line under the letters */
+.dir-note { max-width: 62ch; margin: 0; padding-top: 1.1rem; border-top: 1px solid var(--track); color: var(--fg2); font-size: clamp(0.98rem, 1.1vw, 1.08rem); line-height: 1.55; }
+.dir-note a:hover { color: var(--accent); }
 
 /* each part settles in as it scrolls into view, where the browser can tie
    it to the scroll; reduced motion keeps it still */
@@ -951,8 +930,8 @@ html:has(main .directory) .top[data-theme="night"]::before {
 }
 @keyframes settle { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
 
-/* ---- /work: the ledger ------------------------------------------------- */
-/* After its one world, /work holds still on paper: each entry is a client's
+/* ---- /clients: the ledger ---------------------------------------------- */
+/* After its one world, /clients holds still on paper: each entry is a client's
    mark on its own plate, in its own colours, with what we did beside it. */
 .ledger {
   position: relative;
@@ -963,7 +942,7 @@ html:has(main .directory) .top[data-theme="night"]::before {
   color: var(--fg);
 }
 html:not(.gl) .ledger { background: var(--bg); }
-/* The ledger scrolls under the fixed header, so on /work the header stands
+/* The ledger scrolls under the fixed header, so on /clients the header stands
    on a strip of paper that fades into the page. */
 html:has(main .ledger) .top::before {
   content: "";
@@ -1058,12 +1037,10 @@ html:has(main .ledger) .top::before {
   .plate { max-width: 26rem; }
   .dir { padding-top: calc(env(safe-area-inset-top) + 9.5rem); }
   /* on a phone the nav wraps to a second row, so the strip stays solid past it */
-  html:has(main .directory) .top[data-theme="night"]::before { height: calc(env(safe-area-inset-top) + 150px); background: linear-gradient(var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); }
+  html:has(main .directory) .top[data-theme="forge"]::before { height: calc(env(safe-area-inset-top) + 150px); background: linear-gradient(var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); }
   .letter { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; padding: 1.4rem 1.1rem 1.6rem; }
   .letter-quote blockquote p { font-size: clamp(1.35rem, 6vw, 1.75rem); }
   .letter-quote blockquote p::before { margin-left: 0; }
-  .principles { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
-  .open-place { grid-template-columns: minmax(0, 1fr); grid-template-areas: "kick" "head" "body" "cta"; padding: 1.6rem 1.25rem 1.8rem; }
   .letter .letter-plate { max-width: 15rem; }
   .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
   .peer-plate { width: min(62vw, 16rem); }

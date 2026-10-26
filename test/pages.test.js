@@ -1,5 +1,5 @@
 // The public pages come in two parallel versions: the animated version (/,
-// /coaching, /about: the primary one, a scroll through animated worlds) and
+// /coaching, /clients, /about: the primary one, a scroll through animated worlds) and
 // the low motion version (under /simple: the same copy as a plain page).
 // These tests guard the seams between them: both versions carry the same
 // motion switch, and each low motion page's switch reaches its animated
@@ -22,7 +22,7 @@ const PAIRS = [
   { words: "/simple", worlds: "/" },
   { words: "/simple/coaching", worlds: "/coaching" },
   { words: "/simple/about", worlds: "/about" },
-  { words: "/simple/work", worlds: "/work" },
+  { words: "/simple/clients", worlds: "/clients" },
 ];
 
 // The same mapping Vercel's cleanUrls applies: /x serves x.html, and a
@@ -64,7 +64,7 @@ const SITE = [
   { label: "Software", url: "/" },
   { label: "Coaching", url: "/coaching" },
   { label: "About", url: "/about" },
-  { label: "Work", url: "/work" },
+  { label: "Clients", url: "/clients" },
 ];
 
 function siteNavs(html) {
@@ -122,7 +122,7 @@ for (const { words, worlds } of PAIRS) {
     assert.ok(footer && links(footer[0]).some((a) => a.simple), "the footer has no simple-version link");
   });
 
-  test(`${worlds} reaches Software, Coaching, About and Work from the top and the bottom`, () => {
+  test(`${worlds} reaches Software, Coaching, Clients and About from the top and the bottom`, () => {
     const html = read(worlds);
     const navs = siteNavs(html);
     assert.equal(navs.length, 2, "expected one site nav at the top and one in the footer");
@@ -148,14 +148,14 @@ for (const { words, worlds } of PAIRS) {
   });
 }
 
-// The client logos on the Software and Coaching pages are a way into /work:
+// The client logos on the Software and Coaching pages are a way into /clients:
 // each one opens that client's entry, in the same version of the site.
-for (const [page, work] of [["/", "/work"], ["/coaching", "/work"], ["/simple", "/simple/work"], ["/simple/coaching", "/simple/work"]]) {
+for (const [page, work] of [["/", "/clients"], ["/coaching", "/clients"], ["/simple", "/simple/clients"], ["/simple/coaching", "/simple/clients"]]) {
   test(`${page} shows client logos that each open their entry on ${work}`, () => {
     const row = /<(?:div|p|ul)\b[^>]*\bclass="[^"]*\bclients\b[^"]*"[\s\S]*?<\/(?:div|p|ul)>/.exec(read(page));
     assert.ok(row, "no client logo row (class=\"clients\")");
     const as = links(row[0]).filter((a) => /<img\b/.test(row[0]) && a.href && a.href.includes("#"));
-    assert.ok(as.length >= 3, "expected at least three client logos linking to /work");
+    assert.ok(as.length >= 3, "expected at least three client logos linking to /clients");
     const target = read(work);
     for (const a of as) {
       const [where, id] = a.href.split("#");
@@ -165,7 +165,9 @@ for (const [page, work] of [["/", "/work"], ["/coaching", "/work"], ["/simple", 
   });
 }
 
-for (const [page, work] of [["/", "/work"], ["/coaching", "/work"], ["/simple", "/simple/work"], ["/simple/coaching", "/simple/work"]]) {
+// Our friends live on About, as the people we send someone to when they fit
+// better than we do.
+for (const [page, work] of [["/", "/about"], ["/coaching", "/about"], ["/simple", "/simple/about"], ["/simple/coaching", "/simple/about"]]) {
   test(`${page} shows our friends under the clients, each opening their entry on ${work}`, () => {
     const row = /<div\b[^>]*\bclass="[^"]*\bfriends\b[^"]*"[\s\S]*?<\/div>/.exec(read(page));
     assert.ok(row, "no friends row (class=\"clients friends\")");
@@ -226,7 +228,19 @@ test("the old /worlds addresses lead to the pages they became", () => {
   assert.ok(!existsSync(path.join(ROOT, "worlds.html")) && !existsSync(path.join(ROOT, "worlds")), "a /worlds page would shadow its redirect");
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/work", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/work", "/hearth-public"];
+// /work became /clients on 2026-10-26, and links to a client on it
+// (/work#springlar) are out in the world.
+test("the old /work addresses lead to /clients", () => {
+  const { redirects } = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8"));
+  for (const [from, to] of [["/work", "/clients"], ["/work.html", "/clients"], ["/simple/work", "/simple/clients"], ["/simple/work.html", "/simple/clients"]]) {
+    const r = redirects.find((x) => x.source === from && !x.has);
+    assert.ok(r, `no redirect from ${from}`);
+    assert.equal(r.destination, to);
+  }
+  assert.ok(!existsSync(path.join(ROOT, "work.html")) && !existsSync(path.join(ROOT, "simple", "work.html")), "a /work page would shadow its redirect");
+});
+
+const PUBLIC = ["/", "/coaching", "/about", "/clients", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/hearth-public"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Worlds: the engine behind /, /coaching, /about and /work, and the router that
+   Worlds: the engine behind /, /coaching, /clients and /about, and the router that
    moves between them without loading a new page.
 
    Each <section class="world"> names two things in its markup:
@@ -11,7 +11,7 @@
                  business's shape (fit, shelf, offer, questions, change,
                  build, mark) or one of the coaching and about figures
                  (coil, curve, session, releases, keepers, family, timeline)
-                 or the work figures (wheel, peer).
+                 or the clients and friends figures (wheel, peer).
    Shape scenes hand one shape from world to world and morph it; any other
    pair of scenes cross-fades while the fire passes.
 
@@ -815,14 +815,14 @@
     if (la > 0.01) orbitLights(c, L.cx, L.cy, L.R * 1.65, L.R * 0.55, -0.28, RM ? 1 : t, la, 2, [4.2, 4.2]);
   }
 
-  // Work: every business a different shape. A client in focus on the wheel
+  // Clients: every business a different shape. A client in focus on the wheel
   // stands on a plate cut to one of these (WHEEL_SHAPES below).
   var KIN = [
     { at: [-0.5, -0.22], r: 0.5, pts: [0, -1, 0.82, -0.42, 0.62, 0.74, -0.38, 0.92, -0.95, 0.1] },
     { at: [0.56, -0.5], r: 0.36, pts: [-0.55, -0.95, 0.9, -0.5, 0.6, 0.95, -0.95, 0.55] },
     { at: [0.3, 0.52], r: 0.44, pts: [-1, 0.05, -0.55, -0.75, 0.35, -0.85, 1, -0.15, 0.7, 0.7, -0.4, 0.8] }
   ];
-  // Work, friends: our fire, and a friend's some way off, joined by a dotted
+  // About, friends: our fire, and a friend's some way off, joined by a dotted
   // line of light with one ember travelling along it.
   function drawPeer(c, l, t, L, a) {
     var plate = L.sec.querySelector(".logo-plate");
@@ -851,7 +851,7 @@
     c.globalAlpha = 1;
   }
 
-  // Work, the clients: a wheel of their logos that turns as the page
+  // Clients: a wheel of their logos that turns as the page
   // scrolls. The client in focus sits big at the point nearest the words, on
   // a plate cut to their own shape and fitted with an ember outline; the
   // rest wait round the ring on small round plates. Their words change with
@@ -1509,14 +1509,14 @@
   function rememberMotion(v) { try { window.localStorage.setItem("chama-motion", v); } catch (e) {} }
 
   // ---- the router: the four pages without leaving the page -----------------------
-  // Software, Coaching, About and Work are one place. A link between them does not
+  // Software, Coaching, Clients and About are one place. A link between them does not
   // load a new document: the words in view lift away, the new page is
   // fetched (usually already, on hover or when the browser is idle) and put
   // in place, and the sky burns from the world that was on screen into the
   // new page's first world while the new words rise behind the fire. Any
   // other link (the flame's own page, privacy, the Hearth, the low motion
   // version) is an ordinary navigation.
-  var PAGES = { "/": 1, "/coaching": 1, "/about": 1, "/work": 1 };
+  var PAGES = { "/": 1, "/coaching": 1, "/about": 1, "/clients": 1 };
   var cache = {}, navSeq = 0, burnIn = null, keptRoom = null, leaveAt = 0;
   function pathOf(u) {
     var p = u.pathname.replace(/\/index(\.html)?$/, "/").replace(/\.html$/, "");
@@ -1657,7 +1657,7 @@
       resize();
       var y = push ? 0 : (history.state && history.state.y) || 0;
       var target = u.hash && document.getElementById(u.hash.slice(1));
-      // honour the target's scroll-margin, so an entry on /work lands below
+      // honour the target's scroll-margin, so an entry on /clients lands below
       // the header; pushState does not move :target, so mark it by hand
       if (target) {
         y = target.classList.contains("turn") ? wheelY(target) : target.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
@@ -1729,7 +1729,7 @@
 
   bind();
   resize();
-  // a link straight to a client on the wheel (/work#toraya-lisboa) turns
+  // a link straight to a client on the wheel (/clients#toraya-lisboa) turns
   // the wheel to them, rather than the browser's jump to the top of it
   function toHashTurn() {
     var t = location.hash && document.getElementById(location.hash.slice(1));

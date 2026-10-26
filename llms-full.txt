@@ -8,7 +8,7 @@
 
 This file is the complete visible text of https://chamainteligente.com, in reading
 order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing
-the pages do not say. Last updated 2026-10-22.
+the pages do not say. Last updated 2026-10-26.
 
 Chama Inteligente, Lda. is a Portuguese company (NIPC 519425235) based in Lisbon.
 "Chama Inteligente" is Portuguese for "intelligent flame". It is written "Chama"
@@ -195,7 +195,7 @@ Want to talk it through? Start a conversation and ask Elliot to get in touch
 ### A small company in Lisbon, working in English.
 
 Chama Inteligente, Lda. Chama is Portuguese for flame, and this page is about the
-two of us who keep it lit.
+two of us who keep it lit, and the friends we send people to.
 
 ### About us
 
@@ -218,6 +218,25 @@ them to real work, teaching others, and keeping pace as those capabilities chang
 You get the benefit of that accumulated judgment and experience when you spend time
 with him.
 
+### Friends: when someone else fits better, we say so.
+
+Sometimes the right person for your business is not us. They might be closer to you,
+or do exactly the thing you need. When that happens we tell you, and introduce you to
+someone we know and trust.
+
+TLC Automation, Chris, in Boulder County, Colorado.
+Why we recommend Chris: Chris and Elliot share one idea: software should fit how a
+business already works, not the other way round. For a small business in the US,
+especially near Boulder, he is who we would call. He helps local small businesses
+get more from the software they already use: connecting email, calendars and
+QuickBooks, building small AI tools, and looking after websites. He explains things
+plainly and quotes a fixed price. https://tlcautomation.org/
+
+Everyone we introduce is someone we know personally. Nobody pays to be recommended,
+and an introduction is only a suggestion. If you do work like ours for the same kind
+of owners, start a conversation at https://chamainteligente.com/agent to talk about
+sending each other work.
+
 ### Get in touch
 
 Want to talk it through? Start a conversation and ask Elliot to get in touch
@@ -225,12 +244,12 @@ Want to talk it through? Start a conversation and ask Elliot to get in touch
 
 ---
 
-## Work (https://chamainteligente.com/work)
+## Clients (https://chamainteligente.com/clients)
 
 ### Who we have worked with.
 
-The businesses we have built software for or coached, and the friends doing work like
-ours.
+Every business is a different shape. These are the ones we have built software for
+or coached.
 
 ### Clients
 
@@ -256,28 +275,6 @@ wood and cork. We work with them through coaching. https://www.springlar.com/en/
 Yours could be next. Every business on this page started with a conversation about
 how it already works. To become a client, start a conversation at
 https://chamainteligente.com/agent and ask Elliot to get in touch.
-
-### Friends
-
-People we trust and send work to. When one of them is closer to you, or right for
-what you need, we will introduce you.
-
-TLC Automation, Chris, in Boulder County, Colorado.
-Why we recommend Chris: Chris and Elliot share one idea: software should fit how a
-business already works, not the other way round. For a small business in the US,
-especially near Boulder, he is who we would call. He helps local small businesses
-get more from the software they already use: connecting email, calendars and
-QuickBooks, building small AI tools, and looking after websites. He explains things
-plainly and quotes a fixed price. https://tlcautomation.org/
-
-This space is for the next friend. If you run a business that serves the same kind
-of owners we do, such as bookkeeping, IT support, marketing, web design or software
-like ours, start a conversation at https://chamainteligente.com/agent to talk about
-partnering and sending each other the work that fits.
-
-Only people we know: everyone listed is someone we have worked with or know
-personally. An introduction is a suggestion. Nobody pays to be on this page, and
-nobody pays us to recommend them.
 
 ---
 

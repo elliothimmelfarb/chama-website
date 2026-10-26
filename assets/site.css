@@ -1108,9 +1108,9 @@ footer {
   }
 }
 
-/* ---- clients in the hero, and the /work ledger -------------------------- */
+/* ---- clients in the hero, and the /clients ledger ----------------------- */
 /* The hero's row of client marks is ink, not colour: each opens its entry
-   on /simple/work, where the marks are shown as they are. */
+   on /simple/clients, where the marks are shown as they are. */
 .clients { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.6rem; margin: 1.8rem 0 0; }
 .clients-all { flex-basis: 100%; color: var(--quiet); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; }
 .clients-all:hover { color: var(--ember); }
