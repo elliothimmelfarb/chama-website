@@ -853,10 +853,16 @@ html:not(.js) .wheel { display: none; }
   position: relative;
   z-index: 2;
   display: grid;
-  gap: clamp(3.5rem, 8vw, 7rem);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(2.5rem, 6vw, 6rem);
+  grid-template-rows: auto auto;
+  row-gap: clamp(1.5rem, 4vh, 2.5rem);
+  align-items: center;
   width: min(100%, 78rem);
+  min-height: 100vh;
+  min-height: 100svh;
   margin-inline: auto;
-  padding: clamp(8rem, 18vh, 12rem) var(--pad) clamp(8rem, 20vh, 14rem);
+  padding: clamp(6.5rem, 13vh, 8.5rem) var(--pad) clamp(3rem, 8vh, 5rem);
 }
 html:not(.gl) .directory { background: var(--bg); }
 /* the directory scrolls under the fixed header, so while the forge is the
@@ -872,17 +878,15 @@ html:has(main .directory) .top[data-theme="forge"]::before {
   background: linear-gradient(var(--bg) 70%, color-mix(in srgb, var(--bg) 0%, transparent));
   pointer-events: none;
 }
-.dir-head h2 { max-width: 14ch; margin-bottom: 0.45em; }
-.dir-deck { max-width: 40ch; margin: 0; color: var(--fg2); font-size: clamp(1.08rem, 1.45vw, 1.42rem); line-height: 1.45; }
+.dir-head h2 { max-width: 14ch; margin-bottom: 0.45em; font-size: clamp(2.2rem, 4.2vw, 3.9rem); }
+.dir-deck { max-width: 40ch; margin: 0; color: var(--fg2); font-size: clamp(1.02rem, 1.3vw, 1.25rem); line-height: 1.45; }
+.dir-head { align-self: end; }
+.dir-list { grid-column: 2; grid-row: 1 / span 2; display: grid; gap: 1.25rem; }
 
-/* a letter of introduction: who they are on the left, why we send people
-   to them on the right, the reason set big */
+/* a letter of introduction: who they are, then why we send people to
+   them, set big, then what they do */
 .letter {
-  display: grid;
-  grid-template-columns: minmax(14rem, 21rem) minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 5rem);
-  align-items: start;
-  padding: clamp(1.75rem, 3.5vw, 3rem);
+  padding: clamp(1.4rem, 2.6vw, 2.25rem);
   border-top: 2px solid var(--ember);
   border-radius: 0 0 6px 6px;
   background: linear-gradient(rgba(36, 29, 23, 0.78), rgba(20, 16, 13, 0.6));
@@ -890,35 +894,37 @@ html:has(main .directory) .top[data-theme="forge"]::before {
   backdrop-filter: blur(6px);
   scroll-margin-top: 7rem;
 }
-.letter .letter-plate { aspect-ratio: 2 / 1; padding: 9% 12%; margin-bottom: 1.4rem; }
-.letter-who h3 { margin: 0 0 0.25rem; font-size: clamp(1.5rem, 2.2vw, 2rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; transition: color 0.3s ease; }
+.letter-who { display: flex; gap: 1.1rem; align-items: center; margin-bottom: clamp(1.25rem, 3vh, 1.75rem); }
+/* padding in rem: a percentage would be of the row, not the plate */
+.letter .letter-plate { flex: none; width: clamp(8rem, 12vw, 11rem); aspect-ratio: 5 / 2; padding: 0.55rem 0.8rem; }
+.letter-who h3 { margin: 0 0 0.25rem; font-size: clamp(1.3rem, 1.8vw, 1.65rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; transition: color 0.3s ease; }
 .letter:target .letter-who h3, .letter.is-target .letter-who h3 { color: var(--accent); }
-.letter-place { margin: 0 0 1rem; color: var(--fg2); font-size: 0.95rem; }
-.letter-link { margin: 0; }
+.letter-place { margin: 0 0 0.15rem; color: var(--fg2); font-size: 0.92rem; line-height: 1.45; }
+.letter-link { margin: 0; font-size: 0.92rem; }
 .letter a:not(.plate), .dir-note a { color: var(--fg); font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
 .letter a:not(.plate):hover { color: var(--accent); }
-.letter-quote { margin: 0 0 clamp(1.5rem, 3vw, 2.25rem); }
-.letter-quote figcaption { margin-bottom: 1rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.letter-quote { margin: 0 0 clamp(1rem, 2.5vh, 1.5rem); }
+.letter-quote figcaption { margin-bottom: 0.7rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
 .letter-quote blockquote { margin: 0; }
 .letter-quote blockquote p {
   margin: 0;
-  max-width: 26ch;
+  max-width: 32ch;
   color: var(--fg);
-  font-size: clamp(1.5rem, 2.55vw, 2.5rem);
+  font-size: clamp(1.2rem, 1.75vw, 1.6rem);
   font-weight: 500;
-  letter-spacing: -0.035em;
-  line-height: 1.12;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
   text-wrap: pretty;
 }
 .letter-quote blockquote p::before { content: "\201C"; margin-left: -0.45em; color: var(--ember); }
 .letter-quote blockquote p::after { content: "\201D"; color: var(--ember); }
-.letter-what { max-width: 52ch; margin: 0 0 1.25rem; color: var(--fg2); font-size: 1.05rem; line-height: 1.55; }
-.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
-.tags li { padding: 0.38rem 0.75rem; border: 1px solid var(--track); border-radius: 999px; color: var(--fg); font-size: 0.82rem; line-height: 1.2; }
+.letter-what { max-width: 56ch; margin: 0 0 1rem; color: var(--fg2); font-size: 0.98rem; line-height: 1.5; }
+.tags { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+.tags li { padding: 0.32rem 0.7rem; border: 1px solid var(--track); border-radius: 999px; color: var(--fg); font-size: 0.8rem; line-height: 1.2; }
 
 /* how we introduce people, and the way in for the next friend: one quiet
-   line under the letters */
-.dir-note { max-width: 62ch; margin: 0; padding-top: 1.1rem; border-top: 1px solid var(--track); color: var(--fg2); font-size: clamp(0.98rem, 1.1vw, 1.08rem); line-height: 1.55; }
+   line under the deck, and under the letters on a phone */
+.dir-note { grid-column: 1; grid-row: 2; align-self: start; max-width: 46ch; margin: 0; padding-top: 1rem; border-top: 1px solid var(--track); color: var(--fg2); font-size: 0.92rem; line-height: 1.55; }
 .dir-note a:hover { color: var(--accent); }
 
 /* each part settles in as it scrolls into view, where the browser can tie
@@ -1038,10 +1044,18 @@ html:has(main .ledger) .top::before {
   .dir { padding-top: calc(env(safe-area-inset-top) + 9.5rem); }
   /* on a phone the nav wraps to a second row, so the strip stays solid past it */
   html:has(main .directory) .top[data-theme="forge"]::before { height: calc(env(safe-area-inset-top) + 150px); background: linear-gradient(var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); }
-  .letter { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; padding: 1.4rem 1.1rem 1.6rem; }
-  .letter-quote blockquote p { font-size: clamp(1.35rem, 6vw, 1.75rem); }
+  .dir { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; align-items: start; gap: 1.15rem; padding-bottom: 3rem; }
+  .dir-list, .dir-note { grid-column: auto; grid-row: auto; }
+  .dir-head h2 { font-size: clamp(1.9rem, 8.6vw, 2.5rem); }
+  .dir-deck { font-size: 0.96rem; }
+  .letter { padding: 1.15rem 1.05rem 1.25rem; }
+  .letter-who { gap: 0.85rem; margin-bottom: 1rem; }
+  .letter .letter-plate { width: 7rem; padding: 0.4rem 0.55rem; }
+  .letter-who h3 { font-size: 1.2rem; }
+  .letter-place { font-size: 0.85rem; }
+  .letter-quote blockquote p { font-size: 1.12rem; }
   .letter-quote blockquote p::before { margin-left: 0; }
-  .letter .letter-plate { max-width: 15rem; }
+  .letter-what { font-size: 0.92rem; }
   .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
   .peer-plate { width: min(62vw, 16rem); }
   .copy p.permission { font-size: 0.78rem; }
