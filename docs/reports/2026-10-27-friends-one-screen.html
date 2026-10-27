@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Friends on One Screen</title>
+<meta name="description" content="The Friends section on /about redesigned to fit one screen, 2026-10-27.">
+<style>
+  /* Three options side by side, on the site's own paper. */
+  .opt { display: grid; gap: 1rem; padding-top: 1.4rem; border-top: 2px solid var(--ember); }
+  .opt h2 { margin: 0; }
+  .opt .tag { font-size: 0.8rem; font-weight: 700; color: var(--ember); margin: 0; }
+  .opt .links { font-size: 0.9rem; margin: 0; }
+  .pros { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  .withphone { display: grid; grid-template-columns: minmax(0, 1fr) 13rem; gap: 1rem; align-items: start; }
+  .pick { padding: 1.2rem 1.4rem; border-radius: 12px; background: var(--ground-2); border: 1px solid var(--line); display: grid; gap: 0.5rem; }
+  .pick p { margin: 0; }
+  @media (max-width: 44rem) { .steps, .withphone { grid-template-columns: minmax(0, 1fr); } .withphone figure:last-child { max-width: 14rem; } }
+  .phone3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; align-items: start; }
+  .phone3 figure img { max-width: 17rem; }
+  .stand { font-size: 0.72rem; font-weight: 700; color: var(--warn); }
+  pre { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; background: var(--ground-2); border: 1px solid var(--line); overflow-x: auto; font-size: 0.82rem; }
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  header { display: grid; gap: 0.9rem; }
+  .meta { margin: 0; color: var(--ember); font-size: 0.8rem; font-weight: 700; }
+  h1 { margin: 0; font-size: clamp(2rem, 5.5vw, 3.6rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.08rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+  figure { margin: 0; display: grid; gap: 0.6rem; }
+  figure img, figure video { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #0e0c0a; }
+  figcaption { font-size: 0.9rem; color: var(--ink-dim); max-width: 62ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+  .three { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 1rem; align-items: start; }
+  .phone { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 1.4rem; align-items: center; }
+  ol.notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; font-size: 0.92rem; }
+  ol.notes li::marker { color: var(--ember); font-weight: 700; }
+  .flow { width: 100%; height: auto; display: block; }
+  .flow text { font-family: var(--sans); fill: var(--ink); }
+  .flow .dim { fill: var(--ink-dim); }
+  .flow .box { fill: var(--ground-2); stroke: var(--line); }
+  .flow .hot { fill: var(--ember); }
+  .flow .arrow { stroke: var(--ink-dim); fill: none; stroke-width: 1.5; }
+  .todo { display: grid; gap: 0.7rem; }
+  .todo > div { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.5rem; align-items: baseline; }
+  .todo span { color: var(--warn); font-weight: 700; }
+  a { color: var(--ink); text-decoration-color: var(--ember); text-underline-offset: 0.2em; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  @media (max-width: 44rem) {
+    .two, .three, .phone, .phone3 { grid-template-columns: minmax(0, 1fr); }
+    .phone figure { max-width: 16rem; }
+  }
+ .ba { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+ .ba .label { font-size: 0.78rem; font-weight: 700; margin: 0; }
+ .ba .was { color: var(--ink-dim); }
+ .ba .now { color: var(--ok); }
+ .wrap > * { min-width: 0; }
+ .todo span { color: var(--ok); }
+ .todo p { margin: 0; }
+ @media (max-width: 44rem) { .ba { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="meta">2026-10-27 · chamainteligente.com/about</p>
+    <h1>Friends now fit on one screen</h1>
+    <p class="lede">The Friends section was 1,677px tall on a 900px screen. Now it is exactly one screen: why we introduce people on the left, Chris's letter as a compact card on the right.</p>
+    <div class="chips">
+      <span class="chip">✓ Live in production</span>
+      <span class="chip">✓ 1440, 1280 and 1024 wide: one screen</span>
+      <span class="chip">✓ 547 checks pass</span>
+      <span class="chip open">Phone: about 1.3 screens</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Before: two screens of scrolling</h2>
+    <div class="ba">
+      <figure><p class="label was">Screen 1</p><img src="2026-10-27-friends-one-screen/before-1.jpg" alt="The old Friends heading with the letter starting at the bottom edge"><figcaption>Heading and intro, and the letter only starts at the bottom edge.</figcaption></figure>
+      <figure><p class="label was">Screen 2</p><img src="2026-10-27-friends-one-screen/before-2.jpg" alt="The rest of the old letter and the note, with lots of empty space"><figcaption>The rest of the letter, a big empty left column, then the note.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Now: one screen, live</h2>
+    <figure><p class="label now" style="font-size:0.78rem;font-weight:700;margin:0">1440 × 900, live on chamainteligente.com</p><img src="2026-10-27-friends-one-screen/after-desk.jpg" alt="The new Friends section: heading, intro and note on the left, Chris's card on the right"><figcaption>Left: <b>heading, intro, and the note</b> about how we introduce people. Right: <b>Chris's card</b> with a small logo plate, the quote, what he does, and tags. New friends stack under Chris.</figcaption></figure>
+  </section>
+
+  <section>
+    <h2>Smaller screens</h2>
+    <div class="phone">
+      <figure><img src="2026-10-27-friends-one-screen/after-phone.jpg" alt="The Friends section on a phone, with Chris's card on the first screen"></figure>
+      <figure><img src="2026-10-27-friends-one-screen/after-small.jpg" alt="The Friends section at 1024 by 768, still one screen"><figcaption><b>1024 × 768</b> still fits in one screen. On a <b>phone</b> the card shows on the first screen, and the tags and note follow in a short scroll; fitting it all would mean cutting copy.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Links</h2>
+    <p><a href="https://chamainteligente.com/about#tlc-automation">chamainteligente.com/about#tlc-automation</a> · <a href="https://github.com/elliothimmelfarb/chama-website/pull/147">PR 147</a></p>
+  </section>
+</div>
+</body>
+</html>
