@@ -371,6 +371,9 @@ body {
   padding: 1.3rem;
 }
 
+.hh-pay { width: min(32rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; }
+.hh-pay .pay-element { min-height: 9rem; }
+
 .hh-pick-list { display: grid; gap: 2px; margin-inline: -0.6rem; }
 .hh-pick-row {
   display: flex;
