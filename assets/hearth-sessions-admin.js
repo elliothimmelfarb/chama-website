@@ -1413,7 +1413,8 @@
         var head = el("div", "row between");
         var titleBox = el("div");
         var total = el("p", "small dim");
-        append(titleBox, [el("h2", null, "Your week"), total]);
+        var horizon = el("p", "small dim");
+        append(titleBox, [el("h2", null, "Your week"), total, horizon]);
         var status = el("p", "save-state small faint", "Saves as you paint");
         status.setAttribute("aria-live", "polite");
         append(head, [titleBox, status]);
@@ -1617,6 +1618,13 @@
           total.textContent = weekMinutes
             ? hoursText(weekMinutes) + " open this week, room for up to " + sessions + " session" + (sessions === 1 ? "" : "s") + ". In " + state.zone + "."
             : "Nothing open this week. Drag across a day to open hours on that date only.";
+          // How far ahead anything is open, so the Friday routine of setting
+          // the next week or two knows where it left off.
+          var lastOpen = Object.keys(cells).filter(function (key) { return key >= todayKey && cells[key].some(Boolean); }).sort().pop();
+          if (!lastOpen) { horizon.textContent = "Nothing is open from today on. Members can book only the dates you paint."; return; }
+          var p = lastOpen.split("-");
+          var shown = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).toLocaleDateString(undefined, { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" });
+          horizon.textContent = "Open for booking through " + shown + ". Dates after that stay closed until you paint them.";
         }
 
         // Mouse and pen paint by dragging; the first cell decides whether the
