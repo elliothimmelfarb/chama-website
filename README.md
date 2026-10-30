@@ -169,7 +169,7 @@ Settings has three switches, each a decision rather than a deploy: `open_signup`
 
 The Hearth also uses `ADMIN_EMAILS`, `RESEND_*`, `CRON_SECRET`, `ANTHROPIC_API_KEY` and `GOOGLE_CLIENT_ID` from above.
 
-The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligente.com>` (`lib/hearth/mail.js`). Everything meant for Elliot (bookings, pack requests, billing details, payments, failures) goes to `elliot@chamainteligente.com` (`OWNER_INBOX`), never to the address the owner signs in with. A paid invoice or card payment is the fatura request: it opens with "Forward this to Documentos@contabilidadeemdia.pt" and carries who paid, the bill-to and the IVA reason. ShopIntake's Stripe webhook asks for the fatura for every other sale on the shared Stripe account and skips anything tagged `metadata.source = hearth`, so each Hearth payment brings one email, from the Hearth.
+The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligente.com>` (`lib/hearth/mail.js`). Everything meant for Elliot (bookings, pack requests, billing details, payments, failures) goes to `elliot@chamainteligente.com` (`OWNER_INBOX`), never to the address the owner signs in with. A paid invoice or card payment is the fatura request: it opens with "This payment needs a fatura." (it never says where to send it) and carries who paid, the bill-to and the IVA reason. ShopIntake's Stripe webhook asks for the fatura for every other sale on the shared Stripe account and skips anything tagged `metadata.source = hearth`, so each Hearth payment brings one email, from the Hearth.
 
 | Variable | What it is |
 |---|---|
