@@ -685,7 +685,9 @@
     var left = el("div");
     left.appendChild(el("div", "primary", fmtDay(b.startsAt, true) + ", " + fmtTime(b.startsAt)));
     var status = b.status === "cancelled" ? "cancelled" : b.status === "no_show" ? "missed" : "held";
-    left.appendChild(el("div", "secondary", status + (b.title ? " · " + b.title : "")));
+    var said = status === "cancelled" && b.cancelledBy === "owner" ? "cancelled by Elliot" : status;
+    left.appendChild(el("div", "secondary", said + (b.title ? " · " + b.title : "")));
+    if (status === "cancelled" && b.cancelledBy === "owner" && b.cancelReason) left.appendChild(el("div", "secondary", b.cancelReason));
     var right = el("div", "row");
     if (b.transcriptId) {
       var t = button("Summary and transcript", "btn sm", function () { H.navigate("/transcripts/" + b.transcriptId); });

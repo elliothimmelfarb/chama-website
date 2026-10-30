@@ -220,6 +220,23 @@
     return isNaN(d.getTime()) ? null : d.toISOString();
   }
 
+  // The other way: an instant as the wall clock a datetime-local field shows.
+  function instantToLocal(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    function two(n) { return n < 10 ? "0" + n : String(n); }
+    return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + "T" + two(d.getHours()) + ":" + two(d.getMinutes());
+  }
+
+  function shortDay(iso, zone) {
+    return new Date(iso).toLocaleDateString("en-GB", { timeZone: zone || undefined, day: "numeric", month: "short" });
+  }
+
+  function memberFirstName(member) {
+    var name = member && (member.name || member.email) || "them";
+    return String(name).split(/[\s@]/)[0] || "them";
+  }
+
   function statusPill(status) {
     var kinds = { scheduled: "live", completed: "client", cancelled: "bad" };
     var labels = { scheduled: "scheduled", completed: "completed", cancelled: "cancelled", no_show: "no show" };
@@ -409,14 +426,23 @@
 
     function editor(booking, row) {
       var card = el("div", "card stack tight");
+      var first = memberFirstName(booking.member);
       var title = input("text", "title", "What this session is about", booking.title || "");
       var note = textarea(booking.ownerNote || "", 4);
       var meeting = input("url", "meetingUrl", "https://meet.google.com/...", booking.meetingUrl || "");
+      // Only a session that spent a credit has one to give back.
+      var spentCredit = booking.billing === "credit";
       var refund = toggle("Refund the credit", true);
-      refund.node.hidden = booking.status !== "cancelled";
-      var status = select(BOOKING_STATUSES, booking.status, function (value) {
-        refund.node.hidden = value !== "cancelled";
-      });
+      var message = textarea("", 3);
+      var messageField = field("Message to " + first, message, "Goes in the cancellation email. Leave empty to send none of your own words.");
+      var cancelling = booking.status === "scheduled";
+      function showCancel(value) {
+        var on = value === "cancelled" && booking.status !== "cancelled";
+        refund.node.hidden = !(on && spentCredit);
+        messageField.hidden = !(on && cancelling);
+      }
+      var status = select(BOOKING_STATUSES, booking.status, showCancel);
+      showCancel(booking.status);
 
       var save = button("Save", "btn primary", function () {
         var body = {
@@ -425,10 +451,13 @@
           meetingUrl: meeting.value.trim(),
           status: status.value
         };
-        if (status.value === "cancelled") body.refund = refund.input.checked;
+        if (status.value === "cancelled" && booking.status !== "cancelled") {
+          if (spentCredit) body.refund = refund.input.checked;
+          body.reason = message.value;
+        }
         busy(save, api("/admin/bookings/" + encodeURIComponent(booking.id), { method: "PATCH", body: body }))
           .then(function () {
-            toast("Saved.", "good");
+            toast(body.reason !== undefined && cancelling ? "Cancelled. " + first + " has been told." : "Saved.", "good");
             flare();
             load();
           })
@@ -440,14 +469,54 @@
         field("Your note", note, "Visible to staff only."),
         field("Meeting link", meeting),
         field("Status", status),
+        messageField,
         refund.node,
         append(el("div", "row"), [save, button("Close", "btn ghost", function () { row.hidden = true; })])
       ]);
+
+      if (booking.status === "scheduled") {
+        card.appendChild(el("div", "hr"));
+        card.appendChild(moveBox(booking, first));
+      }
+
       if (booking.clientNote) {
         card.appendChild(el("p", "small faint", "Their note"));
         card.appendChild(el("p", "small dim", booking.clientNote));
       }
       return card;
+    }
+
+    // Moving keeps the session, its Meet link and its length, and tells the
+    // member the old and new time in one email.
+    function moveBox(booking, first) {
+      var box = el("div", "stack tight");
+      box.appendChild(el("p", "label", "Move it"));
+      var when = input("datetime-local", "startsAt", "", instantToLocal(booking.startsAt));
+      var message = textarea("", 2);
+      var status = el("p", "form-error");
+      var go = button("Move session", "btn", function () {
+        status.textContent = "";
+        var startsAt = localToInstant(when.value);
+        if (!startsAt) { status.textContent = "Pick a time."; return; }
+        if (startsAt === new Date(booking.startsAt).toISOString()) { status.textContent = "That is the time it already has."; return; }
+        busy(go, api("/admin/bookings/" + encodeURIComponent(booking.id) + "/move", { method: "POST", body: { startsAt: startsAt, reason: message.value } }))
+          .then(function () {
+            toast("Moved. " + first + " has been told.", "good");
+            flare();
+            load();
+          })
+          .catch(function (error) {
+            status.textContent = error.message;
+            toast(error.message, "bad");
+          });
+      });
+      append(box, [
+        field("New start", when, "In your timezone. Any time that is free, notice or not."),
+        field("Message to " + first, message, "Goes in the email with the new time. Optional."),
+        status,
+        append(el("div", "row"), [go])
+      ]);
+      return box;
     }
 
     function draw(bookings) {
@@ -487,6 +556,12 @@
           who
         ]);
         if (booking.member && booking.member.email) left.appendChild(el("div", "secondary", booking.member.email));
+        if (booking.status === "cancelled") {
+          var by = booking.cancelledBy === "owner" ? "you" : booking.cancelledBy === "member" ? memberFirstName(booking.member) : "";
+          var why = (by ? "Cancelled by " + by : "Cancelled") + (booking.cancelledAt ? " on " + shortDay(booking.cancelledAt, zone) : "");
+          if (booking.cancelReason) why += ": " + booking.cancelReason;
+          left.appendChild(el("div", "secondary", why));
+        }
 
         var right = el("div", "row");
         right.appendChild(statusPill(booking.status));
