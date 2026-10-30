@@ -1476,8 +1476,8 @@
         scroller.appendChild(grid);
         card.appendChild(scroller);
         var legend = el("div", "dl-legend");
-        [["dl-open", "open for booking"], ["dl-google", "Google Calendar"], ["dl-google fyi", "shared, does not block"], ["dl-booked", "booked"]].forEach(function (x) {
-          append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
+        [["dl-open", "open for booking"], ["dl-google", "Chama"], ["dl-google", "family, with you", "#33b679"], ["dl-google fyi", "family, does not block"], ["dl-booked", "booked"]].forEach(function (x) {
+          append(legend, [append(el("span", "dl-key"), [tint(el("span", x[0]), x[2]), document.createTextNode(x[1])])]);
         });
         card.appendChild(legend);
 
@@ -1847,7 +1847,7 @@
           text.appendChild(el("p", "small", "Google Calendar (" + (g.email || "connected") + "): " + n + (n === 1 ? " event" : " events") + " in these weeks, drawn on each date." + (g.blocks ? " Members cannot book over them." : " They do not block booking.")));
           var cals = (g.calendars || ["primary"]).map(function (c) { return c === "primary" ? (g.email || "your calendar") : c; });
           var shared = g.shared || [];
-          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + "." + (shared.length ? " Also showing " + shared.join(", ") + " in its own colours; only its events with you, or coloured green, block booking." : "")));
+          text.appendChild(el("p", "small faint", "Reading " + cals.join(", ") + "." + (shared.length ? " Also showing the family calendar (" + shared.join(", ") + ") in its own colours; only its events with you, or coloured green, block booking." : "")));
           (g.unread || []).forEach(function (id) {
             text.appendChild(el("p", "small bad-text", "Could not read " + (id === "primary" ? "your main calendar" : id) + ". If it is another account's calendar, share it with " + (g.email || "the connected account") + " first."));
           });
@@ -1998,7 +1998,7 @@
               var row = el("div");
               var whenText = e.allDay ? "all day" : clockTime(e.starts_at, state.zone) + " to " + clockTime(e.ends_at, state.zone);
               var name = append(el("div", "primary"), [tint(el("span", "gcal-swatch" + (e.blocks ? "" : " fyi")), e.color), document.createTextNode(e.title)]);
-              append(row, [append(el("div", "grow"), [name, el("div", "secondary", whenText)]), el("span", "meta", !e.shared ? "Google" : e.blocks ? "Shared" : "Shared, does not block")]);
+              append(row, [append(el("div", "grow"), [name, el("div", "secondary", whenText)]), el("span", "meta", !e.shared ? "Chama" : e.blocks ? "Family" : "Family, does not block")]);
               gl.appendChild(row);
             });
             panel.appendChild(el("p", "label", "On your calendar"));
@@ -2084,10 +2084,12 @@
             line.appendChild(t);
           }
           var legend = el("div", "dl-legend");
-          var keys = [["dl-usual", "painted"], ["dl-open", "members can book"], ["dl-google", "Google Calendar"]];
-          if (gDay.some(function (e) { return !e.blocks; })) keys.push(["dl-google fyi", "shared, does not block"]);
+          var keys = [["dl-usual", "painted"], ["dl-open", "members can book"]];
+          if (gDay.some(function (e) { return !e.shared; })) keys.push(["dl-google", "Chama"]);
+          if (gDay.some(function (e) { return e.shared && e.blocks; })) keys.push(["dl-google", "family, with you", "#33b679"]);
+          if (gDay.some(function (e) { return !e.blocks; })) keys.push(["dl-google fyi", "family, does not block"]);
           keys.concat([["dl-booked", "booked"]]).forEach(function (x) {
-            append(legend, [append(el("span", "dl-key"), [el("span", x[0]), document.createTextNode(x[1])])]);
+            append(legend, [append(el("span", "dl-key"), [tint(el("span", x[0]), x[2]), document.createTextNode(x[1])])]);
           });
           append(wrapLine, [line, legend]);
           return wrapLine;
