@@ -431,7 +431,7 @@
       wrap.appendChild(card);
       return wrap;
     });
-  }, { title: "Billing details" });
+  }, { title: "Billing details", nav: { label: "Billing details", short: "Billing", order: 3.1, hideFor: "purchases.manage", when: function () { return H.can("sessions.own") || H.state.invoices > 0; } } });
 
   // Everyone's own invoices, guests included, on a page of their own. The
   // arrival notice leads here: an open one is a single click from Stripe's
@@ -1048,6 +1048,23 @@
       var next = data.bookings.filter(function (b) { return b.status === "scheduled" && new Date(b.endsAt) > new Date(); }).sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); })[0];
       if (data.billing !== "after") H.countUp(tile(data.balance, "credits left", data.balance > 0), data.balance);
       tile(next ? fmtDay(next.startsAt) : "none booked", next ? "next session, " + fmtTime(next.startsAt) : "next session", Boolean(next));
+    });
+  });
+
+  // A member who has never said who pays is asked once, on Home, so a
+  // company gets its invoice made out to it from the start.
+  H.onHome(function (tile, wrap) {
+    if (!H.can("sessions.own") || H.can("purchases.manage")) return;
+    return api("/billing").then(function (data) {
+      if (data.billing) return;
+      var card = el("div", "card stack tight");
+      append(card, [
+        el("p", "label", "Billing details"),
+        el("p", null, "Paying through a company? Add its name, address and tax number, and your invoices are made out to it.")
+      ]);
+      card.appendChild(append(el("div", "row"), [button("Add billing details", "btn sm primary", function () { H.navigate("/billing"); })]));
+      var tiles = wrap.querySelector(".stats");
+      wrap.insertBefore(card, tiles ? tiles.nextSibling : null);
     });
   });
 
