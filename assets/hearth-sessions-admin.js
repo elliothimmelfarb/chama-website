@@ -1057,6 +1057,8 @@
     wrap.appendChild(H.viewHead("Invoices", "Bill a member through Stripe. They pay on Stripe's page, and paid invoices update here on their own.", [newButton]));
     var notice = el("div");
     wrap.appendChild(notice);
+    var readyCard = el("div");
+    wrap.appendChild(readyCard);
     wrap.appendChild(formCard);
 
     var controls = el("div", "row");
@@ -1106,26 +1108,40 @@
         total.textContent = bad ? "Every line needs an amount." : "Total " + money(sum, "EUR");
       }
 
-      // Held sessions, each its own line at the per-session price.
-      if (data.bookings.length) {
-        body.appendChild(sectionLabel("Sessions held, not invoiced"));
-        var price = moneyInput("sessionPrice", data.sessionPriceCents);
+      // Held and recorded sessions, each its own line at one per-session price.
+      var recorded = data.recorded || [];
+      var price = null;
+      if (data.bookings.length || recorded.length) {
+        price = moneyInput("sessionPrice", data.sessionPriceCents);
         price.addEventListener("input", recount);
-        body.appendChild(field("Price per session (EUR)", price, data.sessionPriceCents ? "From your packs. Change it for this invoice if you need to." : "Set a price for one session."));
-        data.bookings.forEach(function (b) {
-          var t = toggle(dayLabel(b.startsAt, ownerZone()) + " · " + timeRange(b, ownerZone()) + (b.status === "no_show" ? " · no show" : ""), true);
-          t.input.addEventListener("change", recount);
-          body.appendChild(t.node);
-          lines.push({
-            include: t.input,
-            bookingId: b.id,
-            description: function () {
-              return "Coaching session, " + new Date(b.startsAt).toLocaleDateString("en-GB", { timeZone: ownerZone(), day: "numeric", month: "short", year: "numeric" });
-            },
-            cents: function () { return euros(price.value); }
-          });
-        });
+        body.appendChild(sectionLabel("Sessions"));
+        body.appendChild(field("Price per session (EUR)", price, data.sessionPriceCents ? "The last price you used. Change it for this invoice if you need to." : "Set a price for one session. The next invoice starts from it."));
       }
+      function sessionDay(at) {
+        return new Date(at).toLocaleDateString("en-GB", { timeZone: ownerZone(), day: "numeric", month: "short", year: "numeric" });
+      }
+      data.bookings.forEach(function (b) {
+        var t = toggle("Booked · " + dayLabel(b.startsAt, ownerZone()) + " · " + timeRange(b, ownerZone()) + (b.status === "no_show" ? " · no show" : ""), true);
+        t.input.addEventListener("change", recount);
+        body.appendChild(t.node);
+        lines.push({
+          include: t.input,
+          bookingId: b.id,
+          description: function () { return "Coaching session, " + sessionDay(b.startsAt); },
+          cents: function () { return euros(price.value); }
+        });
+      });
+      recorded.forEach(function (r) {
+        var t = toggle("Recorded · " + dayLabel(r.heldAt, ownerZone()) + (r.title ? " · " + r.title : ""), true);
+        t.input.addEventListener("change", recount);
+        body.appendChild(t.node);
+        lines.push({
+          include: t.input,
+          transcriptId: r.id,
+          description: function () { return "Coaching session, " + sessionDay(r.heldAt); },
+          cents: function () { return euros(price.value); }
+        });
+      });
 
       // An open pack request, at the price it was asked at.
       if (data.purchases.length) {
@@ -1181,7 +1197,7 @@
         recount();
       }
       body.appendChild(append(el("div", "row"), [button("Add a line", "btn sm", addLine)]));
-      if (!data.bookings.length && !data.purchases.length) addLine();
+      if (!data.bookings.length && !recorded.length && !data.purchases.length) addLine();
 
       var due = input("number", "daysUntilDue", "14", "14");
       due.min = "0";
@@ -1202,6 +1218,8 @@
           userId: member.id,
           lines: [],
           bookingIds: [],
+          transcriptIds: [],
+          sessionPriceCents: price ? euros(price.value) : null,
           purchaseId: null,
           daysUntilDue: parseInt(due.value, 10),
           description: memo.value.trim(),
@@ -1215,6 +1233,7 @@
           if (isNaN(cents) || cents <= 0) { line.textContent = "Every line needs an amount above zero."; return; }
           payload.lines.push({ description: text, amountCents: cents });
           if (c.bookingId) payload.bookingIds.push(c.bookingId);
+          if (c.transcriptId) payload.transcriptIds.push(c.transcriptId);
           if (c.purchaseId) payload.purchaseId = c.purchaseId;
         }
         if (isNaN(payload.daysUntilDue)) payload.daysUntilDue = 14;
@@ -1229,6 +1248,7 @@
             formCard.hidden = true;
             if (startMember) history.replaceState(null, "", BASE + "/admin/invoices");
             load();
+            loadReady();
           })
           .catch(function (error) {
             line.textContent = error.message;
@@ -1312,9 +1332,42 @@
       });
     }
 
+    // Who has sessions waiting, booked or only recorded: one click opens the
+    // form for them with every session ticked.
+    function loadReady() {
+      return api("/admin/invoice-ready").then(function (data) {
+        clear(readyCard);
+        var members = data.members || [];
+        if (!members.length) return;
+        var card = el("div", "card pad0");
+        var head = el("div", "row between");
+        head.style.padding = "0.9rem 1.1rem";
+        head.appendChild(el("p", "label", "Ready to invoice"));
+        card.appendChild(head);
+        var list = el("div", "list");
+        members.forEach(function (m) {
+          var row = el("div");
+          var left = el("div", "grow");
+          append(left, [
+            el("div", "primary", memberName(m)),
+            el("div", "secondary", m.waiting + (m.waiting === 1 ? " session" : " sessions") + " not invoiced, since " + fmtDate(m.firstAt, { dateStyle: "medium" }))
+          ]);
+          var go = button("Invoice " + m.waiting + (m.waiting === 1 ? " session" : " sessions"), "btn sm primary", function () {
+            formCard.hidden = false;
+            loadSources(m.id).then(function () { formCard.scrollIntoView({ behavior: "smooth", block: "start" }); });
+          });
+          go.disabled = !data.configured;
+          append(row, [left, go]);
+          list.appendChild(row);
+        });
+        card.appendChild(list);
+        readyCard.appendChild(card);
+      }, function () { clear(readyCard); });
+    }
+
     buildForm();
     if (startMember) loadSources(startMember, startPurchase);
-    return load().then(function () { return wrap; });
+    return Promise.all([load(), loadReady()]).then(function () { return wrap; });
   }, { perm: "purchases.manage", title: "Invoices", nav: { group: "Money", label: "Invoices", order: 2 } });
 
   /* ---------- availability ---------- */

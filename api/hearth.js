@@ -237,15 +237,27 @@ route("GET", "/config", async () => {
   return json({ providers: availableProviders(), openSignup: settings.open_signup });
 });
 
+async function invoiceCounts(userId) {
+  const rows = await sql()`
+    select count(*) filter (where status = 'open')::int as n, count(*)::int as total
+    from invoices where user_id = ${userId} and status in ('open', 'paid', 'void', 'uncollectible')
+  `;
+  return { open: rows[0]?.n || 0, total: rows[0]?.total || 0 };
+}
+
 route("GET", "/me", async (context) => {
   if (!context.actor) return json({ error: MESSAGES.signedOut }, 401);
   const { user, permissions } = context.actor;
-  const settings = await readSettings();
+  const [settings, invoices] = await Promise.all([readSettings(), invoiceCounts(user.id)]);
   return json({
     user: publicUser(user, permissions),
     role: context.actor.role ? { name: context.actor.role.name, label: context.actor.role.label } : null,
     viewer: context.viewer ? { id: context.viewer.user.id, name: context.viewer.user.name || context.viewer.user.email } : undefined,
-    settings: { sessionMinutes: settings.session_minutes, meetingUrl: settings.meeting_url ? true : false }
+    settings: { sessionMinutes: settings.session_minutes, meetingUrl: settings.meeting_url ? true : false },
+    // Open invoices are the person's own, whoever is looking: the room shows
+    // a notice for them on arrival.
+    openInvoices: invoices.open,
+    invoices: invoices.total
   });
 });
 
