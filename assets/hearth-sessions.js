@@ -211,6 +211,167 @@
 
   // Invoices Elliot sent through Stripe. An open one can be paid on Stripe's
   // page; a paid one keeps that page as the receipt.
+  /* ---------- paying and receipts, without leaving the room ---------- */
+
+  // Stripe.js loads only when someone presses Pay; nothing from Stripe runs
+  // in the room before that. Stripe's own invoice page blanks itself inside
+  // a frame, so the card form is Stripe's Payment Element in our dialog.
+  var stripeScript = null;
+  function loadStripe() {
+    if (window.Stripe) return Promise.resolve(window.Stripe);
+    if (!stripeScript) {
+      stripeScript = new Promise(function (resolve, reject) {
+        var s = document.createElement("script");
+        s.src = "https://js.stripe.com/v3/";
+        s.onload = function () { if (window.Stripe) resolve(window.Stripe); else reject(new Error("Stripe did not load.")); };
+        s.onerror = function () { stripeScript = null; reject(new Error("Stripe did not load.")); };
+        document.head.appendChild(s);
+      });
+    }
+    return stripeScript;
+  }
+
+  function invoiceDialog(label, onClose) {
+    var dlg = el("dialog", "hh-pick hh-pay");
+    dlg.setAttribute("aria-label", label);
+    var body = el("div", "stack");
+    dlg.appendChild(body);
+    dlg.addEventListener("close", function () { dlg.remove(); if (onClose) onClose(); });
+    dlg.addEventListener("click", function (e) { if (e.target === dlg && !dlg.classList.contains("busy")) dlg.close(); });
+    dlg.addEventListener("cancel", function (e) { if (dlg.classList.contains("busy")) e.preventDefault(); });
+    document.body.appendChild(dlg);
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+    return { dlg: dlg, body: body, close: function () { dlg.close(); } };
+  }
+
+  function invoiceSummary(inv, heading) {
+    var top = el("div", "stack tight");
+    top.appendChild(el("p", "label", heading + (inv.number ? " · " + inv.number : "")));
+    top.appendChild(el("p", "invoice-total", money(inv.amountCents, inv.currency)));
+    var lines = inv.lines || [];
+    if (lines.length) {
+      var list = el("ul", "invoice-lines");
+      lines.forEach(function (l) {
+        append(list.appendChild(el("li")), [el("span", null, l.description), el("span", "dim", money(l.amountCents, inv.currency))]);
+      });
+      top.appendChild(list);
+    }
+    return top;
+  }
+
+  function pdfLink(inv) {
+    if (!inv.pdfUrl) return null;
+    var pdf = link("Download PDF", inv.pdfUrl, "btn ghost");
+    pdf.target = "_blank";
+    pdf.rel = "noopener";
+    return pdf;
+  }
+
+  function showReceipt(inv) {
+    var d = invoiceDialog("Receipt");
+    d.body.appendChild(invoiceSummary(inv, "Receipt"));
+    d.body.appendChild(el("p", "small dim", inv.paidAt ? "Paid " + fmtDay(inv.paidAt, true) + ". Thank you." : "Paid. Thank you."));
+    append(d.body, [append(el("div", "row hh-pick-foot"), [pdfLink(inv), button("Close", "btn primary", d.close)])]);
+  }
+
+  // Asks the server, which asks Stripe, until the invoice reads paid. The
+  // webhook gets there too; this only saves the member a wait.
+  function settle(inv, tries) {
+    return api("/invoices/" + encodeURIComponent(inv.id) + "/sync", { method: "POST", body: {} }).then(function (r) {
+      if (r.invoice && r.invoice.status === "paid") return r.invoice;
+      if (tries <= 1) return null;
+      return new Promise(function (ok) { setTimeout(ok, 1500); }).then(function () { return settle(inv, tries - 1); });
+    }).catch(function () { return null; });
+  }
+
+  function payInvoice(inv) {
+    var paid = false;
+    var d = invoiceDialog("Pay invoice", function () { if (paid) H.render(); });
+    d.body.appendChild(invoiceSummary(inv, "To pay"));
+    var mount = el("div", "pay-element");
+    mount.appendChild(el("p", "small dim", "Loading the card form"));
+    var error = el("p", "small form-error");
+    error.hidden = true;
+    var pay = button("Pay " + money(inv.amountCents, inv.currency), "btn primary");
+    pay.disabled = true;
+    var cancel = button("Cancel", "btn ghost", d.close);
+    var foot = append(el("div", "row hh-pick-foot"), [cancel, pay]);
+    append(d.body, [mount, error, foot, el("p", "small faint", "Card details go straight to Stripe and never touch this site.")]);
+
+    function fallback(message) {
+      H.clear(mount);
+      mount.appendChild(el("p", "small", (message ? message + " " : "") + "You can pay on Stripe's own page instead, which opens in a new tab."));
+      var out = link("Open Stripe's page", inv.hostedUrl, "btn primary");
+      out.target = "_blank";
+      out.rel = "noopener";
+      foot.replaceChild(out, pay);
+    }
+
+    function done(final) {
+      paid = true;
+      d.dlg.classList.remove("busy");
+      H.clear(d.body);
+      H.flare();
+      var shown = final || inv;
+      append(d.body, [
+        invoiceSummary(shown, "Paid"),
+        el("p", "small dim", final ? "Thank you. A receipt is on its way to your email, and the invoice now shows as paid." : "Thank you. Stripe is confirming it, and the invoice shows as paid in a moment."),
+        append(el("div", "row hh-pick-foot"), [final ? pdfLink(final) : null, button("Done", "btn primary", d.close)])
+      ]);
+    }
+
+    api("/invoices/" + encodeURIComponent(inv.id) + "/pay", { method: "POST", body: {} }).then(function (r) {
+      if (r.status === "paid") { paid = true; d.close(); H.toast("That invoice is already paid.", "good"); return; }
+      if (r.status) { d.close(); H.toast("That invoice is no longer open.", "bad"); paid = true; return; }
+      if (r.fallback || !r.clientSecret) { fallback(""); return; }
+      return loadStripe().then(function (Stripe) {
+        var stripe = Stripe(r.publishableKey);
+        var elements = stripe.elements({
+          clientSecret: r.clientSecret,
+          appearance: {
+            theme: "night",
+            variables: { colorPrimary: "#f4581f", colorBackground: "#1c1917", colorText: "#ece7dc", colorDanger: "#e2634d", fontFamily: "\"Helvetica Neue\", Helvetica, Arial, sans-serif", borderRadius: "8px" }
+          }
+        });
+        var element = elements.create("payment", { layout: "tabs" });
+        H.clear(mount);
+        element.mount(mount);
+        element.on("ready", function () { pay.disabled = false; });
+        element.on("loaderror", function () { fallback("The card form did not load."); });
+        pay.addEventListener("click", function () {
+          pay.disabled = true;
+          cancel.disabled = true;
+          error.hidden = true;
+          d.dlg.classList.add("busy");
+          pay.textContent = "Paying";
+          stripe.confirmPayment({
+            elements: elements,
+            redirect: "if_required",
+            confirmParams: { return_url: location.origin + H.BASE + "/invoices?paid=" + encodeURIComponent(inv.id) }
+          }).then(function (result) {
+            if (result.error) {
+              d.dlg.classList.remove("busy");
+              error.textContent = result.error.message || "The payment did not go through.";
+              error.hidden = false;
+              pay.disabled = false;
+              cancel.disabled = false;
+              pay.textContent = "Pay " + money(inv.amountCents, inv.currency);
+              return;
+            }
+            return settle(inv, 6).then(done);
+          });
+        });
+      });
+    }).catch(function (err) { fallback(err && err.message); });
+  }
+
+  // A Pay or Receipt button for an invoice: both open in the room.
+  function invoiceAction(inv, label, cls) {
+    if (inv.status === "open" && inv.hostedUrl) return button(label || "Pay", cls || "btn sm primary", function () { payInvoice(inv); });
+    if (inv.status === "paid") return button(label || "Receipt", cls || "btn sm", function () { showReceipt(inv); });
+    return null;
+  }
+
   function invoicesCard(invoices) {
     var card = el("div", "card pad0");
     var head = el("div", "row between");
@@ -233,12 +394,8 @@
       var right = el("div", "row");
       var label = { open: "to pay", paid: "paid", void: "void", uncollectible: "closed" }[inv.status] || inv.status;
       right.appendChild(pill(label, inv.status === "paid" ? "client" : inv.status === "open" ? "live" : ""));
-      if (inv.hostedUrl) {
-        var go = link(inv.status === "open" ? "Pay" : "Receipt", inv.hostedUrl, "btn sm" + (inv.status === "open" ? " primary" : ""));
-        go.target = "_blank";
-        go.rel = "noopener";
-        right.appendChild(go);
-      }
+      var go = invoiceAction(inv);
+      if (go) right.appendChild(go);
       append(row, [left, right]);
       list.appendChild(row);
     });
@@ -435,13 +592,19 @@
   // Everyone's own invoices, guests included, on a page of their own. The
   // arrival notice leads here: an open one is a single click from Stripe's
   // page, where they pay by card.
-  H.register("/invoices", function () {
-    return api("/invoices").then(function (data) {
+  H.register("/invoices", function (ctx) {
+    // Back from a payment that needed to leave the page (a bank's check).
+    var back = ctx && ctx.query && ctx.query.paid;
+    var first = back ? settle({ id: back }, 3).then(function (inv) {
+      history.replaceState(null, "", H.BASE + "/invoices");
+      if (inv) H.toast("Paid. Thank you.", "good");
+    }) : Promise.resolve();
+    return first.then(function () { return api("/invoices"); }).then(function (data) {
       var wrap = el("div", "stack");
       var invoices = data.invoices || [];
       var open = invoices.filter(function (i) { return i.status === "open"; });
       H.state.openInvoices = open.length;
-      wrap.appendChild(H.viewHead("Invoices", open.length ? "Pay by card on Stripe's secure page, which opens in a new tab. Once it is paid it shows here as paid." : "Every invoice from Chama Inteligente, with its receipt."));
+      wrap.appendChild(H.viewHead("Invoices", open.length ? "Pay by card right here. Once it is paid it shows here as paid, with its receipt." : "Every invoice from Chama Inteligente, with its receipt."));
       if (!invoices.length) {
         wrap.appendChild(H.empty("No invoices yet."));
         return wrap;
@@ -463,18 +626,10 @@
         if (inv.description) card.appendChild(el("p", "small dim", inv.description));
         if (inv.dueAt) card.appendChild(el("p", "small", "Due " + fmtDay(inv.dueAt)));
         var row = el("div", "row");
-        if (inv.hostedUrl) {
-          var pay = link("Pay " + money(inv.amountCents, inv.currency), inv.hostedUrl, "btn primary");
-          pay.target = "_blank";
-          pay.rel = "noopener";
-          row.appendChild(pay);
-        }
-        if (inv.pdfUrl) {
-          var pdf = link("Download PDF", inv.pdfUrl, "btn ghost");
-          pdf.target = "_blank";
-          pdf.rel = "noopener";
-          row.appendChild(pdf);
-        }
+        var pay = invoiceAction(inv, "Pay " + money(inv.amountCents, inv.currency), "btn primary");
+        if (pay) row.appendChild(pay);
+        var pdf = pdfLink(inv);
+        if (pdf) row.appendChild(pdf);
         card.appendChild(row);
         wrap.appendChild(card);
       });
