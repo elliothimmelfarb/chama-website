@@ -247,6 +247,58 @@
     return card;
   }
 
+  // Everyone's own invoices, guests included, on a page of their own. The
+  // arrival notice leads here: an open one is a single click from Stripe's
+  // page, where they pay by card.
+  H.register("/invoices", function () {
+    return api("/invoices").then(function (data) {
+      var wrap = el("div", "stack");
+      var invoices = data.invoices || [];
+      var open = invoices.filter(function (i) { return i.status === "open"; });
+      H.state.openInvoices = open.length;
+      wrap.appendChild(H.viewHead("Invoices", open.length ? "Pay by card on Stripe's secure page, which opens in a new tab. Once it is paid it shows here as paid." : "Every invoice from Chama Inteligente, with its receipt."));
+      if (!invoices.length) {
+        wrap.appendChild(H.empty("No invoices yet."));
+        return wrap;
+      }
+      open.forEach(function (inv) {
+        var card = el("div", "card stack tight glow");
+        card.appendChild(el("p", "label", "To pay" + (inv.number ? " · " + inv.number : "")));
+        card.appendChild(el("p", "invoice-total", money(inv.amountCents, inv.currency)));
+        var lines = inv.lines || [];
+        if (lines.length) {
+          var list = el("ul", "invoice-lines");
+          lines.forEach(function (l) {
+            var li = el("li");
+            append(li, [el("span", null, l.description), el("span", "dim", money(l.amountCents, inv.currency))]);
+            list.appendChild(li);
+          });
+          card.appendChild(list);
+        }
+        if (inv.description) card.appendChild(el("p", "small dim", inv.description));
+        if (inv.dueAt) card.appendChild(el("p", "small", "Due " + fmtDay(inv.dueAt)));
+        var row = el("div", "row");
+        if (inv.hostedUrl) {
+          var pay = link("Pay " + money(inv.amountCents, inv.currency), inv.hostedUrl, "btn primary");
+          pay.target = "_blank";
+          pay.rel = "noopener";
+          row.appendChild(pay);
+        }
+        if (inv.pdfUrl) {
+          var pdf = link("Download PDF", inv.pdfUrl, "btn ghost");
+          pdf.target = "_blank";
+          pdf.rel = "noopener";
+          row.appendChild(pdf);
+        }
+        card.appendChild(row);
+        wrap.appendChild(card);
+      });
+      var rest = invoices.filter(function (i) { return i.status !== "open"; });
+      if (rest.length) wrap.appendChild(invoicesCard(rest));
+      return wrap;
+    });
+  }, { title: "Invoices", nav: { label: "Invoices", order: 3, hideFor: "purchases.manage", when: function () { return H.state.invoices > 0; } } });
+
   function upcomingRow(b, data) {
     var row = el("div");
     var left = el("div");

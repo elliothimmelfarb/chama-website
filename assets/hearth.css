@@ -852,6 +852,17 @@ body {
 .toast::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ember); transform: translateY(-1px); }
 .toast.bad::before { background: var(--bad); }
 .toast.good::before { background: var(--good); }
+.toast.has-action { align-items: center; }
+.toast.has-action::before { transform: none; }
+.toast-text { flex: 1; }
+.toast-close { flex: none; background: none; border: 0; color: var(--text-faint); font-size: 1.2rem; line-height: 1; padding: 0.2rem 0.3rem; cursor: pointer; }
+.toast-close:hover { color: var(--text); }
+
+/* ---------- invoices ---------- */
+
+.invoice-total { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin: 0.1rem 0 0.2rem; }
+.invoice-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; font-size: 0.9rem; }
+.invoice-lines li { display: flex; justify-content: space-between; gap: 1rem; }
 
 /* ---------- tables (log) ---------- */
 

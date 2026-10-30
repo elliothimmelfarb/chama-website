@@ -206,15 +206,28 @@
 
   var toastHost = null;
 
-  function toast(message, kind) {
+  // options.action = { label, run } adds a button; a toast with one stays
+  // until it is used or closed, so news that needs doing is not missed.
+  function toast(message, kind, options) {
+    var opts = options || {};
     if (!toastHost) {
       toastHost = el("div", "toasts");
       toastHost.setAttribute("aria-live", "polite");
       document.body.appendChild(toastHost);
     }
-    var node = el("div", "toast" + (kind ? " " + kind : ""), message);
+    var node = el("div", "toast" + (kind ? " " + kind : ""));
+    function close() { if (node.parentNode) node.parentNode.removeChild(node); }
+    node.appendChild(el("span", "toast-text", message));
+    if (opts.action) {
+      node.classList.add("has-action");
+      node.appendChild(button(opts.action.label, "btn sm primary", function () { close(); opts.action.run(); }));
+      var x = button("\u00d7", "toast-close", close);
+      x.setAttribute("aria-label", "Close");
+      node.appendChild(x);
+    } else {
+      setTimeout(close, 4200);
+    }
     toastHost.appendChild(node);
-    setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 4200);
   }
 
   /* ---------- permissions ---------- */
@@ -314,7 +327,7 @@
       if (!group) { group = { name: name, items: [] }; navGroups.push(group); }
       group.items.push({
         href: BASE + (pattern === "/" ? "" : pattern), label: opts.nav.label, short: opts.nav.short || opts.nav.label,
-        perm: opts.perm || null, hideFor: opts.nav.hideFor || null, order: opts.nav.order || 0
+        perm: opts.perm || null, hideFor: opts.nav.hideFor || null, order: opts.nav.order || 0, when: opts.nav.when || null
       });
     }
   }
@@ -421,7 +434,7 @@
       if (out.some(function (g) { return g.name === name; })) return;
       var group = navGroups.filter(function (g) { return g.name === name; })[0];
       if (!group) return;
-      var items = group.items.filter(function (i) { return (!i.perm || can(i.perm)) && !(i.hideFor && can(i.hideFor)); });
+      var items = group.items.filter(function (i) { return (!i.perm || can(i.perm)) && !(i.hideFor && can(i.hideFor)) && (!i.when || i.when()); });
       if (!items.length) return;
       items.sort(function (a, b) { return a.order - b.order; });
       out.push({ name: name, items: items });
@@ -1078,6 +1091,20 @@
     });
   }
 
+  // Someone with an invoice to pay hears about it once per visit, wherever
+  // they land, with a button to it. Not while an owner is viewing as them.
+  function invoiceNotice() {
+    if (!state.openInvoices || state.viewer || currentPath().indexOf("/invoices") === 0) return;
+    try {
+      if (sessionStorage.getItem("hearth-invoice-notice")) return;
+      sessionStorage.setItem("hearth-invoice-notice", "1");
+    } catch (e) { /* no storage: show it every time */ }
+    var many = state.openInvoices > 1;
+    toast(many ? "You have " + state.openInvoices + " invoices to pay." : "You have an invoice to pay.", null, {
+      action: { label: many ? "See invoices" : "See invoice", run: function () { navigate("/invoices"); } }
+    });
+  }
+
   window.Hearth = {
     register: register, onHome: onHome, api: api, el: el, svg: svg, mark: mark, clear: clear, append: append,
     button: button, link: link, field: field, input: input, pill: pill, avatar: avatar, toast: toast, flare: flare,
@@ -1098,8 +1125,11 @@
         state.viewer = me.viewer || null;
         state.permissions = {};
         (me.user.permissions || []).forEach(function (p) { state.permissions[p] = true; });
+        state.openInvoices = me.openInvoices || 0;
+        state.invoices = me.invoices || 0;
         if (query().welcome) { toast("Welcome to the Hearth.", "good"); history.replaceState(null, "", location.pathname); }
         render();
+        invoiceNotice();
       }, function () {
         state.user = null;
         render();
