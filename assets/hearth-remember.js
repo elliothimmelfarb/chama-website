@@ -116,17 +116,17 @@
       wrap.appendChild(sheet);
       return wrap;
     });
-  }, { perm: "transcripts.own", title: "Remember", nav: { group: "Member", label: "Remember", order: 2.5 } });
+  }, { perm: "transcripts.own", title: "Remember", nav: { label: "Remember", order: 2.5, hideFor: "transcripts.manage" } });
 
   /* ---------- home ---------- */
 
   H.onHome(function (tile, wrap) {
-    if (!H.can("transcripts.own")) return;
+    if (!H.can("transcripts.own") || H.can("transcripts.manage")) return;
     return api("/cards/due").then(function (data) {
       var n = data.cards.length;
       H.countUp(tile(n, n === 1 ? "card to review" : "cards to review", n > 0), n);
       if (n) {
-        var c = H.link("", H.BASE + "/remember", "card stack tight mt");
+        var c = H.link("", H.BASE + "/remember", "card stack tight");
         c.addEventListener("click", function (e) { e.preventDefault(); H.navigate("/remember"); });
         append(c, [el("p", "label", "Remember"), el("p", "small dim", n + (n === 1 ? " card is" : " cards are") + " due from your sessions. About a minute.")]);
         wrap.appendChild(c);

@@ -281,7 +281,7 @@
       wrap.appendChild(moreRow);
       return wrap;
     });
-  }, { perm: "feed.read", title: "Feed", nav: { group: "Member", label: "Feed", order: 6 } });
+  }, { perm: "feed.read", title: "Feed", nav: { label: "Feed", order: 6 } });
 
   /* ---------- one post, on paper ---------- */
 
@@ -325,8 +325,8 @@
     if (!H.can("feed.read")) return;
     return api("/feed?limit=3").then(function (data) {
       if (!data.posts.length) return;
-      var card = el("div", "card stack tight mt");
-      card.appendChild(el("p", "label", "Latest from Elliot"));
+      var card = el("div", "card stack tight");
+      card.appendChild(el("p", "label", H.state.user.role === "owner" ? "Your latest posts" : "Latest from Elliot"));
       data.posts.slice(0, 3).forEach(function (p) {
         var row = el("a", "row between");
         row.href = H.BASE + "/feed/" + p.id;

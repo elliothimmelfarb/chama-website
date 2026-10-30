@@ -128,7 +128,7 @@
       wrap.appendChild(toolsCard());
       return wrap;
     });
-  }, { perm: "keys.own", title: "Agents", nav: { group: "Member", label: "Agents", order: 5 } });
+  }, { perm: "keys.own", title: "Agents", nav: { label: "Agents", order: 5 } });
 
   /* ---------- connect ---------- */
 
@@ -411,7 +411,7 @@
   /* ---------- home tile ---------- */
 
   H.onHome(function (tile) {
-    if (!H.can("keys.own")) return;
+    if (!H.can("keys.own") || H.can("sessions.manage")) return;
     return api("/agents").then(function (data) {
       var n = (data.apps || []).length;
       H.countUp(tile(n, "connected apps", n > 0), n);

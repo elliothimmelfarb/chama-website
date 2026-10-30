@@ -79,7 +79,7 @@
       wrap.appendChild(grid);
       return wrap;
     });
-  }, { perm: "transcripts.own", title: "Records", nav: { group: "Member", label: "Records", order: 2 } });
+  }, { perm: "transcripts.own", title: "Records", nav: { label: "Records", order: 2, hideFor: "transcripts.manage" } });
 
   // ts_headline marks matches with <b>; the page shows the characters only.
   function stripMarks(s) { return String(s).replace(/<\/?b>/g, ""); }
@@ -371,14 +371,15 @@
 
   /* ---------- follow-ups ---------- */
 
-  function followUpRow(f) {
+  function followUpRow(f, named) {
     var row = el("label", "check");
     var box = el("input");
     box.type = "checkbox";
     box.checked = Boolean(f.doneAt);
     var text = el("span");
     text.appendChild(document.createTextNode(f.text));
-    var who = el("span", "desc", (f.owner === "coach" ? "Elliot" : "you") + (f.dueAt ? " · by " + new Date(f.dueAt).toLocaleDateString(undefined, { timeZone: tz(), dateStyle: "medium" }) : ""));
+    var whose = named && f.member ? "for " + (f.member.name || f.member.email) : f.owner === "coach" ? "Elliot" : "you";
+    var who = el("span", "desc", whose + (f.dueAt ? " · by " + new Date(f.dueAt).toLocaleDateString(undefined, { timeZone: tz(), dateStyle: "medium" }) : ""));
     text.appendChild(who);
     if (f.doneAt) text.style.textDecoration = "line-through";
     box.addEventListener("change", function () {
@@ -436,7 +437,7 @@
       wrap.appendChild(block("Elliot's", his, "No follow-ups from Elliot.").card);
       return wrap;
     });
-  }, { perm: "transcripts.own", title: "Follow-ups", nav: { group: "Member", label: "Follow-ups", order: 3 } });
+  }, { perm: "transcripts.own", title: "Follow-ups", nav: { label: "Follow-ups", order: 3, hideFor: "transcripts.manage" } });
 
   /* ---------- notes for next time ---------- */
 
@@ -473,7 +474,7 @@
       }
       return wrap;
     });
-  }, { perm: "sessions.own", title: "Notes", nav: { group: "Member", label: "Notes", order: 4 } });
+  }, { perm: "sessions.own", title: "Notes", nav: { label: "Notes for Elliot", short: "Notes", order: 4, hideFor: "transcripts.manage" } });
 
   function noteRow(n) {
     var row = el("div");
@@ -489,13 +490,16 @@
 
   H.onHome(function (tile, wrap) {
     if (!H.can("transcripts.own")) return;
+    // A manager's /follow-ups holds every member's, so his home shows only
+    // what he owes, each named by the member it is for.
+    var manage = H.can("transcripts.manage");
     return api("/follow-ups").then(function (data) {
-      var open = data.followUps.filter(function (f) { return f.owner === "client" && !f.doneAt; });
-      H.countUp(tile(open.length, "follow-ups open", open.length > 0), open.length);
+      var open = data.followUps.filter(function (f) { return f.owner === (manage ? "coach" : "client") && !f.doneAt; });
+      H.countUp(tile(open.length, manage ? "follow-ups you owe" : "follow-ups open", open.length > 0), open.length);
       if (open.length) {
-        var c = el("div", "card stack tight mt");
-        c.appendChild(el("p", "label", "On your list"));
-        open.slice(0, 5).forEach(function (f) { c.appendChild(followUpRow(f)); });
+        var c = el("div", "card stack tight");
+        c.appendChild(el("p", "label", manage ? "You owe" : "On your list"));
+        open.slice(0, 5).forEach(function (f) { c.appendChild(followUpRow(f, manage)); });
         wrap.appendChild(c);
       }
     });

@@ -166,6 +166,16 @@
     }
   }
 
+  function shortDay(iso, zone) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    try {
+      return d.toLocaleDateString(undefined, { timeZone: zone, weekday: "short", day: "numeric", month: "short" });
+    } catch (e) {
+      return fmtDate(iso, { dateStyle: "medium" });
+    }
+  }
+
   function clockTime(iso, zone) {
     var d = new Date(iso);
     if (isNaN(d.getTime())) return "";
@@ -332,7 +342,7 @@
     if (ctx && ctx.onCleanup) ctx.onCleanup(function () { if (picker) picker.stop(); });
     wrap.appendChild(bookForm);
 
-    var stats = el("div", "grid3 rise");
+    var stats = el("div", "stats rise");
     wrap.appendChild(stats);
 
     var controls = el("div", "row");
@@ -368,7 +378,7 @@
     }
 
     function tile(value, what, emberish, index) {
-      var card = rise(el("div", "card stat"), index);
+      var card = rise(el("div", "stat"), index);
       var num = el("div", "num" + (emberish ? " ember" : ""), "0");
       card.appendChild(num);
       card.appendChild(el("div", "what", what));
@@ -577,7 +587,7 @@
     ]);
 
     return first.then(load).then(function () { return wrap; });
-  }, { perm: "sessions.manage", title: "Sessions", nav: { group: "Business", label: "All sessions", order: 10 } });
+  }, { perm: "sessions.manage", title: "Sessions", nav: { label: "Sessions", order: 1 } });
 
   /* ---------- packs ---------- */
 
@@ -727,7 +737,7 @@
     }
 
     return load().then(function () { return wrap; });
-  }, { perm: "packs.manage", title: "Packs", nav: { group: "Business", label: "Packs", order: 11 } });
+  }, { perm: "packs.manage", title: "Packs", nav: { group: "Money", label: "Packs", order: 0 } });
 
   /* ---------- purchases ---------- */
 
@@ -989,7 +999,7 @@
       wrap.appendChild(grantCard());
       return wrap;
     });
-  }, { perm: "purchases.manage", title: "Purchases", nav: { group: "Business", label: "Purchases", order: 12 } });
+  }, { perm: "purchases.manage", title: "Purchases", nav: { group: "Money", label: "Purchases", order: 1 } });
 
   /* ---------- invoices, through Stripe ---------- */
 
@@ -1305,7 +1315,7 @@
     buildForm();
     if (startMember) loadSources(startMember, startPurchase);
     return load().then(function () { return wrap; });
-  }, { perm: "purchases.manage", title: "Invoices", nav: { group: "Business", label: "Invoices", order: 12.5 } });
+  }, { perm: "purchases.manage", title: "Invoices", nav: { group: "Money", label: "Invoices", order: 2 } });
 
   /* ---------- availability ---------- */
 
@@ -2157,19 +2167,38 @@
 
       return wrap;
     });
-  }, { perm: "availability.manage", title: "Availability", nav: { group: "Business", label: "Availability", order: 13 } });
+  }, { perm: "availability.manage", title: "Availability", nav: { group: "Setup", label: "Availability", order: 0 } });
 
   /* ---------- one tile on the home view ---------- */
 
   // Whoever runs the sessions sees the week ahead without leaving home. A
   // failure here adds nothing and says nothing.
-  H.onHome(function (tile) {
+  H.onHome(function (tile, wrap) {
     if (!can("sessions.manage")) return null;
     var now = Date.now();
     var path = "/admin/bookings?from=" + new Date(now).toISOString() + "&to=" + new Date(now + 7 * DAY).toISOString();
     return api(path).then(function (data) {
-      var n = (data.bookings || []).filter(function (b) { return b.status === "scheduled"; }).length;
-      H.countUp(tile(0, "sessions this week", true), n);
+      var zone = data.timezone || ownerZone();
+      var week = (data.bookings || []).filter(function (b) { return b.status === "scheduled"; })
+        .sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+      H.countUp(tile(0, "sessions this week", week.length > 0), week.length);
+      if (!week.length) return;
+      // The next few, by day, each a way to the member.
+      var card = el("div", "card stack tight");
+      var head = el("div", "row between");
+      var all = link("All sessions", BASE + "/admin/sessions", "small dim");
+      all.addEventListener("click", function (e) { e.preventDefault(); H.navigate("/admin/sessions"); });
+      append(head, [el("p", "label", "Coming up"), all]);
+      card.appendChild(head);
+      week.slice(0, 5).forEach(function (b) {
+        var row = el("div", "row between home-row");
+        var who = link(memberName(b.member), BASE + "/admin/members/" + encodeURIComponent((b.member && b.member.id) || ""));
+        who.addEventListener("click", function (e) { e.preventDefault(); if (b.member && b.member.id) H.navigate("/admin/members/" + encodeURIComponent(b.member.id)); });
+        append(row, [who, el("span", "small faint", shortDay(b.startsAt, zone) + ", " + clockTime(b.startsAt, zone))]);
+        card.appendChild(row);
+      });
+      var tiles = wrap.querySelector(".stats");
+      wrap.insertBefore(card, tiles ? tiles.nextSibling : null);
     }).catch(function () { /* the home view is fine without it */ });
   });
 })();

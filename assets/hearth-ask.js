@@ -43,7 +43,7 @@
       wrap.appendChild(chat());
       return wrap;
     });
-  }, { perm: "transcripts.own", title: "Ask", nav: { group: "Member", label: "Ask the flame", order: 2 } });
+  }, { perm: "transcripts.own", title: "Ask", nav: { label: "Ask the flame", short: "Ask", order: 2.2, hideFor: "transcripts.manage" } });
 
   /* ---------- the conversation ---------- */
 
