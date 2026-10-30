@@ -868,7 +868,7 @@
       // and its date are never a whole monitor apart.
       if (wrap.querySelectorAll(":scope > .card").length >= 2) wrap.classList.add("paired");
       var quick = el("p", "home-links small dim");
-      [["Account", "/account"], ["Security", "/security"]].forEach(function (pair) {
+      [["Account", "/account"], ["Billing details", "/billing"], ["Security", "/security"]].forEach(function (pair) {
         var a = link(pair[0], BASE + pair[1]);
         a.addEventListener("click", function (e) { e.preventDefault(); navigate(pair[1]); });
         quick.appendChild(a);
@@ -936,6 +936,11 @@
     });
     refCard.appendChild(append(el("div", "row"), [copy]));
     wrap.appendChild(refCard);
+
+    var billCard = el("div", "card stack tight");
+    append(billCard, [el("p", "label", "Billing details"), el("p", "small dim", "Who your invoices are made out to: you, or your company.")]);
+    billCard.appendChild(append(el("div", "row"), [button("Edit billing details", "btn sm", function () { navigate("/billing"); })]));
+    wrap.appendChild(billCard);
 
     var out = el("div", "row");
     out.appendChild(button("Sign out", "btn", function () {
