@@ -14,7 +14,7 @@
 
   var H = window.Hearth;
   if (!H) return;
-  var el = H.el, svg = H.svg, append = H.append, button = H.button, link = H.link, api = H.api, pill = H.pill;
+  var el = H.el, svg = H.svg, append = H.append, button = H.button, link = H.link, api = H.api, pill = H.pill, input = H.input, field = H.field;
 
   var DAY = 86400000;
 
@@ -247,6 +247,163 @@
     return card;
   }
 
+  /* ---------- billing details ---------- */
+
+  // Who invoices are made out to. A business outside Portugal with its legal
+  // name, address and tax ID pays no Portuguese IVA; everyone else pays 23
+  // percent on top. The same form serves the member (saving is their
+  // declaration) and the owner (who also sets the currency and notes how the
+  // business was checked). lib/hearth/iva.js holds the rules.
+  var EU = ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"];
+  var COUNTRIES = EU.concat(["US", "GB", "CA", "CH", "NO", "BR", "MX", "AU", "NZ", "IL", "AE", "SG", "JP", "IN", "ZA"]);
+
+  function countryName(code) {
+    try { return new Intl.DisplayNames(["en"], { type: "region" }).of(code); } catch (e) { return code; }
+  }
+
+  function ivaLine(iva, billing) {
+    if (!iva) return "";
+    if (iva.treatment === "portugal") {
+      return billing && billing.kind === "business" ? "A business in Portugal: IVA at 23 percent is added to each invoice." : "IVA at 23 percent is added to each invoice.";
+    }
+    if (!iva.ready) return "Still needed for no IVA: " + iva.missing.join(", ") + ".";
+    return iva.treatment === "eu-reverse-charge"
+      ? "No Portuguese IVA: reverse charge for an EU business."
+      : "No Portuguese IVA: a business outside the EU. The invoice says why.";
+  }
+
+  function billingForm(data, options) {
+    options = options || {};
+    var b = data.billing || {};
+    var form = el("form", "stack tight");
+    var kind = el("select", "select");
+    [["person", options.owner ? "A person, paying for themselves" : "Me, personally"], ["business", options.owner ? "Their company" : "My company"]].forEach(function (pair) {
+      var o = el("option", null, pair[1]);
+      o.value = pair[0];
+      if ((b.kind || "person") === pair[0]) o.selected = true;
+      kind.appendChild(o);
+    });
+    var legal = input("text", "legalName", "Nelson Ventures LLC", b.legalName);
+    legal.autocomplete = "organization";
+    var taxId = input("text", "taxId", "", b.taxId);
+    var line1 = input("text", "addressLine1", "Street and number", b.addressLine1);
+    line1.autocomplete = "address-line1";
+    var line2 = input("text", "addressLine2", "Suite, floor (optional)", b.addressLine2);
+    line2.autocomplete = "address-line2";
+    var city = input("text", "city", "City", b.city);
+    city.autocomplete = "address-level2";
+    var region = input("text", "region", "State or region", b.region);
+    region.autocomplete = "address-level1";
+    var postal = input("text", "postalCode", "Postal code", b.postalCode);
+    postal.autocomplete = "postal-code";
+    var country = el("select", "select");
+    var none = el("option", null, "Choose a country");
+    none.value = "";
+    country.appendChild(none);
+    var codes = COUNTRIES.slice();
+    if (b.country && codes.indexOf(b.country) === -1) codes.push(b.country);
+    codes.map(function (c) { return [c, countryName(c)]; })
+      .sort(function (x, y) { return x[1].localeCompare(y[1]); })
+      .forEach(function (pair) {
+        var o = el("option", null, pair[1]);
+        o.value = pair[0];
+        if (b.country === pair[0]) o.selected = true;
+        country.appendChild(o);
+      });
+    var taxField = field("Tax ID", taxId);
+    var businessOnly = append(el("div", "stack tight"), [field("Company's legal name", legal), taxField]);
+    var status = el("p", "small");
+
+    function sync() {
+      var business = kind.value === "business";
+      businessOnly.hidden = !business;
+      var label = taxField.querySelector("span");
+      var hint = country.value === "US" ? "The company's EIN, like 12-3456789." : EU.indexOf(country.value) !== -1 ? "Its VAT number, with the country prefix." : "Its company or tax registration number.";
+      label.textContent = country.value === "US" ? "EIN" : EU.indexOf(country.value) !== -1 ? "VAT number" : "Tax ID";
+      taxId.placeholder = country.value === "US" ? "12-3456789" : "";
+      var oldHint = taxField.querySelector(".hint");
+      if (oldHint) oldHint.textContent = hint; else taxField.appendChild(el("span", "hint", hint));
+    }
+    kind.addEventListener("change", sync);
+    country.addEventListener("change", sync);
+
+    var currency = null;
+    var evidence = null;
+    append(form, [
+      field(options.owner ? "Who pays" : "Who pays your invoices", kind),
+      businessOnly,
+      field("Address", line1),
+      line2,
+      append(el("div", "row"), [city, region]),
+      append(el("div", "row"), [postal, country])
+    ]);
+    if (options.owner) {
+      currency = el("select", "select");
+      ["EUR", "USD"].forEach(function (c) {
+        var o = el("option", null, c === "EUR" ? "Euros (EUR)" : "US dollars (USD)");
+        o.value = c;
+        if ((b.currency || "EUR") === c) o.selected = true;
+        currency.appendChild(o);
+      });
+      evidence = el("textarea", "input");
+      evidence.rows = 2;
+      evidence.maxLength = 1000;
+      evidence.value = b.evidence || "";
+      append(form, [
+        field("Invoice in", currency),
+        field("How you checked it is a business", evidence, "Optional. For example the state registry record of the LLC, or that it is valid in VIES.")
+      ]);
+    }
+    form.appendChild(status);
+    if (!options.owner) {
+      form.appendChild(el("p", "small dim", "If you choose your company, saving confirms it is a registered business and that the sessions are for its work. Invoices are then made out to it, and a business outside Portugal pays no Portuguese IVA."));
+    }
+    var save = button("Save billing details", "btn primary");
+    save.type = "submit";
+    form.appendChild(append(el("div", "row"), [save]));
+
+    function show(result) {
+      status.textContent = ivaLine(result.iva, result.billing);
+      status.className = "small" + (result.iva && !result.iva.ready ? " form-error" : " dim");
+    }
+    show(data);
+    sync();
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var body = {
+        kind: kind.value, legalName: legal.value, taxId: taxId.value, addressLine1: line1.value, addressLine2: line2.value,
+        city: city.value, region: region.value, postalCode: postal.value, country: country.value
+      };
+      if (currency) body.currency = currency.value;
+      if (evidence) body.evidence = evidence.value;
+      save.disabled = true;
+      api(options.path || "/billing", { method: "PUT", body: body }).then(function (result) {
+        save.disabled = false;
+        show(result);
+        H.toast("Billing details saved.", "good");
+        if (options.onSave) options.onSave(result);
+      }).catch(function (err) {
+        save.disabled = false;
+        H.toast(err.message, "bad");
+      });
+    });
+    return form;
+  }
+  H.billingForm = billingForm;
+  H.ivaLine = ivaLine;
+
+  H.register("/billing", function () {
+    return api("/billing").then(function (data) {
+      var wrap = el("div", "stack");
+      wrap.appendChild(H.viewHead("Billing details", "Who your invoices are made out to."));
+      var card = el("div", "card stack");
+      card.appendChild(billingForm(data));
+      wrap.appendChild(card);
+      return wrap;
+    });
+  }, { title: "Billing details" });
+
   // Everyone's own invoices, guests included, on a page of their own. The
   // arrival notice leads here: an open one is a single click from Stripe's
   // page, where they pay by card.
@@ -295,6 +452,13 @@
       });
       var rest = invoices.filter(function (i) { return i.status !== "open"; });
       if (rest.length) wrap.appendChild(invoicesCard(rest));
+      var who = el("p", "small dim");
+      who.appendChild(document.createTextNode("Paying through your company? "));
+      var details = link("Add its billing details", H.BASE + "/billing");
+      details.addEventListener("click", function (ev) { ev.preventDefault(); H.navigate("/billing"); });
+      who.appendChild(details);
+      who.appendChild(document.createTextNode(" and future invoices are made out to it."));
+      wrap.appendChild(who);
       return wrap;
     });
   }, { title: "Invoices", nav: { label: "Invoices", order: 3, hideFor: "purchases.manage", when: function () { return H.state.invoices > 0; } } });

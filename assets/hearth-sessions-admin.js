@@ -1093,8 +1093,30 @@
       clear(body);
       var member = data.member;
       body.appendChild(el("p", "small", "Invoicing " + memberName(member) + " (" + member.email + ")" + (member.billing === "after" ? ", billed after." : ".")));
+      var currency = data.currency || "EUR";
+      var iva = data.iva || { ratePercent: 23, ready: true };
       var lines = [];
       var total = el("p", "primary");
+
+      // Who it is made out to, which decides the IVA. Editing it reloads the
+      // form, so the currency and the total follow.
+      body.appendChild(sectionLabel("Bill to"));
+      var b = data.billing;
+      var who = !b ? memberName(member) + ", as a person"
+        : b.kind === "business" ? (b.legalName || "Their company, name missing") + (b.taxId ? " · " + b.taxId : "") + (b.country ? " · " + b.country : "")
+        : memberName(member) + ", as a person" + (b.country ? " · " + b.country : "");
+      body.appendChild(el("p", "small", who));
+      if (b && b.declaredAt) {
+        body.appendChild(el("p", "small faint", (b.declaredBySelf ? "Declared by them" : "Recorded by you") + " on " + fmtDate(b.declaredAt, { dateStyle: "medium" }) + (b.evidence ? ". Checked: " + b.evidence : ".")));
+      }
+      body.appendChild(el("p", "small" + (iva.ready ? " dim" : " form-error"), H.ivaLine(iva, b) + " Invoiced in " + currency + "."));
+      var editWrap = el("div", "stack tight");
+      editWrap.hidden = true;
+      editWrap.appendChild(H.billingForm(data, { owner: true, path: "/admin/billing/" + encodeURIComponent(member.id), onSave: function () { loadSources(member.id, purchaseId); } }));
+      body.appendChild(append(el("div", "row"), [button("Edit billing details", "btn sm", function () { editWrap.hidden = !editWrap.hidden; })]));
+      body.appendChild(editWrap);
+
+      function ivaOf(sum) { return Math.round(sum * (iva.ratePercent || 0) / 100); }
 
       function recount() {
         var sum = 0;
@@ -1105,7 +1127,9 @@
           var cents = line.cents();
           if (isNaN(cents) || cents <= 0) bad = true; else sum += cents;
         });
-        total.textContent = bad ? "Every line needs an amount." : "Total " + money(sum, "EUR");
+        total.textContent = bad ? "Every line needs an amount."
+          : iva.ratePercent ? money(sum, currency) + " + IVA " + iva.ratePercent + "% " + money(ivaOf(sum), currency) + " = total " + money(sum + ivaOf(sum), currency)
+          : "Total " + money(sum, currency) + ", no IVA";
       }
 
       // Held and recorded sessions, each its own line at one per-session price.
@@ -1115,7 +1139,7 @@
         price = moneyInput("sessionPrice", data.sessionPriceCents);
         price.addEventListener("input", recount);
         body.appendChild(sectionLabel("Sessions"));
-        body.appendChild(field("Price per session (EUR)", price, data.sessionPriceCents ? "The last price you used. Change it for this invoice if you need to." : "Set a price for one session. The next invoice starts from it."));
+        body.appendChild(field("Price per session (" + currency + (iva.ratePercent ? ", before IVA" : "") + ")", price, data.sessionPriceCents ? "The last price you used. Change it for this invoice if you need to." : "Set a price for one session. The next invoice starts from it."));
       }
       function sessionDay(at) {
         return new Date(at).toLocaleDateString("en-GB", { timeZone: ownerZone(), day: "numeric", month: "short", year: "numeric" });
@@ -1157,7 +1181,7 @@
             recount();
           });
           body.appendChild(t.node);
-          body.appendChild(field("Amount (EUR)", amount));
+          body.appendChild(field("Amount (" + (p.currency || currency) + ")", amount));
           var line = {
             include: t.input,
             purchaseId: p.id,
@@ -1238,7 +1262,8 @@
         }
         if (isNaN(payload.daysUntilDue)) payload.daysUntilDue = 14;
         var sum = payload.lines.reduce(function (a, l) { return a + l.amountCents; }, 0);
-        if (!window.confirm("Create a Stripe invoice for " + money(sum, "EUR") + " to " + memberName(member) + (payload.email ? " and email it to them?" : "?"))) return;
+        var grand = sum + ivaOf(sum);
+        if (!window.confirm("Create a Stripe invoice for " + money(grand, currency) + (iva.ratePercent ? " including IVA" : ", no IVA,") + " to " + (b && b.kind === "business" && b.legalName ? b.legalName : memberName(member)) + (payload.email ? " and email it to " + member.email + "?" : "?"))) return;
         busy(create, api("/admin/invoices", { method: "POST", body: payload }))
           .then(function (result) {
             toast(result.emailed ? "Invoice " + (result.invoice.number || "") + " sent." : "Invoice " + (result.invoice.number || "") + " created.", "good");
@@ -1255,6 +1280,7 @@
             toast(error.message, "bad");
           });
       });
+      create.disabled = !iva.ready;
       append(body, [
         field("Due in days", due),
         field("Note on the invoice", memo, "Optional. The member sees it on Stripe's page."),
