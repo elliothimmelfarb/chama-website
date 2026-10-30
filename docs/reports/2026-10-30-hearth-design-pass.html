@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hearth Design Pass</title>
+<meta name="description" content="A design pass on the Hearth: full width, simpler owner navigation, phone tabs, 2026-10-30.">
+<style>
+  /* Three options side by side, on the site's own paper. */
+  .opt { display: grid; gap: 1rem; padding-top: 1.4rem; border-top: 2px solid var(--ember); }
+  .opt h2 { margin: 0; }
+  .opt .tag { font-size: 0.8rem; font-weight: 700; color: var(--ember); margin: 0; }
+  .opt .links { font-size: 0.9rem; margin: 0; }
+  .pros { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+  .withphone { display: grid; grid-template-columns: minmax(0, 1fr) 13rem; gap: 1rem; align-items: start; }
+  .pick { padding: 1.2rem 1.4rem; border-radius: 12px; background: var(--ground-2); border: 1px solid var(--line); display: grid; gap: 0.5rem; }
+  .pick p { margin: 0; }
+  @media (max-width: 44rem) { .steps, .withphone { grid-template-columns: minmax(0, 1fr); } .withphone figure:last-child { max-width: 14rem; } }
+  .phone3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; align-items: start; }
+  .phone3 figure img { max-width: 17rem; }
+  .stand { font-size: 0.72rem; font-weight: 700; color: var(--warn); }
+  pre { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; background: var(--ground-2); border: 1px solid var(--line); overflow-x: auto; font-size: 0.82rem; }
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  header { display: grid; gap: 0.9rem; }
+  .meta { margin: 0; color: var(--ember); font-size: 0.8rem; font-weight: 700; }
+  h1 { margin: 0; font-size: clamp(2rem, 5.5vw, 3.6rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.08rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+  figure { margin: 0; display: grid; gap: 0.6rem; }
+  figure img, figure video { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #0e0c0a; }
+  figcaption { font-size: 0.9rem; color: var(--ink-dim); max-width: 62ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+  .three { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 1rem; align-items: start; }
+  .phone { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 1.4rem; align-items: center; }
+  ol.notes { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; font-size: 0.92rem; }
+  ol.notes li::marker { color: var(--ember); font-weight: 700; }
+  .flow { width: 100%; height: auto; display: block; }
+  .flow text { font-family: var(--sans); fill: var(--ink); }
+  .flow .dim { fill: var(--ink-dim); }
+  .flow .box { fill: var(--ground-2); stroke: var(--line); }
+  .flow .hot { fill: var(--ember); }
+  .flow .arrow { stroke: var(--ink-dim); fill: none; stroke-width: 1.5; }
+  .todo { display: grid; gap: 0.7rem; }
+  .todo > div { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.5rem; align-items: baseline; }
+  .todo span { color: var(--warn); font-weight: 700; }
+  a { color: var(--ink); text-decoration-color: var(--ember); text-underline-offset: 0.2em; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  @media (max-width: 44rem) {
+    .two, .three, .phone, .phone3 { grid-template-columns: minmax(0, 1fr); }
+    .phone figure { max-width: 16rem; }
+  }
+ .ba { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+ .ba .label { font-size: 0.78rem; font-weight: 700; margin: 0; }
+ .ba .was { color: var(--ink-dim); }
+ .ba .now { color: var(--ok); }
+ .wrap > * { min-width: 0; }
+ .todo span { color: var(--ok); }
+ .todo p { margin: 0; }
+ @media (max-width: 44rem) { .ba { grid-template-columns: minmax(0, 1fr); } }
+
+ .navcmp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; align-items: start; }
+ .navcol { padding: 1rem 1.2rem; border-radius: 12px; background: var(--ground-2); border: 1px solid var(--line); display: grid; gap: 0.9rem; }
+ .navcol h3 { margin: 0; font-size: 0.8rem; font-weight: 700; }
+ .navcol .g { display: grid; gap: 0.15rem; }
+ .navcol .gl { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); margin: 0 0 0.2rem; }
+ .navcol .i { font-size: 0.92rem; }
+ .navcol .x { color: var(--ink-dim); text-decoration: line-through; text-decoration-color: var(--ember); }
+ .navcol .dup { color: var(--ember); font-weight: 600; }
+ .navcol .new { color: var(--ok); font-weight: 600; }
+ .bars { display: grid; gap: 0.6rem; }
+ .bars img { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); }
+ @media (max-width: 44rem) { .navcmp { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="meta">2026-10-30 · chamainteligente.com/hearth</p>
+    <h1>The Hearth uses the whole screen, and your menu makes sense</h1>
+    <p class="lede">The top bar and the page now run edge to edge, with no hard line where the flame stops. Your Member and Business menus are one plain list plus Money and Setup. Phones get four tabs and a More sheet.</p>
+    <div class="chips">
+      <span class="chip">✓ Live in production</span>
+      <span class="chip">✓ Checked at 390, 1440 and 2048 wide</span>
+      <span class="chip">✓ 547 checks pass</span>
+      <span class="chip">✓ Fixed: your Home listed clients' follow-ups as "you"</span>
+      <span class="chip open">Not seen signed in on production yet</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>The hard line in the top bar</h2>
+    <div class="bars">
+      <p class="label was" style="font-size:0.78rem;font-weight:700;margin:0;color:var(--ink-dim)">Before: the flame sat inside the centred column, so its left edge cut off</p>
+      <img src="2026-10-30-hearth-design-pass/bar-before.jpg" alt="The old top bar with a hard vertical edge where the flame begins">
+      <p class="label now" style="font-size:0.78rem;font-weight:700;margin:0;color:var(--ok)">Now: the flame hangs from the bar itself and fades out softly</p>
+      <img src="2026-10-30-hearth-design-pass/bar-after.jpg" alt="The new top bar running edge to edge with a soft flame glow">
+    </div>
+  </section>
+
+  <section>
+    <h2>Wide screen, before and after</h2>
+    <div class="ba">
+      <figure><p class="label was">Before, 2048 wide</p><img src="2026-10-30-hearth-design-pass/before-wide.jpg" alt="The old Hearth home on a wide screen, centred with empty margins"><figcaption>A centred strip, member stats like <b>0 credits left</b>, and clients' follow-ups labelled "you".</figcaption></figure>
+      <figure><p class="label now">Now, 2048 wide</p><img src="2026-10-30-hearth-design-pass/after-wide.jpg" alt="The new Hearth home using the full width"><figcaption>Nav pinned left, one strip of business numbers, <b>Coming up</b> with names, and your posts beside it.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Your menu: what changed</h2>
+    <div class="navcmp">
+      <div class="navcol">
+        <h3>Before: 21 items in two groups</h3>
+        <div class="g"><p class="gl">Member</p>
+          <span class="i">Home</span><span class="i dup">Sessions (yours, empty)</span><span class="i dup">Records (same as Transcripts)</span><span class="i x">Ask the flame</span><span class="i x">Remember</span><span class="i x">Follow-ups</span><span class="i dup">Notes (same as Client notes)</span><span class="i">Agents</span><span class="i">Feed</span></div>
+        <div class="g"><p class="gl">Business</p>
+          <span class="i">Members · Roles · Log · Metrics · Settings · All sessions · Packs · Purchases · Invoices · Availability · Transcripts · Client notes</span></div>
+      </div>
+      <div class="navcol">
+        <h3>Now: what you use, then Money and Setup</h3>
+        <div class="g"><span class="i">Home</span><span class="i">Sessions</span><span class="i">Members</span><span class="i">Client notes</span><span class="i">Session records</span><span class="i">Agents</span><span class="i">Feed</span></div>
+        <div class="g"><p class="gl">Money</p><span class="i">Packs · Purchases · Invoices</span></div>
+        <div class="g"><p class="gl">Setup</p><span class="i">Availability · Roles · Settings · Metrics · Activity log</span></div>
+        <div class="g"><span class="i new">+ See it as a member</span></div>
+      </div>
+    </div>
+    <ol class="notes" style="margin-top:1rem">
+      <li>The member pages showed <b>your own</b> data, which is empty because you are not a client, or quietly showed everyone's. They are hidden for you now, and members still see them as before.</li>
+      <li><b>See it as a member</b> picks a client and opens the room exactly as they see it, read-only, with the orange Exit bar.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The member view</h2>
+    <div class="three">
+      <figure><img src="2026-10-30-hearth-design-pass/pick.jpg" alt="The See it as a member picker listing clients"><figcaption>The picker.</figcaption></figure>
+      <figure style="grid-column: span 2"><img src="2026-10-30-hearth-design-pass/client.jpg" alt="A client's home: credits, next session, follow-ups"><figcaption>A client's Home, same menu as before, with "Notes" now <b>Notes for Elliot</b>.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>On a phone</h2>
+    <div class="phone3">
+      <figure><p class="label was">Before</p><img src="2026-10-30-hearth-design-pass/before-phone.jpg" alt="The old phone view with a long scrolling tab bar"><figcaption>Avatar stuck next to the logo, and the tab bar scrolled through about 20 items.</figcaption></figure>
+      <figure><p class="label now">Now</p><img src="2026-10-30-hearth-design-pass/after-phone.jpg" alt="The new phone home with four tabs and More"><figcaption>Four tabs plus <b>More</b>.</figcaption></figure>
+      <figure><p class="label now">More</p><img src="2026-10-30-hearth-design-pass/more.jpg" alt="The More sheet listing every room in groups"><figcaption>Everything else, in the same groups.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Links</h2>
+    <p><a href="https://chamainteligente.com/hearth">chamainteligente.com/hearth</a> · <a href="https://github.com/elliothimmelfarb/chama-website/pull/151">PR 151</a></p>
+  </section>
+</div>
+</body>
+</html>
