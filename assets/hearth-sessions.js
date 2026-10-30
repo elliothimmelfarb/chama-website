@@ -162,8 +162,7 @@
         append(c, [n, el("div", "what", what)]);
         tiles.appendChild(c);
       }
-      if (after) tile("Billed after", "how you pay", false, 0);
-      else tile(data.balance, "credits left", data.balance > 0, 0);
+      if (!after) tile(data.balance, "credits left", data.balance > 0, 0);
       tile(completed, "sessions so far", false, 1);
       tile(upcoming.length ? fmtDay(upcoming[0].startsAt) : "none yet", "next session", upcoming.length > 0, 2);
       wrap.appendChild(tiles);
@@ -595,8 +594,9 @@
 
     var payLine = null;
     if (!opts.except) {
+      // A member billed after just books: no line about paying at all.
       if (pay.billing === "after") {
-        payLine = el("p", "pay-line small dim", "You are billed after each session, so any open time is yours to take.");
+        // nothing
       } else if (pay.balance > 0) {
         payLine = el("p", "pay-line small");
         append(payLine, [tokens(pay.balance), document.createTextNode(pay.balance + (pay.balance === 1 ? " session credit" : " session credits") + ". A booking uses one.")]);
@@ -606,7 +606,7 @@
         append(t, [el("p", null, "Sessions are bought ahead."), el("p", "small dim", "Get a pack and any of these times can be yours. You can look around first.")]);
         append(payLine, [t, button("See packs", "btn primary", function () { H.navigate("/sessions/packs"); })]);
       }
-      wrap.appendChild(payLine);
+      if (payLine) wrap.appendChild(payLine);
     }
 
     var soonest = el("div");
@@ -835,10 +835,9 @@
         stage.appendChild(H.field("A note for Elliot", noteInput));
       }
 
-      if (!opts.except) {
+      if (!opts.except && pay.billing !== "after") {
         var cost = el("p", "pay-line small");
-        if (pay.billing === "after") cost.textContent = "Billed after the session. Nothing to pay now.";
-        else if (pay.balance > 0) append(cost, [tokens(pay.balance, true), document.createTextNode("Uses 1 of your " + pay.balance + " credits. Cancel at least " + (opts.cancelNoticeHours || 24) + " hours ahead and it comes back.")]);
+        if (pay.balance > 0) append(cost, [tokens(pay.balance, true), document.createTextNode("Uses 1 of your " + pay.balance + " credits. Cancel at least " + (opts.cancelNoticeHours || 24) + " hours ahead and it comes back.")]);
         else cost.textContent = "This needs a session credit. Get a pack, then come back for this time.";
         stage.appendChild(cost);
       }
@@ -960,6 +959,8 @@
       return Promise.all([api("/packs").catch(function () { return { packs: [] }; }), api("/credits")]);
     }).then(function (r) {
       var packs = r[0].packs, credits = r[1];
+      // Packs are not for a member billed after; their Sessions page is.
+      if (credits.billing === "after") { H.navigate("/sessions", true); return wrap; }
       var card = Boolean(r[0].cardCheckout);
       wrap.appendChild(H.viewHead("Packs and credits", card
         ? "A pack is a set of sessions. Pay by card and the credits arrive straight away, or ask for an invoice."
