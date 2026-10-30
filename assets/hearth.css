@@ -35,18 +35,20 @@
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --pad: clamp(1rem, 3vw, 2.5rem);
   --col: 64rem;
-  --nav-w: 14rem;
+  --content: 76rem;
+  --nav-w: 13.5rem;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --read: 48rem;
 }
 
-/* Big monitors: the shell grows with the screen instead of staying a
-   1024px strip in the middle, and on the widest ones the type grows a step
-   so the room does not read as small print. Media queries in rem use the
-   browser's 16px, not the root size set here. */
-@media (min-width: 90rem) { :root { --col: 80rem; --nav-w: 15rem; } }
-@media (min-width: 112rem) { :root { --col: 92rem; } }
-@media (min-width: 150rem) { :root { --col: 100rem; } }
+/* The shell runs the full width of the screen: the bar edge to edge, the
+   nav pinned to the left, and the view's content held to --content so a
+   wide monitor gives it room without stretching every line. --col is only
+   for the gate and the centred pages. On the widest screens the type grows
+   a step so the room does not read as small print. Media queries in rem use
+   the browser's 16px, not the root size set here. */
+@media (min-width: 90rem) { :root { --nav-w: 14.5rem; --content: 84rem; } }
+@media (min-width: 150rem) { :root { --content: 92rem; } }
 
 * { box-sizing: border-box; }
 
@@ -101,30 +103,37 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: linear-gradient(to bottom, var(--ground) 60%, rgba(14, 12, 10, 0.86));
+  isolation: isolate;
+  background: rgba(14, 12, 10, 0.9);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
+
+/* Inside the room the bar lines up with the shell, not a centred column. */
+.hh-mast .frame { max-width: none; }
 
 .hh-mast-inner {
   position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   min-height: 3.6rem;
 }
 
+/* The fire spans the whole bar and fades out at a fixed distance, so the
+   glow stays the size of the brand on any screen and has no edge to show. */
 .hh-fire {
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  opacity: 0.9;
-  mask-image: linear-gradient(to right, rgba(0,0,0,0.9) 0, rgba(0,0,0,0.5) 30%, transparent 70%);
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.9) 0, rgba(0,0,0,0.5) 30%, transparent 70%);
+  opacity: 0.8;
+  mask-image: linear-gradient(to right, #000 0, rgba(0,0,0,0.5) min(16rem, 35%), transparent min(34rem, 80%));
+  -webkit-mask-image: linear-gradient(to right, #000 0, rgba(0,0,0,0.5) min(16rem, 35%), transparent min(34rem, 80%));
 }
 
 .hh-fire canvas { width: 100%; height: 100%; display: block; }
@@ -153,7 +162,9 @@ body {
   margin-left: 0.2rem;
 }
 
+/* The page's own heading says where you are; the bar stays quiet. */
 .hh-mast-title {
+  display: none;
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -212,54 +223,74 @@ body {
 .hh-body {
   display: grid;
   grid-template-columns: var(--nav-w) minmax(0, 1fr);
-  gap: clamp(1rem, 3vw, 3rem);
-  padding-top: clamp(1.2rem, 3vw, 2.4rem);
-  padding-bottom: 5rem;
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  padding: clamp(1.4rem, 3vw, 2.2rem) var(--pad) 5rem;
 }
 
 .hh-nav {
   position: sticky;
-  top: 4.6rem;
+  top: calc(3.6rem + 1.4rem + env(safe-area-inset-top, 0px));
   align-self: start;
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
+  gap: 1.3rem;
+  max-height: calc(100dvh - 6rem);
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-top: 0.3rem;
 }
 
-.hh-nav-group .label {
-  font-size: 0.66rem;
+.hh-nav::-webkit-scrollbar { display: none; }
+
+.hh-nav-group { display: grid; gap: 1px; }
+
+.hearth .hh-nav-group .label {
+  font-size: 0.64rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin: 0 0 0.4rem 0.75rem;
+  margin: 0 0 0.35rem;
+  padding-left: 0.75rem;
 }
 
-.hh-nav a {
+.hh-nav a, .hh-more a {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.42rem 0.75rem;
   border-radius: 6px;
   text-decoration: none;
   color: var(--text-dim);
-  font-size: 0.92rem;
-  transition: color 160ms var(--ease), background 160ms var(--ease);
+  font-size: 0.9rem;
+  transition: color 160ms var(--ease), background 160ms var(--ease), box-shadow 160ms var(--ease);
 }
 
-.hh-nav a:hover { color: var(--text); background: var(--surface); }
-.hh-nav a[aria-current="page"] { color: var(--text); background: var(--surface-2); }
-.hh-nav a[aria-current="page"]::before { background: var(--ember); box-shadow: 0 0 8px var(--ember); }
-.hh-nav a::before {
-  content: "";
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--line-strong);
-  flex: none;
-  transition: background 200ms var(--ease), box-shadow 200ms var(--ease);
+.hh-nav a:hover, .hh-more a:hover { color: var(--text); background: var(--surface); }
+.hh-nav a[aria-current="page"], .hh-more a[aria-current="page"] {
+  color: var(--text);
+  background: var(--surface-2);
+  box-shadow: inset 2px 0 0 var(--ember);
 }
 
-.hh-view { min-width: 0; }
+/* Set apart at the foot of the list: the way to see what a member sees. */
+.hh-see-as {
+  margin-top: 0.2rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 6px;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: color 160ms var(--ease), border-color 160ms var(--ease);
+}
+
+.hh-see-as:hover { color: var(--text); border-color: var(--ember-soft); }
+
+/* The view takes the rest of the width, its content held to a comfortable
+   maximum and centred in what is left, so the right side never sits empty. */
+.hh-view { min-width: 0; width: 100%; max-width: var(--content); margin-inline: auto; }
 
 /* Long reading (a record, a post) keeps a reading measure and sits in the
    middle of the view, so a wide shell does not stretch the lines. */
@@ -280,42 +311,141 @@ body {
   animation-delay: calc(var(--i, 0) * 45ms);
 }
 
-/* ---------- mobile: the nav goes to the bottom ---------- */
+/* ---------- mobile tabs and the More sheet ---------- */
+
+.hh-tabs { display: none; }
+
+.hh-more, .hh-pick {
+  color: var(--text);
+  background: var(--ground-2);
+  border: 1px solid var(--line-strong);
+  padding: 0;
+}
+
+.hh-more::backdrop, .hh-pick::backdrop { background: rgba(8, 7, 6, 0.6); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+
+.hh-more {
+  margin: auto 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: 82dvh;
+  border-radius: 14px 14px 0 0;
+  border-bottom: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.hh-more[open] { animation: hh-sheet 220ms var(--ease) both; }
+
+@keyframes hh-sheet {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.hh-more-head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  background: var(--ground-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.hh-more-body {
+  display: grid;
+  gap: 1.1rem;
+  padding: 0.9rem 0.6rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+}
+
+.hh-more-body .hh-nav-group { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.4rem; }
+.hh-more-body .hh-nav-group .label { grid-column: 1 / -1; }
+.hh-more a { min-height: 2.75rem; font-size: 0.95rem; }
+.hh-more .hh-see-as { min-height: 2.75rem; margin-inline: 0.15rem; }
+
+/* The member picker for "See it as a member". */
+.hh-pick {
+  width: min(28rem, calc(100% - 2rem));
+  border-radius: 12px;
+  padding: 1.3rem;
+}
+
+.hh-pick-list { display: grid; gap: 2px; margin-inline: -0.6rem; }
+.hh-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.hh-pick-row:hover { background: var(--surface-2); }
+.hh-pick-row .primary { display: block; }
+.hh-pick-row .desc { display: block; font-size: 0.78rem; color: var(--text-faint); }
 
 @media (max-width: 52rem) {
-  .hh-body { grid-template-columns: minmax(0, 1fr); padding-bottom: 6.5rem; }
-  .hh-nav {
+  .hh-body { grid-template-columns: minmax(0, 1fr); padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)); }
+  .hh-nav { display: none; }
+  .hh-tabs {
     position: fixed;
     left: 0; right: 0; bottom: 0;
-    top: auto;
     z-index: 12;
-    flex-direction: row;
-    gap: 0;
-    background: rgba(14, 12, 10, 0.92);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    background: rgba(14, 12, 10, 0.94);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-top: 1px solid var(--line);
-    padding: 0.35rem 0.35rem calc(0.35rem + env(safe-area-inset-bottom));
-    overflow-x: auto;
-    scrollbar-width: none;
+    padding: 0.3rem 0.3rem calc(0.3rem + env(safe-area-inset-bottom, 0px));
   }
-  .hh-nav::-webkit-scrollbar { display: none; }
-  .hh-nav-group { display: contents; }
-  .hh-nav-group .label { display: none; }
-  .hh-nav a {
-    flex: 1 0 auto;
+  .hh-tabs a, .hh-tabs button {
+    display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.62rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 0.45rem 0.6rem;
-    min-width: 4.2rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    min-height: 3rem;
+    padding: 0.35rem 0.2rem;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.7rem;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
-  .hh-nav a::before { width: 4px; height: 4px; }
-  .hh-mast-title { display: none; }
+  .hh-tabs a::before, .hh-tabs button::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--line-strong);
+    transition: background 200ms var(--ease), box-shadow 200ms var(--ease);
+  }
+  .hh-tabs a::before, .hh-tabs button::before { background: transparent; }
+  .hh-tabs [aria-current="page"] { color: var(--text); }
+  .hh-tabs [aria-current="page"]::before { background: var(--ember); box-shadow: 0 0 8px var(--ember); }
+  .hh-mast-inner { min-height: 3.2rem; }
+  .hh-brand .mark { width: 1.4rem; height: 1.4rem; }
   .hh-who .name { display: none; }
   .hh-brand .sub { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hh-more[open] { animation: none; }
 }
 
 /* ---------- type ---------- */
@@ -428,7 +558,8 @@ body {
 .hh-viewing { background: var(--ember); color: #141412; }
 .hh-viewing-inner { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding-block: 0.35rem; }
 .hh-viewing p { font-size: 0.85rem; font-weight: 600; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hh-viewing .btn { color: #141412; border-color: rgba(20, 20, 18, 0.5); flex: none; min-height: 1.8rem; }
+.hh-viewing .btn { color: var(--text); background: #141412; border-color: #141412; flex: none; min-height: 1.8rem; }
+.hh-viewing .btn:hover { color: #fff; background: #000; }
 .record-visual figcaption { font-size: 0.82rem; color: var(--quiet); }
 .record-chapter { padding-top: 0.4rem; }
 .record-num { font-family: var(--mono); font-size: 0.72rem; color: #c2410c; }
@@ -494,18 +625,61 @@ body {
 
 .empty .mark { width: 2rem; height: 2rem; opacity: 0.5; margin: 0 auto 0.6rem; display: block; }
 
-/* ---------- stat tiles ---------- */
+/* ---------- stat tiles: one ruled strip ---------- */
 
-.stat { display: grid; gap: 0.25rem; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* Home sets --cols from its count so a tile is never left alone in a row. */
+.stats[style*="--cols"] { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+
+/* Each cell draws its own top and left rule, and the strip clips the ones
+   on the outer edge, so the grid has hairlines only between cells. */
+.stat {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem 1.05rem;
+  box-shadow: -1px -1px 0 var(--line);
+}
 .stat .num {
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-size: clamp(1.8rem, 3.2vw, 2.4rem);
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .stat .num.ember { color: var(--ember); }
+.stat .num.zero { color: var(--text-faint); }
+.stat .num.words { font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1.15; padding-top: 0.3rem; }
 .stat .what { font-size: 0.78rem; color: var(--text-dim); }
+
+/* A search box with its filter beside it; stacked on a phone. */
+.filter-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(8rem, 13rem); gap: 0.75rem; align-items: center; }
+@media (max-width: 34rem) { .filter-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* Charts sit two across once the view is wide, so each keeps a sane height. */
+.chart-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
+
+@media (min-width: 72rem) {
+  .home.paired { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .home.paired > :not(.card) { grid-column: 1 / -1; }
+}
+
+.hh-pick-foot { justify-content: flex-end; }
+
+.home-row { gap: 0.15rem 1rem; }
+.home-row a { text-decoration: none; }
+.home-row a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.home-row .faint { font-variant-numeric: tabular-nums; }
+.home-links { display: flex; gap: 1.2rem; padding-top: 0.4rem; }
+.home-links a { color: var(--text-dim); text-underline-offset: 3px; }
 
 /* ---------- pills, badges ---------- */
 
@@ -664,16 +838,20 @@ body {
   pointer-events: auto;
   background: var(--ground-3);
   border: 1px solid var(--line-strong);
-  border-left: 3px solid var(--ember);
   border-radius: 6px;
   padding: 0.7rem 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
   font-size: 0.88rem;
   box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.8);
   animation: hh-enter 260ms var(--ease) both;
 }
 
-.toast.bad { border-left-color: var(--bad); }
-.toast.good { border-left-color: var(--good); }
+/* A small lit dot says what kind of news it is. */
+.toast::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ember); transform: translateY(-1px); }
+.toast.bad::before { background: var(--bad); }
+.toast.good::before { background: var(--good); }
 
 /* ---------- tables (log) ---------- */
 
@@ -694,7 +872,7 @@ body {
 
 /* ---------- the sessions figure: hops on a line ---------- */
 
-.hops { width: 100%; height: auto; display: block; color: var(--text); }
+.hops { width: 100%; height: auto; max-height: 15rem; display: block; color: var(--text); }
 
 /* ---------- misc ---------- */
 
@@ -736,6 +914,10 @@ body {
   .list .primary { white-space: normal; }
   .list > * > .row { justify-content: flex-start; }
   .grid3 { grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); }
+  .stats, .stats[style*="--cols"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* An odd last tile runs the full width as one short line. */
+  .stat:last-child:nth-child(odd) { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 0.6rem; padding-block: 0.75rem; }
+  .stat:last-child:nth-child(odd) .num { font-size: 1.4rem; }
   .stat .num { font-size: 1.9rem; }
 }
 

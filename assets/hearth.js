@@ -158,6 +158,8 @@
 
   function countUp(node, target, ms) {
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // A home tile's nothing-to-do zero reads quieter than a real count.
+    if (node.classList.contains("num")) node.classList.toggle("zero", target === 0);
     if (reduce || !Number.isFinite(target) || target < 2) { node.textContent = String(target); return; }
     var start = performance.now();
     var dur = ms || 700;
@@ -298,14 +300,22 @@
 
   // register(pattern, view, options): pattern is relative to /hearth, view is
   // a function (ctx) returning a node or a promise of one. options.perm gates
-  // it; options.nav = { group, label, order } adds it to the navigation.
+  // it; options.nav = { group, label, short, order, hideFor } adds it to the
+  // navigation. The group "" is the unlabelled daily list; "Money" and
+  // "Setup" follow it. hideFor names a permission whose holders do not see
+  // the entry: a member's own Sessions or Records is empty for the owner, who
+  // has the business version of each instead.
   function register(pattern, view, options) {
     var opts = options || {};
     routes.push({ pattern: pattern, view: view, perm: opts.perm || null, title: opts.title || "" });
     if (opts.nav) {
-      var group = navGroups.filter(function (g) { return g.name === opts.nav.group; })[0];
-      if (!group) { group = { name: opts.nav.group, items: [] }; navGroups.push(group); }
-      group.items.push({ href: BASE + (pattern === "/" ? "" : pattern), label: opts.nav.label, perm: opts.perm || null, order: opts.nav.order || 0 });
+      var name = opts.nav.group || "";
+      var group = navGroups.filter(function (g) { return g.name === name; })[0];
+      if (!group) { group = { name: name, items: [] }; navGroups.push(group); }
+      group.items.push({
+        href: BASE + (pattern === "/" ? "" : pattern), label: opts.nav.label, short: opts.nav.short || opts.nav.label,
+        perm: opts.perm || null, hideFor: opts.nav.hideFor || null, order: opts.nav.order || 0
+      });
     }
   }
 
@@ -348,11 +358,13 @@
       bar.appendChild(inner0);
     }
 
+    // The fire hangs from the bar itself, not the inner row, so it reaches
+    // the left edge of the screen at any width.
     var mast = el("header", "hh-mast");
     var inner = el("div", "frame hh-mast-inner");
     var fire = el("div", "hh-fire");
     fire.setAttribute("aria-hidden", "true");
-    inner.appendChild(fire);
+    mast.appendChild(fire);
 
     var brand = link("", BASE, "hh-brand");
     brand.setAttribute("aria-label", "Hearth home");
@@ -376,7 +388,7 @@
     state.mast = title;
     mountFire(fire);
 
-    var body = el("div", "frame hh-body");
+    var body = el("div", "hh-body");
     var nav = el("nav", "hh-nav");
     nav.setAttribute("aria-label", "Rooms");
     body.appendChild(nav);
@@ -384,32 +396,134 @@
     view.id = "hearth-view";
     body.appendChild(view);
     root.appendChild(body);
+
+    // On a phone: four tabs and More, which opens the whole list as a sheet.
+    var tabs = el("nav", "hh-tabs");
+    tabs.setAttribute("aria-label", "Rooms");
+    root.appendChild(tabs);
+    var more = el("dialog", "hh-more");
+    more.setAttribute("aria-label", "All rooms");
+    more.addEventListener("click", function (e) { if (e.target === more) more.close(); });
+    root.appendChild(more);
+
     state.nav = nav;
+    state.tabs = tabs;
+    state.more = more;
     state.view = view;
     renderNav();
+  }
+
+  var GROUP_ORDER = ["", "Money", "Setup"];
+
+  function visibleGroups() {
+    var out = [];
+    GROUP_ORDER.concat(navGroups.map(function (g) { return g.name; })).forEach(function (name) {
+      if (out.some(function (g) { return g.name === name; })) return;
+      var group = navGroups.filter(function (g) { return g.name === name; })[0];
+      if (!group) return;
+      var items = group.items.filter(function (i) { return (!i.perm || can(i.perm)) && !(i.hideFor && can(i.hideFor)); });
+      if (!items.length) return;
+      items.sort(function (a, b) { return a.order - b.order; });
+      out.push({ name: name, items: items });
+    });
+    return out;
+  }
+
+  function isActive(item) {
+    var path = currentPath();
+    var rel = item.href.slice(BASE.length) || "/";
+    return rel === "/" ? path === "/" : path.indexOf(rel) === 0;
+  }
+
+  function navLink(item, text, after) {
+    var rel = item.href.slice(BASE.length) || "/";
+    var a = link(text, item.href);
+    if (isActive(item)) a.setAttribute("aria-current", "page");
+    a.addEventListener("click", function (e) { e.preventDefault(); if (after) after(); navigate(rel); });
+    return a;
+  }
+
+  function navList(groups, after) {
+    var frag = document.createDocumentFragment();
+    groups.forEach(function (group) {
+      var wrap = el("div", "hh-nav-group");
+      if (group.name) wrap.appendChild(el("p", "label", group.name));
+      group.items.forEach(function (item) { wrap.appendChild(navLink(item, item.label, after)); });
+      frag.appendChild(wrap);
+    });
+    // The owner sees the room as a member does through view-as, with that
+    // member's own data and nothing changeable.
+    if (state.user.role === "owner" && can("members.read") && !state.viewer) {
+      var see = button("See it as a member", "hh-see-as", function () { if (after) after(); pickMember(); });
+      frag.appendChild(see);
+    }
+    return frag;
   }
 
   function renderNav() {
     var nav = state.nav;
     if (!nav) return;
+    var groups = visibleGroups();
     clear(nav);
-    var path = currentPath();
-    navGroups.forEach(function (group) {
-      var items = group.items.filter(function (i) { return !i.perm || can(i.perm); });
-      if (!items.length) return;
-      items.sort(function (a, b) { return a.order - b.order; });
-      var wrap = el("div", "hh-nav-group");
-      wrap.appendChild(el("p", "label", group.name));
-      items.forEach(function (item) {
-        var a = link(item.label, item.href);
-        var rel = item.href.slice(BASE.length) || "/";
-        var active = rel === "/" ? path === "/" : path.indexOf(rel) === 0;
-        if (active) a.setAttribute("aria-current", "page");
-        a.addEventListener("click", function (e) { e.preventDefault(); navigate(rel); });
-        wrap.appendChild(a);
+    nav.appendChild(navList(groups));
+
+    var tabs = state.tabs;
+    var more = state.more;
+    clear(tabs);
+    clear(more);
+    var all = [];
+    groups.forEach(function (g) { all = all.concat(g.items); });
+    var room = all.length > 5 ? 4 : all.length;
+    var first = all.slice(0, room);
+    first.forEach(function (item) { tabs.appendChild(navLink(item, item.short)); });
+    if (all.length > room) {
+      var rest = all.slice(room);
+      var moreBtn = button("More", "hh-tab-more", function () {
+        if (typeof more.showModal === "function") more.showModal(); else more.setAttribute("open", "");
       });
-      nav.appendChild(wrap);
-    });
+      if (rest.some(isActive)) moreBtn.setAttribute("aria-current", "page");
+      tabs.appendChild(moreBtn);
+      var head = el("div", "hh-more-head");
+      append(head, [el("p", "label", "All rooms"), button("Close", "btn sm", function () { more.close(); })]);
+      more.appendChild(head);
+      var body = el("div", "hh-more-body");
+      body.appendChild(navList(groups, function () { more.close(); }));
+      more.appendChild(body);
+    }
+  }
+
+  // A short list of members to look through. The most recently seen first,
+  // owners and staff left out: they see the room as it is.
+  function pickMember() {
+    var dlg = el("dialog", "hh-pick");
+    dlg.setAttribute("aria-label", "See it as a member");
+    var form = el("div", "stack");
+    form.appendChild(append(el("div", "stack tight"), [
+      el("h2", null, "See it as a member"),
+      el("p", "dim small", "The room exactly as they see it, with their sessions and records. Read-only until you exit.")
+    ]));
+    var list = el("div", "hh-pick-list");
+    list.appendChild(el("p", "dim small", "Loading members"));
+    form.appendChild(list);
+    var close = button("Cancel", "btn", function () { dlg.close(); });
+    form.appendChild(append(el("div", "row hh-pick-foot"), [close]));
+    dlg.appendChild(form);
+    dlg.addEventListener("close", function () { dlg.remove(); });
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+    document.body.appendChild(dlg);
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+    api("/admin/members").then(function (data) {
+      clear(list);
+      var people = (data.members || []).filter(function (m) { return m.role !== "owner" && m.role !== "staff" && m.status === "active"; }).slice(0, 8);
+      if (!people.length) { list.appendChild(el("p", "dim small", "No members yet.")); return; }
+      people.forEach(function (m) {
+        var b = button("", "hh-pick-row", function () {
+          viewAs(m.id).catch(function (err) { toast(err.message, "bad"); });
+        });
+        append(b, [avatar(m), append(el("span", "grow"), [el("span", "primary", m.name || m.email), el("span", "desc", m.role)])]);
+        list.appendChild(b);
+      });
+    }).catch(function (err) { clear(list); list.appendChild(el("p", "small form-error", err.message)); });
   }
 
   /* ---------- rendering a view ---------- */
@@ -526,7 +640,7 @@
     var inner = el("div", "frame hh-mast-inner");
     var fire = el("div", "hh-fire");
     fire.setAttribute("aria-hidden", "true");
-    inner.appendChild(fire);
+    mast.appendChild(fire);
     var brand = link("", "/", "hh-brand");
     append(brand, [mark("mark"), el("span", "word", "Chama Inteligente")]);
     inner.appendChild(brand);
@@ -708,20 +822,22 @@
   /* ---------- views every member has ---------- */
 
   register("/", function () {
-    var wrap = el("div", "stack");
+    var wrap = el("div", "stack home");
     var user = state.user;
     var hour = new Date().getHours();
     var greeting = hour < 5 ? "Still up" : hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
     var first = (user.name || "").split(" ")[0] || "";
     wrap.appendChild(viewHead(greeting + (first ? ", " + first : "") + ".", roleLede()));
 
-    var tiles = el("div", "grid3 rise");
+    // One ruled strip of numbers. A tile with nothing to act on stays quiet;
+    // only a number that wants attention is ember.
+    var tiles = el("div", "stats rise");
     var i = 0;
     function tile(num, what, emberish) {
-      var card = el("div", "card stat");
+      var card = el("div", "stat");
       card.style.setProperty("--i", String(i++));
       var n = el("div", "num" + (emberish ? " ember" : ""), typeof num === "number" ? "0" : String(num));
-      if (typeof num !== "number") n.style.fontSize = "1.4rem";
+      if (typeof num !== "number") n.classList.add("words");
       card.appendChild(n);
       card.appendChild(el("div", "what", what));
       tiles.appendChild(card);
@@ -731,24 +847,23 @@
 
     var hooks = homeHooks.slice();
     return Promise.all(hooks.map(function (h) { return Promise.resolve(h(tile, wrap)).catch(function () {}); })).then(function () {
-      if (!tiles.childNodes.length) tiles.remove();
-      var quick = el("div", "grid2 rise mt");
-      var j = 0;
-      function q(title, text, to) {
-        var c = link("", BASE + to, "card");
-        c.style.setProperty("--i", String(j++));
-        c.addEventListener("click", function (e) { e.preventDefault(); navigate(to); });
-        append(c, [el("p", "label", title), el("p", "dim small", text)]);
-        quick.appendChild(c);
-      }
-      q("Account", "Your name, timezone and referral link.", "/account");
-      q("Security", "Sign-in methods, password and active sessions.", "/security");
-      if (can("members.read")) q("Members", "Members, roles and who is online.", "/admin/members");
-      if (can("audit.read")) q("Log", "Every sign-in, change and agent call.", "/admin/log");
+      var count = tiles.childNodes.length;
+      if (!count) tiles.remove();
+      // Up to six in a row; more fold into two even rows instead of leaving one alone.
+      tiles.style.setProperty("--cols", String(count <= 6 ? count : Math.ceil(count / 2)));
+      // Two or more cards sit side by side on a wide screen, so a row's name
+      // and its date are never a whole monitor apart.
+      if (wrap.querySelectorAll(":scope > .card").length >= 2) wrap.classList.add("paired");
+      var quick = el("p", "home-links small dim");
+      [["Account", "/account"], ["Security", "/security"]].forEach(function (pair) {
+        var a = link(pair[0], BASE + pair[1]);
+        a.addEventListener("click", function (e) { e.preventDefault(); navigate(pair[1]); });
+        quick.appendChild(a);
+      });
       wrap.appendChild(quick);
       return wrap;
     });
-  }, { title: "", nav: { group: "Member", label: "Home", order: 0 } });
+  }, { title: "", nav: { label: "Home", order: 0 } });
 
   // Other files can add tiles and sections to the home view.
   var homeHooks = [];
@@ -756,8 +871,8 @@
 
   function roleLede() {
     switch (state.user.role) {
-      case "owner": return "Members, sessions, transcripts, the feed and the audit log.";
-      case "staff": return "Members, sessions and the feed.";
+      case "owner": return "Your coaching business at a glance.";
+      case "staff": return "The sessions and members at a glance.";
       case "client": return "Your sessions, records and follow-ups. Connected agents can read them.";
       default: return "The feed, and sessions once you have credits.";
     }

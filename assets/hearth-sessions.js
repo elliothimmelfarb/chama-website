@@ -153,12 +153,12 @@
       wrap.appendChild(figCard);
       armFigure(fig);
 
-      var tiles = el("div", "grid3 rise");
+      var tiles = el("div", "stats rise");
       function tile(value, what, emberish, i) {
-        var c = el("div", "card stat");
+        var c = el("div", "stat");
         c.style.setProperty("--i", String(i));
         var n = el("div", "num" + (emberish ? " ember" : ""), typeof value === "number" ? "0" : value);
-        if (typeof value === "number") H.countUp(n, value); else n.style.fontSize = "1.4rem";
+        if (typeof value === "number") H.countUp(n, value); else n.classList.add("words");
         append(c, [n, el("div", "what", what)]);
         tiles.appendChild(c);
       }
@@ -208,7 +208,7 @@
       wrap.appendChild(tzNote);
       return wrap;
     });
-  }, { perm: "sessions.own", title: "Sessions", nav: { group: "Member", label: "Sessions", order: 1 } });
+  }, { perm: "sessions.own", title: "Sessions", nav: { label: "Sessions", order: 1, hideFor: "sessions.manage" } });
 
   // Invoices Elliot sent through Stripe. An open one can be paid on Stripe's
   // page; a paid one keeps that page as the receipt.
@@ -798,12 +798,11 @@
   /* ---------- home tiles ---------- */
 
   H.onHome(function (tile) {
-    if (!H.can("sessions.own")) return;
+    if (!H.can("sessions.own") || H.can("sessions.manage")) return;
     return api("/bookings").then(function (data) {
       var next = data.bookings.filter(function (b) { return b.status === "scheduled" && new Date(b.endsAt) > new Date(); }).sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); })[0];
       if (data.billing !== "after") H.countUp(tile(data.balance, "credits left", data.balance > 0), data.balance);
-      var n = tile(next ? fmtDay(next.startsAt) + " " + fmtTime(next.startsAt) : "none", "next session", Boolean(next));
-      n.style.fontSize = "1.4rem";
+      tile(next ? fmtDay(next.startsAt) : "none booked", next ? "next session, " + fmtTime(next.startsAt) : "next session", Boolean(next));
     });
   });
 
@@ -815,7 +814,7 @@
       if (!open.length) return;
       var card = invoicesCard(open);
       card.classList.add("glow");
-      var tiles = wrap.querySelector(".grid3");
+      var tiles = wrap.querySelector(".stats");
       wrap.insertBefore(card, tiles ? tiles.nextSibling : null);
     });
   });

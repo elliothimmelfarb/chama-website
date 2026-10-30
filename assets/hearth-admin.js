@@ -226,7 +226,7 @@
     wrap.appendChild(H.viewHead("Members", "All members, with role, status and last seen.", actions.length ? actions : null));
     wrap.appendChild(invite);
 
-    var controls = el("div", "row");
+    var controls = el("div", "filter-row");
     var search = input("search", "q", "Search name or email");
     search.classList.add("grow");
     var roleSelect = select(roleOptions(true), "", function (value) { role = value; load(); });
@@ -248,7 +248,7 @@
       });
     }
 
-    var stats = el("div", "grid3 rise");
+    var stats = el("div", "stats rise");
     wrap.appendChild(stats);
     var listCard = el("div", "card pad0");
     wrap.appendChild(listCard);
@@ -288,7 +288,7 @@
     }
 
     function tile(value, what, emberish, index) {
-      var card = rise(el("div", "card stat"), index);
+      var card = rise(el("div", "stat"), index);
       var num = el("div", "num" + (emberish ? " ember" : ""), "0");
       card.appendChild(num);
       card.appendChild(el("div", "what", what));
@@ -346,7 +346,7 @@
     }
 
     return load().then(function () { return wrap; });
-  }, { perm: "members.read", title: "Members", nav: { group: "Business", label: "Members", order: 0 } });
+  }, { perm: "members.read", title: "Members", nav: { label: "Members", order: 1.5 } });
 
   /* ---------- one member ---------- */
 
@@ -695,7 +695,7 @@
       }
       return card;
     }
-  }, { perm: "roles.manage", title: "Roles", nav: { group: "Business", label: "Roles", order: 1 } });
+  }, { perm: "roles.manage", title: "Roles", nav: { group: "Setup", label: "Roles", order: 1 } });
 
   /* ---------- the log ---------- */
 
@@ -777,7 +777,7 @@
     }
 
     return first().then(function () { return wrap; });
-  }, { perm: "audit.read", title: "Log", nav: { group: "Business", label: "Log", order: 2 } });
+  }, { perm: "audit.read", title: "Log", nav: { group: "Setup", label: "Activity log", short: "Log", order: 4 } });
 
   /* ---------- metrics ---------- */
 
@@ -787,10 +787,10 @@
       var wrap = el("div", "stack");
       wrap.appendChild(H.viewHead("Metrics", "The last " + (data.days || 30) + " days."));
 
-      var tiles = el("div", "grid3 rise");
+      var tiles = el("div", "stats rise");
       var index = 0;
       function tile(value, what, emberish) {
-        var card = rise(el("div", "card stat"), index++);
+        var card = rise(el("div", "stat"), index++);
         var num = el("div", "num" + (emberish ? " ember" : ""), "0");
         card.appendChild(num);
         card.appendChild(el("div", "what", what));
@@ -805,7 +805,7 @@
       tile(totals.mcp_calls, "MCP calls (30 d)");
       wrap.appendChild(tiles);
 
-      var charts = el("div", "stack rise");
+      var charts = el("div", "chart-grid rise");
       var byDay = data.byDay || [];
       [
         { key: "auth.sign_in", label: "Sign-ins" },
@@ -872,7 +872,7 @@
       wrap.appendChild(toolsCard);
       return wrap;
     });
-  }, { perm: "metrics.read", title: "Metrics", nav: { group: "Business", label: "Metrics", order: 3 } });
+  }, { perm: "metrics.read", title: "Metrics", nav: { group: "Setup", label: "Metrics", order: 3 } });
 
   /* ---------- settings ---------- */
 
@@ -1006,7 +1006,7 @@
       wrap.appendChild(form);
       return wrap;
     });
-  }, { perm: "settings.manage", title: "Settings", nav: { group: "Business", label: "Settings", order: 4 } });
+  }, { perm: "settings.manage", title: "Settings", nav: { group: "Setup", label: "Settings", order: 2 } });
 
   /* ---------- two tiles on the home view ---------- */
 

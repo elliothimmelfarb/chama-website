@@ -467,7 +467,7 @@
     }
 
     return load().then(function () { return wrap; });
-  }, { perm: "transcripts.manage", title: "Transcripts", nav: { group: "Business", label: "Transcripts", order: 14 } });
+  }, { perm: "transcripts.manage", title: "Transcripts", nav: { label: "Session records", short: "Records", order: 2.1 } });
 
   /* ---------- notes and what Elliot owes ---------- */
 
@@ -591,7 +591,7 @@
     }
 
     return Promise.all([loadNotes(), loadOwed()]).then(function () { return wrap; });
-  }, { perm: "transcripts.manage", title: "Notes", nav: { group: "Business", label: "Client notes", order: 15 } });
+  }, { perm: "transcripts.manage", title: "Notes", nav: { label: "Client notes", short: "Notes", order: 1.6 } });
 
   /* ---------- one tile on the home view ---------- */
 
