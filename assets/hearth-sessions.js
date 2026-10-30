@@ -263,13 +263,14 @@
 
   function ivaLine(iva, billing) {
     if (!iva) return "";
+    if (!iva.ready) return "Still needed: " + iva.missing.join(", ") + ".";
+    var vies = billing && billing.viesValidAt ? " The EU's VIES register confirmed the number on " + new Date(billing.viesValidAt).toLocaleDateString("en-GB", { dateStyle: "medium" }) + "." : "";
     if (iva.treatment === "portugal") {
-      return billing && billing.kind === "business" ? "A business in Portugal: IVA at 23 percent is added to each invoice." : "IVA at 23 percent is added to each invoice.";
+      return (billing && billing.kind === "business" ? "Invoices are made out to the company with its NIF, and IVA at 23 percent is added, which it can deduct." : "IVA at 23 percent is added to each invoice.") + vies;
     }
-    if (!iva.ready) return "Still needed for no IVA: " + iva.missing.join(", ") + ".";
-    return iva.treatment === "eu-reverse-charge"
+    return (iva.treatment === "eu-reverse-charge"
       ? "No Portuguese IVA: reverse charge for an EU business."
-      : "No Portuguese IVA: a business outside the EU. The invoice says why.";
+      : "No Portuguese IVA: a business outside the EU. The invoice says why.") + vies;
   }
 
   function billingForm(data, options) {
@@ -283,7 +284,7 @@
       if ((b.kind || "person") === pair[0]) o.selected = true;
       kind.appendChild(o);
     });
-    var legal = input("text", "legalName", "Nelson Ventures LLC", b.legalName);
+    var legal = input("text", "legalName", "", b.legalName);
     legal.autocomplete = "organization";
     var taxId = input("text", "taxId", "", b.taxId);
     var line1 = input("text", "addressLine1", "Street and number", b.addressLine1);
@@ -310,17 +311,44 @@
         if (b.country === pair[0]) o.selected = true;
         country.appendChild(o);
       });
-    var taxField = field("Tax ID", taxId);
-    var businessOnly = append(el("div", "stack tight"), [field("Company's legal name", legal), taxField]);
+    taxId.classList.add("grow");
+    // In the EU, the number alone finds the company: VIES gives its
+    // registered name and address, which fill in the form.
+    var lookup = button("Look up", "btn", function () {
+      lookup.disabled = true;
+      api("/billing/lookup?country=" + encodeURIComponent(country.value) + "&taxId=" + encodeURIComponent(taxId.value)).then(function (r) {
+        lookup.disabled = false;
+        if (r.valid === null) { H.toast("The EU register did not answer. Fill in the details by hand.", "bad"); return; }
+        if (!r.valid) { H.toast("The EU register does not know that number. Check it.", "bad"); return; }
+        taxId.value = r.taxId;
+        if (r.name) legal.value = r.name;
+        if (r.address) {
+          line1.value = r.address.line1 || line1.value;
+          line2.value = r.address.line2 || "";
+          city.value = r.address.city || city.value;
+          postal.value = r.address.postalCode || postal.value;
+        }
+        H.toast(r.name ? "Found " + r.name + "." : "That number is valid.", "good");
+      }).catch(function (err) { lookup.disabled = false; H.toast(err.message, "bad"); });
+    });
+    var taxField = field("Tax ID", append(el("div", "row"), [taxId, lookup]));
+    var businessOnly = append(el("div", "stack tight"), [taxField, field("Company's legal name", legal)]);
     var status = el("p", "small");
 
     function sync() {
       var business = kind.value === "business";
+      var c = country.value;
+      var eu = EU.indexOf(c) !== -1;
       businessOnly.hidden = !business;
+      lookup.hidden = !eu;
       var label = taxField.querySelector("span");
-      var hint = country.value === "US" ? "The company's EIN, like 12-3456789." : EU.indexOf(country.value) !== -1 ? "Its VAT number, with the country prefix." : "Its company or tax registration number.";
-      label.textContent = country.value === "US" ? "EIN" : EU.indexOf(country.value) !== -1 ? "VAT number" : "Tax ID";
-      taxId.placeholder = country.value === "US" ? "12-3456789" : "";
+      label.textContent = c === "PT" ? "NIF" : c === "US" ? "EIN" : eu ? "VAT number" : "Tax ID";
+      var hint = c === "PT" ? "The company's NIF, nine digits. Look up fills in its name and address."
+        : c === "US" ? "The company's EIN, like 12-3456789."
+        : eu ? "Its VAT number. Look up checks it and fills in the name and address."
+        : "Its company or tax registration number.";
+      taxId.placeholder = c === "PT" ? "123456789" : c === "US" ? "12-3456789" : "";
+      legal.placeholder = c === "PT" ? "Empresa, Lda" : c === "US" ? "Company LLC" : "";
       var oldHint = taxField.querySelector(".hint");
       if (oldHint) oldHint.textContent = hint; else taxField.appendChild(el("span", "hint", hint));
     }
@@ -331,11 +359,12 @@
     var evidence = null;
     append(form, [
       field(options.owner ? "Who pays" : "Who pays your invoices", kind),
+      field("Country", country),
       businessOnly,
       field("Address", line1),
       line2,
       append(el("div", "row"), [city, region]),
-      append(el("div", "row"), [postal, country])
+      postal
     ]);
     if (options.owner) {
       currency = el("select", "select");
@@ -356,7 +385,7 @@
     }
     form.appendChild(status);
     if (!options.owner) {
-      form.appendChild(el("p", "small dim", "If you choose your company, saving confirms it is a registered business and that the sessions are for its work. Invoices are then made out to it, and a business outside Portugal pays no Portuguese IVA."));
+      form.appendChild(el("p", "small dim", "If you choose your company, saving confirms it is a registered business and that the sessions are for its work. Invoices are then made out to it: a company in Portugal can deduct the IVA, and one outside Portugal pays none."));
     }
     var save = button("Save billing details", "btn primary");
     save.type = "submit";
