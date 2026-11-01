@@ -138,13 +138,20 @@
     head.forEach(function (el) { if (el) b = Math.max(b, el.getBoundingClientRect().bottom); });
     return b;
   }
+  // on a phone the lockup row folds away past the opening world, lifting
+  // the pages' row by this much (worlds.css, .head-compact)
+  function headLift() {
+    var nav = head[0] && head[0].querySelector(".site-nav");
+    return portrait() && nav ? nav.offsetTop : 0;
+  }
   function stackOf(k) {
     var P = portrait(), sec = sections[k], scene = scenes[k];
     var copy = sec.querySelector(".copy"), card = sec.querySelector(".card");
     var H = pins[k] || AH, ch = copy ? copy.offsetHeight : 0;
     var foot = k === NW - 1 && !room && footer ? footer.offsetHeight : 0;
     var base = P ? 22 : 30, gap = P ? 26 : 22;
-    var top = headBottom() + 20, avail = H - base - foot - gap - ch - top;
+    // the wheel's world is all scrolling, so its header folds almost at once
+    var top = headBottom() - (k > 0 || sec.classList.contains("wheel-world") ? headLift() : 0) + 20, avail = H - base - foot - gap - ch - top;
     var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
     var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
@@ -158,7 +165,7 @@
       down = sec.querySelector(".cap") ? Math.max(e[1] * R0, (scene.cap || 1.45) * R0 + 38) : e[1] * R0;
     }
     // on a short phone the figure shrinks rather than sit on the words
-    var need = up + down, g = fixed ? 1 : clamp(avail / need, P ? 0.22 : 0.4, P ? 1.3 : 1.15);
+    var need = up + down, g = fixed ? 1 : clamp(avail / need, P && !scene.box ? 0.22 : 0.4, P ? 1.3 : 1.15);
     var extra = Math.max(0, avail - need * g), figTop = top + extra * 0.45;
     return {
       cx: AW * tl[0], cy: figTop + up * g, R: R0 * g, top: figTop, h: need * g,
@@ -272,7 +279,7 @@
     session: { kind: "draw", box: true, draw: drawSession },
     releases: { kind: "draw", box: true, draw: drawReleases },
     peer: { kind: "draw", draw: drawPeer },
-    wheel: { kind: "draw", draw: drawWheel },
+    wheel: { kind: "draw", box: true, draw: drawWheel },
     keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
     family: { kind: "draw", draw: drawFamily },
     timeline: { kind: "draw", draw: drawTimeline }
@@ -643,7 +650,10 @@
     c.shadowBlur = 0;
     if (p > 0.001 && p < 0.999) { glowDot(c, hg[0], hg[1], 3.5, EMB, a); c.fillStyle = rgba(COLD, a); c.beginPath(); c.arc(hc[0], hc[1], 2.6, 0, TAU); c.fill(); }
     var lab = sm(0.85, 1, p) * a;
-    label(c, "CHASING", x1, chase[chase.length - 1] + 22, 11, 700, rgba(COLD, 0.85 * lab), "right", 1.4);
+    // in a short box there is no room under the line before TIME, so the
+    // label rides above the bursts instead
+    var short = yA - yT < 150;
+    label(c, "CHASING", x1, short ? base - burst - 6 : chase[chase.length - 1] + 22, 11, 700, rgba(COLD, 0.85 * lab), "right", 1.4);
     label(c, "GROWING", x1 - 4, grow[grow.length - 1] - 12, 11, 700, "rgba(244,88,31," + lab + ")", "right", 1.4);
     var cap = sm(0.2, 0.5, p) * a, small = B.w < 440;
     var q = "rgba(63,78,91," + cap + ")";
@@ -879,11 +889,13 @@
   // client in focus on its near side, at the left, nearest the words and
   // largest; the one opposite on its far side, at the right, smallest and
   // furthest. Clients come up from below, pass the front and go over the top.
-  function wheelGeom(P, n) {
+  function wheelGeom(P, n, B) {
     var step = TAU / Math.max(n, 3);
     if (P) {
-      var bigP = Math.min(AW * 0.44, AH * 0.19);
-      return { cx: AW * 0.6, cy: AH * 0.31, rx: AW * 0.145, ry: AH * 0.128, big: bigP, far: 0.28, step: step };
+      // on a phone the wheel stands in the room above the words: the plate in
+      // focus fits it, and the far side of the ring stays inside it
+      var bigP = Math.min(AW * 0.44, AH * 0.19, B.h * 0.9);
+      return { cx: AW * 0.6, cy: B.y + B.h / 2, rx: AW * 0.145, ry: Math.max(0, Math.min(AH * 0.128, B.h / 2 - bigP * 0.16)), big: bigP, far: 0.28, step: step };
     }
     var bigW = Math.min(AH * 0.33, AW * 0.23);
     return { cx: AW * 0.68, cy: AH * 0.53, rx: AW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
@@ -904,7 +916,7 @@
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
-    var G = wheelGeom(L.portrait, n), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
+    var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
     var place = [];
     for (var i = 0; i < n; i++) {
       var d = i - p;
@@ -967,7 +979,10 @@
   var INTRO_AT = [[-0.55, -0.28, 0.5], [0.55, -0.55, 0.36], [0.32, 0.5, 0.44], [-0.62, 0.62, 0.3], [0.95, 0.25, 0.28], [-0.1, -0.95, 0.26]];
   function drawIntroShapes(c, t, L, a, W, G, place, k) {
     var P = L.portrait, n = W.spokes.length;
-    var hx = P ? AW / 2 : AW * 0.66, hy = P ? AH * 0.3 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15) : Math.min(AW * 0.16, AH * 0.27);
+    // on a phone the shapes gather in the room between the header (still
+    // full height before the first scroll) and the opening words
+    var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + headLift() : B.y, bh = B.y + B.h - by;
+    var hx = P ? AW / 2 : AW * 0.66, hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(AW * 0.16, AH * 0.27);
     var fly = sm(0.08, 0.82, k), fade = 1 - sm(0.42, 0.86, k);
     if (fade <= 0.002) return;
     c.save();
@@ -1208,12 +1223,14 @@
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
     root.classList.toggle("foot-over", !room && !!footer);
+    root.style.setProperty("--head-lift", headLift() + "px");
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
     sections.forEach(function (s, k) {
       var S = stacks[k];
       s.style.setProperty("--copy-b", S ? Math.round(S.copyB) + "px" : "");
       s.style.setProperty("--copy-t", S ? Math.round(S.copyT) + "px" : "");
       s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
+      s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
     });
     if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
   }
@@ -1273,7 +1290,7 @@
   var themeMeta = document.querySelector('meta[name="theme-color"]');
 
   // ---- the loop --------------------------------------------------------------------------
-  var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false, lastEnd = false;
+  var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false, lastEnd = false, lastCompact = false;
   // tBind starts each page's own clock, so its figures draw themselves in
   // when it arrives; the sky keeps one clock for the whole visit
   var tBind = t0;
@@ -1287,8 +1304,8 @@
     footer = document.querySelector("body > footer");
     tops = []; hs = []; pins = []; stacks = []; lastU = [];
     hugReady = false;
-    lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastSpark = 0;
-    root.classList.remove("in-room", "at-end");
+    lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastCompact = false; lastSpark = 0;
+    root.classList.remove("in-room", "at-end", "head-compact");
     tBind = performance.now();
     buildIndex();
   }
@@ -1304,7 +1321,9 @@
     last = now;
     var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
     var st = scrollState(), i = st[0], l = st[1], b = st[2];
-    setU(i, l, b);
+    // on a phone the last world's words keep counting on past its end, so
+    // they can fade before they reach the header (worlds.css, .flame)
+    setU(i, l, b || (portrait() ? st[3] / AH : 0));
     var pass = crossing(b);
 
     var inRoom = false, hidden = false;
@@ -1319,6 +1338,8 @@
     // once the footer is on screen its nav is the one to use
     var atEnd = !!footer && footer.getBoundingClientRect().top < AH - 8;
     if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
+    var compact = portrait() && (i > 0 || b > 0.5 || (sections[i].classList.contains("wheel-world") && l > 0.02));
+    if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
 
     var wt = b < 0.8 ? i : i + 1, wd = inRoom ? NW - 1 : b < 0.5 ? i : i + 1;
     // arriving from another page, the header keeps the old world's colours

@@ -351,6 +351,13 @@
       .footer-inner { display: grid; gap: 0.3rem; }
     }
 
+    /* on a phone the fire stays small, so the name and the way in are on
+       the first screen */
+    @media (max-width: 600px) {
+      .hero { gap: 1.25rem; padding-top: 1.75rem; padding-bottom: 3rem; }
+      .hearth-fig { max-width: 10rem; }
+    }
+
     @media (max-width: 420px) {
       .brand small { display: none; }
       .sheet .two { grid-template-columns: 1fr; }
