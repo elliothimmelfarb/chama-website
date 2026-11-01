@@ -1003,16 +1003,38 @@ html:has(main .ledger) .top::before {
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   .worlds { display: none; }
-  .top { top: calc(12px + env(safe-area-inset-top)); left: 16px; right: 16px; flex-wrap: wrap; row-gap: 10px; }
-  .top .site-nav { order: 2; flex-basis: 100%; }
+  /* two rows at most: the lockup with Members and the low motion switch,
+     then the pages. A grid, so a long lockup shrinks instead of pushing the
+     switch onto a row of its own. */
+  .top { top: calc(12px + env(safe-area-inset-top)); left: 16px; right: 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 10px; }
+  .top:has(.worlds-members) { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .top .mast { grid-row: 1; grid-column: 1; min-width: 0; margin-right: 0; }
+  .mast span { min-width: 0; }
+  .mast b, .mast small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .worlds-members { grid-row: 1; }
+  .top .site-nav { grid-row: 2; grid-column: 1 / -1; }
   .nav-link { min-height: 34px; padding: 0 0.75rem; font-size: 0.8125rem; }
   .worlds-members { min-height: 30px; padding: 0 0.65rem; font-size: 0.75rem; }
   /* on a phone the low motion switch keeps its knob and drops its words
      (the hero offers the same in a sentence) */
-  .motion-toggle { min-height: 30px; padding: 0 0.4rem; }
+  .motion-toggle { grid-row: 1; grid-column: -2; min-height: 30px; padding: 0 0.4rem; }
   .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .mast b { font-size: 0.98rem; }
+  /* past the opening world the lockup row folds away and the pages rise to
+     the top, so each world's figure gets that row's height (worlds.js sets
+     .head-compact and --head-lift, and lays the figures out to match) */
+  .top .site-nav { transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .top .mast, .top .worlds-members, .top .motion-toggle { transition: opacity 0.3s ease, visibility 0s linear 0s, background 0.6s ease, color 0.3s ease; }
+  html.head-compact .top .site-nav { transform: translateY(calc(-1 * var(--head-lift, 0px))); }
+  html.head-compact .top .mast,
+  html.head-compact .top .worlds-members,
+  html.head-compact .top .motion-toggle { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0s linear 0.25s; }
   .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
+  /* the figure sits above the words, so as a world leaves, its words would
+     slide up through it: here they are gone in the first tenth of the way */
+  .copy .r, .cap .r { --out: 1.1; --b: clamp(0, (var(--out) - var(--u)) * 10, 1); }
+  /* the last world has no next one; its words fade as they near the header */
+  .flame .copy .r { --out: 1.55; }
   .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
   .copy,
   .hero .copy {
@@ -1049,6 +1071,7 @@ html:has(main .ledger) .top::before {
   .dir { padding-top: calc(env(safe-area-inset-top) + 9.5rem); }
   /* on a phone the nav wraps to a second row, so the strip stays solid past it */
   html:has(main .directory) .top[data-theme="forge"]::before { height: calc(env(safe-area-inset-top) + 150px); background: linear-gradient(var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); }
+  html.head-compact:has(main .directory) .top[data-theme="forge"]::before { height: calc(env(safe-area-inset-top) + 150px - var(--head-lift, 0px)); }
   .dir { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; align-items: start; gap: 1.15rem; padding-bottom: 3rem; }
   .dir-list, .dir-note { grid-column: auto; grid-row: auto; }
   .dir-head h2 { font-size: clamp(1.9rem, 8.6vw, 2.5rem); }
@@ -1067,6 +1090,7 @@ html:has(main .ledger) .top::before {
   .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
   .copy .turn-kind { margin-bottom: 0.6rem; }
   html:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px); }
+  html.head-compact:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px - var(--head-lift, 0px)); }
   .beats { margin-top: 0.9rem; }
   .ticks { margin-bottom: 0.7rem; }
   .qs li { padding-block: 0.16rem; font-size: 1rem; }
@@ -1078,8 +1102,10 @@ html:has(main .ledger) .top::before {
   .cta { padding: 0.85rem 1.2rem; font-size: 0.95rem; }
   .cap strong { font-size: 0.7rem; }
   .cap em { font-size: 0.74rem; }
-  .card-family { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(46vw, 13rem); translate: -50% 0; }
-  .card-founder { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(36vw, 9.5rem); translate: -50% 0; }
+  /* each print is 3:4 inside 5px of border, and no taller than the room
+     worlds.js gives it above the words (--fig-h) */
+  .card-family { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(46vw, 13rem, calc((var(--fig-h, 999px) - 10px) * 0.75 + 10px)); translate: -50% 0; }
+  .card-founder { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(36vw, 9.5rem, calc((var(--fig-h, 999px) - 10px) * 0.75 + 10px)); translate: -50% 0; }
   .card { padding: 5px; }
   /* On a phone the founder's photograph and the timeline share the top
      of the screen, one after the other. */
