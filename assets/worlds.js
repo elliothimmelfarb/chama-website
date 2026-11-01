@@ -157,7 +157,8 @@
       up = e[0] * R0;
       down = sec.querySelector(".cap") ? Math.max(e[1] * R0, (scene.cap || 1.45) * R0 + 38) : e[1] * R0;
     }
-    var need = up + down, g = fixed ? 1 : clamp(avail / need, 0.4, P ? 1.3 : 1.15);
+    // on a short phone the figure shrinks rather than sit on the words
+    var need = up + down, g = fixed ? 1 : clamp(avail / need, P ? 0.22 : 0.4, P ? 1.3 : 1.15);
     var extra = Math.max(0, avail - need * g), figTop = top + extra * 0.45;
     return {
       cx: AW * tl[0], cy: figTop + up * g, R: R0 * g, top: figTop, h: need * g,
