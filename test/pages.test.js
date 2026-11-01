@@ -351,3 +351,16 @@ for (const url of PUBLIC) {
     assert.equal(a.current, url === "/brand", `the link ${url === "/brand" ? "is not" : "is wrongly"} marked as the current page`);
   });
 }
+
+// The chat transcript on / marks each message .turn, and index.html loads
+// worlds.css. A bare .turn rule there hid every chat message (2026-10-22 to
+// 2026-11-01), so the clients wheel's turns are styled only inside .turns.
+test("worlds.css never hides a bare .turn, which would hide the chat's messages", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!/opacity:\s*0|visibility:\s*hidden/.test(rule[2])) continue;
+    for (const selector of rule[1].split(",")) {
+      assert.ok(!/(^|\s)\.turn(?![\w-])/.test(selector.trim()) || /\.turns\s/.test(selector), `bare .turn in "${selector.trim()}"`);
+    }
+  }
+});

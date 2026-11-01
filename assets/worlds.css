@@ -772,7 +772,7 @@ main h1:focus { outline: none; }
 /* the open place on the wheel, for the next client: no logo and no plate */
 .spoke-open .spoke-plate { background: rgba(250, 248, 243, 0.5); box-shadow: none; }
 .spoke-mark { position: relative; color: var(--fg); font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 500; letter-spacing: -0.04em; will-change: opacity, filter; }
-.turn .accent { color: var(--accent); }
+.turns .turn .accent { color: var(--accent); }
 .copy .turn-cta { margin-top: 1.5rem; }
 .copy .turn-more { margin-top: 1rem; font-size: 0.9rem; color: var(--fg2); }
 .spoke:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
@@ -780,20 +780,20 @@ main h1:focus { outline: none; }
 .copy .turn-count { margin: 0 0 0.5rem; color: var(--fg2); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
 .turn-intro h1 { margin-bottom: 0.4em; }
 .turns { display: grid; }
-.turn {
+.turns .turn {
   grid-area: 1 / 1;
   opacity: 0;
   visibility: hidden;
   transform: translateY(16px);
   transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
 }
-.turn.on { opacity: 1; visibility: visible; transform: none; transition: opacity 0.5s ease 0.2s, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s, visibility 0s 0.2s; }
+.turns .turn.on { opacity: 1; visibility: visible; transform: none; transition: opacity 0.5s ease 0.2s, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s, visibility 0s 0.2s; }
 .copy .turn-kind { margin: 0 0 0.9rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
-.turn h3 { margin: 0 0 0.45em; max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 0.94; text-wrap: balance; }
-html:not(.js) .turn { grid-area: auto; opacity: 1; visibility: visible; transform: none; margin-bottom: 2rem; }
+.turns .turn h3 { margin: 0 0 0.45em; max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 0.94; text-wrap: balance; }
+html:not(.js) .turns .turn { grid-area: auto; opacity: 1; visibility: visible; transform: none; margin-bottom: 2rem; }
 html:not(.js) .wheel { display: none; }
 @media (prefers-reduced-motion: reduce) {
-  .turn, .turn.on { transition: none; transform: none; }
+  .turns .turn, .turns .turn.on { transition: none; transform: none; }
 }
 
 /* ---- /clients: a world for each client --------------------------------- */
@@ -1064,7 +1064,7 @@ html:has(main .ledger) .top::before {
   .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
   .peer-plate { width: min(62vw, 16rem); }
   .copy p.permission { font-size: 0.78rem; }
-  .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
+  .turns .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
   .copy .turn-kind { margin-bottom: 0.6rem; }
   html:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px); }
   .beats { margin-top: 0.9rem; }
