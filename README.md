@@ -67,6 +67,8 @@ The flame goes out in three ways:
 - **`CHAT_DISABLED`.** Any value in the Vercel environment takes the flame offline on the next deploy. Only a person sets or clears it.
 - **The API spend limit.** When the Anthropic account hits its limit, the page shows the offline message. Raise the limit in the Anthropic Console. No deploy is needed.
 
+If every visitor gets "Something went wrong on our side", check the error logs first. `AuthenticationError status=401` means the Anthropic key is dead: create a new one in the Console (set it to never expire, Chama Inteligente workspace), replace `ANTHROPIC_API_KEY` in Vercel, and redeploy.
+
 A Vercel Firewall rule in the dashboard (not in this repo) limits `/api/chat` to 10 requests per IP per minute.
 
 ## Intake
