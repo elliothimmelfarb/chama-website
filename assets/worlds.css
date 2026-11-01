@@ -1035,8 +1035,13 @@ html:has(main .ledger) .top::before {
   .clients img.round { height: 32px; }
   .clients img.tall { height: 26px; }
   .clients img.mark-wide { height: 22px; }
-  .worked { margin-top: 1.1rem; gap: 0.5rem; }
-  .worked .clients { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; }
+  /* the hero's figure stands in the room the words leave above them, so on
+     a phone the marks sit close: short labels, and the friends on one line */
+  .worked { margin-top: 1.1rem; gap: 0.35rem; }
+  .worked .clients { display: flex; flex-wrap: wrap; gap: 0 0.9rem; }
+  .worked .clients a { min-height: 36px; }
+  .worked .clients a.clients-all { min-height: 24px; }
+  .worked .friends .clients-all { flex-basis: auto; }
   .ledger-group, .ledger-end { grid-template-columns: minmax(0, 1fr); }
   .ledger-note { grid-column: auto; }
   .entry { grid-template-columns: minmax(0, 1fr); }
