@@ -187,8 +187,16 @@
         var ch = el("section", "record-chapter stack tight");
         ch.appendChild(el("p", "record-num", c.label || ("Idea " + (++n) + " of " + ideas)));
         ch.appendChild(el("h3", null, c.heading));
-        (c.body || []).forEach(function (para) { ch.appendChild(el("p", null, para)); });
-        if (c.figure && alts[c.figure] !== undefined) ch.appendChild(figure(t, c.figure, alts, c.caption));
+        var body = c.body || [];
+        // Records saved before figures could be placed carry one figure at the end.
+        var figs = c.figures || (c.figure ? [{ figure: c.figure, caption: c.caption, after: body.length }] : []);
+        var placeFigures = function (i) {
+          figs.forEach(function (f) {
+            if (f.after === i && alts[f.figure] !== undefined) ch.appendChild(figure(t, f.figure, alts, f.caption));
+          });
+        };
+        placeFigures(0);
+        body.forEach(function (para, i) { ch.appendChild(el("p", null, para)); placeFigures(i + 1); });
         if (c.quote) {
           var q = el("blockquote", "record-quote");
           q.appendChild(el("p", null, "“" + c.quote.text + "”"));
