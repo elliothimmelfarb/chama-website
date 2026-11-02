@@ -17,6 +17,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `evals/` | Prompt-injection and quality evals. `npm run evals` spends API credit and is not part of `npm run check`. |
 | `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
 | `api/watchdog.js` | The cron job that reviews conversations and can put the flame out. |
+| `lib/flame-health.js` | Run by the watchdog's cron: emails when the flame cannot reach its model. |
 | `admin.html`, `assets/admin.*`, `api/admin-auth.js`, `api/admin-data.js` | The private, read-only admin area at `/admin`. |
 | `hearth-public.html`, `hearth-room.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform, and its public page. See [The Hearth](#the-hearth). |
 | `privacy.html` | The privacy notice. |
@@ -58,6 +59,8 @@ A cron calls `/api/watchdog` at `:05` and `:35` past each hour, authenticated wi
 - `malicious`: something landed. The watchdog writes `ops/kill-switch.json` to the blob store and emails "The flame has been shut down".
 
 The watchdog never logs visitor text.
+
+The same cron also checks that the flame can answer at all (`lib/flame-health.js`). It asks the Anthropic API for the flame's model with the flame's key, which costs nothing. A dead key, a key without access or a retired model emails "The flame is not answering" with the error and the fix, again once a day while it stays broken, and "The flame is answering again" when it recovers. Overloads and network blips are ignored. State lives in `ops/flame-health.json` in the blob store. It cannot see the API spend limit.
 
 ### Putting the flame out and relighting it
 
