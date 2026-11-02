@@ -19,6 +19,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { get, list, put } from "@vercel/blob";
 import { Resend } from "resend";
 
+import { runFlameHealth } from "../lib/flame-health.js";
+
 export const KILL_SWITCH_KEY = "ops/kill-switch.json";
 
 // A thrown switch expires on its own after a day. One reviewer hallucination
@@ -569,6 +571,16 @@ export default {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    // Whether the flame can answer at all is checked on the same schedule but
+    // apart from the review, so neither one's failure hides the other.
+    let health;
+    try {
+      health = await runFlameHealth();
+    } catch (error) {
+      console.error("Flame health run failed", error instanceof Error ? error.name : "UnknownError");
+      health = { status: "unknown", emailed: false };
+    }
+
     // A blob outage or a model failure must come back as a 500 the cron can
     // see, not as an unhandled rejection in the runtime.
     let outcome;
@@ -578,13 +590,13 @@ export default {
       const name = error instanceof Error ? error.name : "UnknownError";
       console.error("Watchdog run failed", name);
       return Response.json(
-        { ok: false, error: name },
+        { ok: false, error: name, health },
         { status: 500, headers: { "Cache-Control": "no-store" } }
       );
     }
 
     return Response.json(
-      { ok: true, ...outcome },
+      { ok: true, ...outcome, health },
       { headers: { "Cache-Control": "no-store" } }
     );
   }
