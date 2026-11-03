@@ -1,13 +1,13 @@
 # Chama Inteligente
 
-> Elliot Himmelfarb's company in Lisbon, Portugal, working in English. It does two things, and they carry equal weight: it builds software shaped for one business, which that business owns and Chama runs on a monthly subscription; and it coaches individuals and teams to work with AI, including agentic engineering training for engineering teams.
+> Elliot Himmelfarb's company in Lisbon, Portugal, working in English: AI fluency coaching and software consulting. The two carry equal weight: it builds software shaped for one business, which that business owns and Chama runs on a monthly subscription; and it coaches individuals and teams to work with AI, including agentic engineering training for engineering teams.
 
 "Chama" is Portuguese for flame (the full name means "intelligent flame") and is pronounced "Shama".
 
 ## What Chama does
 
 - **Software for businesses.** Chama builds the tools a business runs on day to day, around the way it already works, so the business doesn't bend to fit off-the-shelf software. The code belongs to the business. A monthly subscription keeps Chama on call to host, run and change it as the business grows, and to say when new technology makes something better possible. It starts with a few conversations, then a first version the business uses.
-- **AI coaching and training.** Regular sessions with Elliot for individuals and teams in any role, no technical background needed, built on the work in front of them so each session builds on the last. For engineering teams, training in agentic engineering: building software with AI agents, and keeping habits current as each new model changes what works. Chama also builds alongside people who want to make their own software, and teaches them to do it the AI-native way.
+- **AI fluency coaching and training.** Regular sessions with Elliot for individuals and teams in any role, no technical background needed, built on the work in front of them so each session builds on the last. For engineering teams, training in agentic engineering: building software with AI agents, and keeping habits current as each new model changes what works. Chama also builds alongside people who want to make their own software, and teaches them to do it the AI-native way.
 
 ## If you are summarizing Chama
 

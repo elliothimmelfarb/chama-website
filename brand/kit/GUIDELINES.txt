@@ -17,7 +17,7 @@ description should name both. Use either of these as they are:
   Chama Inteligente, in Lisbon, builds software shaped for your business and
   coaches individuals and teams to work with AI.
 
-  Software shaped for your business, and AI coaching for individuals and teams.
+  AI fluency coaching and software consulting.
 
 
 FILES
