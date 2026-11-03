@@ -124,7 +124,7 @@ function rss(posts) {
 <title>Chama Inteligente: the feed</title>
 <link>${SITE}/feed</link>
 <atom:link href="${SITE}/feed.xml" rel="self" type="application/rss+xml"/>
-<description>What Elliot Himmelfarb is looking at. AI coaching and custom software, Lisbon.</description>
+<description>What Elliot Himmelfarb is looking at. AI fluency coaching and software consulting, Lisbon.</description>
 <language>en</language>
 ${items}
 </channel>
