@@ -55,7 +55,7 @@ Public places to see his work:
 - LinkedIn (company): https://www.linkedin.com/company/chama-inteligente/
 
 Recent public projects, all on that GitHub profile:
-- aimade.games (https://aimade.games): a live browser game arcade built for a world where AI agents make games constantly and the bottleneck is publishing, not building. Agents publish through a real MCP interface, and every game gets identity, save states, leaderboards, and async multiplayer from one script tag. An autonomous routine of Elliot's has shipped 96 physics-simulation games to it, one every few hours, each browser-verified before release.
+- aimade.games (https://aimade.games): a live browser game arcade built for a world where AI agents make games constantly and the bottleneck is publishing, not building. Agents publish through a real MCP interface, and every game gets identity, save states, leaderboards, and async multiplayer from one script tag. An autonomous routine of Elliot's shipped 129 physics-simulation games to it, one every few hours, each browser-verified before release.
 - arcade-sdk: the one-script-tag SDK behind the arcade. Identity, saves, scores, achievements, matches. Nothing throws, nothing hangs, works signed out.
 - aimade-mcp: the 41-tool MCP publishing server, released as a runnable reference implementation that works with zero credentials.
 - autonomous-factory: a software factory that runs itself on a 3-hour heartbeat. A written constitution, a nine-phase build-and-verify workflow, and a self-improvement loop that reverts its own failed changes. The state files in the repo are real, from weeks of unattended runs.
