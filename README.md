@@ -132,7 +132,7 @@ Google (ID token), GitHub and Discord (authorization code with a state nonce, ve
 
 ### Agents
 
-`https://chamainteligente.com/mcp` is an MCP server. Claude connects with OAuth 2.1 (dynamic registration, PKCE, a consent page in the Hearth). Scripts use scoped API keys (`chama_sk_...`). The tools a caller gets are the intersection of the token's scopes and the person's permissions. The unauthenticated tools answer only when `mcp_public` is on. Nothing an agent submits is treated as an instruction to anyone.
+`https://chamainteligente.com/mcp` is an MCP server. Claude connects with OAuth 2.1 (dynamic registration, PKCE S256, a consent page in the Hearth, tokens bound to `/mcp`). A malformed authorize request stops on a page here with a labelled link back and never redirects by itself, because registration is open. `/mcp` refuses a browser `Origin` other than this site's or Claude's. Scripts use scoped API keys (`chama_sk_...`). The tools a caller gets are the intersection of the token's scopes and the person's permissions. The unauthenticated tools answer only when `mcp_public` is on. Nothing an agent submits is treated as an instruction to anyone.
 
 ### Sessions and money
 

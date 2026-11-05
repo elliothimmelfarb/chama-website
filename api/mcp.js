@@ -6,15 +6,27 @@
 // public tools when the owner has switched them on, and with a 401 that
 // points at the resource metadata otherwise, which is how a client learns
 // where to start the OAuth flow.
+//
+// The transport requires the Origin check: a browser always sends one, so a
+// page on another site is refused here, while clients that are not browsers
+// send none and pass. Claude's web apps are allowed by name in case their
+// connectors forward theirs.
 
 import { configured, ready } from "../lib/hearth/db.js";
-import { json, requestContext, requestOrigin } from "../lib/hearth/http.js";
+import { isSameOrigin, json, requestContext, requestOrigin } from "../lib/hearth/http.js";
+import { resourceFor } from "../lib/hearth/oauth.js";
 import { resolveBearer, handleRpc, useHearthHandler } from "../lib/hearth/mcp.js";
 import { addressKey } from "../lib/hearth/auth.js";
 import { handleHearth } from "./hearth.js";
 import { sql } from "../lib/hearth/db.js";
 
 useHearthHandler(handleHearth);
+
+const AGENT_ORIGINS = new Set(["https://claude.ai", "https://claude.com"]);
+
+function originAllowed(request) {
+  return isSameOrigin(request) || AGENT_ORIGINS.has(request.headers.get("origin"));
+}
 
 function unauthorized(request, description) {
   const origin = requestOrigin(request);
@@ -32,6 +44,7 @@ export async function handleMcp(request) {
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: { Allow: "POST, OPTIONS", "Cache-Control": "no-store" } });
   }
+  if (!originAllowed(request)) return json({ jsonrpc: "2.0", id: null, error: { code: -32600, message: "Origin not allowed." } }, 403);
   if (request.method === "GET" || request.method === "DELETE") {
     return new Response(null, { status: 405, headers: { Allow: "POST", "Cache-Control": "no-store" } });
   }
@@ -43,7 +56,7 @@ export async function handleMcp(request) {
     const header = request.headers.get("authorization");
     let caller = null;
     if (header) {
-      caller = await resolveBearer(header);
+      caller = await resolveBearer(header, resourceFor(requestOrigin(request)));
       if (!caller) return unauthorized(request, "The token is not valid.");
     } else if (!(await publicOn())) {
       return unauthorized(request);
