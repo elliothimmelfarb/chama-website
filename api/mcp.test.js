@@ -14,8 +14,9 @@ process.env.ADMIN_EMAILS = "";
 
 const HOST = "chamainteligente.com";
 
-function mcp(message, { token, raw } = {}) {
+function mcp(message, { token, raw, origin } = {}) {
   const headers = { "content-type": "application/json" };
+  if (origin) headers.origin = origin;
   if (token) headers.authorization = `Bearer ${token}`;
   return makeRequest(`https://${HOST}/mcp`, {
     method: "POST",
@@ -84,6 +85,37 @@ test("with the public tools on, a stranger gets the public tools", async () => {
   assert.equal(response.status, 200);
   const payload = await body(response);
   assert.deepEqual(payload.result.tools.map((t) => t.name).sort(), ["about", "get_feed", "how_to_get_in_touch"]);
+});
+
+test("a browser on another site is refused before anything else happens", async () => {
+  for (const origin of ["https://evil.example.com", "null"]) {
+    const db = fakeDb([publicSetting(true)]);
+    useClient(db);
+    const response = await handleMcp(mcp({ jsonrpc: "2.0", id: 1, method: "tools/list" }, { origin, token: KEY }));
+    assert.equal(response.status, 403, origin);
+    assert.equal(db.calls.length, 0, "nothing was looked up");
+  }
+});
+
+test("our own pages, Claude on the web and clients with no Origin all pass the check", async () => {
+  for (const origin of [`https://${HOST}`, "https://claude.ai", "https://claude.com", undefined]) {
+    useClient(fakeDb([publicSetting(false)]));
+    const response = await handleMcp(mcp({ jsonrpc: "2.0", id: 1, method: "tools/list" }, { origin }));
+    assert.equal(response.status, 401, String(origin));
+  }
+});
+
+test("an OAuth token is checked against this server's address", async () => {
+  const row = { id: "access-1", user_id: "user-1", scopes: ["profile"], client_id: "chama_abc", client_name: "An agent" };
+  const call = () => handleMcp(mcp({ jsonrpc: "2.0", id: 1, method: "ping" }, { token: "an-oauth-token" }));
+
+  useClient(fakeDb([[/from oauth_tokens t join oauth_clients c/, [{ ...row, resource: "https://preview.example.com/mcp" }]], ...actorHandlers()]));
+  assert.equal((await call()).status, 401);
+
+  for (const resource of [`https://${HOST}/mcp`, null]) {
+    useClient(fakeDb([[/from oauth_tokens t join oauth_clients c/, [{ ...row, resource }]], ...actorHandlers(), [/select key, value from settings/, []]]));
+    assert.equal((await call()).status, 200, String(resource));
+  }
 });
 
 test("a token that is not a token is refused", async () => {

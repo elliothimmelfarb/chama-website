@@ -9,7 +9,7 @@
 // metadata, resource - the discovery documents
 
 import { configured, ready } from "../lib/hearth/db.js";
-import { json, redirect, requestOrigin, matchPath } from "../lib/hearth/http.js";
+import { html, json, redirect, requestOrigin, matchPath } from "../lib/hearth/http.js";
 import { allow, addressKey } from "../lib/hearth/auth.js";
 import { metadata, resourceMetadata, registerClient, startAuthorization, exchangeCode, refreshTokens, revokeToken } from "../lib/hearth/oauth.js";
 import { audit, EVENTS } from "../lib/hearth/audit.js";
@@ -67,6 +67,29 @@ function oauthError(body, status = 400) {
   return json(body, status, { ...CORS, Pragma: "no-cache" });
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+// Anyone can register any https redirect, so an error is never redirected on
+// its own: that would make this domain an open redirect. The person stops
+// here and can follow a link that says where it goes.
+function authorizeError(result) {
+  const link = escapeHtml(result.redirect);
+  const host = escapeHtml(new URL(result.redirect).host);
+  return html(`<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>This connection did not start</title>
+<style>body { font: 1rem/1.5 system-ui, sans-serif; max-width: 34rem; margin: 4rem auto; padding: 0 1rem; }</style>
+<h1>This connection did not start</h1>
+<p>The app that sent you here made a request the Hearth cannot accept (<code>${escapeHtml(result.error)}</code>). Nothing was shared with it.</p>
+<p>Only go back if you trust this address: <a href="${link}" rel="noreferrer">${host}</a></p>
+</html>
+`, 400);
+}
+
 export async function handleOauth(request) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   const { url, path } = resolvePath(request);
@@ -90,8 +113,8 @@ export async function handleOauth(request) {
     if (path === "/authorize" && request.method === "GET") {
       const params = {};
       url.searchParams.forEach((v, k) => { params[k] = v; });
-      const result = await startAuthorization(params);
-      if (result.redirect) return redirect(result.redirect);
+      const result = await startAuthorization(params, origin);
+      if (result.redirect) return authorizeError(result);
       if (result.error) return json({ error: result.error, error_description: result.description }, 400);
       return redirect(`${origin}/hearth/authorize?req=${encodeURIComponent(result.requestId)}`);
     }
@@ -101,9 +124,9 @@ export async function handleOauth(request) {
       const body = await readParams(request);
       let result;
       if (body.grant_type === "authorization_code") {
-        result = await exchangeCode({ code: body.code, redirectUri: body.redirect_uri, clientId: body.client_id, clientSecret: body.client_secret, codeVerifier: body.code_verifier });
+        result = await exchangeCode({ code: body.code, redirectUri: body.redirect_uri, clientId: body.client_id, clientSecret: body.client_secret, codeVerifier: body.code_verifier, resource: body.resource, origin });
       } else if (body.grant_type === "refresh_token") {
-        result = await refreshTokens({ refreshToken: body.refresh_token, clientId: body.client_id, clientSecret: body.client_secret, scope: body.scope });
+        result = await refreshTokens({ refreshToken: body.refresh_token, clientId: body.client_id, clientSecret: body.client_secret, scope: body.scope, resource: body.resource, origin });
       } else {
         return oauthError({ error: "unsupported_grant_type" });
       }

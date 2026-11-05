@@ -107,7 +107,7 @@ test("an unknown client is told so here, not at a redirect", async () => {
 
 test("a good request sends the person to the consent page in the Hearth", async () => {
   useClient(fakeDb([[/from oauth_clients where id/, [clientRow()]]]));
-  const response = await handleOauth(oauth(`/authorize?client_id=chama_abc&redirect_uri=${encodeURIComponent(REDIRECT)}&response_type=code&code_challenge=${CHALLENGE}&state=xyz`));
+  const response = await handleOauth(oauth(`/authorize?client_id=chama_abc&redirect_uri=${encodeURIComponent(REDIRECT)}&response_type=code&code_challenge=${CHALLENGE}&code_challenge_method=S256&state=xyz`));
   assert.equal(response.status, 302);
   const location = new URL(response.headers.get("Location"));
   assert.equal(location.origin, ORIGIN);
@@ -115,12 +115,20 @@ test("a good request sends the person to the consent page in the Hearth", async 
   assert.ok(location.searchParams.get("req"));
 });
 
-test("a request the client got wrong goes back to the client", async () => {
-  useClient(fakeDb([[/from oauth_clients where id/, [clientRow()]]]));
-  const response = await handleOauth(oauth(`/authorize?client_id=chama_abc&redirect_uri=${encodeURIComponent(REDIRECT)}&response_type=token&code_challenge=${CHALLENGE}&state=xyz`));
-  assert.equal(response.status, 302);
-  const location = new URL(response.headers.get("Location"));
-  assert.equal(location.searchParams.get("error"), "unsupported_response_type");
+// Registration is open, so a registered redirect proves nothing: anyone can
+// register evil.example and use this domain to bounce a person there. An
+// error never redirects by itself; the person gets a page and a labelled link.
+test("a request the client got wrong stops on a page here, with a link back", async () => {
+  const evil = "https://evil.example.com/landing";
+  useClient(fakeDb([[/from oauth_clients where id/, [clientRow({ redirect_uris: [evil] })]]]));
+  const response = await handleOauth(oauth(`/authorize?client_id=chama_abc&redirect_uri=${encodeURIComponent(evil)}&response_type=token&code_challenge=${CHALLENGE}&state=%22%3E%3Cscript%3E`));
+  assert.equal(response.status, 400);
+  assert.equal(response.headers.get("Location"), null);
+  assert.match(response.headers.get("content-type"), /text\/html/);
+  const page = await response.text();
+  assert.match(page, /evil\.example\.com/, "the page names where the link goes");
+  assert.match(page, /href="https:\/\/evil\.example\.com\/landing\?error=unsupported_response_type/);
+  assert.ok(!page.includes("<script>"), "what the client sent is escaped");
 });
 
 /* ---------- token ---------- */
@@ -165,6 +173,21 @@ test("client credentials sent as HTTP Basic are read", async () => {
   }));
   assert.equal(wrong.status, 401);
   assert.equal((await body(wrong)).error, "invalid_client");
+});
+
+test("a token response is never cached, and neither is an error", async () => {
+  const db = fakeDb([
+    [/from oauth_clients where id/, [clientRow()]],
+    [/select \* from oauth_tokens where token_hash/, [{ id: "r", user_id: "u", client_id: "chama_abc", kind: "refresh", scopes: ["profile"], resource: `${ORIGIN}/mcp`, revoked_at: null, expires_at: new Date(Date.now() + 86400000).toISOString() }]],
+    [/with claimed as/, [{ id: "new" }]]
+  ]);
+  useClient(db);
+  const form = { "content-type": "application/x-www-form-urlencoded" };
+  const good = await handleOauth(oauth("/token", { method: "POST", headers: form, body: `grant_type=refresh_token&refresh_token=r&client_id=chama_abc&resource=${encodeURIComponent(`${ORIGIN}/mcp`)}` }));
+  assert.equal(good.status, 200);
+  assert.equal(good.headers.get("Cache-Control"), "no-store");
+  const bad = await handleOauth(oauth("/token", { method: "POST", headers: form, body: "grant_type=password" }));
+  assert.equal(bad.headers.get("Cache-Control"), "no-store");
 });
 
 /* ---------- revoke ---------- */
