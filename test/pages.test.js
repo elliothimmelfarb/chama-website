@@ -301,7 +301,35 @@ test("the router and llms-full.txt know /built", () => {
   assert.ok(readFileSync(path.join(ROOT, "llms.txt"), "utf8").includes("](https://chamainteligente.com/built)"));
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/clients", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/built", "/simple/built", "/hearth-public"];
+// The animated pages leave for the plain ones (the low motion version, the
+// Hearth, privacy, the flame's own page) as full loads, so they ask the
+// browser to fetch those on hover or press. The router fetches its own
+// pages itself, so the rules leave those alone; files are never fetched
+// ahead; and a pattern is a path, so it can only ever reach this host.
+function speculationMatches(html, href) {
+  const rules = [...html.matchAll(/<script type="speculationrules">([\s\S]*?)<\/script>/g)].flatMap((m) => JSON.parse(m[1]).prefetch || []);
+  const where = (w) => {
+    if (w.and) return w.and.every(where);
+    if (w.or) return w.or.some(where);
+    if (w.not) return !where(w.not);
+    return [].concat(w.href_matches).some((p) => {
+      assert.match(p, /^\/(?!\/)/, `speculation rule pattern ${p} is not a path on this host`);
+      return new URLPattern(p, "https://chamainteligente.com").test(new URL(href, "https://chamainteligente.com"));
+    });
+  };
+  return rules.some((r) => r.source === "document" && where(r.where));
+}
+
+for (const { worlds } of PAIRS) {
+  test(`${worlds} has the browser fetch the plain pages it leaves for, and nothing the router fetches`, () => {
+    const html = read(worlds);
+    for (const href of ["/simple", "/simple/coaching", "/hearth", "/privacy", "/agent", "/agent?say=hello"]) assert.ok(speculationMatches(html, href), `${href} is not fetched ahead`);
+    for (const { url } of SITE) assert.ok(!speculationMatches(html, url) && !speculationMatches(html, url + "#x"), `${url} is fetched by both the browser and the router`);
+    for (const href of ["/brand/chama-media-kit.zip", "/sitemap.xml", "/assets/worlds.css"]) assert.ok(!speculationMatches(html, href), `${href} is a file, fetched ahead for nothing`);
+  });
+}
+
+const PUBLIC = ["/","/coaching", "/about", "/clients", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/built", "/simple/built", "/hearth-public"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {
