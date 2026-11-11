@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Chama Inteligente | Software shaped for your business</title>
   <script>
-    /* Low motion: a reader who chose it, or whose system asks for reduced
-       motion and who has not chosen the animated version, reads the low
-       motion version of this page instead. */
+    /* The scripted layout from the first paint, not once the deferred
+       worlds.js runs. Low motion: a reader who chose it, or whose system
+       asks for reduced motion and who has not chosen the animated version,
+       reads the low motion version of this page instead. */
     (function () {
+      document.documentElement.classList.add("js");
       try {
         var m = localStorage.getItem("chama-motion");
         if (m === "low" || (m !== "full" && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) location.replace("/simple" + location.search + location.hash);
