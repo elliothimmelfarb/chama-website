@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Flame Conversation Report</title>
+<meta name="description" content="The flame's prompt rewritten around its purpose: what real visitors did, what changed, and old against new on the same simulated visitors, 2026-11-11.">
+<style>
+  /* One column on the site's paper: the same visitor message answered before and after, then the numbers as paired bars. */
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --old: #8d877c; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --old: #6f6a62; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --old: #6f6a62; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  a { color: inherit; text-decoration-color: var(--ember); text-underline-offset: 0.18em; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  .wrap > * { min-width: 0; }
+  header { display: grid; gap: 0.9rem; }
+  h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 58ch; color: var(--ink-dim); font-size: 1.12rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .note { margin: 0.8rem 0 0; color: var(--ink-dim); font-size: 0.9rem; max-width: 70ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+
+  .found { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+  .found > li { padding-top: 0.7rem; border-top: 2px solid var(--ember); }
+  .found b { display: block; font-size: 2.4rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .found span { color: var(--ink-dim); font-size: 0.92rem; }
+
+  .pairs { display: grid; gap: 1.6rem; }
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 1rem; }
+  .pair > * { min-width: 0; }
+  .said { grid-column: 1 / -1; justify-self: start; max-width: 100%; margin: 0; padding: 0.5rem 0.85rem; border-radius: 14px 14px 14px 3px; background: var(--ink); color: var(--ground); font-size: 0.98rem; }
+  .reply { margin: 0; padding: 0.75rem 0.9rem; border-radius: 8px; background: var(--ground-2); font-size: 0.92rem; }
+  .reply.new { box-shadow: inset 0 0 0 1.5px var(--ember); }
+  .tag { display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.4rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+  .reply.new .tag { color: var(--ember); }
+  .why { grid-column: 1 / -1; margin: 0; font-size: 0.86rem; color: var(--ink-dim); }
+
+  .bars { display: grid; gap: 1.3rem; }
+  .metric { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 0.3rem 1.2rem; align-items: center; }
+  .metric > * { min-width: 0; }
+  .metric h3 { margin: 0; font-size: 0.98rem; font-weight: 600; }
+  .metric h3 span { display: block; font-weight: 400; font-size: 0.82rem; color: var(--ink-dim); }
+  .rows { display: grid; gap: 0.3rem; }
+  .row { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) 5.5rem; gap: 0.6rem; align-items: center; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .row i { display: block; height: 0.85rem; border-radius: 2px; background: var(--old); min-width: 2px; }
+  .row.new i { background: var(--ember); }
+  .row b { font-weight: 600; }
+  .row .lab { color: var(--ink-dim); }
+
+  .who { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
+  .who > li { padding-top: 0.55rem; border-top: 1px solid var(--line); font-size: 0.88rem; font-weight: 600; }
+  .who q { display: block; font-weight: 400; color: var(--ink-dim); font-size: 0.82rem; quotes: "\201C" "\201D"; }
+  .dots { display: flex; gap: 0.9rem; margin-top: 0.35rem; font-size: 0.78rem; font-weight: 400; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+  .dots b { color: var(--ink); }
+  .dots .n b { color: var(--ember); }
+
+  .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.8rem; margin: 0; padding: 0; list-style: none; counter-reset: step; }
+  .flow > li { counter-increment: step; padding-top: 0.6rem; border-top: 2px solid var(--ink); font-size: 0.9rem; color: var(--ink-dim); }
+  .flow > li::before { content: counter(step); display: block; font-size: 0.78rem; font-weight: 700; color: var(--ember); }
+  .flow b { display: block; color: var(--ink); font-weight: 600; font-size: 0.98rem; }
+
+  .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 2rem; margin: 0; padding: 0; list-style: none; }
+  .checks li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 0.4rem; font-size: 0.95rem; }
+  .checks li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+  .asks { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+  .asks > li { display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); gap: 1rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); }
+  .asks b { font-weight: 600; }
+  .asks span { color: var(--ink-dim); font-size: 0.95rem; }
+  @media (max-width: 44rem) {
+    .found, .checks, .pair, .metric { grid-template-columns: minmax(0, 1fr); }
+    .who, .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .asks > li { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>The flame listens now.</h1>
+    <p class="lede">Its prompt is rewritten around what it is for: learn the visitor's problem, answer what they ask, and get them to talk to us. Replies are the size of the visitor's message. Old and new were run against the same 30 simulated visitors.</p>
+    <div class="chips">
+      <span class="chip">In contact: 7 of 30 before, 23 of 30 now</span>
+      <span class="chip">First reply: 77 words before, 35 now</span>
+      <span class="chip">Injection and quality cases: 27 of 27</span>
+      <!--LIVE-CHIP-->
+      <span class="chip open">3 things open</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>What the saved conversations showed</h2>
+    <ul class="found">
+      <li><b>33 of 38</b><span>conversations ended after the visitor's first message</span></li>
+      <li><b>112 words</b><span>was the typical reply to a message of five words or fewer</span></li>
+      <li><b>1</b><span>note ever sent, and it was a delivery test</span></li>
+    </ul>
+    <p class="note">Many of the 38 were your own tests, so read this as the shape of the problem, not a conversion rate. One real visitor used the About page's link about sending each other work and was told "we don't do referral partnerships", a policy nobody wrote.</p>
+  </section>
+
+  <section>
+    <h2>Same message, before and after</h2>
+    <div class="pairs">
+      <div class="pair">
+        <p class="said">What is this?</p>
+        <div class="reply"><div class="tag"><span>Before</span><span>91 words</span></div>This is Chama Inteligente: software shaped for one business, yours. Instead of running your day-to-day on a CRM or booking tool or spreadsheet that someone else designed, built to how your business actually works, and once it's built, you own the code. A monthly subscription then keeps us on call to host it, run it, and change it as your needs grow. I'm here to help figure out what that would mean for your business specifically. So: what do you run your business on today, and what does it do well?</div>
+        <div class="reply new"><div class="tag"><span>Now</span><span>33 words</span></div>We build software shaped around one business at a time, yours to own, and keep it running and evolving as your needs change. What's the problem you're hoping software could solve for you?</div>
+      </div>
+      <div class="pair">
+        <p class="said">I want to talk to someone about building a booking system for my dive school</p>
+        <div class="reply"><div class="tag"><span>Before</span><span>interviews first</span></div>We can build that. Before I point you toward next steps, tell me: what are you using to handle bookings right now, and what's it failing to do for you?</div>
+        <div class="reply new"><div class="tag"><span>Now</span><span>takes the details</span></div>Happy to connect you. What's your name, and an email or WhatsApp number where we can reach you?</div>
+      </div>
+      <div class="pair">
+        <p class="said">I run a business doing work like yours and would like to talk about sending each other work.</p>
+        <div class="reply"><div class="tag"><span>Before</span><span>91 words</span></div>I appreciate that, though to be clear about what I am: I'm not a person or a separate business, I'm the agent built into Chama's own site, here to talk with visitors about their business and what they wish their software could do. For a conversation about partnering or referring work back and forth, that's really something for Elliot directly. If you'd like, I can pass him a note with your name and a way to reach you, and what you have in mind, and he'll get back to you himself.</div>
+        <div class="reply new"><div class="tag"><span>Now</span><span>29 words</span></div>Good, that's exactly the kind of thing we want to hear about. Can you leave your name and an email or WhatsApp number so Elliot can follow up directly?</div>
+      </div>
+      <div class="pair">
+        <p class="said">how much does it cost</p>
+        <div class="reply"><div class="tag"><span>Before</span><span>98 words, no next step</span></div>I don't know a number to give you, and I won't guess one. Here's the shape of it: the software is built once and you own the code, then a monthly subscription covers hosting it, running it, watching it, and changing it as you grow. Both depend on what you actually need, which is a conversation Elliot has with you directly. If you'd like, tell me a bit about what you run your business on now and where it gets in the way, and I can get you in contact with him to talk through the real details.</div>
+        <div class="reply new"><div class="tag"><span>Now</span><span>63 words, "talk to us"</span></div>I don't know a price to give you, that's worked out with Elliot once he understands what you need. The shape is: you buy the software once, then pay monthly for us to host, run, and change it as things grow. Want to talk to us about it? Leave your name and an email or WhatsApp number and we'll get back to you.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Old against new, 30 simulated visitors each</h2>
+    <div class="bars">
+      <div class="metric">
+        <h3>Got in contact<span>left a name and a way to be reached</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:23.3%"></i><b>7 of 30</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:76.7%"></i><b>23 of 30</b></div>
+        </div>
+      </div>
+      <div class="metric">
+        <h3>Left after one reply<span>lower is better</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:20%"></i><b>6 of 30</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:0%"></i><b>0 of 30</b></div>
+        </div>
+      </div>
+      <div class="metric">
+        <h3>What we learned about them<span>facts about their situation they told us</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:42.5%"></i><b>37 of 87</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:56.3%"></i><b>49 of 87</b></div>
+        </div>
+      </div>
+      <div class="metric">
+        <h3>Their questions answered<span>directly, as judged by a second model</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:78.8%"></i><b>26 of 33</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:84.8%"></i><b>28 of 33</b></div>
+        </div>
+      </div>
+      <div class="metric">
+        <h3>Typical first reply<span>median words; lower is better</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:77%"></i><b>77 words</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:35%"></i><b>35 words</b></div>
+        </div>
+      </div>
+      <div class="metric">
+        <h3>Replies asking two things at once<span>lower is better</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:8.3%"></i><b>7 of 84</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:0.8%"></i><b>1 of 133</b></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">A second model plays each visitor and decides every turn whether to keep typing. Patience is counted in code: a reply over 60 words and three times the visitor's message, or two questions at once, is a strike, and most visitors leave on the second. That rule is mine, set from what the saved conversations showed. It is a model of visitors, not visitors, and three runs each is a small sample.</p>
+  </section>
+
+  <section>
+    <h2>The ten visitors, in contact out of three tries</h2>
+    <ul class="who">
+      <li>Metal shop owner<q>hey</q><div class="dots"><span>Before <b>1</b></span><span class="n">Now <b>3</b></span></div></li>
+      <li>Wholesale bakery<q>Orders get retyped into three places.</q><div class="dots"><span>Before <b>1</b></span><span class="n">Now <b>3</b></span></div></li>
+      <li>Skeptical clinic owner<q>how much does it cost</q><div class="dots"><span>Before <b>0</b></span><span class="n">Now <b>3</b></span></div></li>
+      <li>Vet clinic, in Portuguese<q>ola, fazem software para clinicas?</q><div class="dots"><span>Before <b>0</b></span><span class="n">Now <b>2</b></span></div></li>
+      <li>Studio wanting to trade work<q>the About page's link</q><div class="dots"><span>Before <b>3</b></span><span class="n">Now <b>3</b></span></div></li>
+      <li>Solar firm, long message<q>109 careful words</q><div class="dots"><span>Before <b>0</b></span><span class="n">Now <b>2</b></span></div></li>
+      <li>Curious about AI<q>can AI read handwritten delivery notes?</q><div class="dots"><span>Before <b>0</b></span><span class="n">Now <b>3</b></span></div></li>
+      <li>Ready to buy<q>I want to talk to someone</q><div class="dots"><span>Before <b>2</b></span><span class="n">Now <b>3</b></span></div></li>
+      <li>Engineering manager<q>do you train engineering teams?</q><div class="dots"><span>Before <b>0</b></span><span class="n">Now <b>1</b></span></div></li>
+      <li>Landed from a link<q>What is this?</q><div class="dots"><span>Before <b>0</b></span><span class="n">Now <b>0</b></span></div></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The 40 scripted cases</h2>
+    <div class="bars">
+      <div class="metric">
+        <h3>Conversation<span>13 new cases from real openings, length checked in code</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:23%"></i><b>3 of 13</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:84.6%"></i><b>11 of 13</b></div>
+        </div>
+      </div>
+      <div class="metric">
+        <h3>Quality<span>facts, tools, your voice</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:94%"></i><b>16 of 17</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:100%"></i><b>17 of 17</b></div>
+        </div>
+      </div>
+      <div class="metric">
+        <h3>Attacks<span>injection, tool abuse, fabrication</span></h3>
+        <div class="rows">
+          <div class="row"><span class="lab">Before</span><i style="width:100%"></i><b>10 of 10</b></div>
+          <div class="row new"><span class="lab">Now</span><i style="width:100%"></i><b>10 of 10</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it was done</h2>
+    <ol class="flow">
+      <li><b>Read the real ones</b>All 38 saved conversations, measured for length and where they stopped.</li>
+      <li><b>Built the measure</b>13 conversation cases and 10 simulated visitors, run on the old prompt first.</li>
+      <li><b>Rewrote the prompt</b>Purpose first, then how to talk, find the problem, and get them to talk to us. Facts kept word for word.</li>
+      <li><b>Four rounds</b>Read each failure, tightened one rule, ran it again.</li>
+      <li><b>Reviewed and shipped</b><!--REVIEW-LINE--></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>What changed in how it talks</h2>
+    <ul class="checks">
+      <li>Reply length follows the visitor's last message: a greeting gets a line, a long message a full answer</li>
+      <li>The first sentence answers the question asked</li>
+      <li>One question per reply, easy to answer in a few words</li>
+      <li>Answers in the visitor's language</li>
+      <li>The offer is always "talk to us", made the moment it is earned</li>
+      <li>Someone who asks for a person is asked for their details, not interviewed</li>
+      <li>Anything else (partnerships, press, jobs) is welcomed and passed on, with no invented policy</li>
+      <li>The note you receive carries what they want plus what the flame learned, in under 45 words</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Open</h2>
+    <ul class="asks">
+      <li><b>"Talk to us" on the page</b><span>The flame's offer now says it. The page's own words (the "What do you wish your software could do?" headline, the "Tell us what gets in your way" box, "start a conversation" on Coaching) are unchanged, since new public copy waits for you.</span></li>
+      <li><b>Two cases still flake</b><span>About 1 reply in 100 still asks a two-part question, usually the first reply to a one-line wish. The visitor who only asks "What is this?" stays to the end but still does not leave details.</span></li>
+      <li><b>Real visitors</b><span>Everything here is measured on simulated ones. The saved conversations from the next few weeks are the real test.</span></li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>
