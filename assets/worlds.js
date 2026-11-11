@@ -514,6 +514,22 @@
     c.fillText(str, x, y);
     if ("letterSpacing" in c) c.letterSpacing = "0px";
   }
+  // a label that clears what is drawn under it, as a chart's labels do
+  function clearLabel(c, str, x, y, size, weight, color, align, spacing, alpha) {
+    if (alpha <= 0) return;
+    c.save();
+    c.globalCompositeOperation = "destination-out";
+    c.globalAlpha = alpha;
+    c.lineWidth = 7;
+    c.lineJoin = "round";
+    c.font = weight + " " + size + "px " + FONT;
+    c.textAlign = align;
+    c.textBaseline = "alphabetic";
+    if ("letterSpacing" in c) c.letterSpacing = spacing + "px";
+    c.strokeText(str, x, y);
+    c.restore();
+    label(c, str, x, y, size, weight, color, align, spacing);
+  }
   function strokePart(c, pts, f) {
     var n = pts.length / 2, total = 0, i;
     for (i = 1; i < n; i++) total += Math.hypot(pts[2 * i] - pts[2 * i - 2], pts[2 * i + 1] - pts[2 * i - 1]);
@@ -788,8 +804,8 @@
     c.shadowBlur = 0;
     if (p > 0.001 && p < 0.999) { glowDot(c, ht[0], ht[1], 3.4, EMB, a); c.fillStyle = rgba(foam, a); c.beginPath(); c.arc(hs[0], hs[1], 2.6, 0, TAU); c.fill(); }
     var end = sm(0.9, 1, p) * a, gx = x1 + Math.min(18, B.w * 0.04);
-    label(c, "A TRAINED TEAM", x1, lt - 12, 11, 700, "rgba(255,148,102," + end + ")", "right", 1.4);
-    label(c, "SAME HABITS", x1, ls + 22, 11, 700, rgba(foam, 0.85 * end), "right", 1.4);
+    clearLabel(c, "A TRAINED TEAM", x1, lt - 12, 11, 700, "rgba(255,148,102," + end + ")", "right", 1.4, end);
+    clearLabel(c, "SAME HABITS", x1, ls - 9, 11, 700, rgba(foam, 0.85 * end), "right", 1.4, end);
     if (end > 0) {
       c.globalAlpha = end;
       c.strokeStyle = "rgba(255,148,102,0.9)";
