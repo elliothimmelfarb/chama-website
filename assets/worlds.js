@@ -1674,19 +1674,31 @@
   // so the burn starts where they first touch the screen, not below it. It
   // answers a tap, so it eases out: fast through the words, slowing as it
   // passes the header.
-  var BURN = 850, MIX_FROM = 0.06, BURN_FROM = -0.4 + 1.8 * MIX_FROM;
+  var BURN = 850, MIX_FROM = 0.06;
+  // The new words show just behind the fire line: --wipe is written on the
+  // arriving page's pins, the only thing that reads it, and is registered
+  // not to inherit (worlds.css), so each frame restyles those pins alone.
+  // On <html> it restyled the whole document, about 10ms a frame on a phone.
+  var wiped = [];
+  function wipe(m) {
+    var v = m === null ? null : ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%";
+    wiped.forEach(function (pin) {
+      if (v === null) pin.style.removeProperty("--wipe");
+      else pin.style.setProperty("--wipe", v);
+    });
+    if (v === null) wiped = [];
+  }
+  function endBurn() {
+    burnIn = null;
+    root.classList.remove("nav-enter");
+    wipe(null);
+  }
   function crossing(b) {
     if (!burnIn) return null;
     var p = clamp((performance.now() - burnIn.start) / burnIn.dur);
     var m = MIX_FROM + (1 - MIX_FROM) * (1 - Math.pow(1 - p, 3));
-    // the new words show just behind the fire line
-    root.style.setProperty("--wipe", ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%");
-    if (p >= 1) {
-      burnIn = null;
-      root.classList.remove("nav-enter");
-      root.style.removeProperty("--wipe");
-      return null;
-    }
+    if (p >= 1) { endBurn(); return null; }
+    wipe(m);
     return b > 0.001 ? null : { from: burnIn.from, mix: m };
   }
 
@@ -1796,9 +1808,7 @@
     if (push && !going) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
     going = path;
     setCurrent(path);
-    burnIn = null;
-    root.classList.remove("nav-enter");
-    root.style.removeProperty("--wipe");
+    endBurn();
     root.classList.add("nav-leave");
     var now = performance.now();
     if (!RM && !leaveAt) leaveAt = now;
@@ -1830,7 +1840,8 @@
       window.scrollTo({ top: y, behavior: "instant" });
       settleNav();
       if (!RM) {
-        root.style.setProperty("--wipe", (BURN_FROM * 100).toFixed(1) + "%");
+        wiped = [].slice.call(document.querySelectorAll("main .pin"));
+        wipe(MIX_FROM);
         root.classList.add("nav-enter");
         burnIn = { from: from, start: performance.now(), dur: BURN };
       }

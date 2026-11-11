@@ -715,6 +715,7 @@ html.nav-leave .worlds {
   pointer-events: none;
   transition: opacity 0.18s ease, translate 0.2s cubic-bezier(0.5, 0, 0.75, 0);
 }
+@property --wipe { syntax: "<percentage>"; inherits: false; initial-value: 140%; }
 html.nav-enter .pin {
   -webkit-mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
   mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
