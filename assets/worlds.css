@@ -697,28 +697,50 @@ html.foot-over body > footer {
    new document. First the page in view lifts away (.nav-leave); then the
    new page is in place and the sky burns up into it from below while its
    words rise just behind the fire (.nav-enter, with --wipe tracking the
-   fire line). */
+   fire line). The swap waits only for the words to have gone (LIFT in
+   worlds.js, 0.2s) and the burn takes 0.85s (BURN), so everything here
+   ends inside 0.8s of the swap. */
 html.nav-leave main,
 html.nav-leave body > footer,
 html.nav-leave .worlds {
   opacity: 0;
   translate: 0 -2.5vh;
   pointer-events: none;
-  transition: opacity 0.32s ease, translate 0.38s cubic-bezier(0.5, 0, 0.75, 0);
+  transition: opacity 0.18s ease, translate 0.2s cubic-bezier(0.5, 0, 0.75, 0);
 }
 html.nav-enter .pin {
   -webkit-mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
   mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
 }
 html.nav-enter .pin .copy > *,
-html.nav-enter .pin .cap { animation: rise 1.1s cubic-bezier(0.2, 0.75, 0.2, 1) 0.35s backwards; }
-html.nav-enter .pin .copy > :nth-child(2) { animation-delay: 0.47s; }
-html.nav-enter .pin .copy > :nth-child(3) { animation-delay: 0.59s; }
-html.nav-enter .pin .copy > :nth-child(n+4) { animation-delay: 0.71s; }
-html.nav-enter .worlds { animation: arrive 0.6s ease 1.1s backwards; }
-html.nav-enter body > footer { animation: arrive 0.6s ease 0.9s backwards; }
+html.nav-enter .pin .cap { animation: rise 0.55s cubic-bezier(0.23, 1, 0.32, 1) 0.1s backwards; }
+html.nav-enter .pin .copy > :nth-child(2) { animation-delay: 0.15s; }
+html.nav-enter .pin .copy > :nth-child(3) { animation-delay: 0.2s; }
+html.nav-enter .pin .copy > :nth-child(n+4) { animation-delay: 0.25s; }
+/* a hero brought in by the router rises with its words, not with the slow
+   fade it has on a fresh load */
+html.routed .hero .copy { animation: none; }
+html.nav-enter .worlds { animation: arrive 0.4s ease 0.4s backwards; }
+html.nav-enter body > footer { animation: arrive 0.35s ease 0.4s backwards; }
 .worlds-members.arrive { animation: pop 0.5s cubic-bezier(0.34, 1.45, 0.5, 1) both; }
-@keyframes rise { from { opacity: 0; translate: 0 34px; filter: blur(6px); } }
+@keyframes rise { from { opacity: 0; translate: 0 20px; filter: blur(4px); } }
+/* a page slow to come: the mark on the link that was tapped (the thumb, or
+   About's ember line) breathes until it does. worlds.js adds .nav-wait once
+   the words have gone; the delay keeps a fetch that is only a little late
+   from flashing it. */
+html.nav-wait { cursor: progress; }
+html.nav-wait .top .offer-switch .thumb { animation: wait 1.1s ease-in-out 0.15s infinite; }
+html.nav-wait .top .nav-about[aria-current="page"] { animation: wait-line 1.1s ease-in-out 0.15s infinite; }
+@keyframes wait {
+  0%, 100% { box-shadow: 0 3px 12px -3px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(244, 88, 31, 0); }
+  50% { box-shadow: 0 3px 12px -3px rgba(0, 0, 0, 0.35), 0 0 16px 3px rgba(244, 88, 31, 0.6); }
+}
+@keyframes wait-line { 50% { background-size: 0.6rem 2px; } }
+@media (prefers-reduced-motion: reduce) {
+  html.nav-wait .top .offer-switch .thumb { animation: none; box-shadow: 0 0 0 2px var(--ember); }
+  html.nav-wait .top .nav-about[aria-current="page"] { animation: none; }
+}
+
 @keyframes arrive { from { opacity: 0; } }
 @keyframes pop { from { opacity: 0; transform: scale(0.7); } }
 main h1:focus { outline: none; }
