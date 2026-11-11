@@ -251,7 +251,7 @@ function builtItems(html, tag) {
   return [...html.matchAll(new RegExp(`<article\\b[^>]*\\bclass="[^"]*\\b${tag}\\b[^"]*"[^>]*>[\\s\\S]*?</article>`, "g"))].map((m) => ({
     html: m[0],
     id: (/\bid="([^"]+)"/.exec(m[0]) || [])[1],
-    name: (/<h3\b[^>]*>([\s\S]*?)<\/h3>/.exec(m[0]) || [])[1],
+    name: (/<h[23]\b[^>]*>([\s\S]*?)<\/h[23]>/.exec(m[0]) || [])[1],
     images: [...m[0].matchAll(/\b(?:src|data-src)="([^"]+)"/g)].map((x) => x[1]),
   }));
 }
@@ -277,6 +277,16 @@ for (const [url, tag] of [["/built", "made"], ["/simple/built", "entry"]]) {
     }
   });
 }
+
+// The progress bar is also the way to each thing by keyboard, since the
+// things not on the screens are out of the tab order.
+test("/built's progress bar links to every thing, in order", () => {
+  const html = read("/built");
+  const bar = /<nav\b[^>]*\bclass="made-ticks"[\s\S]*?<\/nav>/.exec(html);
+  assert.ok(bar, "no progress bar (nav.made-ticks)");
+  const as = [...bar[0].matchAll(/<a\b[^>]*\bhref="#([^"]+)"[^>]*\baria-label="([^"]+)"/g)].map((m) => [m[1], m[2]]);
+  assert.deepEqual(as, builtItems(html, "made").map((x) => [x.id, x.name]));
+});
 
 test("the scroll through /built is as long as the things on it need", () => {
   const html = read("/built");

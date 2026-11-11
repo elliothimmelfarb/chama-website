@@ -1054,12 +1054,15 @@
   function devicesOf(sec) {
     if (sec._dev) return sec._dev;
     var items = [].slice.call(sec.querySelectorAll(".made"));
-    return (sec._dev = {
+    var D = (sec._dev = {
       stage: sec.querySelector(".made-stage"), open: sec.querySelector(".made-open"), items: items,
-      shots: items.map(function (it) { return [].slice.call(it.querySelectorAll(".screen img")); }),
-      ticks: [].slice.call(sec.querySelectorAll(".made-ticks b")), bar: sec.querySelector(".made-ticks"),
-      words: -2, rig: -1, was: -1, wasAt: 0, fitted: ""
+      // the <noscript> copies are real elements after the router parses a page, so only the screen's own picture
+      shots: items.map(function (it) { return [].slice.call(it.querySelectorAll(".screen > img")); }),
+      ticks: [].slice.call(sec.querySelectorAll(".made-ticks a")), bar: sec.querySelector(".made-ticks"),
+      rooms: [], words: -2, rig: -1, was: -1, wasAt: 0, fitted: ""
     });
+    D.shots.forEach(function (pair, i) { pair.forEach(function (img) { img.addEventListener("load", function () { D.rooms[i] = null; }); }); });
+    return D;
   }
   function devicesIntro(n) { return DEV_OPEN / (DEV_OPEN + DEV_EACH * n); }
   // a picture is fetched when its thing is next, so a long page costs a
@@ -1070,24 +1073,25 @@
       if (src) { img.src = src; img.removeAttribute("data-src"); }
     });
   }
-  // where the words sit under the devices (a phone), each thing's devices
-  // shrink only as far as its own words need to clear the progress bar
+  // where the words sit under the devices (a phone), the devices are one
+  // size for every thing: as large as leaves the longest words clear of the
+  // progress bar, and the opening words clear of the first thing's devices
+  // while the header still has its lockup row. Measured in layout boxes, so
+  // the words' own slide does not count.
   function devicesFit(D, P) {
     var key = AW + "x" + AH + P;
     if (D.fitted === key) return;
     D.fitted = key;
-    D.items.forEach(function (it) {
-      var w = it.querySelector(".made-words"), f = 1;
-      it.style.setProperty("--fit", 1);
-      while (P && f > 0.55 && w.getBoundingClientRect().bottom > D.bar.getBoundingClientRect().top - 12) { f -= 0.04; it.style.setProperty("--fit", f.toFixed(2)); }
-    });
-    // the first thing's devices also stand over the opening words, a
-    // little lower while the header still has its lockup row
-    var first = D.items[0], rig = first && first.querySelector(".rig"), lead = D.open && D.open.firstElementChild, g = 1;
-    if (P && rig && lead) {
-      g = parseFloat(first.style.getPropertyValue("--fit")) || 1;
-      while (g > 0.55 && rig.offsetTop + rig.offsetHeight + headLift() + 12 > lead.getBoundingClientRect().top - D.stage.getBoundingClientRect().top) { g -= 0.04; first.style.setProperty("--fit", g.toFixed(2)); }
+    D.rooms = [];
+    var f = 1, rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
+    function fits() {
+      D.stage.style.setProperty("--fit", f.toFixed(2));
+      if (!P) return true;
+      var floor = D.bar.offsetTop - 12;
+      for (var i = 0; i < D.items.length; i++) { var w = D.items[i].querySelector(".made-words"); if (w.offsetTop + w.offsetHeight > floor) return false; }
+      return !lead || rig0.offsetTop + rig0.offsetHeight + headLift() + 12 <= lead.offsetTop;
     }
+    while (!fits() && f > 0.55) f -= 0.04;
   }
   function drawDevices(c, l, t, L) {
     var D = devicesOf(L.sec), n = D.items.length;
@@ -1110,22 +1114,24 @@
     var words = opening ? -1 : i;
     if (words !== D.words) {
       D.words = words;
+      // the things not showing are out of the tab order; the progress bar's
+      // links reach each one
       D.items.forEach(function (it, j) { it.classList.toggle("on", j === words); it.inert = j !== words; });
       if (D.open) { D.open.classList.toggle("on", words < 0); D.open.inert = words >= 0; }
+      D.ticks.forEach(function (b, j) { if (j === words) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current"); });
     }
+    // how far each picture can scroll inside its screen, read once per size
+    var room = D.rooms[i] || (D.rooms[i] = D.shots[i].map(function (img) { return Math.max(0, img.offsetHeight - img.parentNode.clientHeight); }));
     var s = RM ? 0 : sm(0.08, 0.9, f);
-    D.shots[i].forEach(function (img) {
-      var room = Math.max(0, img.offsetHeight - img.parentNode.clientHeight);
-      img.style.transform = "translate3d(0," + (-room * s).toFixed(1) + "px,0)";
-    });
+    D.shots[i].forEach(function (img, j) { img.style.transform = "translate3d(0," + (-room[j] * s).toFixed(1) + "px,0)"; });
     D.ticks.forEach(function (b, j) { b.style.setProperty("--t", opening || j > i ? 0 : j < i ? 1 : f.toFixed(3)); });
   }
   // the scroll position at which a thing on /built is on the screens
   function devicesY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
     if (k < 0) return null;
-    var n = devicesOf(sec).items.length, i = +el.getAttribute("data-i") || 0, a = devicesIntro(n);
-    return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - DEV_HOLD) * (i + 0.25) / n);
+    var items = devicesOf(sec).items, n = items.length, i = items.indexOf(el), a = devicesIntro(n);
+    return i < 0 ? null : tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - DEV_HOLD) * (i + 0.25) / n);
   }
   // an anchor inside a pinned world is reached by scrolling to where it is
   // in focus, not to the element, which stays in its sticky pin
