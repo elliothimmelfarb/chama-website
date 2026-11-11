@@ -1320,14 +1320,17 @@
 
   // ---- scroll ------------------------------------------------------------------------
   var tops = [], hs = [], pins = [];
+  // every read first, then every write: a read after a write forces the
+  // browser to lay the page out again, and this runs as a new page appears
   function measure() {
     var y = window.scrollY;
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
-    root.classList.toggle("foot-over", !room && !!footer);
-    root.style.setProperty("--head-lift", headLift() + "px");
+    var lift = headLift(), foot = footer ? footer.offsetHeight : 0;
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
+    root.classList.toggle("foot-over", !room && !!footer);
+    root.style.setProperty("--head-lift", lift + "px");
     sections.forEach(function (s, k) {
       var S = stacks[k];
       s.style.setProperty("--copy-b", S ? Math.round(S.copyB) + "px" : "");
@@ -1335,7 +1338,7 @@
       s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
       s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
     });
-    if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
+    if (footer) root.style.setProperty("--foot", foot + "px");
   }
   function scrollState() {
     var y = window.scrollY, i = 0;
