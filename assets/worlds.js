@@ -24,7 +24,12 @@
   "use strict";
 
   var root = document.documentElement;
-  root.classList.add("js");
+  // the pinned layout (html.js), except where the words cannot fit on one
+  // screen or the page is printed: there the worlds are one column
+  // (worlds.css). The head of each page makes the same test before it paints.
+  var SHORT = window.matchMedia("(max-height: 500px)"), printing = false;
+  function pinnable() { root.classList.toggle("js", !SHORT.matches && !printing); }
+  pinnable();
 
   var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
@@ -921,6 +926,8 @@
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
     var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
+    // the wheel rides up with its pin as the next world arrives, and leaves with it
+    var ex = L.exit === undefined ? 1 : L.exit;
     var place = [];
     for (var i = 0; i < n; i++) {
       var d = i - p;
@@ -937,8 +944,8 @@
       var turn = (1 - near) * 38;
       sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
       sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
-      sp.style.opacity = wp.show.toFixed(3);
-      sp.style.visibility = wp.show > 0.01 ? "visible" : "hidden";
+      sp.style.opacity = (wp.show * ex).toFixed(3);
+      sp.style.visibility = wp.show * ex > 0.01 ? "visible" : "hidden";
       // the rest are only their logos: further back, smaller, dimmer, darker, softer
       var dim = 1 - e;
       img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
@@ -965,7 +972,7 @@
     c.save();
     c.lineJoin = "round";
     c.lineCap = "round";
-    c.globalAlpha = a * (RM ? 1 : sm(0.6, 0.95, bf));
+    c.globalAlpha = a * ex * (RM ? 1 : sm(0.6, 0.95, bf));
     // the open place, for the next client: no plate yet, only its outline in dashes
     if (W.spokes[best].classList.contains("spoke-open")) c.setLineDash([7, 7]);
     c.strokeStyle = EMBER;
@@ -1319,7 +1326,39 @@
   }
 
   // ---- scroll ------------------------------------------------------------------------
-  var tops = [], hs = [], pins = [];
+  var tops = [], hs = [], pins = [], gones = [];
+  // ---- leaving: what rides up with a pin is gone before it reaches anything ----
+  // A world's --u runs from 1 to 2 while its pin scrolls away. --gone is the
+  // --u at which the first thing riding up with the pin would reach the
+  // header, or, for words under a figure on the fixed canvas, that figure;
+  // worlds.css fades the pin's contents out between 1 and --gone. Captions
+  // sit inside their figure's reach, so they go almost at once (--gone-cap).
+  // the slide a .r element is given while it is hidden, which is not its place
+  function shiftOf(el) { if (!el.classList.contains("r")) return 0; var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
+  function goneOf(k) {
+    var sec = sections[k], pin = sec.firstElementChild, H = pins[k] || AH, S = stacks[k], P = portrait(), last = k === NW - 1;
+    var head = headBottom() - (P && (k > 0 || allScroll(sec)) ? headLift() : 0) + 8, pt = pin.getBoundingClientRect().top, room = H;
+    function from(el, limit) {
+      if (!el || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return;
+      room = Math.min(room, el.getBoundingClientRect().top - shiftOf(el) - pt - limit);
+    }
+    // the last world's figure rises with its words, and a photograph is in the page
+    var still = S && !last && !allScroll(sec) && !sec.querySelector(".card");
+    from(sec.querySelector(".copy"), still ? S.top + S.h : head);
+    [].forEach.call(sec.querySelectorAll(".card, .logo-plate"), function (el) { from(el, head); });
+    if (last && S) room = Math.min(room, S.top - head);
+    if (sec.classList.contains("wheel-world")) {
+      var G = wheelGeom(P, wheelOf(sec).spokes.length, layoutOf(scenes[k], k).box);
+      room = Math.min(room, G.cy - G.ry - G.big * 0.3 - head);
+    }
+    if (sec.classList.contains("devices-world")) {
+      var D = devicesOf(sec), it = D.items[D.items.length - 1];
+      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) room = Math.min(room, it.offsetTop + el.offsetTop - head); });
+    }
+    return 1 + Math.max(room, 10) / H;
+  }
+  // how much of world k is left as its pin leaves, 0 to 1
+  function exitOf(k, u) { var g = gones[k] || 99; return clamp((g - u) / (g - 1)); }
   function measure() {
     var y = window.scrollY;
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
@@ -1334,6 +1373,11 @@
       s.style.setProperty("--copy-t", S ? Math.round(S.copyT) + "px" : "");
       s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
       s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
+    });
+    gones = sections.map(function (s, k) { return goneOf(k); });
+    sections.forEach(function (s, k) {
+      s.style.setProperty("--gone", gones[k].toFixed(3));
+      s.style.setProperty("--gone-cap", (1 + 12 / (pins[k] || AH)).toFixed(3));
     });
     if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
   }
@@ -1405,7 +1449,7 @@
     scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
     room = document.querySelector(".flame-room");
     footer = document.querySelector("body > footer");
-    tops = []; hs = []; pins = []; stacks = []; lastU = [];
+    tops = []; hs = []; pins = []; stacks = []; gones = []; lastU = [];
     hugReady = false;
     lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastCompact = false; lastSpark = 0;
     root.classList.remove("in-room", "at-end", "head-compact");
@@ -1424,9 +1468,10 @@
     last = now;
     var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
     var st = scrollState(), i = st[0], l = st[1], b = st[2];
-    // on a phone the last world's words keep counting on past its end, so
-    // they can fade before they reach the header (worlds.css, .flame)
-    setU(i, l, b || (portrait() ? st[3] / AH : 0));
+    // the last world keeps counting on past its end, so what rises with it
+    // can leave before it reaches the header
+    var u = l + (b || st[3] / AH);
+    setU(i, l, b || st[3] / AH);
     var pass = crossing(b);
 
     var inRoom = false, hidden = false;
@@ -1464,6 +1509,7 @@
     var eb = b * b * (3 - 2 * b);
     var A = scenes[i], B = b > 0 ? scenes[i + 1] : null;
     var LA = layoutOf(A, i), LB = B ? layoutOf(B, i + 1) : null;
+    LA.exit = exitOf(i, u);
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));
     ptr.sy += ((ptr.on ? ptr.y : AH / 2) - ptr.sy) * (1 - Math.exp(-dt * 4));
     var px = (ptr.sx - AW / 2) * 0.012, py = (ptr.sy - AH / 2) * 0.012 - st[3];
@@ -1521,7 +1567,7 @@
     ctx.globalAlpha = 1;
     // the figures fade with the words when the page changes (here, not in
     // CSS: an opacity on the canvas costs a phone a frame it cannot spare)
-    var fa = figureAlpha();
+    var fa = figureAlpha() * (i === NW - 1 ? LA.exit : 1);
     if (fa < 1 || pass) {
       ctx.globalCompositeOperation = "destination-in";
       if (pass) {
@@ -1541,6 +1587,7 @@
   }
 
   function resize() {
+    pinnable();
     sizeActors();
     sizeSky();
     measure();
@@ -1554,6 +1601,8 @@
     requestAnimationFrame(function () { queued = false; resize(); });
   });
   window.addEventListener("load", function () { measure(); placeCaps(); });
+  window.addEventListener("beforeprint", function () { printing = true; pinnable(); });
+  window.addEventListener("afterprint", function () { printing = false; resize(); });
   window.addEventListener("pointermove", function (e) { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = e.pointerType === "mouse"; }, { passive: true });
   document.addEventListener("pointerleave", function () { ptr.on = false; });
   window.addEventListener("blur", function () { ptr.on = false; });

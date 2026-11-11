@@ -396,6 +396,8 @@ main { position: relative; z-index: 2; }
 
 .world {
   --u: 0.5;
+  /* what is left of the pin's contents as it leaves (worlds.js sets --gone) */
+  --e: clamp(0, (var(--gone, 99) - var(--u)) / (var(--gone, 99) - 1), 1);
   position: relative;
   height: calc(var(--h) * 1vh);
   color: var(--fg);
@@ -418,7 +420,7 @@ main { position: relative; z-index: 2; }
   left: -25%;
   width: 85%;
   background: radial-gradient(closest-side, var(--scrim), transparent);
-  opacity: calc(clamp(0, (var(--u) + 0.45) * 4, 1) * clamp(0, (1.45 - var(--u)) * 4, 1));
+  opacity: calc(clamp(0, (var(--u) + 0.45) * 4, 1) * var(--e));
   pointer-events: none;
 }
 
@@ -427,7 +429,7 @@ main { position: relative; z-index: 2; }
   --out: 1.35;
   --k: 6;
   --a: clamp(0, (var(--u) - var(--in)) * var(--k), 1);
-  --b: clamp(0, (var(--out) - var(--u)) * var(--k), 1);
+  --b: min(clamp(0, (var(--out) - var(--u)) * var(--k), 1), var(--e));
   opacity: calc(var(--a) * var(--b));
   transform: translate3d(0, calc((1 - var(--a)) * 26px - (1 - var(--b)) * 16px), 0);
 }
@@ -512,6 +514,7 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
   white-space: nowrap;
   pointer-events: none;
 }
+.cap { --e: clamp(0, (var(--gone-cap, 99) - var(--u)) / (var(--gone-cap, 99) - 1), 1); }
 .cap .r { display: block; }
 .cap-stack { display: grid; }
 .cap-stack > * { grid-area: 1 / 1; }
@@ -1030,11 +1033,6 @@ html:has(main .ledger) .top::before {
   html.head-compact .top .worlds-members,
   html.head-compact .top .motion-toggle { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0s linear 0.25s; }
   .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
-  /* the figure sits above the words, so as a world leaves, its words would
-     slide up through it: here they are gone in the first tenth of the way */
-  .copy .r, .cap .r { --out: 1.1; --b: clamp(0, (var(--out) - var(--u)) * 10, 1); }
-  /* the last world has no next one; its words fade as they near the header */
-  .flame .copy .r { --out: 1.55; }
   .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
   .copy,
   .hero .copy {
@@ -1179,7 +1177,7 @@ html:has(main .ledger) .top::before {
 
 /* without JavaScript: the things, one under another */
 html:not(.js) .devices-world { height: auto; background: var(--bg); }
-html:not(.js) .devices-world .pin { position: static; height: auto; overflow: visible; }
+html:not(.js) .devices-world .pin { position: static; height: auto; overflow: visible; padding: 0; }
 html:not(.js) .devices-world .pin::before { display: none; }
 .made-stage { width: min(100%, 84rem); margin-inline: auto; padding: clamp(6rem, 13vh, 8rem) var(--pad) clamp(4rem, 10vh, 6rem); }
 .made { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; margin-top: clamp(4rem, 12vh, 7rem); }
@@ -1212,6 +1210,7 @@ html.js .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
 html.js .made-words, html.js .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
 html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
 /* each bar is a link to its thing, with a taller target than it looks */
+html.js .devices-world .made-stage, html.js .made-ticks { opacity: var(--e); }
 html.js .made-ticks { position: absolute; z-index: 3; left: var(--pad); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
 .made-ticks a { position: relative; flex: 1; height: 27px; }
 .made-ticks a::before, .made-ticks a::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; border-radius: 2px; }
@@ -1252,4 +1251,41 @@ html.js .made-ticks { position: absolute; z-index: 3; left: var(--pad); bottom: 
 @media (max-height: 700px) and (max-width: 759px) {
   .made-open h1 { font-size: 2rem; }
   .made-open .deck { margin-bottom: 0.6rem; font-size: 0.92rem; }
+}
+
+/* ---- the worlds as one column ------------------------------------------ */
+/* Pinned worlds need the words to fit on one screen under the header. Where
+   they cannot, they are a plain column of sections: without JavaScript,
+   on a screen too short to pin the words (worlds.js keeps html.js off below
+   500px of height: a phone held sideways, a laptop zoomed to 200%), and in
+   print. The sky still burns from world to world; the drawn figures, which
+   stand beside words that hold still, are left out. */
+html:not(.js) .top { position: absolute; }
+/* hidden, not removed: worlds.js sizes everything from this canvas */
+html:not(.js) #actors { visibility: hidden; }
+html:not(.js) .pin::before,
+html:not(.js) .cap,
+html:not(.js) .cue,
+html:not(.js) .ticks,
+html:not(.js) .directory > .pin { display: none; }
+html:not(.js) .world { height: auto; }
+html:not(.js) .pin { position: relative; height: auto; overflow: visible; padding: clamp(3.5rem, 12vh, 7rem) var(--pad); }
+html:not(.js) main > :where(.world:first-child) .pin { padding-top: calc(env(safe-area-inset-top) + 8.5rem); }
+html:not(.js) .copy,
+html:not(.js) .flame .copy { position: static; width: auto; max-width: 46rem; transform: none; }
+html:not(.js) .flame .copy { margin-inline: auto; }
+html:not(.js) .qs li { opacity: 1; transform: none; }
+html:not(.js) .card,
+html:not(.js) .logo-plate { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
+html:not(.js) .flame-room:has(.flame-noscript) { height: auto; }
+html:not(.js) body > footer { margin-top: 0; }
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  html:not(.js) .pin { padding-inline: 16px; }
+}
+
+@media print {
+  [data-theme] { --fg: #141412; --fg2: #57544d; --accent: #b8400f; --track: rgba(20, 20, 18, 0.14); }
+  body { background: #fff; }
+  canvas.layer, .skip-link, .worlds, .top .site-nav, .motion-toggle, .worlds-members, .flame-room, .top::before { display: none !important; }
+  .world { break-inside: avoid; }
 }
