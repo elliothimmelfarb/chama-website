@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Built Page Report</title>
+<meta name="description" content="The new /built page on chamainteligente.com: what shipped, how it was checked, and what is still open, 2026-11-11.">
+<style>
+  /* One column on the site's own paper: the live clips first, then what shipped as a grid, then checks. */
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  a { color: inherit; text-decoration-color: var(--ember); text-underline-offset: 0.18em; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  .wrap > * { min-width: 0; }
+  header { display: grid; gap: 0.9rem; }
+  h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 58ch; color: var(--ink-dim); font-size: 1.12rem; }
+  .lede a { color: var(--ink); font-weight: 600; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+  figure { margin: 0; display: grid; gap: 0.55rem; min-width: 0; }
+  figure img, figure video { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); background: #0e0c0a; }
+  figcaption { font-size: 0.9rem; color: var(--ink-dim); max-width: 60ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .withphone { display: grid; grid-template-columns: minmax(0, 1fr) 13rem; gap: 1rem; align-items: start; }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+  .things { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.8rem; margin: 0; padding: 0; list-style: none; }
+  .things li { padding-top: 0.6rem; border-top: 2px solid var(--ember); font-weight: 600; font-size: 0.98rem; }
+  .things span { display: block; font-weight: 400; font-size: 0.85rem; color: var(--ink-dim); }
+  .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 2rem; margin: 0; padding: 0; list-style: none; }
+  .checks li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 0.4rem; font-size: 0.95rem; }
+  .checks li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+  .asks { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+  .asks > li { display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr); gap: 1rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); }
+  .asks b { font-weight: 600; }
+  .asks span { color: var(--ink-dim); font-size: 0.95rem; }
+  @media (max-width: 44rem) {
+    .withphone, .three, .checks { grid-template-columns: minmax(0, 1fr); }
+    .withphone > figure:last-child { max-width: 14rem; }
+    .things { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .asks > li { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>/built is live.</h1>
+    <p class="lede">The site now has a page for the things we have built, at <a href="https://chamainteligente.com/built">chamainteligente.com/built</a>. Each one is shown on a laptop and a phone whose screens scroll as you scroll. Merged as PR #180 on 2026-11-11.</p>
+    <div class="chips">
+      <span class="chip">8 things on the page</span>
+      <span class="chip">Checked live on desktop and phone</span>
+      <span class="chip">2 independent reviews, findings fixed</span>
+      <span class="chip open">4 things left for you</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>The live page</h2>
+    <div class="withphone">
+      <figure><video src="2026-11-11-built-page/live-d.mp4" poster="2026-11-11-built-page/open.jpg" autoplay muted loop playsinline controls></video><figcaption><b>On a computer.</b> Recorded from production, scrolling from the opening to ShopIntake.</figcaption></figure>
+      <figure><video src="2026-11-11-built-page/live-p.mp4" poster="2026-11-11-built-page/phone-teamwear.jpg" autoplay muted loop playsinline controls></video><figcaption><b>At your phone's size.</b></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>What is on it</h2>
+    <ul class="things">
+      <li>Toraya Lisboa<span>Made for one business</span></li>
+      <li>VSF Lead Automation<span>Made for one business, private</span></li>
+      <li>Alves Teamwear<span>Made for one business, private</span></li>
+      <li>ShopIntake<span>Our own product</span></li>
+      <li>View the Place<span>Our own product</span></li>
+      <li>The Hearth<span>Our own product</span></li>
+      <li>Battle of Mogadishu<span>Free to explore</span></li>
+      <li>aimade.games<span>Free to play</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Three views</h2>
+    <div class="three">
+      <figure><img src="2026-11-11-built-page/vsf.jpg" alt="VSF Lead Automation on the live page: the command center in a laptop and a phone, with its description and a private software label."><figcaption><b>VSF Lead Automation.</b> The command center itself, filled with made-up demo leads.</figcaption></figure>
+      <figure><img src="2026-11-11-built-page/mogadishu.jpg" alt="Battle of Mogadishu on the live page, in a laptop and a phone, with its description and link."><figcaption><b>Battle of Mogadishu.</b> Captured inside the live 3D scene.</figcaption></figure>
+      <figure><img src="2026-11-11-built-page/open.jpg" alt="The opening of the live page: What we have built, beside the first product's devices."><figcaption><b>The opening.</b> Reached from the new Built link in the header.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it was checked</h2>
+    <ul class="checks">
+      <li>Every product shows and scrolls on the live site, on desktop and at 364 by 610 with your larger text</li>
+      <li>No requests to any other host from the page</li>
+      <li>Words never touch the devices, the header or the progress bars, at four screen sizes</li>
+      <li>Five header links fit on one row on your phone, on every page</li>
+      <li>A link to one product, like /built#shopintake, lands on it</li>
+      <li>The low motion page and the page without JavaScript both list all eight</li>
+      <li>The whole test suite passes, with new tests for this page</li>
+      <li>Sitemap and llms files updated, and search engines notified</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Left for you</h2>
+    <ul class="asks">
+      <li><b>Aydin's name</b><span>View the Place doesn't name him yet. Tell me when he has agreed and I'll add the sentence back.</span></li>
+      <li><b>Teamwear pictures</b><span>They come from the project's own report screenshots. Look them over once, since they show team names from its demo data.</span></li>
+      <li><b>The flame</b><span>The chat doesn't know these products yet. "Want something like this for your business?" opens it with the same message the Clients page uses. Teaching it means a reviewed prompt change and a paid evals run.</span></li>
+      <li><b>Links into the page</b><span>The home page and Clients page reach Built only through the header. A home page section and a link from each client were in the proposal and aren't built.</span></li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>
