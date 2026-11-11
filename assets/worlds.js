@@ -1857,7 +1857,7 @@
   // a link straight to a client on the wheel (/clients#toraya-lisboa) turns
   // the wheel to them, and one to a thing on /built (/built#shopintake) puts
   // it on the screens, rather than the browser's jump to the top of the pin
-  function toHashTurn() {
+  function toHashTurn(smooth) {
     var t = location.hash && document.getElementById(location.hash.slice(1));
     if (!t || !(t.classList.contains("turn") || t.classList.contains("made"))) return;
     // the browser's own jump to the anchor scrolls the clipped pin itself,
@@ -1865,16 +1865,33 @@
     var pin = t.closest(".pin");
     if (pin) pin.scrollTop = 0;
     measure();
-    window.scrollTo(0, pinnedY(t));
+    window.scrollTo({ top: pinnedY(t), behavior: smooth === true && !RM ? "smooth" : "instant" });
   }
   requestAnimationFrame(toHashTurn);
   window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });
-  // a small logo on the wheel turns the wheel to that client
+  // Back and Forward between the things on /built (or clients on the wheel)
+  window.addEventListener("hashchange", function () { toHashTurn(true); });
+  // a small logo on the wheel turns the wheel to that client, and a bar of
+  // /built's progress bar puts its thing on the screens: the browser's own
+  // jump would find the anchor already "in view" in its sticky pin and not
+  // scroll at all
   document.addEventListener("click", function (e) {
     var sp = e.target.closest && e.target.closest(".spoke");
-    if (!sp) return;
-    var y = wheelY(sp);
-    if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+    if (sp) {
+      var y = wheelY(sp);
+      if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+      return;
+    }
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    var t = a && document.getElementById(a.getAttribute("href").slice(1));
+    var ty = t ? pinnedY(t) : null;
+    if (ty === null) return;
+    e.preventDefault();
+    if (location.hash !== "#" + t.id) { try { history.pushState({ y: ty }, "", "#" + t.id); } catch (err) {} }
+    var pin = t.closest(".pin");
+    if (pin) pin.scrollTop = 0;
+    window.scrollTo({ top: ty, behavior: RM ? "auto" : "smooth" });
   });
   seedParticles();
   ptr.sx = AW / 2;
