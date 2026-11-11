@@ -1,5 +1,5 @@
 // The public pages come in two parallel versions: the animated version (/,
-// /coaching, /clients, /about: the primary one, a scroll through animated worlds) and
+// /coaching, /built, /clients, /about: the primary one, a scroll through animated worlds) and
 // the low motion version (under /simple: the same copy as a plain page).
 // These tests guard the seams between them: both versions carry the same
 // motion switch, and each low motion page's switch reaches its animated
@@ -23,6 +23,7 @@ const PAIRS = [
   { words: "/simple/coaching", worlds: "/coaching" },
   { words: "/simple/about", worlds: "/about" },
   { words: "/simple/clients", worlds: "/clients" },
+  { words: "/simple/built", worlds: "/built" },
 ];
 
 // The same mapping Vercel's cleanUrls applies: /x serves x.html, and a
@@ -65,6 +66,7 @@ const SITE = [
   { label: "Coaching", url: "/coaching" },
   { label: "About", url: "/about" },
   { label: "Clients", url: "/clients" },
+  { label: "Built", url: "/built" },
 ];
 
 function siteNavs(html) {
@@ -122,7 +124,7 @@ for (const { words, worlds } of PAIRS) {
     assert.ok(footer && links(footer[0]).some((a) => a.simple), "the footer has no simple-version link");
   });
 
-  test(`${worlds} reaches Software, Coaching, Clients and About from the top and the bottom`, () => {
+  test(`${worlds} reaches Software, Coaching, Built, Clients and About from the top and the bottom`, () => {
     const html = read(worlds);
     const navs = siteNavs(html);
     assert.equal(navs.length, 2, "expected one site nav at the top and one in the footer");
@@ -240,7 +242,56 @@ test("the old /work addresses lead to /clients", () => {
   assert.ok(!existsSync(path.join(ROOT, "work.html")) && !existsSync(path.join(ROOT, "simple", "work.html")), "a /work page would shadow its redirect");
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/clients", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/hearth-public"];
+// /built shows what we have made, each thing on a laptop and a phone whose
+// screens scroll with the page (drawDevices in assets/worlds.js). Both
+// versions list the same things under the same anchors, every picture is a
+// file in this repository, and each thing either links out or says it is
+// private.
+function builtItems(html, tag) {
+  return [...html.matchAll(new RegExp(`<article\\b[^>]*\\bclass="[^"]*\\b${tag}\\b[^"]*"[^>]*>[\\s\\S]*?</article>`, "g"))].map((m) => ({
+    html: m[0],
+    id: (/\bid="([^"]+)"/.exec(m[0]) || [])[1],
+    name: (/<h3\b[^>]*>([\s\S]*?)<\/h3>/.exec(m[0]) || [])[1],
+    images: [...m[0].matchAll(/\b(?:src|data-src)="([^"]+)"/g)].map((x) => x[1]),
+  }));
+}
+
+test("/built and /simple/built list the same things, in the same order, under the same anchors", () => {
+  const worlds = builtItems(read("/built"), "made");
+  const words = builtItems(read("/simple/built"), "entry");
+  assert.ok(worlds.length >= 3, "expected at least three things on /built");
+  assert.deepEqual(words.map((x) => [x.id, x.name]), worlds.map((x) => [x.id, x.name]));
+  for (const x of worlds) assert.ok(x.id && x.name, "a thing on /built has no id or no name");
+});
+
+for (const [url, tag] of [["/built", "made"], ["/simple/built", "entry"]]) {
+  test(`${url} shows each thing with pictures kept in this repository, and a way out or a reason there is none`, () => {
+    for (const x of builtItems(read(url), tag)) {
+      assert.ok(x.images.length >= 1, `${x.id} has no picture`);
+      for (const src of x.images) {
+        assert.ok(src.startsWith("/assets/built/"), `${x.id} loads ${src} from outside /assets/built/`);
+        assert.ok(existsSync(path.join(ROOT, src)), `${src} is not in the repository`);
+      }
+      const out = links(x.html).some((a) => /^https:\/\//.test(a.href || ""));
+      assert.ok(out || /class="[^"]*\bprivate\b/.test(x.html), `${x.id} neither links to the thing nor says it is private`);
+    }
+  });
+}
+
+test("the scroll through /built is as long as the things on it need", () => {
+  const html = read("/built");
+  const n = builtItems(html, "made").length;
+  const h = +(/<section\b[^>]*\bdata-scene="devices"[^>]*--h:\s*(\d+)/.exec(html) || [])[1];
+  assert.equal(h, 190 + 135 * n, "raise the devices world's --h by 135 for each thing added");
+});
+
+test("the router and llms-full.txt know /built", () => {
+  assert.match(readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8"), /var PAGES = \{[^}]*"\/built": 1/);
+  assert.ok(readFileSync(path.join(ROOT, "llms-full.txt"), "utf8").includes("(https://chamainteligente.com/built)"));
+  assert.ok(readFileSync(path.join(ROOT, "llms.txt"), "utf8").includes("](https://chamainteligente.com/built)"));
+});
+
+const PUBLIC = ["/", "/coaching", "/about", "/clients", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/built", "/simple/built", "/hearth-public"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {

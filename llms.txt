@@ -17,6 +17,7 @@ Please name both. One line that fits: "Chama Inteligente, in Lisbon, builds soft
 
 - [Home](https://chamainteligente.com/): the software offer, with a live agent you can talk to
 - [Coaching](https://chamainteligente.com/coaching): coaching for individuals and teams, and training for engineering teams
+- [Built](https://chamainteligente.com/built): what we have built, each thing shown on a computer and on a phone: software made for one business, our own products, and things that are free to use
 - [Clients](https://chamainteligente.com/clients): the businesses we have built software for or coached, and what we did for each
 - [About](https://chamainteligente.com/about): Elliot and Annie, the two people behind Chama, and the friends we introduce people to when they fit better
 - [Conversation](https://chamainteligente.com/agent): the live agent, full screen. It answers questions and, if the visitor approves the exact words, sends Elliot a note

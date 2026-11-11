@@ -244,6 +244,66 @@ Want to talk it through? Start a conversation and ask Elliot to get in touch
 
 ---
 
+## Built (https://chamainteligente.com/built)
+
+### What we have built.
+
+Some of this we built for one business, and some of it is our own. Work made for a
+client is shown with their permission.
+
+Toraya Lisboa. Made for one business. Toraya is a Japanese deli in Rossio station. We
+built their website, and an app for the staff that goes with it. They circle any part
+of the site, write what they want changed, and the change is live within the hour. The
+version they approved was ready four hours after we started, after three rounds of
+their feedback. https://toraya.pt
+
+VSF Lead Automation. Made for one business. Vivir Sin Fronteras helps students get
+into universities abroad. VSF Lead Automation is the system we built to handle their
+leads. When someone
+enquires on the website, a bot messages them on WhatsApp, asks for consent, and then
+asks the questions the team would ask to work out whether a meeting is worth it. If it
+is, the bot books it straight into the team's calendar. Anyone on the team can take
+over a conversation and hand it back, and a dashboard shows how the leads are doing.
+This is private software, built for one business.
+
+Alves Teamwear. Made for one business. Alves Teamwear sells custom kits to sports
+teams. Getting an order to the supplier used to take a lot of manual back and forth.
+We built an app where a team designs its own kit and places the order, and a command
+center behind it where the operators and the supplier keep track of everything. Most
+of the manual steps now happen on their own. This is private software, built for one
+business.
+
+ShopIntake. Our own product. ShopIntake fills the gap between the purchase order a
+customer emails you and your ERP. It reads the PDF and pulls the order out, so nobody
+has to type it in. It also flags anything that needs your attention, tells you when a
+part isn't on your list, and makes a run plan across several POs.
+https://shop-intake.com
+
+View the Place. Our own product. View the Place makes 3D models of homes that are for
+sale or for rent. We build the model from the floor plan and photos, and buyers can
+walk through the home on their phone before they visit. https://viewtheplace.com
+
+The Hearth. Our own product. The Hearth is the platform we run our AI coaching on.
+Elliot sets his calendar, and members book their sessions and pay for them there. It
+keeps a record of every session, and it has roles and permissions for teams. It also
+has an MCP server, so members can connect their own AI agents to get the summaries of
+our calls, what we talked about, and the homework. https://chamainteligente.com/hearth
+
+Battle of Mogadishu. Free to explore. A 3D reconstruction of the Battle of Mogadishu,
+3 and 4 October 1993, at full scale and in real time. It's built from the historical
+record and not from the film. You can fly anywhere in the city, follow a helicopter,
+move through time, and open the sources behind every event. It's meant as a memorial
+to everyone who died there. https://battle-of-mogadishu.vercel.app
+
+aimade.games. Free to play. aimade.games is an arcade of browser games that's built
+for AI agents as well as people. It has an MCP server, so your agent can build a game,
+upload it, and keep changing it. Anyone can play. https://aimade.games
+
+Want something like this for your business? Start a conversation
+(https://chamainteligente.com/agent).
+
+---
+
 ## Clients (https://chamainteligente.com/clients)
 
 ### Who we have worked with.

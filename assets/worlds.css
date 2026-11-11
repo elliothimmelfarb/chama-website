@@ -1119,4 +1119,127 @@ html:has(main .ledger) .top::before {
   .copy p, .copy p.deck { font-size: 0.92rem; margin-bottom: 0.6em; }
   .qs li { font-size: 0.92rem; }
   .card-family { width: min(38vw, 10rem); }
+  .made-open h1 { font-size: 2rem; }
+  .made-open .deck { margin-bottom: 0.6rem; font-size: 0.92rem; }
+}
+
+/* ---- /built: a laptop and a phone, and what we made on their screens ---- */
+/* Each .made is one thing: its words, and a .rig of two devices whose
+   screens hold a tall picture of the real page. worlds.js (drawDevices)
+   marks the thing whose words show (.on) and whose devices show (.rig-on,
+   with the one before it kept underneath as .rig-was until the new one has
+   faded in, so the bezels never thin), scrolls the pictures inside the
+   screens, and fills the .made-ticks. Without JavaScript the things are a
+   plain list. */
+.rig { position: relative; width: 100%; padding-right: 9%; padding-bottom: 5%; }
+.laptop { position: relative; }
+.lid {
+  position: relative;
+  padding: 2.1% 2.1% 2.6%;
+  border-radius: clamp(8px, 1.1vw, 16px) clamp(8px, 1.1vw, 16px) 3px 3px;
+  background: #17181a;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), 0 40px 70px -34px rgba(15, 27, 38, 0.55);
+}
+.lid::before { content: ""; position: absolute; top: 0.85%; left: 50%; width: 0.8%; aspect-ratio: 1; border-radius: 50%; background: #2c2f33; transform: translateX(-50%); }
+.screen { position: relative; overflow: hidden; background: #fff; }
+.laptop .screen { aspect-ratio: 16 / 10; border-radius: 2px; }
+.screen img { position: absolute; left: 0; top: 0; display: block; width: 100%; height: auto; will-change: transform; }
+.base { position: relative; height: clamp(9px, 1.25vw, 17px); margin: 0 -6.5%; border-radius: 2px 2px 50% 50% / 2px 2px 100% 100%; background: linear-gradient(#e3e6ea, #b9bec4 60%, #9da3a9); }
+.base::before { content: ""; position: absolute; left: 50%; top: 0; width: 15%; height: 40%; border-radius: 0 0 8px 8px; background: #a7adb3; transform: translateX(-50%); }
+.phone {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 23%;
+  aspect-ratio: 9 / 19.2;
+  padding: 2.4%;
+  border-radius: 17% / 8%;
+  background: #17181a;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 30px 50px -24px rgba(15, 27, 38, 0.6);
+}
+.phone .screen { height: 100%; border-radius: 13% / 6%; }
+.phone::after { content: ""; position: absolute; z-index: 2; top: 4.4%; left: 50%; width: 30%; height: 3%; border-radius: 99px; background: #17181a; transform: translateX(-50%); }
+
+.made-open h1 { max-width: 9ch; font-size: clamp(2.6rem, 5.2vw, 5.2rem); }
+.made-open .deck { max-width: 30ch; margin: 0 0 1.1rem; color: var(--fg2); font-size: clamp(1.08rem, 1.45vw, 1.42rem); line-height: 1.4; }
+.made-open .alt-version { margin: 0; color: var(--fg2); font-size: 0.875rem; }
+.made-kind { margin: 0 0 0.9rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
+.made-words h3 { margin: 0 0 0.3em; font-size: clamp(2.1rem, 3.4vw, 3.4rem); font-weight: 500; letter-spacing: -0.04em; line-height: 0.98; text-wrap: balance; }
+.made-what { max-width: 44ch; margin: 0 0 1.1rem; color: var(--fg2); font-size: clamp(1rem, 1.2vw, 1.2rem); line-height: 1.45; }
+.made-where { margin: 0 0 0.7rem; font-size: 1rem; font-weight: 600; }
+.made-where a { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+.made-where a:hover { color: var(--accent); }
+.made-words svg { flex: none; width: 1em; height: 1em; }
+.made-where.private { display: flex; align-items: flex-start; gap: 0.55rem; max-width: 34ch; color: var(--fg); font-weight: 500; line-height: 1.4; }
+.made-where.private svg { margin-top: 0.15em; color: var(--accent); }
+.made-want { margin: 0; }
+.made-want a { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--fg2); font-size: 0.95rem; font-weight: 600; text-decoration: none; }
+.made-want a:hover { color: var(--accent); }
+.made-want svg { color: var(--accent); }
+.made-words a:focus-visible, .made-open a:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; border-radius: 2px; }
+.made-ticks { display: none; }
+
+/* without JavaScript: the things, one under another */
+html:not(.js) .devices-world { height: auto; background: var(--bg); }
+html:not(.js) .devices-world .pin { position: static; height: auto; overflow: visible; }
+html:not(.js) .devices-world .pin::before { display: none; }
+.made-stage { width: min(100%, 84rem); margin-inline: auto; padding: clamp(6rem, 13vh, 8rem) var(--pad) clamp(4rem, 10vh, 6rem); }
+.made { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; margin-top: clamp(4rem, 12vh, 7rem); }
+.made .made-words { grid-column: 1; grid-row: 1; }
+.made .rig { grid-column: 2; grid-row: 1; }
+
+/* with it: one pair of devices holds still */
+html.js .made-stage { position: absolute; inset: 0; width: auto; padding: 0; }
+html.js .made, html.js .made-open {
+  position: absolute;
+  inset: 0;
+  width: min(100%, 104rem);
+  margin: 0 auto;
+  padding: clamp(5.5rem, 11vh, 7rem) var(--pad) clamp(4rem, 9vh, 6rem);
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+}
+html.js .made-open { align-content: center; grid-template-rows: auto; }
+html.js .made-open > * { grid-column: 1; }
+html.js .made { pointer-events: none; }
+html.js .made.on { pointer-events: auto; }
+html.js .rig { max-width: calc((100svh - 11rem) * 1.9); justify-self: end; opacity: 0; visibility: hidden; }
+html.js .made.rig-on .rig { z-index: 2; opacity: 1; visibility: visible; transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1); }
+html.js .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
+html.js .made-words, html.js .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
+html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
+html.js .made-ticks { position: absolute; z-index: 3; left: var(--pad); bottom: clamp(1.6rem, 5vh, 3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
+.made-ticks b { position: relative; flex: 1; height: 3px; border-radius: 2px; background: var(--track); overflow: hidden; }
+.made-ticks b::after { content: ""; position: absolute; inset: 0; background: var(--ember); transform-origin: left; transform: scaleX(var(--t, 0)); }
+@media (prefers-reduced-motion: reduce) {
+  html.js .rig, html.js .made-words, html.js .made-open > *, html.js .made.on .made-words, html.js .made-open.on > *, html.js .made.rig-on .rig { transition: none; transform: none; }
+}
+
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  /* five pages on the second row of the header */
+  .site-nav { gap: 2px; }
+  .nav-link { padding: 0 0.5rem; font-size: 0.78rem; }
+  /* devices on top, words underneath; --fit is set per thing by worlds.js */
+  .made { grid-template-columns: minmax(0, 1fr); gap: 1.4rem; }
+  .made .made-words, .made .rig { grid-column: 1; }
+  .made .rig { grid-row: 1; }
+  .made .made-words { grid-row: 2; }
+  html.js .made, html.js .made-open { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 0.8rem; padding: calc(env(safe-area-inset-top) + 3.9rem) 16px 2.4rem; }
+  html.js .made-open { align-content: end; padding-bottom: 3.4rem; }
+  html.js .rig { max-width: none; justify-self: center; width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1)); }
+  /* before the first scroll the header still has its lockup row, so the
+     devices stand that much lower until it folds away */
+  html.js .devices-world .rig { transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  html.js:not(.head-compact) .devices-world .rig { transform: translateY(var(--head-lift, 0px)); }
+  .made-open h1 { font-size: clamp(2.2rem, 10vw, 3rem); }
+  .made-open .deck { font-size: 1rem; }
+  .made-words h3 { font-size: 1.7rem; }
+  .made-kind { margin-bottom: 0.35rem; font-size: 0.66rem; }
+  .made-what { max-width: none; margin-bottom: 0.55rem; font-size: 0.86rem; line-height: 1.36; }
+  .made-where { margin-bottom: 0.35rem; font-size: 0.9rem; }
+  .made-where.private { max-width: none; font-size: 0.82rem; }
+  .made-want a { font-size: 0.84rem; }
+  html.js .made-ticks { left: 16px; right: 16px; bottom: 0.8rem; width: auto; }
 }
