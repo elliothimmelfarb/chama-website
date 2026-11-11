@@ -272,8 +272,9 @@ export const CASES = [
   // The flame is for three things: learning what the visitor's problem is,
   // answering what they ask, and getting them in contact. These cases check
   // that it does them the way a good conversationalist would. The openings are
-  // what real visitors typed. Reply length and question count are asserted
-  // mechanically (expectReply); the rubric covers the rest.
+  // modelled on the kinds the saved conversations hold. Reply length and
+  // question count are asserted mechanically (expectReply), at the prompt's
+  // own sizes plus a little tolerance; the rubric covers the rest.
   // ------------------------------------------------------------------
   {
     id: "conv-greeting",
@@ -323,7 +324,7 @@ export const CASES = [
     messages: [
       "We are a family firm that installs solar panels, twelve people. Leads come from the website form, Facebook and phone calls, and my sister puts them in a Google Sheet. Site visits are booked in a shared calendar, the quote is a Word template, and once a customer signs I re-enter everything into the accounting program and into a second sheet the install crews use. Nobody knows which jobs are waiting on the grid permit unless they ask me. I wish there was one place where a job went from lead to installed and everyone could see where it is stuck. Is that the kind of thing you do?"
     ],
-    expectReply: { maxWords: [170], maxQuestions: 1 },
+    expectReply: { maxWords: [150], maxQuestions: 1 },
     rubric:
       "A long, careful message earns a substantive reply. It must answer the question first (yes, this is what Chama builds), show it read the message by using the visitor's own specifics (the permit wait, the re-entry after signing, one place from lead to installed), say concretely what software of their own would do for them, and end with one question or an offer to get them in contact. Fail if it is a one or two sentence brush-off, generic enough to send to any business, or ignores the question asked."
   },
@@ -341,7 +342,7 @@ export const CASES = [
   {
     id: "conv-pricing-then-contact",
     family: "conversation",
-    messages: ["how much does it cost", "ok. Joao Matos, 912 345 678"],
+    messages: ["how much does it cost", "ok. Joao Matos, 900 000 001"],
     expectTool: { send_note_to_elliot: "none" },
     expectReply: { maxWords: [70, 45], maxQuestions: 1 },
     rubric:
@@ -350,9 +351,9 @@ export const CASES = [
   {
     id: "conv-ready-buyer",
     family: "conversation",
-    messages: ["I want to talk to someone about building a booking system for my dive school"],
+    messages: ["I would like someone to call me about a membership system for my climbing gym"],
     expectTool: { send_note_to_elliot: "none" },
-    expectReply: { maxWords: [45], maxQuestions: 1 },
+    expectReply: { maxWords: [30], maxQuestions: 1 },
     rubric:
       "The visitor has already decided to talk to a person. The reply takes them up on it at once: it asks for a name and one way to be reached, in one short question. Fail if it starts discovery questions about the business before asking for their details, pitches, or makes them justify the request."
   },
@@ -374,7 +375,7 @@ export const CASES = [
     id: "conv-answer-first",
     family: "conversation",
     messages: ["do I own the code?"],
-    expectReply: { maxWords: [60], maxQuestions: 1 },
+    expectReply: { maxWords: [70], maxQuestions: 1 },
     rubric:
       "The first word of the reply answers the question: yes, once built the code belongs to the business, and it keeps the code and its data if it stops the subscription. Then at most one easy question. Fail if the answer is buried, hedged, or replaced by a question."
   },
@@ -394,7 +395,7 @@ export const CASES = [
     id: "conv-ai-question",
     family: "conversation",
     messages: ["can AI read handwritten delivery notes?"],
-    expectReply: { maxWords: [90], maxQuestions: 1 },
+    expectReply: { maxWords: [70], maxQuestions: 1 },
     rubric:
       "A real answer first: yes, current models read handwriting well, with the honest caveats (messy writing, numbers and quantities need checking, so a person verifies the uncertain ones). Then one easy question about the visitor's own delivery notes. Fail if it is vague, all pitch, or skips the caveats."
   }

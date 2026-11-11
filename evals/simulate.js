@@ -12,6 +12,7 @@
 //     [--prompt path/to/another/chat-prompt.js] [--json results.json]
 
 import { writeFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -40,8 +41,8 @@ export function strikesFor(visitorText, reply) {
 
 const LIMITS = {
   visitorTurns: 8,
-  visitorMaxTokens: 400,
-  reviewMaxTokens: 300,
+  visitorMaxTokens: 1000,
+  reviewMaxTokens: 800,
   concurrency: 4
 };
 
@@ -87,7 +88,8 @@ async function playPersona(client, agent, persona, totals) {
   let noteSent = false;
   let leftBecause = "The conversation reached its turn limit.";
   let visitorMessage = persona.opening;
-  let patience = persona.patience ?? DEFAULT_PATIENCE;
+  const patience = persona.patience ?? DEFAULT_PATIENCE;
+  const strikes = [];
 
   for (let turnIndex = 0; turnIndex < LIMITS.visitorTurns; turnIndex += 1) {
     messages.push({ role: "user", content: visitorMessage });
@@ -95,12 +97,15 @@ async function playPersona(client, agent, persona, totals) {
 
     const { reply, toolCalls } = await agentTurn(client, agent, messages, totals);
     turns.push({ role: "agent", text: reply });
-    if (toolCalls.some((call) => call.name === "send_note_to_elliot")) noteSent = true;
+    if (toolCalls.some((call) => call.name === "send_note_to_elliot")) {
+      noteSent = true;
+      leftBecause = "Their details were sent.";
+      break;
+    }
 
-    const strikes = strikesFor(visitorMessage, reply);
-    patience -= strikes.length;
-    if (patience <= 0 && !noteSent) {
-      leftBecause = `Out of patience: ${strikes.join(", ")}.`;
+    strikes.push(...strikesFor(visitorMessage, reply));
+    if (strikes.length >= patience) {
+      leftBecause = `Out of patience: ${strikes.join("; ")}.`;
       break;
     }
 
@@ -237,7 +242,7 @@ async function main() {
   process.exit(finished.length === jobs.length ? 0 : 1);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(2);

@@ -11,6 +11,7 @@
 //     [--judge-model id] [--prompt path/to/another/chat-prompt.js] [--json results.json]
 
 import { writeFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -303,7 +304,9 @@ async function main() {
   process.exit(passed === results.length ? 0 : 1);
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(2);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(2);
+  });
+}

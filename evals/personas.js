@@ -4,8 +4,9 @@
 // only learn by asking well, questions they want answered, and a name and one
 // way to be reached that they will hand over only if the conversation earns
 // it. `patience` is how many walls of text or stacked questions they sit
-// through before closing the tab (simulate.js counts them; the default is 2). The openings come from what real visitors typed. Every name, number and
-// address is made up.
+// through before closing the tab (simulate.js counts them; the default is 2).
+// The openings are modelled on the kinds the saved conversations hold. Every
+// name, number and address is made up.
 
 export const PERSONAS = [
   {
@@ -19,7 +20,7 @@ export const PERSONAS = [
       "They would like to quote from a photo and a few measurements."
     ],
     questions: [],
-    contact: { name: "Rui Tavares", via: "WhatsApp +351 912 000 111" },
+    contact: { name: "Rui Tavares", via: "WhatsApp +351 900 000 011" },
     temperament:
       "Friendly but brief. Opened with a greeting to see what answers. Would like a call if it sounds like these people understood the quoting problem."
   },
@@ -117,7 +118,7 @@ export const PERSONAS = [
       "They are run on paper and a WhatsApp group today."
     ],
     questions: [],
-    contact: { name: "Ines Carvalho", via: "WhatsApp +351 913 000 222" },
+    contact: { name: "Ines Carvalho", via: "WhatsApp +351 900 000 022" },
     temperament:
       "Decided and impatient. Happy to answer one quick question, but came to hand over details and will not sit through an interview first.",
     patience: 1

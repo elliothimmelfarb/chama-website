@@ -61,7 +61,7 @@ A conversation has gone well when we know the visitor's problem, every question 
 
 Two runners measure it, both with tool execution stubbed so nothing is stored or emailed:
 
-- `npm run evals` plays the cases in `evals/cases.js`: `attack` (injection and tool abuse), `quality` (facts, tools, Elliot's voice) and `conversation` (the openings real visitors typed). Reply length and question count are asserted in code (`expectReply`, `evals/shape.js`); a judge model scores the rest against the case's rubric.
+- `npm run evals` plays the cases in `evals/cases.js`: `attack` (injection and tool abuse), `quality` (facts, tools, Elliot's voice) and `conversation` (openings modelled on the saved conversations). Reply length and question count are asserted in code (`expectReply`, `evals/shape.js`); a judge model scores the rest against the case's rubric.
 - `npm run evals:conversations` plays the visitors in `evals/personas.js` through whole conversations. A second model is the visitor and decides each turn whether to keep typing. Patience is counted in code: a wall of text next to a short message, or two questions at once, is a strike. It reports how many got in contact, how much of their situation the flame learned, and how many of their questions were answered.
 
 Both take `--prompt path/to/another/chat-prompt.js` to run an earlier prompt for comparison (`git show main:api/chat-prompt.js > api/_old.js`; the file has to sit in `api/` for its imports) and `--json file` to keep the transcripts. Change the prompt only with both runs before and after.

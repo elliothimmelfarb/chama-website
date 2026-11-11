@@ -1,5 +1,5 @@
 // What the two eval runners share: finding the API key, loading the prompt
-// under test, and playing one agent turn with the endpoint's own loop and the
+// under test, and playing one agent turn the way api/chat.js does, with the
 // tools stubbed. Nothing here writes a blob or sends an email.
 
 import { readFileSync } from "node:fs";
@@ -89,6 +89,7 @@ export async function agentTurn(client, agent, messages, totals) {
       output_config: { effort: "low" },
       system: [{ type: "text", text: agent.system, cache_control: { type: "ephemeral" } }],
       tools: agent.tools,
+      ...(call === MODEL_CALLS_PER_TURN - 1 ? { tool_choice: { type: "none" } } : {}),
       messages
     });
 
