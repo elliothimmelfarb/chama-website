@@ -24,6 +24,14 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/coaching"/>
   </url>
   <url>
+    <loc>https://chamainteligente.com/built</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/built"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/built"/>
+  </url>
+  <url>
     <loc>https://chamainteligente.com/clients</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>monthly</changefreq>

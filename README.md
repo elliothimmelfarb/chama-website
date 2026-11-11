@@ -6,8 +6,8 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 
 | File | What it is |
 |---|---|
-| `index.html`, `coaching.html`, `clients.html`, `about.html` | The four public pages at `/`, `/coaching`, `/clients` and `/about`, in the animated version. They carry the full search and sharing metadata (canonical, hreflang, Open Graph, JSON-LD) and are the URLs in the sitemap. The home page ends in the flame room. `/coaching` holds the Members link into the Hearth. |
-| `simple.html`, `simple/coaching.html`, `simple/clients.html`, `simple/about.html` | The low motion version of the same four pages at `/simple/*`: the same copy as plain pages. They canonicalise to their animated counterparts and are not in the sitemap. |
+| `index.html`, `coaching.html`, `built.html`, `clients.html`, `about.html` | The five public pages at `/`, `/coaching`, `/built`, `/clients` and `/about`, in the animated version. They carry the full search and sharing metadata (canonical, hreflang, Open Graph, JSON-LD) and are the URLs in the sitemap. The home page ends in the flame room. `/coaching` holds the Members link into the Hearth. |
+| `simple.html`, `simple/coaching.html`, `simple/built.html`, `simple/clients.html`, `simple/about.html` | The low motion version of the same five pages at `/simple/*`: the same copy as plain pages. They canonicalise to their animated counterparts and are not in the sitemap. |
 | `assets/worlds.css`, `assets/worlds.js`, `assets/sky.js` | The animated version's engine. Each `<section class="world">` names its ground (`data-world`) and figure (`data-scene`). `sky.js` paints the ground with one WebGL shader, `worlds.js` draws the figures and writes `--u` per section, which every `.r` element reads against its own `--in` and `--out`, so the choreography lives in the markup. `worlds.js` also runs the site nav and moves between the three pages without a full load. |
 | `assets/site.css` | The low motion pages' shared stylesheet. The footer is repeated in each low motion page and `privacy.html`; change all four together. |
 | `assets/figures.css`, `assets/figures.js` | The section figures' motion system for the low motion pages and `privacy.html`. Without JavaScript or under reduced motion every figure is drawn complete. |
@@ -26,6 +26,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt` | Crawler policy, the canonical URLs, and the site text for AI crawlers. |
 | `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
 | `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
+| `assets/built/` | The pictures on `/built`: for each thing, a tall capture of its real pages at desktop width (`<id>-desktop.webp`, 1800 wide) and at phone width (`<id>-phone.webp`, 440 wide). See Built below. |
 | `assets/work/` | The client and friends' logos for `/clients`, `/about` and the heroes' logo rows, self-hosted WebP. Each one is listed with that company's permission; see Clients and friends below. |
 | `brand/index.html`, `brand/kit/` | The media kit at `/brand`: logo PNGs, the mark, avatars, a zip and `GUIDELINES.txt` for people linking to us. `llms.txt` links the files directly. Rebuild with `sh brand/kit/build.sh` after the mark changes. |
 | `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
@@ -43,6 +44,14 @@ Copy is written here. The brain keeps its history and the reasons for each chang
 Our friends, people we introduce someone to when they fit better than we do, are a section of `/about` (a directory of letters over the forge world), not of `/clients`, because they say what kind of company we are rather than prove what we have done. The friends row in the heroes links to them there.
 
 A company goes on only with its written OK to its name, logo and exact words, and comes off the day it asks. To add a client: its logo as `assets/work/<slug>.webp` (transparent, about 240px tall), a `.spoke` and a `.turn` in `clients.html` (raise the section's `--h` by 95 per client), an entry in `simple/clients.html` and `llms-full.txt`, and a logo in the four hero rows. To add a friend: a `.letter` in `about.html`, an entry in `simple/about.html` and `llms-full.txt`, and a logo in the four hero friends rows.
+
+## Built
+
+`/built` shows what we have made: software for one business, our own products, and things that are free to use. A laptop and a phone hold still while each thing's real pages scroll inside them, and the words beside them change from one thing to the next (`drawDevices` in `assets/worlds.js`). On a phone the devices sit above the words. `/simple/built` is the same list as still pictures. A link to `/built#<id>` lands with that thing on the screens, and the progress bar's bars are those links.
+
+Work made for a client goes on only with their OK, the same rule as `/clients`. A thing that is not public shows "This is private software, built for one business." where its link would be, and its pictures come from seeded demo data, never from real records.
+
+To add a thing: its two pictures in `assets/built/`, an `article` of class `made` and a link in the progress bar in `built.html` (raise the section's `--h` by 135), the same entry in `simple/built.html`, and a paragraph in `llms-full.txt`. `test/pages.test.js` holds the two versions to the same list and the `--h` to the count.
 
 ## The flame
 

@@ -144,6 +144,9 @@
     var nav = head[0] && head[0].querySelector(".site-nav");
     return portrait() && nav ? nav.offsetTop : 0;
   }
+  // the wheel of clients and the devices on /built open their page and are
+  // all scrolling, so the header folds almost at once on them
+  function allScroll(sec) { return sec.classList.contains("wheel-world") || sec.classList.contains("devices-world"); }
   function stackOf(k) {
     var P = portrait(), sec = sections[k], scene = scenes[k];
     var copy = sec.querySelector(".copy"), card = sec.querySelector(".card");
@@ -151,7 +154,7 @@
     var foot = k === NW - 1 && !room && footer ? footer.offsetHeight : 0;
     var base = P ? 22 : 30, gap = P ? 26 : 22;
     // the wheel's world is all scrolling, so its header folds almost at once
-    var top = headBottom() - (k > 0 || sec.classList.contains("wheel-world") ? headLift() : 0) + 20, avail = H - base - foot - gap - ch - top;
+    var top = headBottom() - (k > 0 || allScroll(sec) ? headLift() : 0) + 20, avail = H - base - foot - gap - ch - top;
     var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
     var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
@@ -280,6 +283,7 @@
     releases: { kind: "draw", box: true, draw: drawReleases },
     peer: { kind: "draw", draw: drawPeer },
     wheel: { kind: "draw", box: true, draw: drawWheel },
+    devices: { kind: "draw", box: true, draw: drawDevices },
     keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
     family: { kind: "draw", draw: drawFamily },
     timeline: { kind: "draw", draw: drawTimeline }
@@ -1038,6 +1042,105 @@
     return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - WHEEL_HOLD) * (n > 1 ? i / (n - 1) : 0));
   }
 
+  // ---- /built: a laptop and a phone, and what we made on their screens -----
+  // One .made for each thing: its words, and a .rig holding its two
+  // screens, each a tall picture of the real page. The devices hold still
+  // while the page scrolls: within a thing's stretch its pictures scroll
+  // inside the screens, and at the end the next thing's rig fades in over it
+  // and the words change. The opening words stand beside the first thing's
+  // devices. The stretches are the --h on the section: 90
+  // for the opening and 135 for each thing, after the 100 of the pin.
+  var DEV_OPEN = 90, DEV_EACH = 135, DEV_HOLD = 0.05;
+  function devicesOf(sec) {
+    if (sec._dev) return sec._dev;
+    var items = [].slice.call(sec.querySelectorAll(".made"));
+    var D = (sec._dev = {
+      stage: sec.querySelector(".made-stage"), open: sec.querySelector(".made-open"), items: items,
+      // the <noscript> copies are real elements after the router parses a page, so only the screen's own picture
+      shots: items.map(function (it) { return [].slice.call(it.querySelectorAll(".screen > img")); }),
+      ticks: [].slice.call(sec.querySelectorAll(".made-ticks a")), bar: sec.querySelector(".made-ticks"),
+      rooms: [], words: -2, rig: -1, was: -1, wasAt: 0, fitted: ""
+    });
+    D.shots.forEach(function (pair, i) { pair.forEach(function (img) { img.addEventListener("load", function () { D.rooms[i] = null; }); }); });
+    return D;
+  }
+  function devicesIntro(n) { return DEV_OPEN / (DEV_OPEN + DEV_EACH * n); }
+  // a picture is fetched when its thing is next, so a long page costs a
+  // visitor only what they scroll to
+  function devicesLoad(D, i) {
+    for (var k = Math.max(0, i - 1); k <= Math.min(D.items.length - 1, i + 1); k++) D.shots[k].forEach(function (img) {
+      var src = img.getAttribute("data-src");
+      if (src) { img.src = src; img.removeAttribute("data-src"); }
+    });
+  }
+  // where the words sit under the devices (a phone), the devices are one
+  // size for every thing: as large as leaves the longest words clear of the
+  // progress bar, and the opening words clear of the first thing's devices
+  // while the header still has its lockup row. Measured in layout boxes, so
+  // the words' own slide does not count.
+  function devicesFit(D, P) {
+    var key = AW + "x" + AH + P;
+    if (D.fitted === key) return;
+    D.fitted = key;
+    D.rooms = [];
+    var f = 1, rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
+    function fits() {
+      D.stage.style.setProperty("--fit", f.toFixed(2));
+      if (!P) return true;
+      var floor = D.bar.offsetTop - 12;
+      for (var i = 0; i < D.items.length; i++) { var w = D.items[i].querySelector(".made-words"); if (w.offsetTop + w.offsetHeight > floor) return false; }
+      return !lead || rig0.offsetTop + rig0.offsetHeight + headLift() + 12 <= lead.offsetTop;
+    }
+    while (!fits() && f > 0.55) f -= 0.04;
+  }
+  function drawDevices(c, l, t, L) {
+    var D = devicesOf(L.sec), n = D.items.length;
+    if (!n || !D.stage) return;
+    devicesFit(D, L.portrait);
+    var a = devicesIntro(n), opening = l < a;
+    var q = opening ? 0 : clamp((l - a) / ((1 - a) * (1 - DEV_HOLD))) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
+    devicesLoad(D, i);
+    if (i !== D.rig) {
+      if (D.was >= 0) D.items[D.was].classList.remove("rig-was");
+      if (D.rig >= 0) { D.items[D.rig].classList.remove("rig-on"); D.items[D.rig].classList.add("rig-was"); }
+      D.was = D.rig;
+      D.wasAt = t;
+      D.rig = i;
+      D.items[i].classList.remove("rig-was");
+      D.items[i].classList.add("rig-on");
+    }
+    // the one before goes once the new one has faded in over it
+    if (D.was >= 0 && (RM || t - D.wasAt > 0.45)) { D.items[D.was].classList.remove("rig-was"); D.was = -1; }
+    var words = opening ? -1 : i;
+    if (words !== D.words) {
+      D.words = words;
+      // the things not showing are out of the tab order; the progress bar's
+      // links reach each one
+      D.items.forEach(function (it, j) { it.classList.toggle("on", j === words); it.inert = j !== words; });
+      if (D.open) { D.open.classList.toggle("on", words < 0); D.open.inert = words >= 0; }
+      D.ticks.forEach(function (b, j) { if (j === words) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current"); });
+    }
+    // how far each picture can scroll inside its screen, read once per size
+    var room = D.rooms[i] || (D.rooms[i] = D.shots[i].map(function (img) { return Math.max(0, img.offsetHeight - img.parentNode.clientHeight); }));
+    var s = RM ? 0 : sm(0.08, 0.9, f);
+    D.shots[i].forEach(function (img, j) { img.style.transform = "translate3d(0," + (-room[j] * s).toFixed(1) + "px,0)"; });
+    D.ticks.forEach(function (b, j) { b.style.setProperty("--t", opening || j > i ? 0 : j < i ? 1 : f.toFixed(3)); });
+  }
+  // the scroll position at which a thing on /built is on the screens
+  function devicesY(el) {
+    var sec = el.closest(".world"), k = sections.indexOf(sec);
+    if (k < 0) return null;
+    var items = devicesOf(sec).items, n = items.length, i = items.indexOf(el), a = devicesIntro(n);
+    return i < 0 ? null : tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - DEV_HOLD) * (i + 0.25) / n);
+  }
+  // an anchor inside a pinned world is reached by scrolling to where it is
+  // in focus, not to the element, which stays in its sticky pin
+  function pinnedY(el) {
+    if (el.classList.contains("turn")) return wheelY(el);
+    if (el.classList.contains("made")) return devicesY(el);
+    return null;
+  }
+
   // About us: the two lights circle the family's photograph, and a third,
   // smaller one joins them.
   function drawFamily(c, l, t, L, a) {
@@ -1338,7 +1441,7 @@
     // once the footer is on screen its nav is the one to use
     var atEnd = !!footer && footer.getBoundingClientRect().top < AH - 8;
     if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
-    var compact = portrait() && (i > 0 || b > 0.5 || (sections[i].classList.contains("wheel-world") && l > 0.02));
+    var compact = portrait() && (i > 0 || b > 0.5 || (allScroll(sections[i]) && l > 0.02));
     if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
 
     var wt = b < 0.8 ? i : i + 1, wd = inRoom ? NW - 1 : b < 0.5 ? i : i + 1;
@@ -1530,15 +1633,15 @@
   // header's switch flips before it goes, so the reader sees it take.
   function rememberMotion(v) { try { window.localStorage.setItem("chama-motion", v); } catch (e) {} }
 
-  // ---- the router: the four pages without leaving the page -----------------------
-  // Software, Coaching, Clients and About are one place. A link between them does not
+  // ---- the router: the five pages without leaving the page -----------------------
+  // Software, Coaching, Built, Clients and About are one place. A link between them does not
   // load a new document: the words in view lift away, the new page is
   // fetched (usually already, on hover or when the browser is idle) and put
   // in place, and the sky burns from the world that was on screen into the
   // new page's first world while the new words rise behind the fire. Any
   // other link (the flame's own page, privacy, the Hearth, the low motion
   // version) is an ordinary navigation.
-  var PAGES = { "/": 1, "/coaching": 1, "/about": 1, "/clients": 1 };
+  var PAGES = { "/": 1, "/coaching": 1, "/about": 1, "/clients": 1, "/built": 1 };
   var cache = {}, navSeq = 0, burnIn = null, keptRoom = null, leaveAt = 0;
   function pathOf(u) {
     var p = u.pathname.replace(/\/index(\.html)?$/, "/").replace(/\.html$/, "");
@@ -1682,7 +1785,7 @@
       // honour the target's scroll-margin, so an entry on /clients lands below
       // the header; pushState does not move :target, so mark it by hand
       if (target) {
-        y = target.classList.contains("turn") ? wheelY(target) : target.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
+        y = pinnedY(target) !== null ? pinnedY(target) : target.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
         target.classList.add("is-target");
       }
       window.scrollTo({ top: y, behavior: "instant" });
@@ -1724,7 +1827,7 @@
       e.preventDefault();
       if (pathOf(u) === here) {
         var t = u.hash && document.getElementById(u.hash.slice(1));
-        if (t && t.classList.contains("turn")) window.scrollTo({ top: wheelY(t), behavior: RM ? "auto" : "smooth" });
+        if (t && pinnedY(t) !== null) window.scrollTo({ top: pinnedY(t), behavior: RM ? "auto" : "smooth" });
         else if (t) t.scrollIntoView({ behavior: RM ? "auto" : "smooth" });
         else window.scrollTo({ top: 0, behavior: RM ? "auto" : "smooth" });
         return;
@@ -1752,16 +1855,17 @@
   bind();
   resize();
   // a link straight to a client on the wheel (/clients#toraya-lisboa) turns
-  // the wheel to them, rather than the browser's jump to the top of it
+  // the wheel to them, and one to a thing on /built (/built#shopintake) puts
+  // it on the screens, rather than the browser's jump to the top of the pin
   function toHashTurn() {
     var t = location.hash && document.getElementById(location.hash.slice(1));
-    if (!t || !t.classList.contains("turn")) return;
+    if (!t || !(t.classList.contains("turn") || t.classList.contains("made"))) return;
     // the browser's own jump to the anchor scrolls the clipped pin itself,
     // which lifts the logos off the outline drawn round them
     var pin = t.closest(".pin");
     if (pin) pin.scrollTop = 0;
     measure();
-    window.scrollTo(0, wheelY(t));
+    window.scrollTo(0, pinnedY(t));
   }
   requestAnimationFrame(toHashTurn);
   window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });
