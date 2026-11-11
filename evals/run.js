@@ -7,119 +7,65 @@
 // case rubric.
 //
 // This spends real API money. Run it deliberately:
-//   node evals/run.js [--filter substring] [--family attack|quality] [--judge-model id]
+//   node evals/run.js [--filter substring] [--family attack|quality|conversation]
+//     [--judge-model id] [--prompt path/to/another/chat-prompt.js] [--json results.json]
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { writeFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 
 import Anthropic from "@anthropic-ai/sdk";
 
-import { MODEL, SYSTEM_PROMPT, TOOLS } from "../api/chat-prompt.js";
-import { MESSAGES, clampExperience } from "../api/chat.js";
 import { CASES, JUDGE_PROMPT, VERDICT_SCHEMA } from "./cases.js";
+import { addUsage, agentTurn, loadAgent, loadApiKey, runPool, textOf } from "./lib.js";
+import { checkReplyShape } from "./shape.js";
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const FAMILIES = ["attack", "quality", "conversation"];
 
 const LIMITS = {
-  modelCallsPerTurn: 3,
-  maxTokens: 1200,
   judgeMaxTokens: 500,
   concurrency: 3
 };
 
 const DEFAULT_JUDGE_MODEL = "claude-sonnet-5";
 
-// The stubbed note tool. The real one writes to blob storage and emails Elliot;
-// an eval run must never do either, so it always reports the happy path.
-const STUB_NOTE_RESULT = MESSAGES.sent;
-
 function parseArgs(argv) {
-  const options = { filter: null, family: null, judgeModel: DEFAULT_JUDGE_MODEL };
+  const options = {
+    filter: null,
+    family: null,
+    judgeModel: DEFAULT_JUDGE_MODEL,
+    prompt: null,
+    json: null
+  };
+  const flags = {
+    "--filter": "filter",
+    "--family": "family",
+    "--judge-model": "judgeModel",
+    "--prompt": "prompt",
+    "--json": "json"
+  };
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const flag = argv[index];
-    const value = argv[index + 1];
-
-    if (flag === "--filter") {
-      options.filter = value;
-      index += 1;
-    } else if (flag === "--family") {
-      options.family = value;
-      index += 1;
-    } else if (flag === "--judge-model") {
-      options.judgeModel = value;
-      index += 1;
-    } else {
-      throw new Error(`Unknown argument: ${flag}`);
+  for (let index = 0; index < argv.length; index += 2) {
+    const name = flags[argv[index]];
+    if (!name || argv[index + 1] === undefined) {
+      throw new Error(`Unknown or incomplete argument: ${argv[index]}`);
     }
+    options[name] = argv[index + 1];
   }
 
-  if (options.family && options.family !== "attack" && options.family !== "quality") {
-    throw new Error('--family must be "attack" or "quality"');
+  if (options.family && !FAMILIES.includes(options.family)) {
+    throw new Error(`--family must be one of: ${FAMILIES.join(", ")}`);
   }
 
   return options;
 }
 
-// No dotenv dependency: read .env or .env.local by hand, only when the variable
-// is not already set, and only the key we need.
-function loadApiKey() {
-  if (process.env.ANTHROPIC_API_KEY) return process.env.ANTHROPIC_API_KEY;
-
-  for (const name of [".env", ".env.local"]) {
-    let text;
-    try {
-      text = readFileSync(join(ROOT, name), "utf8");
-    } catch {
-      continue;
-    }
-
-    for (const line of text.split("\n")) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
-
-      const separator = trimmed.indexOf("=");
-      if (separator === -1) continue;
-
-      const key = trimmed.slice(0, separator).trim();
-      if (key !== "ANTHROPIC_API_KEY") continue;
-
-      let value = trimmed.slice(separator + 1).trim();
-      if (
-        (value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))
-      ) {
-        value = value.slice(1, -1);
-      }
-      if (value) return value;
-    }
-  }
-
-  return null;
-}
-
-function addUsage(totals, usage) {
-  if (!usage) return;
-  totals.input += usage.input_tokens || 0;
-  totals.output += usage.output_tokens || 0;
-}
-
-function textOf(content) {
-  if (typeof content === "string") return content;
-  if (!Array.isArray(content)) return "";
-  return content
-    .filter((block) => block.type === "text")
-    .map((block) => block.text)
-    .join("")
-    .trim();
-}
-
-// Plays one case: every visitor message in order, with the same agent loop the
-// endpoint runs, tool execution stubbed. Returns the transcript and tool log.
-async function playConversation(client, testCase, totals) {
+// Plays one case: every visitor message in order against the agent, tool
+// execution stubbed. Returns the transcript, the reply to each visitor
+// message, and the tool log.
+async function playConversation(client, agent, testCase, totals) {
   const messages = [];
   const transcript = [];
+  const replies = [];
   const toolCalls = [];
 
   for (let turnIndex = 0; turnIndex < testCase.messages.length; turnIndex += 1) {
@@ -127,66 +73,13 @@ async function playConversation(client, testCase, totals) {
     messages.push({ role: "user", content: visitor });
     transcript.push(`VISITOR: ${visitor}`);
 
-    for (let call = 0; call < LIMITS.modelCallsPerTurn; call += 1) {
-      const message = await client.messages.create({
-        model: MODEL,
-        max_tokens: LIMITS.maxTokens,
-        output_config: { effort: "low" },
-        system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-        tools: TOOLS,
-        messages
-      });
-
-      addUsage(totals, message.usage);
-
-      const said = textOf(message.content);
-      if (said) transcript.push(`AGENT: ${said}`);
-
-      // The model must always see its own prior turns: dropping a plain text
-      // reply from history makes it re-show notes it already showed.
-      messages.push({ role: "assistant", content: message.content });
-
-      if (message.stop_reason !== "tool_use") break;
-
-      const toolResults = [];
-      for (const block of message.content) {
-        if (block.type !== "tool_use") continue;
-
-        toolCalls.push({ name: block.name, input: block.input, turnIndex });
-
-        if (block.name === "adjust_experience") {
-          const { changed } = clampExperience(block.input);
-          toolResults.push({
-            type: "tool_result",
-            tool_use_id: block.id,
-            is_error: !changed,
-            content: changed ? MESSAGES.applied : MESSAGES.nothingAdjusted
-          });
-          continue;
-        }
-
-        if (block.name === "send_note_to_elliot") {
-          toolResults.push({
-            type: "tool_result",
-            tool_use_id: block.id,
-            content: STUB_NOTE_RESULT
-          });
-          continue;
-        }
-
-        toolResults.push({
-          type: "tool_result",
-          tool_use_id: block.id,
-          is_error: true,
-          content: "That tool is not available."
-        });
-      }
-
-      messages.push({ role: "user", content: toolResults });
-    }
+    const turn = await agentTurn(client, agent, messages, totals);
+    if (turn.reply) transcript.push(`AGENT: ${turn.reply}`);
+    replies.push(turn.reply);
+    for (const call of turn.toolCalls) toolCalls.push({ ...call, turnIndex });
   }
 
-  return { transcript: transcript.join("\n\n"), toolCalls };
+  return { transcript: transcript.join("\n\n"), replies, toolCalls };
 }
 
 // The assertions that need no judgement. Returns a failure reason, or null.
@@ -281,13 +174,15 @@ Give your verdict.`
   return parseVerdict(textOf(message.content));
 }
 
-async function runCase(client, options, testCase, totals) {
+async function runCase(client, agent, options, testCase, totals) {
   try {
-    const { transcript, toolCalls } = await playConversation(client, testCase, totals);
+    const { transcript, replies, toolCalls } = await playConversation(client, agent, testCase, totals);
 
-    const mechanical = checkToolExpectations(testCase.expectTool, toolCalls);
+    const mechanical =
+      checkToolExpectations(testCase.expectTool, toolCalls) ||
+      checkReplyShape(testCase.expectReply, replies);
     if (mechanical) {
-      return { id: testCase.id, family: testCase.family, pass: false, score: 0, reason: mechanical, transcript, toolCalls };
+      return { id: testCase.id, family: testCase.family, pass: false, score: 0, reason: mechanical, transcript, replies, toolCalls };
     }
 
     const verdict = await judge(client, options, testCase, transcript, toolCalls, totals);
@@ -300,6 +195,7 @@ async function runCase(client, options, testCase, totals) {
         score: 0,
         reason: "The judge returned a verdict that could not be parsed.",
         transcript,
+        replies,
         toolCalls
       };
     }
@@ -311,6 +207,7 @@ async function runCase(client, options, testCase, totals) {
       score: typeof verdict.score === "number" ? verdict.score : 0,
       reason: verdict.reason || "(no reason given)",
       transcript,
+      replies,
       toolCalls
     };
   } catch (error) {
@@ -323,23 +220,6 @@ async function runCase(client, options, testCase, totals) {
       reason: `Run failed: ${error instanceof Error ? error.message : String(error)}`
     };
   }
-}
-
-// A small pool: three cases in flight, each pulling the next one when it lands.
-async function runPool(items, limit, worker) {
-  const results = new Array(items.length);
-  let next = 0;
-
-  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const index = next;
-      next += 1;
-      results[index] = await worker(items[index], index);
-    }
-  });
-
-  await Promise.all(runners);
-  return results;
 }
 
 function pad(value, width) {
@@ -366,15 +246,17 @@ async function main() {
     process.exit(2);
   }
 
+  const agent = await loadAgent(options.prompt);
+
   console.log(
-    `Running ${selected.length} eval case(s) against ${MODEL}, judged by ${options.judgeModel}. This spends real API credit.`
+    `Running ${selected.length} eval case(s) against ${agent.model}${options.prompt ? ` with the prompt in ${options.prompt}` : ""}, judged by ${options.judgeModel}. This spends real API credit.`
   );
 
   const client = new Anthropic({ apiKey });
   const totals = { input: 0, output: 0 };
 
   const results = await runPool(selected, LIMITS.concurrency, async (testCase) => {
-    const result = await runCase(client, options, testCase, totals);
+    const result = await runCase(client, agent, options, testCase, totals);
     const glyph = result.pass ? "PASS" : result.errored ? "ERR " : "FAIL";
     console.log(`${glyph}  ${pad(result.id, 28)} ${pad(`${result.score}/10`, 6)} ${result.reason}`);
     if (!result.pass && result.transcript) {
@@ -415,10 +297,16 @@ async function main() {
   );
   console.log(`Tokens: ${totals.input} input / ${totals.output} output`);
 
+  if (options.json) {
+    writeFileSync(options.json, JSON.stringify({ model: agent.model, results }, null, 2));
+  }
+
   process.exit(passed === results.length ? 0 : 1);
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(2);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(2);
+  });
+}

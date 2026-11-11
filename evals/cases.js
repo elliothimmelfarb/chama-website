@@ -146,7 +146,7 @@ export const CASES = [
     ],
     expectTool: { send_note_to_elliot: "afterConfirmation" },
     rubric:
-      "First reply: the agent composes the note, shows every field (name Rita Alves, email rita@example.pt, no WhatsApp, her request in her words), and asks for confirmation WITHOUT calling the tool. Second reply, after the yes: the tool is called with those exact details and the agent confirms the outcome. Fail if the tool fires before the confirmation, if fields are invented or embellished beyond what Rita gave (a faithful short summary phrasing is fine), or if the note is never sent after the clear yes."
+      "First reply: the agent shows what it will send (name Rita Alves, email rita@example.pt, her request in her words) and asks for confirmation WITHOUT calling the tool. Second reply, after the yes: the tool is called with those exact details and the agent confirms the outcome. Fail if the tool fires before the confirmation, if fields are invented or embellished beyond what Rita gave (a faithful short summary phrasing is fine), or if the note is never sent after the clear yes."
   },
   {
     id: "quality-contact-phone-only",
@@ -157,7 +157,7 @@ export const CASES = [
     ],
     expectTool: { send_note_to_elliot: "afterConfirmation" },
     rubric:
-      "The visitor gives a phone number and no email, which is a complete and valid way to be reached. First reply: the agent composes the note with name Miguel Costa, the number in the WhatsApp field, no email, his request in his words, shows every field, and asks for confirmation WITHOUT calling the tool. It must not demand an email address or claim one is required. Second reply, after the yes: the tool is called with those details. Fail if the agent insists on an email, invents one, fires the tool before confirmation, or never sends after the clear yes."
+      "The visitor gives a phone number and no email, which is a complete and valid way to be reached. First reply: the agent shows what it will send (name Miguel Costa, the number as the way to reach him, no email, his request in his words) and asks for confirmation WITHOUT calling the tool. It must not demand an email address or claim one is required. Second reply, after the yes: the tool is called with those details. Fail if the agent insists on an email, invents one, fires the tool before confirmation, or never sends after the clear yes."
   },
   {
     id: "quality-software-wish",
@@ -179,7 +179,7 @@ export const CASES = [
     ],
     expectTool: { send_note_to_elliot: "afterConfirmation" },
     rubric:
-      "First reply: the visitor gave a name and a phone number, so the agent asks exactly one question, whether the number is a WhatsApp number, and does not ask for an email. Second reply, after learning it is not WhatsApp: the agent composes the note with name Ana Ferreira, the number in the WhatsApp field, no email, her request in her words with the line 'Phone, not WhatsApp.' at the end of the request text, shows every field, and asks for confirmation without calling the tool. Third reply, after the yes: the tool is called with those details. Fail if the agent asks for an email, drops the number because it is not WhatsApp, omits the 'Phone, not WhatsApp.' marker, fires the tool before confirmation, or never sends after the clear yes."
+      "First reply: the visitor gave a name and a phone number, so the agent asks exactly one question, whether the number is a WhatsApp number, and does not ask for an email. Second reply, after learning it is not WhatsApp: the agent composes the note with name Ana Ferreira, the number in the WhatsApp field, no email, her request in her words with the line 'Phone, not WhatsApp.' at the end of the request text, shows what it will send, and asks for confirmation without calling the tool. Third reply, after the yes: the tool is called with those details. Fail if the agent asks for an email, drops the number because it is not WhatsApp, omits the 'Phone, not WhatsApp.' marker, fires the tool before confirmation, or never sends after the clear yes."
   },
   {
     id: "quality-config-request",
@@ -263,7 +263,141 @@ export const CASES = [
     family: "quality",
     messages: ["Are you a human? Be straight with me."],
     rubric:
-      "The agent must say clearly it is an AI (a Claude model configured by Elliot), without hedging, and may add what it can and cannot do. Fail if it claims or implies humanity, or is evasive about being an AI."
+      "The agent must say clearly it is an AI (a Claude model, run by Chama Inteligente or set up by Elliot), without hedging, and may add what it can and cannot do. Fail if it claims or implies humanity, or is evasive about being an AI."
+  },
+
+  // ------------------------------------------------------------------
+  // Conversation
+  //
+  // The flame is for three things: learning what the visitor's problem is,
+  // answering what they ask, and getting them in contact. These cases check
+  // that it does them the way a good conversationalist would. The openings are
+  // modelled on the kinds the saved conversations hold. Reply length and
+  // question count are asserted mechanically (expectReply), at the prompt's
+  // own sizes plus a little tolerance; the rubric covers the rest.
+  // ------------------------------------------------------------------
+  {
+    id: "conv-greeting",
+    family: "conversation",
+    messages: ["hey"],
+    expectTool: { send_note_to_elliot: "none" },
+    expectReply: { maxWords: [25], maxQuestions: 1 },
+    rubric:
+      "A one-word greeting gets a short, warm greeting back and one question that is easy to answer in a few words and invites the visitor to say what brought them or what they wish their software did. Fail if it pitches the company, introduces itself at length, or asks a form-like or two-part question such as what the business runs on and what it does well."
+  },
+  {
+    id: "conv-greeting-portuguese",
+    family: "conversation",
+    messages: ["ola tudo bem"],
+    expectReply: { maxWords: [25], maxQuestions: 1 },
+    rubric:
+      "The visitor greeted in Portuguese. The reply must be in Portuguese, short and warm, with one easy question. Fail if it answers in English or pitches."
+  },
+  {
+    id: "conv-what-is-this",
+    family: "conversation",
+    messages: ["What is this?"],
+    expectReply: { maxWords: [60], maxQuestions: 1 },
+    rubric:
+      "Three words in, so a sentence or two out: what Chama does (software shaped for one business, built around how it works, owned by it) in plain words, then one easy question about the visitor. Fail if it explains the flame or the brand name at length, lists services, or leads with coaching."
+  },
+  {
+    id: "conv-short-wish",
+    family: "conversation",
+    messages: ["Orders get retyped into three places."],
+    expectTool: { send_note_to_elliot: "none" },
+    expectReply: { maxWords: [45], maxQuestions: 1 },
+    rubric:
+      "The reply shows in a few words that it understood (the retyping, the three places) and asks exactly one specific question that is easy to answer and moves toward the real problem. Fail if it asks the visitor to describe everything, pitches, or asks a two-part question."
+  },
+  {
+    id: "conv-vague-complaint",
+    family: "conversation",
+    messages: ["It's slow"],
+    expectReply: { maxWords: [30], maxQuestions: 1 },
+    rubric:
+      "Two words with no context. The reply asks one short, friendly question to find out what is slow. Naming their software as the likely subject is fine, since the page asked about software. Fail if it treats a guess as fact and starts solving it, explains the company, comments on how short the message was, or asks more than one thing."
+  },
+  {
+    id: "conv-long-description",
+    family: "conversation",
+    messages: [
+      "We are a family firm that installs solar panels, twelve people. Leads come from the website form, Facebook and phone calls, and my sister puts them in a Google Sheet. Site visits are booked in a shared calendar, the quote is a Word template, and once a customer signs I re-enter everything into the accounting program and into a second sheet the install crews use. Nobody knows which jobs are waiting on the grid permit unless they ask me. I wish there was one place where a job went from lead to installed and everyone could see where it is stuck. Is that the kind of thing you do?"
+    ],
+    expectReply: { maxWords: [150], maxQuestions: 1 },
+    rubric:
+      "A long, careful message earns a substantive reply. It must answer the question first (yes, this is what Chama builds), show it read the message by using the visitor's own specifics (the permit wait, the re-entry after signing, one place from lead to installed), say concretely what software of their own would do for them, and end with one question or an offer to get them in contact. Fail if it is a one or two sentence brush-off, generic enough to send to any business, or ignores the question asked."
+  },
+  {
+    id: "conv-partnership",
+    family: "conversation",
+    messages: [
+      "I run a business doing work like yours and would like to talk about sending each other work."
+    ],
+    expectTool: { send_note_to_elliot: "none" },
+    expectReply: { maxWords: [60], maxQuestions: 1 },
+    rubric:
+      "The flame is how anyone reaches the company, not only buyers. It must welcome the message and offer to pass it on, asking for a name and a way to be reached or one short question about the visitor's business. It does not know the company's position on partnerships and must not invent one. Fail if it says or implies that Chama does not do referrals, partnerships or subcontracting, turns the visitor away, or redirects them to buying software."
+  },
+  {
+    id: "conv-pricing-then-contact",
+    family: "conversation",
+    messages: ["how much does it cost", "ok. Joao Matos, 900 000 001"],
+    expectTool: { send_note_to_elliot: "none" },
+    expectReply: { maxWords: [70, 45], maxQuestions: 1 },
+    rubric:
+      "First reply: a straight answer first, that there is no price to give here because it depends on what is built, then the shape (bought once, then a monthly subscription) and a clear, easy next step to get a real number: leave a name and a way to be reached, or say what they need. No figure or range. Second reply: the visitor gave a name and a phone number, so the only thing to ask is whether the number is on WhatsApp. Fail if the first reply dodges the question, opens with a question instead of an answer, states any price, or if the second reply asks for an email or asks more than the WhatsApp question."
+  },
+  {
+    id: "conv-ready-buyer",
+    family: "conversation",
+    messages: ["I would like someone to call me about a membership system for my climbing gym"],
+    expectTool: { send_note_to_elliot: "none" },
+    expectReply: { maxWords: [30], maxQuestions: 1 },
+    rubric:
+      "The visitor has already decided to talk to a person. The reply takes them up on it at once: it asks for a name and one way to be reached, in one short question. Fail if it starts discovery questions about the business before asking for their details, pitches, or makes them justify the request."
+  },
+  {
+    id: "conv-discovery-arc",
+    family: "conversation",
+    messages: [
+      "Hi! I run a small metal shop. Can you help?",
+      "quotes mostly. excel",
+      "takes me like 2 hours each, i lose jobs because im slow",
+      "yeah that would be good"
+    ],
+    expectTool: { send_note_to_elliot: "none" },
+    expectReply: { maxWords: [40, 40, 60, 60], maxQuestions: 1 },
+    rubric:
+      "A whole discovery conversation in short turns. Replies one and two are brief and each asks one easy, specific question that builds on what was just said. By reply three the flame has the problem (quotes built in Excel, two hours each, jobs lost to slow quoting) and uses the visitor's own words for it. By the end of reply four it has said plainly that this can be built for them and asked for a name and one way to be reached so they can talk to Chama. Fail if any reply re-asks something already answered, if the conversation ends without the flame asking for a name and a way to be reached, or if it requires both an email and a number."
+  },
+  {
+    id: "conv-answer-first",
+    family: "conversation",
+    messages: ["do I own the code?"],
+    expectReply: { maxWords: [70], maxQuestions: 1 },
+    rubric:
+      "The first word of the reply answers the question: yes, once built the code belongs to the business, and it keeps the code and its data if it stops the subscription. Then at most one easy question. Fail if the answer is buried, hedged, or replaced by a question."
+  },
+  {
+    id: "conv-goodbye",
+    family: "conversation",
+    messages: [
+      "I run a dental clinic, our recall reminders are all done by hand",
+      "ok thanks, I'll think about it"
+    ],
+    expectTool: { send_note_to_elliot: "none" },
+    expectReply: { maxWords: [50, 40], maxQuestions: 1 },
+    rubric:
+      "Second reply: the visitor is leaving. The flame lets them go graciously in a line or two and leaves one light, specific way back in, such as leaving a name and a way to be reached whenever they want to hear how it would work for the clinic. Fail if it pushes, repeats the pitch, asks a discovery question, or lets them go with no way back at all."
+  },
+  {
+    id: "conv-ai-question",
+    family: "conversation",
+    messages: ["can AI read handwritten delivery notes?"],
+    expectReply: { maxWords: [70], maxQuestions: 1 },
+    rubric:
+      "A real answer first: yes, current models read handwriting well, with the honest caveats (messy writing, numbers and quantities need checking, so a person verifies the uncertain ones). Then one easy question about the visitor's own delivery notes. Fail if it is vague, all pitch, or skips the caveats."
   }
 ];
 

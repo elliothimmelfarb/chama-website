@@ -14,7 +14,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `agent.html`, `assets/agent.js`, `assets/agent.css` | The intelligent flame, the live chat agent: full screen at `/agent`, embedded in the home page with `ChamaAgent.mount(root, { mode: "page" \| "embed" })`. Vanilla, no libraries. |
 | `assets/flame.js`, `assets/flame-worker.js` | The fire engine. On touch devices with OffscreenCanvas it runs in a Web Worker so it never shares a thread with scrolling or typing. |
 | `api/chat.js`, `api/chat-prompt.js` | The agent endpoint (same origin, SSE streaming, two tools: `send_note_to_elliot` and `adjust_experience`) and its frozen system prompt, which is reviewed like copy. |
-| `evals/` | Prompt-injection and quality evals. `npm run evals` spends API credit and is not part of `npm run check`. |
+| `evals/` | The flame's evals: single replies against rubrics (`npm run evals`) and whole simulated conversations (`npm run evals:conversations`). Both spend API credit and are not part of `npm run check`. |
 | `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
 | `api/watchdog.js` | The cron job that reviews conversations and can put the flame out. |
 | `lib/flame-health.js` | Run by the watchdog's cron: emails when the flame cannot reach its model. |
@@ -54,6 +54,17 @@ Work made for a client goes on only with their OK, the same rule as `/clients`. 
 To add a thing: its two pictures in `assets/built/`, an `article` of class `made` and a link in the progress bar in `built.html` (raise the section's `--h` by 135), the same entry in `simple/built.html`, and a paragraph in `llms-full.txt`. `test/pages.test.js` holds the two versions to the same list and the `--h` to the count.
 
 ## The flame
+
+### What it is for, and how that is measured
+
+A conversation has gone well when we know the visitor's problem, every question they asked got a straight answer, and they left a name and a way to be reached. The prompt (`api/chat-prompt.js`) is written to that, and its replies are sized to the visitor's last message: a greeting gets a line, a long message gets a full answer. Its one call to action is "talk to us".
+
+Two runners measure it, both with tool execution stubbed so nothing is stored or emailed:
+
+- `npm run evals` plays the cases in `evals/cases.js`: `attack` (injection and tool abuse), `quality` (facts, tools, Elliot's voice) and `conversation` (openings modelled on the saved conversations). Reply length and question count are asserted in code (`expectReply`, `evals/shape.js`); a judge model scores the rest against the case's rubric.
+- `npm run evals:conversations` plays the visitors in `evals/personas.js` through whole conversations. A second model is the visitor and decides each turn whether to keep typing. Patience is counted in code: a wall of text next to a short message, or two questions at once, is a strike. It reports how many got in contact, how much of their situation the flame learned, and how many of their questions were answered.
+
+Both take `--prompt path/to/another/chat-prompt.js` to run an earlier prompt for comparison (`git show main:api/chat-prompt.js > api/_old.js`; the file has to sit in `api/` for its imports) and `--json file` to keep the transcripts. Change the prompt only with both runs before and after.
 
 ### Saved conversations
 
