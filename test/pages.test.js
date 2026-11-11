@@ -425,3 +425,16 @@ test("worlds.css never hides a bare .turn, which would hide the chat's messages"
     }
   }
 });
+
+// Chrome scores Largest Contentful Paint when an element first paints with
+// any opacity. The hero's words and its logo row fade in from almost nothing;
+// starting them at exactly 0 made the last logo to catch the LCP, 2.4 s after
+// the words were readable (2026-11-11).
+test("the hero's words and logos count as painted from their first frame", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const name of ["arrive", "catch"]) {
+    const frames = [...css.matchAll(new RegExp(`@keyframes ${name}\\s*\\{\\s*(?:from|0%)\\s*\\{([^}]*)\\}`, "g"))];
+    assert.ok(frames.length, `no @keyframes ${name}`);
+    for (const f of frames) assert.ok(!/opacity:\s*0\s*[;}]|opacity:\s*0$/.test(f[1].trim()), `@keyframes ${name} starts at opacity 0`);
+  }
+});
