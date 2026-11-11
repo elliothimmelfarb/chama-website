@@ -16,24 +16,6 @@
   if (!H) return;
   var el = H.el, append = H.append, button = H.button, api = H.api, pill = H.pill;
 
-  /* ---------- the consent page arrives before sign-in ----------
-
-     hearth.js sends a signed-out visitor to the gate, and the gate only
-     brings them back where they were if the URL carries `next`. An MCP
-     client sends people to /hearth/authorize?req=... with nothing else,
-     so add the return address ourselves before the core boots. */
-
-  (function keepTheReturnAddress() {
-    if (location.pathname !== H.BASE + "/authorize") return;
-    var params = new URLSearchParams(location.search);
-    if (!params.get("req") || params.get("next")) return;
-    var here = location.pathname + location.search;
-    params.set("next", here);
-    try {
-      history.replaceState(null, "", location.pathname + "?" + params.toString());
-    } catch (e) { /* the gate will simply land on the room's home */ }
-  })();
-
   /* ---------- small pieces ---------- */
 
   function codeBlock(text) {
