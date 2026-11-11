@@ -732,6 +732,9 @@ body {
 .btn:hover { background: var(--surface-2); border-color: var(--text-dim); color: var(--text); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.45; cursor: default; transform: none; }
+/* Working, not unavailable: full colour, a slow breath, its label saying what. */
+.btn[aria-busy="true"] { opacity: 1; cursor: progress; transform: none; animation: hh-busy 0.9s ease-in-out infinite alternate; }
+@keyframes hh-busy { to { opacity: 0.72; } }
 .btn.primary { background: var(--ember); border-color: var(--ember); color: #fff; }
 .btn.primary:hover { background: #ff6a33; border-color: #ff6a33; color: #fff; }
 .btn.ghost { border-color: transparent; color: var(--text-dim); }
@@ -812,7 +815,10 @@ body {
 .gate .or::before, .gate .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .gate .fineprint { font-size: 0.75rem; color: var(--text-faint); line-height: 1.5; }
 .gate .fineprint a { color: var(--text-dim); }
-.gsi-slot { min-height: 2.6rem; display: grid; }
+/* Google's large button is a 44px frame, and for one frame while it swaps
+   in its stand-in for the real button the two are stacked. A fixed height
+   keeps the buttons and form below from jumping either time. */
+.gsi-slot { height: 44px; display: grid; }
 .gsi-slot > div { justify-self: stretch; }
 
 .gate-sent {
@@ -908,7 +914,7 @@ body {
 .hearth .skip { position: absolute; left: -999px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .hh-view > .view, .rise > *, .toast { animation: none; }
+  .hh-view > .view, .rise > *, .toast, .btn[aria-busy="true"] { animation: none; }
   .hh-fire { display: none; }
 }
 
