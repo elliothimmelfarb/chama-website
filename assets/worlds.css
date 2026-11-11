@@ -470,8 +470,8 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
 }
 .accent { color: var(--accent); }
 
-.hero .copy { animation: arrive 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
-@keyframes arrive { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: none; } }
+.hero .copy { animation: hero-arrive 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
+@keyframes hero-arrive { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: none; } }
 
 .cue {
   position: absolute;
