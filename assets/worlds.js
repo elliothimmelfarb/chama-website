@@ -160,6 +160,13 @@
     var nav = head[0] && head[0].querySelector(".site-nav");
     return portrait() && nav ? nav.offsetTop : 0;
   }
+  // and past the opening world the phone's "Talk to us" disc drops under the
+  // pages' row (worlds.css), so the worlds before the last keep clear of it;
+  // from the last world on it is hidden
+  function talkDrop(k) {
+    var t = head[0] && head[0].querySelector(".nav-talk");
+    return portrait() && t && k < NW - 1 ? t.offsetHeight + 8 : 0;
+  }
   // the wheel of clients and the devices on /built open their page and are
   // all scrolling, so the header folds almost at once on them
   function allScroll(sec) { return sec.classList.contains("wheel-world") || sec.classList.contains("devices-world"); }
@@ -170,7 +177,7 @@
     var foot = k === NW - 1 && !room && footer ? footer.offsetHeight : 0;
     var base = P ? 22 : 30, gap = P ? 26 : 22;
     // the wheel's world is all scrolling, so its header folds almost at once
-    var top = headBottom() - (k > 0 || allScroll(sec) ? headLift() : 0) + 20, avail = H - base - foot - gap - ch - top;
+    var top = headBottom() - (k > 0 || allScroll(sec) ? headLift() - talkDrop(k) : 0) + 20, avail = H - base - foot - gap - ch - top;
     var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
     var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(SW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
@@ -1453,7 +1460,7 @@
   function shiftOf(el) { if (!el.classList.contains("r")) return 0; var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
   function goneOf(k) {
     var sec = sections[k], pin = sec.firstElementChild, H = pins[k] || AH, S = stacks[k], P = portrait(), last = k === NW - 1;
-    var head = headBottom() - (P && (k > 0 || allScroll(sec)) ? headLift() : 0) + 8, pt = pin.getBoundingClientRect().top, room = H;
+    var head = headBottom() - (P && (k > 0 || allScroll(sec)) ? headLift() - talkDrop(k) : 0) + 8, pt = pin.getBoundingClientRect().top, room = H;
     function from(el, limit) {
       if (!el || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return;
       room = Math.min(room, el.getBoundingClientRect().top - shiftOf(el) - pt - limit);
@@ -1599,7 +1606,7 @@
   var themeMeta = document.querySelector('meta[name="theme-color"]');
 
   // ---- the loop --------------------------------------------------------------------------
-  var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false, lastEnd = false, lastCompact = false;
+  var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false, lastEnd = false, lastCompact = false, lastPast = false, lastLast = false;
   // tBind starts each page's own clock, so its figures draw themselves in
   // when it arrives; the sky keeps one clock for the whole visit
   var tBind = t0;
@@ -1625,8 +1632,8 @@
     footer = document.querySelector("body > footer");
     tops = []; hs = []; pins = []; stacks = []; gones = []; lastU = [];
     hugReady = false;
-    lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastCompact = false; lastSpark = 0;
-    root.classList.remove("in-room", "at-end", "head-compact");
+    lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastCompact = false; lastPast = false; lastLast = false; lastSpark = 0;
+    root.classList.remove("in-room", "at-end", "head-compact", "past-hero", "last-world");
     tBind = performance.now();
     buildIndex();
   }
@@ -1679,6 +1686,12 @@
     if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
     var compact = portrait() && (i > 0 || b > 0.5 || (allScroll(sections[i]) && l > 0.02));
     if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
+    // the header's "Talk to us" fades in as the hero's own button fades out
+    // (the hero's words go between 0.55 and 0.7 of a screen down), and gives
+    // way to the last world's (worlds.css)
+    var pastHero = i > 0 || sy > AH * 0.64, lastWorld = i >= NW - 1;
+    if (pastHero !== lastPast) { root.classList.toggle("past-hero", pastHero); lastPast = pastHero; }
+    if (lastWorld !== lastLast) { root.classList.toggle("last-world", lastWorld); lastLast = lastWorld; }
 
     var wt = b < 0.8 ? i : i + 1, wd = inRoom ? NW - 1 : b < 0.5 ? i : i + 1;
     // arriving from another page, the header keeps the old world's colours
@@ -1984,7 +1997,7 @@
   }
   // The flame room is mounted once a visit. Leaving the home page keeps it
   // (and any conversation in it) aside, and coming back puts it back.
-  var AGENT_CSS = "/assets/agent.css?v=4304adc11d", FLAME_JS = "/assets/flame.js?v=5e57dbd6ed", AGENT_JS = "/assets/agent.js?v=3f3dabbaab";
+  var AGENT_CSS = "/assets/agent.css?v=4304adc11d", FLAME_JS = "/assets/flame.js?v=5e57dbd6ed", AGENT_JS = "/assets/agent.js?v=0274694642";
   function mountRoom(slot) {
     var host = slot.querySelector("#agent-embed");
     if (!host) return;
@@ -2029,8 +2042,10 @@
         m.classList.add("arrive");
         top0.insertBefore(m, top0.querySelector(".site-nav"));
       }
-      var g0 = top0.querySelector(".motion-toggle"), g1 = top1.querySelector(".motion-toggle");
-      if (g0 && g1) g0.setAttribute("href", g1.getAttribute("href"));
+      [".motion-toggle", ".nav-talk"].forEach(function (sel) {
+        var a0 = top0.querySelector(sel), a1 = top1.querySelector(sel);
+        if (a0 && a1) a0.setAttribute("href", a1.getAttribute("href"));
+      });
     }
 
     var main0 = document.querySelector("main"), main1 = document.importNode(doc.querySelector("main"), true);
@@ -2118,6 +2133,27 @@
     });
   }
 
+  // Straight to the conversation from anywhere on the home page: a smooth
+  // scroll would fast-forward every world on the way, so it jumps, and the
+  // fire carries the reader into the room as it does between pages. With a
+  // mouse the message box takes the focus; on a touch screen that would pop
+  // the keyboard over the room before it is seen.
+  function toRoom() {
+    var from = lastTheme >= 0 ? lastTheme : worldOf[0];
+    endBurn();
+    window.scrollTo({ top: anchorY(room), behavior: "instant" });
+    if (!RM) {
+      wiped = [].slice.call(document.querySelectorAll("main .pin"));
+      wipe(MIX_FROM);
+      root.classList.add("nav-enter");
+      burnIn = { from: from, start: performance.now(), dur: BURN };
+    }
+    var box = room.querySelector("textarea"), h = room.querySelector("h2");
+    if (box && !window.matchMedia("(hover: hover) and (pointer: fine)").matches) box = null;
+    if (!box && h) h.setAttribute("tabindex", "-1");
+    try { (box || h).focus({ preventScroll: true }); } catch (e) {}
+  }
+
   if (window.fetch && window.DOMParser && window.history && history.pushState) {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     document.addEventListener("click", function (e) {
@@ -2131,6 +2167,11 @@
           a.classList.add("on");
           setTimeout(function () { location.assign(a.href); }, 420);
         }
+        return;
+      }
+      if (a.getAttribute("href") === "#talk" && room) {
+        e.preventDefault();
+        toRoom();
         return;
       }
       if (a.getAttribute("href").charAt(0) === "#") return;

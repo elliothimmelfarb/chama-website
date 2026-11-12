@@ -1214,7 +1214,32 @@ footer {
   background: linear-gradient(var(--ember), var(--ember)) no-repeat 50% calc(100% - 5px) / calc(100% - 1.7rem) 2px;
 }
 @media (hover: hover) {
-  .site-nav a:not([aria-current="page"]):hover { color: var(--ember); }
+  .site-nav a:not([aria-current="page"], .nav-talk):hover { color: var(--ember); }
+}
+/* the way to the conversation, ember as on the animated header */
+.site-nav .nav-talk {
+  margin-left: 4px;
+  background: var(--ember);
+  color: #1a0a03;
+  font-weight: 700;
+  box-shadow: 0 6px 20px -8px rgba(244, 88, 31, 0.6);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+.site-nav .nav-talk:active { scale: 0.97; }
+.site-nav .nav-talk:focus-visible { outline-color: var(--ink); }
+.talk-glyph { display: none; width: 18px; height: 18px; flex: none; }
+/* on a phone the pages fill their rows, so it is a disc with a speech
+   bubble at the end of the lockup's row, beside the switch, its words kept
+   for screen readers */
+@media (max-width: 760px) {
+  .masthead { position: relative; }
+  .masthead:has(.nav-talk) .motion-toggle { margin-right: 38px; }
+  .site-nav .nav-talk { position: absolute; top: calc(clamp(1.2rem, 2.4vw, 2.3rem) + 2px); right: var(--pad); width: 30px; min-height: 30px; height: 30px; margin: 0; padding: 0; justify-content: center; }
+  .talk-glyph { display: block; }
+  .talk-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (hover: hover) {
+  .site-nav .nav-talk:hover { background: color-mix(in srgb, var(--ember) 88%, #fff); box-shadow: 0 0 0 4px rgba(244, 88, 31, 0.18), 0 6px 20px -8px rgba(244, 88, 31, 0.6); }
 }
 /* where the row has room (the home page's masthead has no notes), the
    pages stand beside the switch, as on the animated header */

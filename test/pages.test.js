@@ -157,6 +157,22 @@ for (const { words, worlds } of PAIRS) {
     assert.ok(links(header[0]).some((a) => a.href === "/simple" && /wordmark/.test(header[0])), "the lockup is not a link home");
   });
 
+  // The conversation is the site's one way in, so every page's header
+  // offers it: on the two home pages it is the room further down, elsewhere
+  // the agent full screen. The footers sit beside the room and need none.
+  for (const url of [worlds, words]) {
+    test(`${url} offers "Talk to us" from its header`, () => {
+      const html = read(url);
+      const header = /<header\b[\s\S]*?<\/header>/.exec(html);
+      const talk = links(header[0]).filter((a) => a.text === "Talk to us");
+      assert.equal(talk.length, 1, "the header has no single Talk to us link");
+      assert.equal(talk[0].href, url === "/" || url === "/simple" ? "#talk" : "/agent");
+      if (talk[0].href === "#talk") assert.ok(/\bid="talk"/.test(html), "the page has no #talk room to go to");
+      const footer = /<footer\b[\s\S]*<\/footer>/.exec(html);
+      assert.ok(!footer || !links(footer[0]).some((a) => a.text === "Talk to us"), "the footer repeats Talk to us");
+    });
+  }
+
   test(`${worlds} links into the simple version only through its simple-version links`, () => {
     const wordsUrls = new Set(PAIRS.map((p) => p.words));
     const strays = links(read(worlds))
