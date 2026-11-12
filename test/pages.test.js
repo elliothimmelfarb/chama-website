@@ -686,6 +686,15 @@ test("every rule that reads --u is on an element worlds.js writes it on", () => 
   }
   assert.ok(checked >= 6, "the rules that read --u were found");
 
+  // Chrome restyles everything inside an element whose --u changes, not
+  // inherited or not: the pin as a reader (for its ::before scrim) put
+  // every element of the worlds in view back into each scroll frame's
+  // style, and /built's stage as one doubled that page's. So a container of
+  // a world's contents is never a reader.
+  for (const box of [".world", ".pin", ".copy", ".made-stage", ".made-ticks", ".wheel"]) {
+    assert.ok(!readers.some((r) => r.length === 1 && r[0] === box), `${box} holds a world's contents, so writing --u on it restyles all of them every frame`);
+  }
+
   // A variable worked out from --u and registered not to inherit (--e, the
   // exit) is the same: every element that reads it must work it out itself,
   // from its own --u, or it sits at its initial value and nothing fades.

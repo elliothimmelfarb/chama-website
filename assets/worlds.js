@@ -1551,7 +1551,7 @@
   // --u is not inherited (worlds.css), so it is written on each element
   // whose rules read it, or read the exit (--e) worked out from it, and a
   // scroll frame restyles those alone
-  var U_READERS = ".pin, .r, .ticks b, .qs li";
+  var U_READERS = ".scrim, .r, .ticks b, .qs li";
   var lastU = [], readers = [];
   function setU(i, l, b) {
     for (var k = 0; k < NW; k++) {
@@ -1610,6 +1610,15 @@
     NW = sections.length;
     worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
     scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
+    // the shade behind the words: an element, not the pin's ::before, so
+    // the pin is not a reader of --u (worlds.css)
+    sections.forEach(function (s) {
+      var pin = s.firstElementChild;
+      if (pin.querySelector(":scope > .scrim")) return;
+      var scrim = document.createElement("div");
+      scrim.className = "scrim";
+      pin.insertBefore(scrim, pin.firstChild);
+    });
     readers = sections.map(function (s) { return [].slice.call(s.querySelectorAll(U_READERS)); });
     room = document.querySelector(".flame-room");
     footer = document.querySelector("body > footer");

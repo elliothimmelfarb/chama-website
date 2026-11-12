@@ -18,18 +18,19 @@
    elements that read it, not every node in the world. worlds.js writes it
    on each of them (U_READERS there); a pseudo-element takes it from its
    element with --u: inherit. A new rule that reads --u goes on one of
-   those, or joins the list (test/pages.test.js checks). A browser without
-   @property inherits it as before, from .world, which starts every reader
-   at the same 0.5.
+   those, or joins the list (test/pages.test.js checks). Never on a
+   container (a pin, the words' box): Chrome restyles everything inside an
+   element whose --u changes, so the scrim is an element of its own. A
+   browser without @property inherits it as before, from .world, which
+   starts every reader at the same 0.5.
 
    --e, what is left of a world as its pin leaves, is worked out from --u,
    so it is not inherited either: each element that reads it works it out
-   for itself (see .world), and so needs --u too.
+   for itself, and so needs --u too.
    ========================================================================== */
 
 @property --u { syntax: "<number>"; inherits: false; initial-value: 0.5; }
 @property --e { syntax: "<number>"; inherits: false; initial-value: 1; }
-.pin::before { --u: inherit; }
 
 :root {
   --ember: #f4581f;
@@ -445,7 +446,7 @@ main { position: relative; z-index: 2; }
    past it the pin is, in --pin-len a unit once it has let go and --hold-len
    before), over the fade's length. worlds.js measures the lengths
    (exitOf there is the same sum). */
-.pin::before, .r { --e: clamp(0, (var(--exit-at, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len, 1), 1); }
+.scrim, .r { --e: clamp(0, (var(--exit-at, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len, 1), 1); }
 
 .pin {
   position: sticky;
@@ -455,9 +456,9 @@ main { position: relative; z-index: 2; }
   overflow: hidden;
 }
 
-/* A soft shade behind the words, so they read on any part of a world. */
-.pin::before {
-  content: "";
+/* A soft shade behind the words, so they read on any part of a world.
+   worlds.js puts one at the start of each pin (bind). */
+.scrim {
   position: absolute;
   top: -10%;
   bottom: -10%;
@@ -1130,7 +1131,7 @@ html:has(main .ledger) .top::before {
   html.head-compact .top .worlds-members,
   html.head-compact .top .motion-toggle { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0s linear 0.25s; }
   .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
-  .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
+  .scrim { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
   .copy,
   .hero .copy {
     left: 16px;
@@ -1271,9 +1272,8 @@ html:has(main .ledger) .top::before {
 .made-ticks { display: none; }
 
 /* without JavaScript: the things, one under another */
-html:not(.js) .devices-world { height: auto; background: var(--bg); }
-html:not(.js) .devices-world .pin { position: static; height: auto; overflow: visible; padding: 0; }
-html:not(.js) .devices-world .pin::before { display: none; }
+html:not(.js) .devices-world { background: var(--bg); }
+html:not(.js) .devices-world .pin { position: static; padding: 0; }
 .made-stage { width: min(100%, 84rem); margin-inline: auto; padding: clamp(6rem, 13vh, 8rem) var(--pad) clamp(4rem, 10vh, 6rem); }
 .made { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; margin-top: clamp(4rem, 12vh, 7rem); }
 .made .made-words { grid-column: 1; grid-row: 1; }
@@ -1362,7 +1362,7 @@ html:not(.js) .top { position: absolute; }
 /* hidden, not removed: worlds.js sizes everything from this canvas */
 html:not(.js) #actors { visibility: hidden; }
 html:not(.js) .worlds,
-html:not(.js) .pin::before,
+html:not(.js) .scrim,
 html:not(.js) .cap,
 html:not(.js) .cue,
 html:not(.js) .ticks,
