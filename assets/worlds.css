@@ -1409,7 +1409,7 @@ html:not(.js) body > footer { margin-top: 0; }
    plates on the light grid, so dark marks stay legible). The words and the
    spokes become the grid's own items (display: contents), and dense placement
    puts each spoke in the first free row of the first column: its client's. */
-html:not(.js) .wheel-world .pin { display: grid; grid-template-columns: clamp(4.5rem, 22vw, 9rem) minmax(0, 36rem); grid-auto-flow: dense; column-gap: clamp(1.25rem, 4vw, 3rem); align-items: start; }
+html:not(.js) .wheel-world .pin { display: grid; grid-template-columns: clamp(5.5rem, 26vw, 9rem) minmax(0, 36rem); grid-auto-flow: dense; column-gap: clamp(1.25rem, 4vw, 3rem); align-items: start; }
 html:not(.js) .wheel-world :is(.copy, .turns, .wheel) { display: contents; }
 html:not(.js) .turns .turn-intro { grid-column: 1 / -1; }
 html:not(.js) .spoke { position: relative; grid-column: 1; width: 100%; height: auto; aspect-ratio: 1; opacity: 1; will-change: auto; }
@@ -1429,6 +1429,8 @@ html:not(.js) .spoke-mark { font-size: clamp(0.95rem, 3.6vw, 1.6rem); }
   .world, .made { break-inside: avoid; }
   body > footer { background: none !important; box-shadow: none; }
   .dir > * { animation: none; }
+  /* the client's shape, even where background graphics are off */
+  .spoke-plate { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   /* a picture not fetched yet would print as an empty screen */
   .rig:has(.screen > img[data-src]) { display: none; }
 }
