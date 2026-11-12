@@ -22,9 +22,12 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 // An address as a quoted literal, with or without its version.
 const ADDRESS = /(["'])\/assets\/([\w./-]+?\.(?:js|css))(?:\?v=([^"']*))?\1/g;
 // Any mention of a script or stylesheet under /assets, quoted or not.
-const MENTION = /\/assets\/[\w./-]+?\.(?:js|css)\b/g;
-// An address put together at run time, which no stamp can reach.
-const BUILT = /["'`]\/assets\/["'`]?\s*\+|`\/assets\/[^`]*\$\{/;
+const MENTION = /\/assets\/[\w./-]+?\.(?:js|css)(?![\w.-])/g;
+// The ways an address escapes the stamp: written relative to the page, put
+// together at run time, or handed to a worker as anything but a literal.
+const RELATIVE = /\b(?:src|href)\s*=\s*["']?((?:\.{1,2}\/)*assets\/[\w./-]+?\.(?:js|css))(?![\w.-])/g;
+const BUILT = /["'`]\/assets\/[^"'`\n]*["'`]\s*\+|`\/assets\/[^`]*\$\{/;
+const LOADER = /\b(importScripts|new (?:Shared)?Worker)\s*\(\s*(?!["']\/assets\/)([^)]*)\)/g;
 
 export const versionOf = (text) => createHash("sha256").update(text).digest("hex").slice(0, 10);
 
@@ -84,6 +87,12 @@ export function problems(files) {
     }
     for (const m of text.matchAll(MENTION)) {
       if (!quoted.has(m.index)) found.push(`${file}: ${m[0]} is not a quoted address, so it cannot carry a version.`);
+    }
+    for (const m of text.matchAll(RELATIVE)) {
+      found.push(`${file}: ${m[1]} is a relative address. Write it from the root, /assets/..., so it can carry its version.`);
+    }
+    for (const m of text.matchAll(LOADER)) {
+      found.push(`${file}: ${m[1]}(${m[2].trim()}) does not start a quoted /assets/ address, so it cannot carry a version.`);
     }
   }
   return found;

@@ -225,11 +225,11 @@ Why this scheme: the HTML is always revalidated, and it names the exact bytes of
 
 The rules `scripts/stamp.js` keeps, and `test/stamp.test.js` enforces:
 
-- Every address is a whole quoted literal: the pages' tags, the router's flame room addresses in `worlds.js`, the Worker in `agent.js`, `importScripts` in `flame-worker.js`, and the Hearth's parts in `hearth-room.html`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
+- Every address is a whole quoted literal from the root: the pages' tags, the router's flame room addresses in `worlds.js`, the Worker in `agent.js`, `importScripts` in `flame-worker.js`, and the Hearth's parts in `hearth-room.html`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
 - A file's version covers the versions it carries, so changing `flame.js` re-versions `flame-worker.js`, `agent.js`, `worlds.js` and the pages. `npm run stamp` repeats until nothing moves.
 - The router only swaps in a page whose scripts and stylesheets the running page already has (or the flame room's three). Anything else is another deploy and gets a full load.
 
-One gap remains: if production switches deploy between a browser getting the HTML and its scripts, it runs the new scripts for that view and keeps them under the old address. Closing it would take Vercel's Skew Protection, which needs the deployment id in every address and so a build step.
+One gap remains: if production switches deploy between a browser getting the HTML and its scripts, it runs the new scripts for that view and keeps them under the old address for a year. That only shows again if that old HTML is served again, which an instant rollback does; after a rollback, a visitor who hit that window needs a hard reload. Closing it would take Vercel's Skew Protection, which needs the deployment id in every address and so a build step.
 
 ### DNS
 

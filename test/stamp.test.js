@@ -43,9 +43,13 @@ test("each wrong address is named with its file", () => {
       '<script src="/assets/a.js"></script>',
       '<script src="/assets/a.js?v=0123456789"></script>',
       '<script src="/assets/gone.js?v=0123456789"></script>',
-      "<script src=/assets/a.js></script>"
+      "<script src=/assets/a.js></script>",
+      '<script src="assets/a.js"></script>',
+      '<link rel="stylesheet" href="/assets/a.css.map">'
     ].join("\n"),
     "assets/b.js": 'load("/assets/" + name + ".js");',
+    "assets/c.js": 'load("/assets/hearth-" + name + ".js");',
+    "assets/d.js": 'importScripts("flame.js"); new Worker(src);',
     "page.test.js": 'read("/assets/a.js");'
   });
   assert.deepEqual(problems(files), [
@@ -53,6 +57,10 @@ test("each wrong address is named with its file", () => {
     `page.html: /assets/a.js carries v=0123456789, but the file is v=${versionOf("a")}.`,
     "page.html: /assets/gone.js does not exist.",
     "page.html: /assets/a.js is not a quoted address, so it cannot carry a version.",
-    "assets/b.js: puts an /assets/ address together at run time. Write each address out whole, so it can carry its version."
+    "page.html: assets/a.js is a relative address. Write it from the root, /assets/..., so it can carry its version.",
+    "assets/b.js: puts an /assets/ address together at run time. Write each address out whole, so it can carry its version.",
+    "assets/c.js: puts an /assets/ address together at run time. Write each address out whole, so it can carry its version.",
+    "assets/d.js: importScripts(\"flame.js\") does not start a quoted /assets/ address, so it cannot carry a version.",
+    "assets/d.js: new Worker(src) does not start a quoted /assets/ address, so it cannot carry a version."
   ]);
 });
