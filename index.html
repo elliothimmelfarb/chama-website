@@ -347,5 +347,17 @@
       if (host && window.ChamaAgent) window.ChamaAgent.mount(host, { mode: "embed" });
     });
   </script>
+  <!-- the plain pages these leave for, fetched on hover or press; the
+       router fetches its own pages itself -->
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "source": "document", "where": { "and": [
+        { "href_matches": "/*" },
+        { "not": { "href_matches": ["/", "/coaching", "/built", "/clients", "/about", "/*.*"] } }
+      ] }, "eagerness": "moderate" }
+    ]
+  }
+  </script>
 </body>
 </html>

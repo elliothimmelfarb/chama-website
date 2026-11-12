@@ -989,8 +989,13 @@ footer {
   text-decoration: none;
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, scale 0.16s cubic-bezier(0.23, 1, 0.32, 1);
 }
+/* pressing, in the animated pages' language (worlds.css): a control sinks,
+   a link dims, and no tap box */
+.motion-toggle:active { scale: 0.96; }
+:is(main, body > footer) a:not(.chama-agent a) { -webkit-tap-highlight-color: transparent; }
+:is(main, body > footer) a:not(.chama-agent a):active { opacity: 0.6; }
 
 .motion-track {
   position: relative;

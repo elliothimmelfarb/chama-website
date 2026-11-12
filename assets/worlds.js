@@ -1320,14 +1320,17 @@
 
   // ---- scroll ------------------------------------------------------------------------
   var tops = [], hs = [], pins = [];
+  // every read first, then every write: a read after a write forces the
+  // browser to lay the page out again, and this runs as a new page appears
   function measure() {
     var y = window.scrollY;
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
-    root.classList.toggle("foot-over", !room && !!footer);
-    root.style.setProperty("--head-lift", headLift() + "px");
+    var lift = headLift(), foot = footer ? footer.offsetHeight : 0;
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
+    root.classList.toggle("foot-over", !room && !!footer);
+    root.style.setProperty("--head-lift", lift + "px");
     sections.forEach(function (s, k) {
       var S = stacks[k];
       s.style.setProperty("--copy-b", S ? Math.round(S.copyB) + "px" : "");
@@ -1335,7 +1338,7 @@
       s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
       s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
     });
-    if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
+    if (footer) root.style.setProperty("--foot", foot + "px");
   }
   function scrollState() {
     var y = window.scrollY, i = 0;
@@ -1649,9 +1652,14 @@
   }
   var here = pathOf(location);
 
+  // a fetch that hangs rather than fails gives up, and the visitor gets an
+  // ordinary navigation instead of an empty sky
+  var GIVE_UP = 8000;
   function fetchPage(path) {
     if (!cache[path]) {
-      cache[path] = fetch(path, { credentials: "same-origin" }).then(function (r) {
+      var opts = { credentials: "same-origin" };
+      if (window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(GIVE_UP);
+      cache[path] = fetch(path, opts).then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.text();
       });
@@ -1660,27 +1668,44 @@
     return cache[path];
   }
 
-  // the burn from the old page's world into the new one, read by the loop
+  // the burn from the old page's world into the new one, read by the loop.
+  // The shader's fire line stands at -0.4 + 1.8 * mix of the screen's
+  // height from the bottom, and its flames reach about 0.3 above the line,
+  // so the burn starts where they first touch the screen, not below it. It
+  // answers a tap, so it eases out: fast through the words, slowing as it
+  // passes the header.
+  var BURN = 850, MIX_FROM = 0.06;
+  // The new words show just behind the fire line: --wipe is written on the
+  // arriving page's pins, the only thing that reads it, and is registered
+  // not to inherit (worlds.css), so each frame restyles those pins alone.
+  // On <html> it restyled the whole document, about 10ms a frame on a phone.
+  var wiped = [];
+  function wipe(m) {
+    var v = m === null ? null : ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%";
+    wiped.forEach(function (pin) {
+      if (v === null) pin.style.removeProperty("--wipe");
+      else pin.style.setProperty("--wipe", v);
+    });
+    if (v === null) wiped = [];
+  }
+  function endBurn() {
+    burnIn = null;
+    root.classList.remove("nav-enter");
+    wipe(null);
+  }
   function crossing(b) {
     if (!burnIn) return null;
     var p = clamp((performance.now() - burnIn.start) / burnIn.dur);
-    var m = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(2 - 2 * p, 3) / 2;
-    // the shader's fire line stands at -0.4 + 1.8 * mix of the screen's
-    // height from the bottom; the new words show just behind it
-    root.style.setProperty("--wipe", ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%");
-    if (p >= 1) {
-      burnIn = null;
-      root.classList.remove("nav-enter");
-      root.style.removeProperty("--wipe");
-      return null;
-    }
+    var m = MIX_FROM + (1 - MIX_FROM) * (1 - Math.pow(1 - p, 3));
+    if (p >= 1) { endBurn(); return null; }
+    wipe(m);
     return b > 0.001 ? null : { from: burnIn.from, mix: m };
   }
 
   function figureAlpha() {
     var now = performance.now();
-    if (leaveAt) return 1 - clamp((now - leaveAt) / 300);
-    if (burnIn) return sm(0, 1, (now - burnIn.start) / 400);
+    if (leaveAt) return 1 - clamp((now - leaveAt) / LIFT);
+    if (burnIn) return sm(0, 1, (now - burnIn.start) / 300);
     return 1;
   }
 
@@ -1761,22 +1786,46 @@
     root.classList.remove("room-pinned");
   }
 
+  // A second tap never makes the wait longer: the same link again is
+  // ignored, another link keeps the lift already under way, and the page
+  // in view cancels the change. A fetch still out when the words have gone
+  // marks the header as waiting (.nav-wait), so the tap visibly took.
+  var LIFT = 200, going = null, waitT = 0;
+  function settleNav() {
+    going = null;
+    leaveAt = 0;
+    clearTimeout(waitT);
+    root.classList.remove("nav-leave", "nav-wait");
+  }
+  function stay() {
+    navSeq++;
+    settleNav();
+    setCurrent(here);
+  }
   function go(u, push) {
     var path = pathOf(u), seq = ++navSeq;
     var from = lastTheme >= 0 ? lastTheme : worldOf[0];
-    if (push) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
+    if (push && !going) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
+    going = path;
     setCurrent(path);
-    root.classList.remove("nav-enter");
+    endBurn();
     root.classList.add("nav-leave");
-    leaveAt = RM ? 0 : performance.now();
-    var lift = new Promise(function (res) { setTimeout(res, RM ? 0 : 380); });
-    Promise.all([fetchPage(path), lift]).then(function (r) {
+    var now = performance.now();
+    if (!RM && !leaveAt) leaveAt = now;
+    var left = RM ? 0 : Math.max(0, LIFT - (now - leaveAt));
+    var lift = new Promise(function (res) { setTimeout(res, left); });
+    var page = fetchPage(path), ready = false;
+    page.then(function () { ready = true; }, function () {});
+    clearTimeout(waitT);
+    waitT = setTimeout(function () { if (seq === navSeq && !ready) root.classList.add("nav-wait"); }, left);
+    Promise.all([page, lift]).then(function (r) {
       if (seq !== navSeq) return;
       var doc = new DOMParser().parseFromString(r[0], "text/html");
       var main = doc.querySelector("main");
       if (!main || !main.querySelector(".world")) throw new Error("not an animated page");
       if (push) history.pushState({ y: 0 }, "", u.pathname + u.search + u.hash);
       swap(doc);
+      root.classList.add("routed");
       here = path;
       bind();
       resize();
@@ -1789,12 +1838,12 @@
         target.classList.add("is-target");
       }
       window.scrollTo({ top: y, behavior: "instant" });
-      root.classList.remove("nav-leave");
-      leaveAt = 0;
+      settleNav();
       if (!RM) {
-        root.style.setProperty("--wipe", "-40%");
+        wiped = [].slice.call(document.querySelectorAll("main .pin"));
+        wipe(MIX_FROM);
         root.classList.add("nav-enter");
-        burnIn = { from: from, start: performance.now(), dur: 1500 };
+        burnIn = { from: from, start: performance.now(), dur: BURN };
       }
       var h = document.querySelector("main h1");
       if (h) {
@@ -1825,6 +1874,11 @@
       var u = new URL(a.href, location.href);
       if (u.origin !== location.origin || !PAGES[pathOf(u)]) return;
       e.preventDefault();
+      if (going) {
+        if (pathOf(u) === here) stay();
+        else if (pathOf(u) !== going) go(u, true);
+        return;
+      }
       if (pathOf(u) === here) {
         var t = u.hash && document.getElementById(u.hash.slice(1));
         if (t && pinnedY(t) !== null) window.scrollTo({ top: pinnedY(t), behavior: RM ? "auto" : "smooth" });
@@ -1836,7 +1890,8 @@
     });
     window.addEventListener("popstate", function () {
       var path = pathOf(location);
-      if (path !== here && PAGES[path]) go(new URL(location.href), false);
+      if (path === here) { if (going) stay(); }
+      else if (PAGES[path]) go(new URL(location.href), false);
     });
     // the next page is usually fetched before it is asked for
     var warm = function (e) {
@@ -1849,7 +1904,8 @@
     document.addEventListener("touchstart", warm, { passive: true });
     document.addEventListener("focusin", warm);
     var save = navigator.connection && navigator.connection.saveData;
-    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(function (p) { if (p !== here) fetchPage(p); }); }, 3000);
+    // the page in view too, so Back to the page the visit began on is warm
+    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(fetchPage); }, 3000);
   }
 
   bind();
@@ -1857,7 +1913,7 @@
   // a link straight to a client on the wheel (/clients#toraya-lisboa) turns
   // the wheel to them, and one to a thing on /built (/built#shopintake) puts
   // it on the screens, rather than the browser's jump to the top of the pin
-  function toHashTurn() {
+  function toHashTurn(smooth) {
     var t = location.hash && document.getElementById(location.hash.slice(1));
     if (!t || !(t.classList.contains("turn") || t.classList.contains("made"))) return;
     // the browser's own jump to the anchor scrolls the clipped pin itself,
@@ -1865,16 +1921,33 @@
     var pin = t.closest(".pin");
     if (pin) pin.scrollTop = 0;
     measure();
-    window.scrollTo(0, pinnedY(t));
+    window.scrollTo({ top: pinnedY(t), behavior: smooth === true && !RM ? "smooth" : "instant" });
   }
   requestAnimationFrame(toHashTurn);
   window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });
-  // a small logo on the wheel turns the wheel to that client
+  // Back and Forward between the things on /built (or clients on the wheel)
+  window.addEventListener("hashchange", function () { toHashTurn(true); });
+  // a small logo on the wheel turns the wheel to that client, and a bar of
+  // /built's progress bar puts its thing on the screens: the browser's own
+  // jump would find the anchor already "in view" in its sticky pin and not
+  // scroll at all
   document.addEventListener("click", function (e) {
     var sp = e.target.closest && e.target.closest(".spoke");
-    if (!sp) return;
-    var y = wheelY(sp);
-    if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+    if (sp) {
+      var y = wheelY(sp);
+      if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+      return;
+    }
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    var t = a && document.getElementById(a.getAttribute("href").slice(1));
+    var ty = t ? pinnedY(t) : null;
+    if (ty === null) return;
+    e.preventDefault();
+    if (location.hash !== "#" + t.id) { try { history.pushState({ y: ty }, "", "#" + t.id); } catch (err) {} }
+    var pin = t.closest(".pin");
+    if (pin) pin.scrollTop = 0;
+    window.scrollTo({ top: ty, behavior: RM ? "auto" : "smooth" });
   });
   seedParticles();
   ptr.sx = AW / 2;
