@@ -2,7 +2,7 @@
    The Hearth, the owner's side of sessions: the calendar, the packs, the
    purchases and the week's availability.
 
-   Loaded after hearth.js and hearth-admin.js, and speaking to the room the
+   Loaded after hearth.js and hearth-sessions.js, and speaking to the room the
    same way: window.Hearth for the routes, the wire and the DOM helpers, and
    only classes that already exist in hearth.css.
 

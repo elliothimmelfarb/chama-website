@@ -26,6 +26,7 @@ import {
   publicUser, countOwners, promoteIfAdmin, adminEmails
 } from "../lib/hearth/users.js";
 import { PERMISSIONS, ROLE_DEFAULTS, ROLE_NAMES, sanitizePermissionList } from "../lib/hearth/permissions.js";
+import { roomModulesFor } from "../lib/hearth/modules.js";
 import { isValidZone } from "../lib/hearth/time.js";
 import { audit, auditor, EVENTS } from "../lib/hearth/audit.js";
 import * as mail from "../lib/hearth/mail.js";
@@ -257,7 +258,8 @@ route("GET", "/me", async (context) => {
     // Open invoices are the person's own, whoever is looking: the room shows
     // a notice for them on arrival.
     openInvoices: invoices.open,
-    invoices: invoices.total
+    invoices: invoices.total,
+    modules: roomModulesFor(permissions)
   });
 });
 

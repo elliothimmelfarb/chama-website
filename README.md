@@ -117,9 +117,9 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 | File | What it is |
 |---|---|
 | `hearth-public.html` | The public page at `/hearth` for anyone without a session cookie: what the room is, for prospective coaching clients. Indexable, with its own sharing card (`og-hearth-2026-10-22.png` from `brand/og/og-hearth.html`). Static: it loads nothing from the room and calls no endpoint. |
-| `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. |
+| `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. It paints the bar at once and asks `/config` and `/me` from an inline script while `hearth.js` downloads. |
 | `assets/hearth.js`, `assets/hearth.css` | The core app (router, sign-in, frame, account) and design. No `innerHTML` anywhere in the room. |
-| `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. |
+| `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. `hearth.js` loads only the ones `/me` names for the member's permissions, from the list in `lib/hearth/modules.js`. A new file goes on that list, or `modules.test.js` fails. |
 | `api/hearth.js` | The router behind `/api/hearth/*`. The routes are in `lib/hearth/routes/`. |
 | `lib/hearth/` | Database and migrations, auth, users, providers, permissions, audit, mail, time and slots, calendar files, transcript records, the OAuth server and the MCP server. |
 | `api/mcp.js`, `api/oauth.js` | `/mcp` and the OAuth 2.1 endpoints with their well-known documents. |
@@ -132,6 +132,8 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 `/hearth` is two pages on one address, chosen in `vercel.json` by the session cookie: with `__Host-chama_hearth` it rewrites to the room (`hearth-room.html`, `noindex`, the room's CSP), without it to the public page (`hearth-public.html`). Crawlers and link previews never carry the cookie, so they always get the public page. `/hearth/*` is always the room and stays `noindex` and disallowed in `robots.txt`. Sign-in errors land on `/hearth/sign-in?error=...`, and a signed-in member who opens `/hearth/sign-in` is moved to Home. `vercel dev` ignores `has` conditions, so check the routing on a preview deployment with and without the cookie.
 
 The navigation is built from each page's `register(..., { nav })`: an unlabelled daily list, then Money and Setup. An entry with `hideFor` is hidden from anyone holding that permission, which is how the owner sees Sessions, Session records and Client notes for the whole business instead of his own empty member pages. The owner's "See it as a member" opens the room as a chosen member sees it, read-only (view-as). On a phone the first four entries are tabs and the rest sit under More.
+
+Loading a part only for those who can use it saves bytes; it never guards anything. Every API route checks its own permission, and the page's `can()` only decides what to draw.
 
 ### Data
 

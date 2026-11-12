@@ -149,6 +149,16 @@ test("GET /me is 401 without a session and the actor with one", async () => {
   assert.equal(payload.settings.sessionMinutes, SETTING_DEFAULTS.session_minutes);
 });
 
+test("GET /me names the parts of the room the member's permissions open", async () => {
+  useClient(signedIn({ permissions: ["hearth.enter", "feed.read", "sessions.own", "transcripts.own"] }));
+  const client = await body(await handleHearth(hearth("/me", { cookie: "a-session-token" })));
+  assert.deepEqual(client.modules, ["hearth-sessions", "hearth-transcripts", "hearth-remember", "hearth-feed", "hearth-ask"]);
+
+  useClient(signedIn({ role: "staff", permissions: ["hearth.enter", "members.read", "transcripts.manage"] }));
+  const staff = await body(await handleHearth(hearth("/me", { cookie: "a-session-token" })));
+  assert.deepEqual(staff.modules, ["hearth-admin", "hearth-sessions", "hearth-transcripts-admin"]);
+});
+
 test("a magic link is refused for a bad address", async () => {
   useClient(fakeDb());
   const response = await handleHearth(

@@ -10,3 +10,6 @@ evals/
 
 # Page tests. Run locally with `npm run check`.
 test/
+
+# The check runner. Run locally with `npm run check`.
+scripts/
