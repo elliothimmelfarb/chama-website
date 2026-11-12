@@ -1240,7 +1240,9 @@ html.js .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
 html.js .made-words, html.js .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
 html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
 /* each bar is a link to its thing, with a taller target than it looks */
-html.js .devices-world .made-stage, html.js .made-ticks { opacity: var(--e); }
+/* the dark devices are gone in the first 40% of the way, so they never
+   linger as a grey slab over the light grid */
+html.js .devices-world .made-stage, html.js .made-ticks { opacity: clamp(0, (var(--e) - 0.6) * 2.5, 1); }
 html.js .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw - 104rem) / 2) + var(--pad)); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
 .made-ticks a { position: relative; flex: 1; height: 27px; }
 .made-ticks a::before, .made-ticks a::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; border-radius: 2px; }
@@ -1295,6 +1297,7 @@ html.js .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw
 html:not(.js) .top { position: absolute; }
 /* hidden, not removed: worlds.js sizes everything from this canvas */
 html:not(.js) #actors { visibility: hidden; }
+html:not(.js) .worlds,
 html:not(.js) .pin::before,
 html:not(.js) .cap,
 html:not(.js) .cue,

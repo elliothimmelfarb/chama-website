@@ -1200,6 +1200,11 @@ footer {
 @media (hover: hover) {
   .site-nav a:not([aria-current="page"]):hover { color: var(--ember); }
 }
+/* where the row has room (the home page's masthead has no notes), the
+   pages stand beside the switch, as on the animated header */
+@media (min-width: 1180px) {
+  .masthead:not(:has(.masthead-notes)) .site-nav { grid-row: 1; grid-column: auto; margin-top: 0; }
+}
 
 @media (max-width: 760px) {
   .masthead > .masthead-notes,
