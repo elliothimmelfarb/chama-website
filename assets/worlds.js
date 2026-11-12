@@ -93,6 +93,10 @@
   if (!sky || !act) return;
   var ctx = act.getContext("2d");
   var AW = 0, AH = 0, ADPR = 1, quality = 1;
+  // past 120rem the figures keep to a centred stage, SW wide from SX, as the
+  // words do (worlds.css, --stage); sx(f) is a fraction of the way across it
+  var SW = 0, SX = 0;
+  function sx(f) { return SX + SW * f; }
 
   function initGL() { return window.ChamaSky ? window.ChamaSky.init(sky) : null; }
   var GL = initGL();
@@ -111,6 +115,8 @@
     ADPR = Math.min(window.devicePixelRatio || 1, 2);
     AW = act.clientWidth;
     AH = act.clientHeight;
+    SW = Math.min(AW, 120 * (parseFloat(getComputedStyle(root).fontSize) || 16));
+    SX = (AW - SW) / 2;
     act.width = Math.round(AW * ADPR);
     act.height = Math.round(AH * ADPR);
   }
@@ -161,7 +167,7 @@
     // the wheel's world is all scrolling, so its header folds almost at once
     var top = headBottom() - (k > 0 || allScroll(sec) ? headLift() : 0) + 20, avail = H - base - foot - gap - ch - top;
     var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
-    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
+    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(SW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
     if (scene.box) { up = 0; down = AH * (P ? 0.34 : 0.62); }
     else if (card) { up = 0; down = Math.min(Math.max(card.offsetHeight, 120), Math.max(avail, 110)); fixed = true; }
@@ -189,11 +195,11 @@
       var tl = scene.tall || [0.5, 0.26, 1], r = Math.min(AW * 0.27, AH * 0.16);
       L = { cx: AW * tl[0], cy: AH * tl[1], R: r * tl[2] };
     } else {
-      var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(AW * 0.16, AH * 0.27);
-      L = { cx: AW * at[0], cy: AH * at[1], R: R0 * at[2] };
+      var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(SW * 0.16, AH * 0.27);
+      L = { cx: sx(at[0]), cy: AH * at[1], R: R0 * at[2] };
     }
     if (P) L.box = S ? { x: 16, y: S.top, w: AW - 32, h: S.h } : { x: 16, y: AH * 0.1 + 10, w: AW - 32, h: AH * 0.34 };
-    else L.box = { x: AW * 0.47, y: AH * 0.17, w: AW * 0.44, h: AH * 0.62 };
+    else L.box = { x: sx(0.47), y: AH * 0.17, w: SW * 0.44, h: AH * 0.62 };
     if (scene.box) { L.cx = L.box.x + L.box.w / 2; L.cy = L.box.y + L.box.h / 2; L.R = Math.min(L.box.w, L.box.h) / 2; }
     L.top = S ? S.top : AH * 0.31 - 60;
     L.h = S ? S.h : 120;
@@ -866,7 +872,7 @@
     var r = plate.getBoundingClientRect();
     if (r.width < 2) return;
     var P = L.portrait;
-    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(AW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
+    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(SW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
     var tx = r.left + r.width * 0.12, ty = r.bottom - r.height * 0.1;
     var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(0.0, 0.3, l);
     c.save();
@@ -922,8 +928,8 @@
       var bigP = Math.min(AW * 0.44, AH * 0.19, B.h * 0.9);
       return { cx: AW * 0.6, cy: B.y + B.h / 2, rx: AW * 0.145, ry: Math.max(0, Math.min(AH * 0.128, B.h / 2 - bigP * 0.16)), big: bigP, far: 0.28, step: step };
     }
-    var bigW = Math.min(AH * 0.33, AW * 0.23);
-    return { cx: AW * 0.68, cy: AH * 0.53, rx: AW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
+    var bigW = Math.min(AH * 0.33, SW * 0.23);
+    return { cx: sx(0.68), cy: AH * 0.53, rx: SW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
   }
   // where along the wheel the page is: first the introduction, the wheel
   // turning in with no one in focus; then each client holds and the wheel turns
@@ -1009,7 +1015,7 @@
     // on a phone the shapes gather in the room between the header (still
     // full height before the first scroll) and the opening words
     var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + headLift() : B.y, bh = B.y + B.h - by;
-    var hx = P ? AW / 2 : AW * 0.66, hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(AW * 0.16, AH * 0.27);
+    var hx = P ? AW / 2 : sx(0.66), hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(SW * 0.16, AH * 0.27);
     var fly = sm(0.08, 0.82, k), fade = 1 - sm(0.42, 0.86, k);
     if (fade <= 0.002) return;
     c.save();
@@ -1183,7 +1189,7 @@
     var P = L.portrait, p = P ? sm(0.42, 0.92, l) : sm(0.1, 0.72, l);
     var x0, x1, y;
     if (P) { x0 = 34; x1 = AW - 30; y = L.top + Math.max(L.h - 34, 96); }
-    else { x0 = AW * 0.5; x1 = AW * 0.9; y = AH * 0.8; }
+    else { x0 = sx(0.5); x1 = sx(0.9); y = AH * 0.8; }
     var xNow = x0 + (x1 - x0) * 0.86, step = (xNow - x0) / 10, x23 = x0 + step * 7;
     var silver = [214, 222, 255], show = a * (P ? sm(0.36, 0.44, l) : 1);
     if (show < 0.01) return;

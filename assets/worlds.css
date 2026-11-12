@@ -19,6 +19,12 @@
   --ember: #f4581f;
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --pad: clamp(16px, 4.6vw, 4.5rem);
+  /* past 120rem the worlds' words, figures and header keep to a centred
+     stage, as /built's things keep to theirs; worlds.js places the drawn
+     figures on the same stage */
+  --stage: min(100vw, 120rem);
+  --side: calc((100vw - var(--stage)) / 2);
+  --edge: calc(var(--side) + var(--pad));
 }
 
 [data-theme="paper"] { --fg: #141412; --fg2: #57544d; --accent: #f4581f; --scrim: rgba(243, 240, 232, 0); --bg: #f3f0e8; --track: rgba(20, 20, 18, 0.1); }
@@ -102,8 +108,8 @@ html:not(.gl) #sky { display: none; }
   position: fixed;
   z-index: 6;
   top: calc(16px + env(safe-area-inset-top));
-  left: var(--pad);
-  right: var(--pad);
+  left: var(--edge);
+  right: var(--edge);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -437,7 +443,7 @@ html:not(.js) .r { opacity: 1; transform: none; }
 
 .copy {
   position: absolute;
-  left: var(--pad);
+  left: var(--edge);
   top: 50%;
   width: min(40vw, 35rem);
   transform: translateY(-50%);
@@ -477,7 +483,7 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
 
 .cue {
   position: absolute;
-  left: var(--pad);
+  left: var(--edge);
   bottom: calc(26px + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
@@ -575,8 +581,8 @@ html:not(.js) .slot { display: block; }
   rotate: var(--tilt, -2deg);
 }
 .card img { display: block; width: 100%; height: auto; border-radius: 1px; }
-.card-family { --tilt: 2.2deg; right: 13vw; top: 50%; width: min(24vw, 21rem); translate: 0 -50%; }
-.card-founder { --tilt: -2.4deg; right: 17vw; top: 12vh; width: min(17vw, 14.5rem); }
+.card-family { --tilt: 2.2deg; right: calc(var(--side) + var(--stage) * 0.13); top: 50%; width: min(24vw, 21rem); translate: 0 -50%; }
+.card-founder { --tilt: -2.4deg; right: calc(var(--side) + var(--stage) * 0.17); top: 12vh; width: min(17vw, 14.5rem); }
 
 /* The founder's identity, as on /about. */
 .role { margin-top: -0.4rem !important; color: var(--fg) !important; }
@@ -663,7 +669,7 @@ html.room-pinned { overflow: hidden; overscroll-behavior: none; }
 footer {
   position: relative;
   z-index: 3;
-  padding: 14px var(--pad) max(16px, calc(env(safe-area-inset-bottom) + 10px));
+  padding: 14px var(--edge) max(16px, calc(env(safe-area-inset-bottom) + 10px));
   color: var(--fg2);
   font-size: 0.78rem;
   background: #0e0c0a;
@@ -805,7 +811,7 @@ html:not(.js) .wheel { display: none; }
    light on every ground, so each logo keeps its own colours. */
 .logo-plate {
   position: absolute;
-  right: 12vw;
+  right: calc(var(--side) + var(--stage) * 0.12);
   top: 50%;
   width: min(30vw, 27rem);
   aspect-ratio: 1.12;
@@ -947,7 +953,7 @@ html:has(main .directory) .top[data-theme="forge"]::before {
   z-index: 2;
   display: grid;
   gap: clamp(3.5rem, 8vw, 6rem);
-  padding: clamp(3rem, 7vw, 5.5rem) var(--pad) clamp(7rem, 12vw, 9rem);
+  padding: clamp(3rem, 7vw, 5.5rem) var(--edge) clamp(7rem, 12vw, 9rem);
   color: var(--fg);
 }
 html:not(.gl) .ledger { background: var(--bg); }
@@ -1211,7 +1217,7 @@ html.js .made-words, html.js .made-open > * { opacity: 0; visibility: hidden; tr
 html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
 /* each bar is a link to its thing, with a taller target than it looks */
 html.js .devices-world .made-stage, html.js .made-ticks { opacity: var(--e); }
-html.js .made-ticks { position: absolute; z-index: 3; left: var(--pad); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
+html.js .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw - 104rem) / 2) + var(--pad)); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
 .made-ticks a { position: relative; flex: 1; height: 27px; }
 .made-ticks a::before, .made-ticks a::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; border-radius: 2px; }
 .made-ticks a::before { background: var(--track); }
