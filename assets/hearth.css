@@ -75,6 +75,13 @@ body {
 ::selection { background: var(--ember); color: #fff; }
 
 .hearth-noscript { padding: 2rem; color: var(--text-dim); }
+/* hearth-room.html's first paint, while /api/hearth answers: the mark
+   breathes where the page will be, and only once the wait is noticeable */
+.hh-wait { display: grid; place-items: center; min-height: 60vh; min-height: 60svh; }
+.hh-wait .mark { width: 2.6rem; height: 2.6rem; opacity: 0; animation: hh-wait 1.6s ease-in-out 0.4s infinite; }
+@keyframes hh-wait { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.7; } }
+@media (prefers-reduced-motion: reduce) { .hh-wait .mark { animation: none; opacity: 0.4; } }
+.hh-wait:has(~ noscript .hearth-noscript) { display: none; }
 
 /* ---------- ground and layout ---------- */
 
@@ -88,7 +95,7 @@ body {
 }
 
 .hearth a { color: inherit; }
-.hearth a:hover { color: var(--ember); }
+@media (hover: hover) { .hearth a:hover { color: var(--ember); } }
 
 .hearth .frame {
   width: 100%;
@@ -188,7 +195,7 @@ body {
   border-radius: 999px;
 }
 
-.hh-who:hover .avatar { box-shadow: 0 0 0 2px var(--ember); }
+@media (hover: hover) { .hh-who:hover .avatar { box-shadow: 0 0 0 2px var(--ember); } }
 
 .hh-who .name {
   font-size: 0.85rem;
@@ -264,7 +271,7 @@ body {
   transition: color 160ms var(--ease), background 160ms var(--ease), box-shadow 160ms var(--ease);
 }
 
-.hh-nav a:hover, .hh-more a:hover { color: var(--text); background: var(--surface); }
+@media (hover: hover) { .hh-nav a:hover, .hh-more a:hover { color: var(--text); background: var(--surface); } }
 .hh-nav a[aria-current="page"], .hh-more a[aria-current="page"] {
   color: var(--text);
   background: var(--surface-2);
@@ -286,7 +293,7 @@ body {
   transition: color 160ms var(--ease), border-color 160ms var(--ease);
 }
 
-.hh-see-as:hover { color: var(--text); border-color: var(--ember-soft); }
+@media (hover: hover) { .hh-see-as:hover { color: var(--text); border-color: var(--ember-soft); } }
 
 /* The view takes the rest of the width, its content held to a comfortable
    maximum and centred in what is left, so the right side never sits empty. */
@@ -389,7 +396,7 @@ body {
   text-align: left;
   cursor: pointer;
 }
-.hh-pick-row:hover { background: var(--surface-2); }
+@media (hover: hover) { .hh-pick-row:hover { background: var(--surface-2); } }
 .hh-pick-row .primary { display: block; }
 .hh-pick-row .desc { display: block; font-size: 0.78rem; color: var(--text-faint); }
 
@@ -551,7 +558,7 @@ body {
   background: #fffdf8; cursor: pointer; transform: translateY(0.15rem);
   transition: background 140ms var(--ease), border-color 140ms var(--ease);
 }
-.sheet input[type="checkbox"]:hover { border-color: var(--ink); }
+@media (hover: hover) { .sheet input[type="checkbox"]:hover { border-color: var(--ink); } }
 .sheet input[type="checkbox"]:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 .sheet input[type="checkbox"]:checked {
   background: var(--ember) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 0.85rem no-repeat;
@@ -562,7 +569,7 @@ body {
 .hh-viewing-inner { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding-block: 0.35rem; }
 .hh-viewing p { font-size: 0.85rem; font-weight: 600; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hh-viewing .btn { color: var(--text); background: #141412; border-color: #141412; flex: none; min-height: 1.8rem; }
-.hh-viewing .btn:hover { color: #fff; background: #000; }
+@media (hover: hover) { .hh-viewing .btn:hover { color: #fff; background: #000; } }
 .record-visual figcaption { font-size: 0.82rem; color: var(--quiet); }
 .record-chapter { padding-top: 0.4rem; }
 .record-num { font-family: var(--mono); font-size: 0.72rem; color: #c2410c; }
@@ -613,7 +620,7 @@ body {
   transition: background 140ms var(--ease);
 }
 .list > *:first-child { border-top: 0; }
-.list > a:hover, .list > button:hover { background: var(--surface); }
+@media (hover: hover) { .list > a:hover, .list > button:hover { background: var(--surface); } }
 .list .primary { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list .secondary { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.15rem; }
 .list .meta { font-size: 0.78rem; color: var(--text-faint); white-space: nowrap; }
@@ -679,7 +686,7 @@ body {
 
 .home-row { gap: 0.15rem 1rem; }
 .home-row a { text-decoration: none; }
-.home-row a:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .home-row a:hover { text-decoration: underline; text-underline-offset: 3px; } }
 .home-row .faint { font-variant-numeric: tabular-nums; }
 .home-links { display: flex; gap: 1.2rem; padding-top: 0.4rem; }
 .home-links a { color: var(--text-dim); text-underline-offset: 3px; }
@@ -729,18 +736,18 @@ body {
   white-space: nowrap;
 }
 
-.btn:hover { background: var(--surface-2); border-color: var(--text-dim); color: var(--text); }
+@media (hover: hover) { .btn:hover { background: var(--surface-2); border-color: var(--text-dim); color: var(--text); } }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.45; cursor: default; transform: none; }
 /* Working, not unavailable: full colour, a slow breath, its label saying what. */
 .btn[aria-busy="true"] { opacity: 1; cursor: progress; transform: none; animation: hh-busy 0.9s ease-in-out infinite alternate; }
 @keyframes hh-busy { to { opacity: 0.72; } }
 .btn.primary { background: var(--ember); border-color: var(--ember); color: #fff; }
-.btn.primary:hover { background: #ff6a33; border-color: #ff6a33; color: #fff; }
+@media (hover: hover) { .btn.primary:hover { background: #ff6a33; border-color: #ff6a33; color: #fff; } }
 .btn.ghost { border-color: transparent; color: var(--text-dim); }
-.btn.ghost:hover { color: var(--text); }
+@media (hover: hover) { .btn.ghost:hover { color: var(--text); } }
 .btn.danger { border-color: var(--bad); color: var(--bad); }
-.btn.danger:hover { background: rgba(226, 99, 77, 0.12); }
+@media (hover: hover) { .btn.danger:hover { background: rgba(226, 99, 77, 0.12); } }
 .btn.sm { min-height: 2rem; padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 .btn.wide { width: 100%; }
 .btn .ico { width: 1.1em; height: 1.1em; display: block; }
@@ -865,7 +872,7 @@ body {
 .toast.has-action::before { transform: none; }
 .toast-text { flex: 1; }
 .toast-close { flex: none; background: none; border: 0; color: var(--text-faint); font-size: 1.2rem; line-height: 1; padding: 0.2rem 0.3rem; cursor: pointer; }
-.toast-close:hover { color: var(--text); }
+@media (hover: hover) { .toast-close:hover { color: var(--text); } }
 
 /* ---------- invoices ---------- */
 
@@ -923,7 +930,7 @@ body {
 .hearth .figure { color: var(--text); margin-top: 0; max-width: none; }
 
 .hearth a.card { text-decoration: none; }
-.hearth a.card:hover { color: inherit; border-color: var(--line-strong); }
+@media (hover: hover) { .hearth a.card:hover { color: inherit; border-color: var(--line-strong); } }
 
 /* the hidden attribute wins over any display rule above */
 .hearth [hidden], .hearth .field[hidden] { display: none !important; }
@@ -949,7 +956,7 @@ body {
   min-height: 2.2rem; padding: 0.3rem 0.9rem; cursor: pointer;
   transition: background 160ms var(--ease), color 160ms var(--ease);
 }
-.seg-opt:hover { color: var(--text); }
+@media (hover: hover) { .seg-opt:hover { color: var(--text); } }
 .seg-opt[aria-checked="true"] { background: var(--ember); color: #fff; }
 .seg-opt:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 .seg-opt:disabled { cursor: default; }
@@ -981,11 +988,11 @@ body {
   transition: background 120ms var(--ease), box-shadow 160ms var(--ease);
 }
 .paint-cell.hour { border-top-color: rgba(243, 240, 232, 0.07); }
-.paint-cell:hover { background: var(--surface-2); }
+@media (hover: hover) { .paint-cell:hover { background: var(--surface-2); } }
 .paint-cell.on { background: var(--ember); border-top-color: transparent; }
 /* Each painted cell reaches 1px into the next, so a run never shows seams at fractional offsets. */
 .paint-cell.on:not(.bottom) { box-shadow: 0 1px 0 0 var(--ember); }
-.paint-cell.on:hover { background: #ff6a33; }
+@media (hover: hover) { .paint-cell.on:hover { background: #ff6a33; } }
 .paint-cell.on.top { border-top-left-radius: 5px; border-top-right-radius: 5px; }
 .paint-cell.on.bottom { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
 /* Dates already gone cannot be painted. */
@@ -1006,7 +1013,7 @@ body {
   border: 1px solid var(--line); background: var(--ground-2); cursor: pointer;
   transition: border-color 140ms var(--ease), background 140ms var(--ease);
 }
-.date-tile:hover { border-color: var(--line-strong); background: var(--ground-3); }
+@media (hover: hover) { .date-tile:hover { border-color: var(--line-strong); background: var(--ground-3); } }
 .date-tile:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 .date-tile.past { opacity: 0.32; cursor: default; background: transparent; }
 .date-tile.today .date-num { color: var(--ember); }
@@ -1060,7 +1067,7 @@ body {
     var(--ground-2);
   transition: border-color 140ms var(--ease), transform 160ms var(--ease), background 200ms var(--ease);
 }
-.day:hover:not(:disabled) { border-color: var(--line-strong); }
+@media (hover: hover) { .day:hover:not(:disabled) { border-color: var(--line-strong); } }
 .day:active:not(:disabled) { transform: scale(0.97); }
 .day:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 .day-dow { font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); font-weight: 700; }
@@ -1106,7 +1113,7 @@ body {
   animation: hh-enter 260ms var(--ease) both; animation-delay: calc(var(--i, 0) * 25ms);
   transition: background 140ms var(--ease), border-color 140ms var(--ease), color 140ms var(--ease), transform 120ms var(--ease);
 }
-.time:hover { border-color: var(--ember); color: #fff; background: rgba(244, 88, 31, 0.16); }
+@media (hover: hover) { .time:hover { border-color: var(--ember); color: #fff; background: rgba(244, 88, 31, 0.16); } }
 .time:active { transform: scale(0.97); }
 .time:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 

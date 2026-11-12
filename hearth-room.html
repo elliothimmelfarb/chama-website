@@ -11,7 +11,7 @@
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/assets/figures.css?v=1bd12af0fb">
-  <link rel="stylesheet" href="/assets/hearth.css?v=fb30a62655">
+  <link rel="stylesheet" href="/assets/hearth.css?v=dc632ba6b4">
   <script>
     // Ask who is here while the scripts download; hearth.js takes the answers.
     // The parts of the room /me names start downloading as soon as it answers.
@@ -51,20 +51,22 @@
     })();
   </script>
   <script src="/assets/flame.js?v=5e57dbd6ed" defer></script>
-  <script src="/assets/hearth.js?v=874006b686" defer></script>
+  <script src="/assets/hearth.js?v=a592622ad0" defer></script>
 </head>
 <body>
   <!-- The members' room of Chama Inteligente. One vanilla app, no build
        step, mounted here. hearth.js renders everything from /api/hearth and
        loads the parts of the room the member's permissions open. The bar
-       below is only there so the first paint is the room, not a blank page;
-       hearth.js replaces it. -->
+       below and the mark under it are only there so the first paint is the
+       room, not a blank page, while /api/hearth answers; hearth.js replaces
+       both. -->
   <div id="hearth" class="hearth" data-mount>
     <header class="hh-mast">
       <div class="frame hh-mast-inner">
-        <a class="hh-brand" href="/" aria-label="Chama Inteligente"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg></a>
+        <a class="hh-brand" href="/" aria-label="Chama Inteligente"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg><span class="word">Chama Inteligente</span></a>
       </div>
     </header>
+    <div class="hh-wait" aria-hidden="true"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="var(--ember)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg></div>
     <noscript><p class="hearth-noscript">The Hearth needs JavaScript. Write to contact@chamainteligente.com if that is a problem.</p></noscript>
   </div>
 </body>

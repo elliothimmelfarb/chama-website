@@ -214,7 +214,7 @@
   // (Back from GitHub, say).
   var leaving = [];
 
-  function busy(node, label) {
+  function busyAs(node, label) {
     var was = node.textContent;
     node.setAttribute("aria-busy", "true");
     if (node.tagName === "BUTTON") node.disabled = true;
@@ -767,7 +767,7 @@
     var resetSentTo = null;
     var forgot = button("Forgot it?", "btn ghost sm", function () {
       if (!email.value) { email.focus(); return; }
-      var done = busy(forgot, "Sending…");
+      var done = busyAs(forgot, "Sending…");
       api("/auth/password/forgot", { method: "POST", body: { email: email.value } }).then(function () {
         done();
         resetSentTo = email.value;
@@ -783,7 +783,7 @@
       e.preventDefault();
       if (submit.disabled) return;
       say("");
-      var done = busy(submit, usePassword ? "Signing in…" : "Sending…");
+      var done = busyAs(submit, usePassword ? "Signing in…" : "Sending…");
       var req = usePassword
         ? api("/auth/password", { method: "POST", body: { email: email.value, password: password.value, next: next } })
         : api("/auth/email/start", { method: "POST", body: { email: email.value, ref: ref, next: next } });
@@ -819,7 +819,7 @@
       if (a.hasAttribute("aria-busy")) { e.preventDefault(); return; }
       // A new tab or window leaves this page as it is.
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
-      busy(a, "Opening " + providerLabel(provider) + "…");
+      busyAs(a, "Opening " + providerLabel(provider) + "…");
     });
     return a;
   }
@@ -874,7 +874,7 @@
       e.preventDefault();
       if (submit.disabled) return;
       status.textContent = "";
-      var done = busy(submit, "Setting password…");
+      var done = busyAs(submit, "Setting password…");
       api("/auth/password/reset", { method: "POST", body: { token: token, password: pw.value } }).then(function () {
         toast("Password set. Sign in with it now.", "good");
         history.replaceState(null, "", BASE);
