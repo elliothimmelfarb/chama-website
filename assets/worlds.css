@@ -21,6 +21,12 @@
   --pad: clamp(16px, 4.6vw, 4.5rem);
   /* the release of a press (see "pressing") */
   --press: scale 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+  /* past 120rem the worlds' words, figures and header keep to a centred
+     stage, as /built's things keep to theirs; worlds.js places the drawn
+     figures on the same stage */
+  --stage: min(100vw, 120rem);
+  --side: calc((100vw - var(--stage)) / 2);
+  --edge: calc(var(--side) + var(--pad));
 }
 
 [data-theme="paper"] { --fg: #141412; --fg2: #57544d; --accent: #f4581f; --scrim: rgba(243, 240, 232, 0); --bg: #f3f0e8; --track: rgba(20, 20, 18, 0.1); }
@@ -53,6 +59,9 @@ html.gl body { background: transparent; }
 html:not(.gl) .world { background: var(--bg); }
 
 ::selection { background: var(--ember); color: #fff; }
+
+/* one focus ring everywhere; components only move it */
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
 
 .skip-link {
   position: fixed;
@@ -104,8 +113,8 @@ html:not(.gl) #sky { display: none; }
   position: fixed;
   z-index: 6;
   top: calc(16px + env(safe-area-inset-top));
-  left: var(--pad);
-  right: var(--pad);
+  left: var(--edge);
+  right: var(--edge);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -210,7 +219,7 @@ html:not(.gl) #sky { display: none; }
 .offer-switch.has-thumb .nav-link[aria-current="page"],
 .offer-switch.stretch .nav-link { background: none; color: var(--fg); }
 .offer-switch:active { transform: scale(0.97); }
-.offer-switch .nav-link:not([aria-current="page"]):hover { background: color-mix(in srgb, var(--fg) 9%, transparent); }
+@media (hover: hover) { .offer-switch .nav-link:not([aria-current="page"]):hover { background: color-mix(in srgb, var(--fg) 9%, transparent); } }
 /* About is not one of the two offers, so it is marked, not filled: an
    ember line draws itself in under it. */
 .nav-about {
@@ -242,7 +251,7 @@ html:not(.gl) #sky { display: none; }
   0%, 100% { box-shadow: 0 0 0 0 rgba(244, 88, 31, 0.55); }
   50% { box-shadow: 0 0 0 5px rgba(244, 88, 31, 0); }
 }
-.nav-link:not([aria-current="page"]):hover { color: var(--ember); }
+@media (hover: hover) { .nav-link:not([aria-current="page"]):hover { color: var(--ember); } }
 .nav-link:focus { outline: none; }
 .nav-link:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 
@@ -290,8 +299,8 @@ html:not(.gl) #sky { display: none; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease;
 }
-.motion-toggle:hover { color: var(--ember); }
-.motion-toggle:hover .motion-track i { transform: translateX(3px); }
+@media (hover: hover) { .motion-toggle:hover { color: var(--ember); } }
+@media (hover: hover) { .motion-toggle:hover .motion-track i { transform: translateX(3px); } }
 .motion-toggle.on .motion-track { background: var(--ember); box-shadow: none; }
 .motion-toggle.on .motion-track i { transform: translateX(12px); background: #fff; }
 .motion-toggle:focus { outline: none; }
@@ -299,6 +308,13 @@ html:not(.gl) #sky { display: none; }
 /* the low motion pages carry the same switch, shown on (site.css); the
    shared name carries it across when the reader crosses between them */
 .motion-toggle { view-transition-name: motion-toggle; }
+
+/* The header's controls are drawn small to fit five pages on a phone; each
+   one's target reaches 7px past it, to 44px there. */
+.motion-toggle, .worlds-members { position: relative; }
+.nav-link::after,
+.motion-toggle::after,
+.worlds-members::after { content: ""; position: absolute; inset: -7px 0; }
 
 /* The way into the Hearth lives only beside the coaching, as on /coaching. */
 .worlds-members {
@@ -318,7 +334,7 @@ html:not(.gl) #sky { display: none; }
   transition: color 0.2s ease, var(--press);
 }
 .worlds-members::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ember); }
-.worlds-members:hover { color: var(--ember); }
+@media (hover: hover) { .worlds-members:hover { color: var(--ember); } }
 .worlds-members:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 
 /* The simple version, offered under each page's opening words. */
@@ -379,8 +395,8 @@ html:not(.gl) #sky { display: none; }
   transform: translateX(6px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.worlds:hover span,
 .worlds button:focus-visible span { opacity: 0.85; transform: none; }
+@media (hover: hover) { .worlds:hover span { opacity: 0.85; transform: none; } }
 .worlds button[aria-current="true"] i { background: var(--ember); border-color: var(--ember); opacity: 1; transform: scale(1.35); }
 .worlds button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; border-radius: 4px; }
 
@@ -403,6 +419,8 @@ main { position: relative; z-index: 2; }
 
 .world {
   --u: 0.5;
+  /* what is left of the pin's contents as it leaves (worlds.js sets --gone) */
+  --e: clamp(0, (var(--gone, 99) - var(--u)) / (var(--gone, 99) - 1), 1);
   position: relative;
   height: calc(var(--h) * 1vh);
   color: var(--fg);
@@ -425,7 +443,7 @@ main { position: relative; z-index: 2; }
   left: -25%;
   width: 85%;
   background: radial-gradient(closest-side, var(--scrim), transparent);
-  opacity: calc(clamp(0, (var(--u) + 0.45) * 4, 1) * clamp(0, (1.45 - var(--u)) * 4, 1));
+  opacity: calc(clamp(0, (var(--u) + 0.45) * 4, 1) * var(--e));
   pointer-events: none;
 }
 
@@ -434,7 +452,7 @@ main { position: relative; z-index: 2; }
   --out: 1.35;
   --k: 6;
   --a: clamp(0, (var(--u) - var(--in)) * var(--k), 1);
-  --b: clamp(0, (var(--out) - var(--u)) * var(--k), 1);
+  --b: min(clamp(0, (var(--out) - var(--u)) * var(--k), 1), var(--e));
   opacity: calc(var(--a) * var(--b));
   transform: translate3d(0, calc((1 - var(--a)) * 26px - (1 - var(--b)) * 16px), 0);
 }
@@ -442,7 +460,7 @@ html:not(.js) .r { opacity: 1; transform: none; }
 
 .copy {
   position: absolute;
-  left: var(--pad);
+  left: var(--edge);
   top: 50%;
   width: min(40vw, 35rem);
   transform: translateY(-50%);
@@ -464,7 +482,7 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
 .copy p { max-width: 35ch; margin: 0 0 0.85em; color: var(--fg2); font-size: clamp(1.02rem, 1.22vw, 1.24rem); line-height: 1.45; }
 .copy p.deck { max-width: 38ch; font-size: clamp(1.08rem, 1.45vw, 1.42rem); }
 .copy a { color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.18em; }
-.copy a:hover { color: var(--accent); }
+@media (hover: hover) { .copy a:hover { color: var(--accent); } }
 .kicker {
   max-width: none !important;
   margin: 0 0 1.2rem !important;
@@ -474,15 +492,16 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
   letter-spacing: 0.17em;
   line-height: 1.3 !important;
   text-transform: uppercase;
+  text-wrap: balance;
 }
 .accent { color: var(--accent); }
 
-.hero .copy { animation: arrive 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
-@keyframes arrive { from { opacity: 0.01; filter: blur(6px); } to { opacity: 1; filter: none; } }
+.hero .copy { animation: hero-arrive 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
+@keyframes hero-arrive { from { opacity: 0.01; filter: blur(6px); } to { opacity: 1; filter: none; } }
 
 .cue {
   position: absolute;
-  left: var(--pad);
+  left: var(--edge);
   bottom: calc(26px + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
@@ -519,6 +538,7 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
   white-space: nowrap;
   pointer-events: none;
 }
+.cap { --e: clamp(0, (var(--gone-cap, 99) - var(--u)) / (var(--gone-cap, 99) - 1), 1); }
 .cap .r { display: block; }
 .cap-stack { display: grid; }
 .cap-stack > * { grid-area: 1 / 1; }
@@ -579,8 +599,8 @@ html:not(.js) .slot { display: block; }
   rotate: var(--tilt, -2deg);
 }
 .card img { display: block; width: 100%; height: auto; border-radius: 1px; }
-.card-family { --tilt: 2.2deg; right: 13vw; top: 50%; width: min(24vw, 21rem); translate: 0 -50%; }
-.card-founder { --tilt: -2.4deg; right: 17vw; top: 12vh; width: min(17vw, 14.5rem); }
+.card-family { --tilt: 2.2deg; right: calc(var(--side) + var(--stage) * 0.13); top: 50%; width: min(24vw, 21rem); translate: 0 -50%; }
+.card-founder { --tilt: -2.4deg; right: calc(var(--side) + var(--stage) * 0.17); top: 12vh; width: min(17vw, 14.5rem); }
 
 /* The founder's identity, as on /about. */
 .role { margin-top: -0.4rem !important; color: var(--fg) !important; }
@@ -597,7 +617,7 @@ html:not(.js) .slot { display: block; }
   font-weight: 600;
   text-decoration: none;
 }
-.links a:hover { border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) { .links a:hover { border-color: var(--accent); color: var(--accent); } }
 .links svg { width: 14px; height: 14px; fill: currentColor; }
 
 /* ---- the last world: the mark lit, the words under it ---------------- */
@@ -644,7 +664,7 @@ html:not(.js) .slot { display: block; }
   box-shadow: 0 10px 40px -8px rgba(244, 88, 31, 0.7);
   transition: transform 0.25s ease, box-shadow 0.25s ease, var(--press);
 }
-.cta:hover { transform: translateY(-2px); box-shadow: 0 0 0 6px rgba(244, 88, 31, 0.18), 0 16px 50px -8px rgba(244, 88, 31, 0.85); }
+@media (hover: hover) { .cta:hover { transform: translateY(-2px); box-shadow: 0 0 0 6px rgba(244, 88, 31, 0.18), 0 16px 50px -8px rgba(244, 88, 31, 0.85); } }
 .cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .cta svg { width: 16px; height: 16px; flex: none; }
 .cta { text-wrap: balance; }
@@ -659,6 +679,18 @@ html:not(.js) .slot { display: block; }
   background: #0e0c0a;
   overflow: hidden;
 }
+/* the fire's last world darkens into the room instead of meeting it at an
+   edge; under the pin, so the words stay clear of it */
+.world:has(+ .flame-room)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28svh;
+  background: linear-gradient(rgba(14, 12, 10, 0), #0e0c0a);
+  pointer-events: none;
+}
 html.room-pinned { overflow: hidden; overscroll-behavior: none; }
 .flame-noscript { margin: 0; padding: clamp(2rem, 6vw, 4rem); color: #ece7dc; font-size: 1.05rem; line-height: 1.5; }
 
@@ -667,7 +699,7 @@ html.room-pinned { overflow: hidden; overscroll-behavior: none; }
 footer {
   position: relative;
   z-index: 3;
-  padding: 14px var(--pad) max(16px, calc(env(safe-area-inset-bottom) + 10px));
+  padding: 14px var(--edge) max(16px, calc(env(safe-area-inset-bottom) + 10px));
   color: var(--fg2);
   font-size: 0.78rem;
   background: #0e0c0a;
@@ -678,8 +710,8 @@ footer {
 .end-small a { display: inline-flex; align-items: center; min-height: 36px; }
 .end-small span { display: inline-flex; align-items: center; gap: 0.45rem; }
 .end-small svg { width: 16px; height: 16px; }
-.end-small a { color: var(--fg); text-decoration: none; }
-.end-small a:hover { color: var(--ember); }
+.end-small a { color: var(--fg); text-decoration: none; white-space: nowrap; }
+@media (hover: hover) { .end-small a:hover { color: var(--ember); } }
 .end-small a:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
 /* After the last world the footer lies over the bottom of it (worlds.js
    measures it as --foot), so the page ends on that world, not one footer
@@ -786,12 +818,13 @@ main h1:focus { outline: none; }
    as they are. Colour comes back under the pointer or focus. */
 .clients { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.6rem; margin: 1.9rem 0 0; }
 .clients-all { flex-basis: 100%; color: var(--fg2) !important; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; text-decoration: none; }
-.clients-all:hover { color: var(--accent) !important; }
+@media (hover: hover) { .clients-all:hover { color: var(--accent) !important; } }
 .clients a { display: inline-flex; align-items: center; min-height: 44px; border-radius: 6px; }
 .clients img { display: block; width: auto; height: 26px; filter: grayscale(1) brightness(0.62) contrast(1.5); opacity: 0.62; mix-blend-mode: multiply; transition: filter 0.3s ease, opacity 0.3s ease; }
 .clients img.round { height: 44px; }
 .clients img.tall { height: 36px; }
-.clients a:hover img, .clients a:focus-visible img { filter: none; opacity: 1; }
+.clients a:focus-visible img { filter: none; opacity: 1; }
+@media (hover: hover) { .clients a:hover img { filter: none; opacity: 1; } }
 .clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
 /* the clients and our friends, one line each: a label, then their marks */
 .worked { display: grid; gap: 0.7rem; margin: 1.9rem 0 0; }
@@ -859,7 +892,7 @@ html:not(.js) .wheel { display: none; }
    light on every ground, so each logo keeps its own colours. */
 .logo-plate {
   position: absolute;
-  right: 12vw;
+  right: calc(var(--side) + var(--stage) * 0.12);
   top: 50%;
   width: min(30vw, 27rem);
   aspect-ratio: 1.12;
@@ -889,7 +922,7 @@ html:not(.js) .wheel { display: none; }
   .clients a:nth-of-type(4) img { animation-delay: 1.4s; }
   .clients a:nth-of-type(5) img { animation-delay: 1.75s; }
   .clients a:nth-of-type(6) img { animation-delay: 2.1s; }
-  .clients.friends a:nth-of-type(2) img { animation-delay: 2.1s; }
+  .clients.friends a:nth-of-type(2) img { animation-delay: 1.05s; }
 }
 @keyframes catch {
   0% { opacity: 0.01; filter: grayscale(1) brightness(0.62) contrast(1.5); }
@@ -959,7 +992,7 @@ html:has(main .directory) .top[data-theme="forge"]::before {
 .letter-place { margin: 0 0 0.15rem; color: var(--fg2); font-size: 0.92rem; line-height: 1.45; }
 .letter-link { margin: 0; font-size: 0.92rem; }
 .letter a:not(.plate), .dir-note a { color: var(--fg); font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
-.letter a:not(.plate):hover { color: var(--accent); }
+@media (hover: hover) { .letter a:not(.plate):hover { color: var(--accent); } }
 .letter-quote { margin: 0 0 clamp(1rem, 2.5vh, 1.5rem); }
 .letter-quote figcaption { margin-bottom: 0.7rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
 .letter-quote blockquote { margin: 0; }
@@ -982,7 +1015,7 @@ html:has(main .directory) .top[data-theme="forge"]::before {
 /* how we introduce people, and the way in for the next friend: one quiet
    line under the deck, and under the letters on a phone */
 .dir-note { grid-column: 1; grid-row: 2; align-self: start; max-width: 46ch; margin: 0; padding-top: 1rem; border-top: 1px solid var(--track); color: var(--fg2); font-size: 0.92rem; line-height: 1.55; }
-.dir-note a:hover { color: var(--accent); }
+@media (hover: hover) { .dir-note a:hover { color: var(--accent); } }
 
 /* each part settles in as it scrolls into view, where the browser can tie
    it to the scroll; reduced motion keeps it still */
@@ -1001,7 +1034,7 @@ html:has(main .directory) .top[data-theme="forge"]::before {
   z-index: 2;
   display: grid;
   gap: clamp(3.5rem, 8vw, 6rem);
-  padding: clamp(3rem, 7vw, 5.5rem) var(--pad) clamp(7rem, 12vw, 9rem);
+  padding: clamp(3rem, 7vw, 5.5rem) var(--edge) clamp(7rem, 12vw, 9rem);
   color: var(--fg);
 }
 html:not(.gl) .ledger { background: var(--bg); }
@@ -1052,10 +1085,19 @@ html:has(main .ledger) .top::before {
 .entry-text .entry-place { margin-bottom: 1rem; font-size: 0.9rem; }
 .entry-text .entry-link { margin: 0; }
 .entry-text a, .ledger-note a { color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
-.entry-text a:hover { color: var(--accent); }
+@media (hover: hover) { .entry-text a:hover { color: var(--accent); } }
 .ledger-end { display: grid; grid-template-columns: minmax(9rem, 15rem) minmax(0, 1fr) auto; gap: 1.5rem clamp(1.5rem, 4vw, 4rem); align-items: center; }
 .ledger-note { grid-column: 2; margin: 0; max-width: 46ch; color: var(--fg2); font-size: 0.9rem; line-height: 1.5; }
 .ledger-end p:last-child { margin: 0; }
+
+/* a narrow wide screen (a phone held sideways, a small window) has one row
+   for the lockup, Members, five pages and the switch: the switch keeps its
+   knob and drops its words, as on a phone, so the lockup never wraps */
+.mast b, .mast small { white-space: nowrap; }
+@media (max-width: 979px) {
+  .motion-toggle { padding: 0 0.4rem; }
+  .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
@@ -1087,11 +1129,6 @@ html:has(main .ledger) .top::before {
   html.head-compact .top .worlds-members,
   html.head-compact .top .motion-toggle { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0s linear 0.25s; }
   .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
-  /* the figure sits above the words, so as a world leaves, its words would
-     slide up through it: here they are gone in the first tenth of the way */
-  .copy .r, .cap .r { --out: 1.1; --b: clamp(0, (var(--out) - var(--u)) * 10, 1); }
-  /* the last world has no next one; its words fade as they near the header */
-  .flame .copy .r { --out: 1.55; }
   .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
   .copy,
   .hero .copy {
@@ -1223,20 +1260,20 @@ html:has(main .ledger) .top::before {
 .made-what { max-width: 44ch; margin: 0 0 1.1rem; color: var(--fg2); font-size: clamp(1rem, 1.2vw, 1.2rem); line-height: 1.45; }
 .made-where { margin: 0 0 0.7rem; font-size: 1rem; font-weight: 600; }
 .made-where a { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
-.made-where a:hover { color: var(--accent); }
+@media (hover: hover) { .made-where a:hover { color: var(--accent); } }
 .made-words svg { flex: none; width: 1em; height: 1em; }
 .made-where.private { display: flex; align-items: flex-start; gap: 0.55rem; max-width: 34ch; color: var(--fg); font-weight: 500; line-height: 1.4; }
 .made-where.private svg { margin-top: 0.15em; color: var(--accent); }
 .made-want { margin: 0; }
 .made-want a { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--fg2); font-size: 0.95rem; font-weight: 600; text-decoration: none; }
-.made-want a:hover { color: var(--accent); }
+@media (hover: hover) { .made-want a:hover { color: var(--accent); } }
 .made-want svg { color: var(--accent); }
 .made-words a:focus-visible, .made-open a:focus-visible, .made-ticks a:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; border-radius: 2px; }
 .made-ticks { display: none; }
 
 /* without JavaScript: the things, one under another */
 html:not(.js) .devices-world { height: auto; background: var(--bg); }
-html:not(.js) .devices-world .pin { position: static; height: auto; overflow: visible; }
+html:not(.js) .devices-world .pin { position: static; height: auto; overflow: visible; padding: 0; }
 html:not(.js) .devices-world .pin::before { display: none; }
 .made-stage { width: min(100%, 84rem); margin-inline: auto; padding: clamp(6rem, 13vh, 8rem) var(--pad) clamp(4rem, 10vh, 6rem); }
 .made { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; margin-top: clamp(4rem, 12vh, 7rem); }
@@ -1269,12 +1306,15 @@ html.js .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
 html.js .made-words, html.js .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
 html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
 /* each bar is a link to its thing, with a taller target than it looks */
-html.js .made-ticks { position: absolute; z-index: 3; left: var(--pad); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
+/* the dark devices are gone in the first 40% of the way, so they never
+   linger as a grey slab over the light grid */
+html.js .devices-world .made-stage, html.js .made-ticks { opacity: clamp(0, (var(--e) - 0.6) * 2.5, 1); }
+html.js .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw - 104rem) / 2) + var(--pad)); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
 .made-ticks a { position: relative; flex: 1; height: 27px; -webkit-tap-highlight-color: transparent; }
 .made-ticks a::before, .made-ticks a::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; border-radius: 2px; transition: var(--press); }
 .made-ticks a::before { background: var(--track); }
 .made-ticks a::after { background: var(--ember); transform-origin: left; transform: scaleX(var(--t, 0)); }
-.made-ticks a:hover::before { background: var(--fg2); }
+@media (hover: hover) { .made-ticks a:hover::before { background: var(--fg2); } }
 @media (prefers-reduced-motion: reduce) {
   html.js .rig, html.js .made-words, html.js .made-open > *, html.js .made.on .made-words, html.js .made-open.on > *, html.js .made.rig-on .rig { transition: none; transform: none; }
 }
@@ -1296,6 +1336,8 @@ html.js .made-ticks { position: absolute; z-index: 3; left: var(--pad); bottom: 
      devices stand that much lower until it folds away */
   html.js .devices-world .rig { transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
   html.js:not(.head-compact) .devices-world .rig { transform: translateY(var(--head-lift, 0px)); }
+  /* and rise into the lockup row only once it has faded */
+  html.js.head-compact .devices-world .rig { transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s; }
   .made-open h1 { font-size: clamp(2.2rem, 10vw, 3rem); }
   .made-open .deck { font-size: 1rem; }
   .made-words h2 { font-size: 1.7rem; }
@@ -1309,4 +1351,46 @@ html.js .made-ticks { position: absolute; z-index: 3; left: var(--pad); bottom: 
 @media (max-height: 700px) and (max-width: 759px) {
   .made-open h1 { font-size: 2rem; }
   .made-open .deck { margin-bottom: 0.6rem; font-size: 0.92rem; }
+}
+
+/* ---- the worlds as one column ------------------------------------------ */
+/* Pinned worlds need the words to fit on one screen under the header. Where
+   they cannot, they are a plain column of sections: without JavaScript,
+   on a screen too short to pin the words (worlds.js keeps html.js off below
+   500px of height: a phone held sideways, a laptop zoomed to 200%), and in
+   print. The sky still burns from world to world; the drawn figures, which
+   stand beside words that hold still, are left out. */
+html:not(.js) .top { position: absolute; }
+/* hidden, not removed: worlds.js sizes everything from this canvas */
+html:not(.js) #actors { visibility: hidden; }
+html:not(.js) .worlds,
+html:not(.js) .pin::before,
+html:not(.js) .cap,
+html:not(.js) .cue,
+html:not(.js) .ticks,
+html:not(.js) .directory > .pin { display: none; }
+html:not(.js) .world { height: auto; }
+html:not(.js) .pin { position: relative; height: auto; overflow: visible; padding: clamp(3.5rem, 12vh, 7rem) var(--pad); }
+html:not(.js) main > :where(.world:first-child) .pin { padding-top: calc(env(safe-area-inset-top) + 8.5rem); }
+html:not(.js) .copy,
+html:not(.js) .flame .copy { position: static; width: auto; max-width: 46rem; transform: none; }
+html:not(.js) .flame .copy { margin-inline: auto; }
+html:not(.js) .qs li { opacity: 1; transform: none; }
+html:not(.js) .card,
+html:not(.js) .logo-plate { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
+html:not(.js) .flame-room:has(.flame-noscript) { height: auto; }
+html:not(.js) body > footer { margin-top: 0; }
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  html:not(.js) .pin { padding-inline: 16px; }
+}
+
+@media print {
+  [data-theme] { --fg: #141412; --fg2: #57544d; --accent: #b8400f; --track: rgba(20, 20, 18, 0.14); }
+  body { background: #fff; }
+  canvas.layer, .skip-link, .worlds, .top .site-nav, .motion-toggle, .worlds-members, .flame-room, .top::before { display: none !important; }
+  .world { break-inside: avoid; }
+  body > footer { background: none; box-shadow: none; }
+  .dir > * { animation: none; }
+  /* a picture not fetched yet would print as an empty screen */
+  .rig:has(.screen > img[data-src]) { display: none; }
 }

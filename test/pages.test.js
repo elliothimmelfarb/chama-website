@@ -141,6 +141,34 @@ for (const { words, worlds } of PAIRS) {
     }
   });
 
+  // worlds.js is deferred, so a page that waited for it to set html.js
+  // painted its no-JavaScript layout first and then jumped (on /built, eight
+  // things' words over each other while they faded out together).
+  test(`${worlds} sets html.js before its first paint`, () => {
+    const head = /<head>[\s\S]*?<\/head>/.exec(read(worlds))[0];
+    const at = head.search(/documentElement\.classList\.add\("js"\)/);
+    assert.ok(at >= 0, "no inline script in the head adds the js class");
+    assert.ok(at < head.indexOf('rel="stylesheet"'), "the js class is added after the stylesheet is requested");
+    const short = /var SHORT = window\.matchMedia\("([^"]+)"\)/.exec(readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8"));
+    assert.ok(short && head.includes(`matchMedia("${short[1]}").matches) document.documentElement.classList.add("js")`), "the head and worlds.js disagree on where the worlds are pinned");
+  });
+
+  test(`${words} reaches the five pages from the top, inside the low motion version`, () => {
+    const header = /<header\b[\s\S]*?<\/header>/.exec(read(words));
+    assert.ok(header, "the page has no header");
+    const nav = siteNavs(header[0]);
+    assert.equal(nav.length, 1, "the header has no site nav (a <nav data-site-nav>)");
+    const as = links(nav[0]);
+    const byUrl = Object.fromEntries(PAIRS.map((p) => [p.worlds, p.words]));
+    for (const { label, url } of SITE) {
+      const a = as.find((x) => x.text === label);
+      assert.ok(a, `the nav has no ${label} link`);
+      assert.equal(a.href, byUrl[url], `${label} goes to the wrong page`);
+      assert.equal(a.current, byUrl[url] === words, `${label} ${byUrl[url] === words ? "is not" : "is wrongly"} marked as the current page`);
+    }
+    assert.ok(links(header[0]).some((a) => a.href === "/simple" && /wordmark/.test(header[0])), "the lockup is not a link home");
+  });
+
   test(`${worlds} links into the simple version only through its simple-version links`, () => {
     const wordsUrls = new Set(PAIRS.map((p) => p.words));
     const strays = links(read(worlds))
@@ -444,6 +472,16 @@ for (const url of PUBLIC) {
 // The chat transcript on / marks each message .turn, and index.html loads
 // worlds.css. A bare .turn rule there hid every chat message (2026-10-22 to
 // 2026-11-01), so the clients wheel's turns are styled only inside .turns.
+// Two @keyframes with one name: the later silently replaces the earlier
+// everywhere, which lost the hero's blur-in (2026-11-11).
+for (const sheet of ["assets/worlds.css", "assets/site.css"]) {
+  test(`${sheet} names each @keyframes once`, () => {
+    const names = [...readFileSync(path.join(ROOT, sheet), "utf8").matchAll(/@keyframes\s+([\w-]+)/g)].map((m) => m[1]);
+    const twice = names.filter((n, i) => names.indexOf(n) !== i);
+    assert.deepEqual(twice, [], `defined more than once: ${twice.join(", ")}`);
+  });
+}
+
 test("worlds.css never hides a bare .turn, which would hide the chat's messages", () => {
   const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {

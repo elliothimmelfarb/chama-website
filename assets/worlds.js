@@ -24,7 +24,12 @@
   "use strict";
 
   var root = document.documentElement;
-  root.classList.add("js");
+  // the pinned layout (html.js), except where the words cannot fit on one
+  // screen or the page is printed: there the worlds are one column
+  // (worlds.css). The head of each page makes the same test before it paints.
+  var SHORT = window.matchMedia("(max-height: 500px)"), printing = false;
+  function pinnable() { root.classList.toggle("js", !SHORT.matches && !printing); }
+  pinnable();
 
   var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
@@ -88,6 +93,10 @@
   if (!sky || !act) return;
   var ctx = act.getContext("2d");
   var AW = 0, AH = 0, ADPR = 1, quality = 1;
+  // past 120rem the figures keep to a centred stage, SW wide from SX, as the
+  // words do (worlds.css, --stage); sx(f) is a fraction of the way across it
+  var SW = 0, SX = 0;
+  function sx(f) { return SX + SW * f; }
 
   function initGL() { return window.ChamaSky ? window.ChamaSky.init(sky) : null; }
   var GL = initGL();
@@ -106,6 +115,8 @@
     ADPR = Math.min(window.devicePixelRatio || 1, 2);
     AW = act.clientWidth;
     AH = act.clientHeight;
+    SW = Math.min(AW, 120 * (parseFloat(getComputedStyle(root).fontSize) || 16));
+    SX = (AW - SW) / 2;
     act.width = Math.round(AW * ADPR);
     act.height = Math.round(AH * ADPR);
   }
@@ -156,7 +167,7 @@
     // the wheel's world is all scrolling, so its header folds almost at once
     var top = headBottom() - (k > 0 || allScroll(sec) ? headLift() : 0) + 20, avail = H - base - foot - gap - ch - top;
     var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
-    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
+    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(SW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
     if (scene.box) { up = 0; down = AH * (P ? 0.34 : 0.62); }
     else if (card) { up = 0; down = Math.min(Math.max(card.offsetHeight, 120), Math.max(avail, 110)); fixed = true; }
@@ -184,11 +195,11 @@
       var tl = scene.tall || [0.5, 0.26, 1], r = Math.min(AW * 0.27, AH * 0.16);
       L = { cx: AW * tl[0], cy: AH * tl[1], R: r * tl[2] };
     } else {
-      var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(AW * 0.16, AH * 0.27);
-      L = { cx: AW * at[0], cy: AH * at[1], R: R0 * at[2] };
+      var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(SW * 0.16, AH * 0.27);
+      L = { cx: sx(at[0]), cy: AH * at[1], R: R0 * at[2] };
     }
     if (P) L.box = S ? { x: 16, y: S.top, w: AW - 32, h: S.h } : { x: 16, y: AH * 0.1 + 10, w: AW - 32, h: AH * 0.34 };
-    else L.box = { x: AW * 0.47, y: AH * 0.17, w: AW * 0.44, h: AH * 0.62 };
+    else L.box = { x: sx(0.47), y: AH * 0.17, w: SW * 0.44, h: AH * 0.62 };
     if (scene.box) { L.cx = L.box.x + L.box.w / 2; L.cy = L.box.y + L.box.h / 2; L.R = Math.min(L.box.w, L.box.h) / 2; }
     L.top = S ? S.top : AH * 0.31 - 60;
     L.h = S ? S.h : 120;
@@ -509,6 +520,22 @@
     c.fillText(str, x, y);
     if ("letterSpacing" in c) c.letterSpacing = "0px";
   }
+  // a label that clears what is drawn under it, as a chart's labels do
+  function clearLabel(c, str, x, y, size, weight, color, align, spacing, alpha) {
+    if (alpha <= 0) return;
+    c.save();
+    c.globalCompositeOperation = "destination-out";
+    c.globalAlpha = alpha;
+    c.lineWidth = 7;
+    c.lineJoin = "round";
+    c.font = weight + " " + size + "px " + FONT;
+    c.textAlign = align;
+    c.textBaseline = "alphabetic";
+    if ("letterSpacing" in c) c.letterSpacing = spacing + "px";
+    c.strokeText(str, x, y);
+    c.restore();
+    label(c, str, x, y, size, weight, color, align, spacing);
+  }
   function strokePart(c, pts, f) {
     var n = pts.length / 2, total = 0, i;
     for (i = 1; i < n; i++) total += Math.hypot(pts[2 * i] - pts[2 * i - 2], pts[2 * i + 1] - pts[2 * i - 1]);
@@ -783,8 +810,8 @@
     c.shadowBlur = 0;
     if (p > 0.001 && p < 0.999) { glowDot(c, ht[0], ht[1], 3.4, EMB, a); c.fillStyle = rgba(foam, a); c.beginPath(); c.arc(hs[0], hs[1], 2.6, 0, TAU); c.fill(); }
     var end = sm(0.9, 1, p) * a, gx = x1 + Math.min(18, B.w * 0.04);
-    label(c, "A TRAINED TEAM", x1, lt - 12, 11, 700, "rgba(255,148,102," + end + ")", "right", 1.4);
-    label(c, "SAME HABITS", x1, ls + 22, 11, 700, rgba(foam, 0.85 * end), "right", 1.4);
+    clearLabel(c, "A TRAINED TEAM", x1, lt - 12, 11, 700, "rgba(255,148,102," + end + ")", "right", 1.4, end);
+    clearLabel(c, "SAME HABITS", x1, ls - 9, 11, 700, rgba(foam, 0.85 * end), "right", 1.4, end);
     if (end > 0) {
       c.globalAlpha = end;
       c.strokeStyle = "rgba(255,148,102,0.9)";
@@ -845,7 +872,7 @@
     var r = plate.getBoundingClientRect();
     if (r.width < 2) return;
     var P = L.portrait;
-    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(AW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
+    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(SW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
     var tx = r.left + r.width * 0.12, ty = r.bottom - r.height * 0.1;
     var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(0.0, 0.3, l);
     c.save();
@@ -901,8 +928,8 @@
       var bigP = Math.min(AW * 0.44, AH * 0.19, B.h * 0.9);
       return { cx: AW * 0.6, cy: B.y + B.h / 2, rx: AW * 0.145, ry: Math.max(0, Math.min(AH * 0.128, B.h / 2 - bigP * 0.16)), big: bigP, far: 0.28, step: step };
     }
-    var bigW = Math.min(AH * 0.33, AW * 0.23);
-    return { cx: AW * 0.68, cy: AH * 0.53, rx: AW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
+    var bigW = Math.min(AH * 0.33, SW * 0.23);
+    return { cx: sx(0.68), cy: AH * 0.53, rx: SW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
   }
   // where along the wheel the page is: first the introduction, the wheel
   // turning in with no one in focus; then each client holds and the wheel turns
@@ -921,6 +948,8 @@
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
     var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
+    // the wheel rides up with its pin as the next world arrives, and leaves with it
+    var ex = L.exit === undefined ? 1 : L.exit;
     var place = [];
     for (var i = 0; i < n; i++) {
       var d = i - p;
@@ -937,8 +966,8 @@
       var turn = (1 - near) * 38;
       sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
       sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
-      sp.style.opacity = wp.show.toFixed(3);
-      sp.style.visibility = wp.show > 0.01 ? "visible" : "hidden";
+      sp.style.opacity = (wp.show * ex).toFixed(3);
+      sp.style.visibility = wp.show * ex > 0.01 ? "visible" : "hidden";
       // the rest are only their logos: further back, smaller, dimmer, darker, softer
       var dim = 1 - e;
       img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
@@ -965,7 +994,7 @@
     c.save();
     c.lineJoin = "round";
     c.lineCap = "round";
-    c.globalAlpha = a * (RM ? 1 : sm(0.6, 0.95, bf));
+    c.globalAlpha = a * ex * (RM ? 1 : sm(0.6, 0.95, bf));
     // the open place, for the next client: no plate yet, only its outline in dashes
     if (W.spokes[best].classList.contains("spoke-open")) c.setLineDash([7, 7]);
     c.strokeStyle = EMBER;
@@ -986,7 +1015,7 @@
     // on a phone the shapes gather in the room between the header (still
     // full height before the first scroll) and the opening words
     var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + headLift() : B.y, bh = B.y + B.h - by;
-    var hx = P ? AW / 2 : AW * 0.66, hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(AW * 0.16, AH * 0.27);
+    var hx = P ? AW / 2 : sx(0.66), hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(SW * 0.16, AH * 0.27);
     var fly = sm(0.08, 0.82, k), fade = 1 - sm(0.42, 0.86, k);
     if (fade <= 0.002) return;
     c.save();
@@ -1174,7 +1203,7 @@
     var P = L.portrait, p = P ? sm(0.42, 0.92, l) : sm(0.1, 0.72, l);
     var x0, x1, y;
     if (P) { x0 = 34; x1 = AW - 30; y = L.top + Math.max(L.h - 34, 96); }
-    else { x0 = AW * 0.5; x1 = AW * 0.9; y = AH * 0.8; }
+    else { x0 = sx(0.5); x1 = sx(0.9); y = AH * 0.8; }
     var xNow = x0 + (x1 - x0) * 0.86, step = (xNow - x0) / 10, x23 = x0 + step * 7;
     var silver = [214, 222, 255], show = a * (P ? sm(0.36, 0.44, l) : 1);
     if (show < 0.01) return;
@@ -1333,9 +1362,40 @@
   }
 
   // ---- scroll ------------------------------------------------------------------------
-  var tops = [], hs = [], pins = [];
-  // every read first, then every write: a read after a write forces the
-  // browser to lay the page out again, and this runs as a new page appears
+  var tops = [], hs = [], pins = [], gones = [], markG = 99;
+  // ---- leaving: what rides up with a pin is gone before it reaches anything ----
+  // A world's --u runs from 1 to 2 while its pin scrolls away. --gone is the
+  // --u at which the first thing riding up with the pin would reach the
+  // header, or, for words under a figure on the fixed canvas, that figure;
+  // worlds.css fades the pin's contents out between 1 and --gone. Captions
+  // sit inside their figure's reach, so they go almost at once (--gone-cap).
+  // the slide a .r element is given while it is hidden, which is not its place
+  function shiftOf(el) { if (!el.classList.contains("r")) return 0; var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
+  function goneOf(k) {
+    var sec = sections[k], pin = sec.firstElementChild, H = pins[k] || AH, S = stacks[k], P = portrait(), last = k === NW - 1;
+    var head = headBottom() - (P && (k > 0 || allScroll(sec)) ? headLift() : 0) + 8, pt = pin.getBoundingClientRect().top, room = H;
+    function from(el, limit) {
+      if (!el || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return;
+      room = Math.min(room, el.getBoundingClientRect().top - shiftOf(el) - pt - limit);
+    }
+    // the last world's figure rises with its words, and a photograph is in the page
+    var still = S && !last && !allScroll(sec) && !sec.querySelector(".card");
+    from(sec.querySelector(".copy"), still ? S.top + S.h : head);
+    [].forEach.call(sec.querySelectorAll(".card, .logo-plate"), function (el) { from(el, head); });
+    if (sec.classList.contains("wheel-world")) {
+      var G = wheelGeom(P, wheelOf(sec).spokes.length, layoutOf(scenes[k], k).box);
+      room = Math.min(room, G.cy - G.ry - G.big * 0.3 - head);
+    }
+    if (sec.classList.contains("devices-world")) {
+      var D = devicesOf(sec), it = D.items[D.items.length - 1];
+      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) room = Math.min(room, it.offsetTop + el.offsetTop - head); });
+    }
+    return 1 + Math.max(room, 10) / H;
+  }
+  // the last world's figure rises with its words from above them, so it leaves first
+  function markGone() { var k = NW - 1, S = stacks[k]; return S ? 1 + Math.max(S.top - headBottom() + (portrait() ? headLift() : 0) - 8, 10) / (pins[k] || AH) : 99; }
+  // how much of world k is left as its pin leaves, 0 to 1
+  function exitOf(g, u) { g = g || 99; return clamp((g - u) / (g - 1)); }
   function measure() {
     var y = window.scrollY;
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
@@ -1351,6 +1411,12 @@
       s.style.setProperty("--copy-t", S ? Math.round(S.copyT) + "px" : "");
       s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
       s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
+    });
+    gones = sections.map(function (s, k) { return goneOf(k); });
+    markG = markGone();
+    sections.forEach(function (s, k) {
+      s.style.setProperty("--gone", gones[k].toFixed(3));
+      s.style.setProperty("--gone-cap", (1 + 12 / (pins[k] || AH)).toFixed(3));
     });
     if (footer) root.style.setProperty("--foot", foot + "px");
   }
@@ -1422,7 +1488,7 @@
     scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
     room = document.querySelector(".flame-room");
     footer = document.querySelector("body > footer");
-    tops = []; hs = []; pins = []; stacks = []; lastU = [];
+    tops = []; hs = []; pins = []; stacks = []; gones = []; lastU = [];
     hugReady = false;
     lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastCompact = false; lastSpark = 0;
     root.classList.remove("in-room", "at-end", "head-compact");
@@ -1441,9 +1507,10 @@
     last = now;
     var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
     var st = scrollState(), i = st[0], l = st[1], b = st[2];
-    // on a phone the last world's words keep counting on past its end, so
-    // they can fade before they reach the header (worlds.css, .flame)
-    setU(i, l, b || (portrait() ? st[3] / AH : 0));
+    // the last world keeps counting on past its end, so what rises with it
+    // can leave before it reaches the header
+    var u = l + (b || st[3] / AH);
+    setU(i, l, b || st[3] / AH);
     var pass = crossing(b);
 
     var inRoom = false, hidden = false;
@@ -1481,6 +1548,9 @@
     var eb = b * b * (3 - 2 * b);
     var A = scenes[i], B = b > 0 ? scenes[i + 1] : null;
     var LA = layoutOf(A, i), LB = B ? layoutOf(B, i + 1) : null;
+    LA.exit = exitOf(gones[i], u);
+    // the last world's mark and its flame rise above the words, and leave before them
+    var lastOut = i === NW - 1 ? exitOf(markG, u) : 1;
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));
     ptr.sy += ((ptr.on ? ptr.y : AH / 2) - ptr.sy) * (1 - Math.exp(-dt * 4));
     var px = (ptr.sx - AW / 2) * 0.012, py = (ptr.sy - AH / 2) * 0.012 - st[3];
@@ -1513,8 +1583,8 @@
       gl.uniform2f(U.uMouse, (ptr.sx - AW / 2) / AH, (AH / 2 - ptr.sy) / AH);
       gl.uniform2f(U.uFocus, (focus.cx - AW / 2) / AH, (AH / 2 - focus.cy) / AH);
       gl.uniform1f(U.uFocusR, focus.R / AH);
-      gl.uniform1f(U.uFlame, focus.flame);
-      gl.uniform1f(U.uHeat, focus.heat);
+      gl.uniform1f(U.uFlame, focus.flame * lastOut);
+      gl.uniform1f(U.uHeat, focus.heat * lastOut);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
@@ -1538,7 +1608,7 @@
     ctx.globalAlpha = 1;
     // the figures fade with the words when the page changes (here, not in
     // CSS: an opacity on the canvas costs a phone a frame it cannot spare)
-    var fa = figureAlpha();
+    var fa = figureAlpha() * lastOut;
     if (fa < 1 || pass) {
       ctx.globalCompositeOperation = "destination-in";
       if (pass) {
@@ -1558,6 +1628,7 @@
   }
 
   function resize() {
+    pinnable();
     sizeActors();
     sizeSky();
     measure();
@@ -1571,6 +1642,8 @@
     requestAnimationFrame(function () { queued = false; resize(); });
   });
   window.addEventListener("load", function () { measure(); placeCaps(); });
+  window.addEventListener("beforeprint", function () { printing = true; pinnable(); });
+  window.addEventListener("afterprint", function () { printing = false; resize(); });
   window.addEventListener("pointermove", function (e) { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = e.pointerType === "mouse"; }, { passive: true });
   document.addEventListener("pointerleave", function () { ptr.on = false; });
   window.addEventListener("blur", function () { ptr.on = false; });
