@@ -11,14 +11,14 @@
                  business's shape (fit, shelf, offer, questions, change,
                  build, mark) or one of the coaching and about figures
                  (coil, curve, session, releases, keepers, family, timeline)
-                 or the clients and friends figures (wheel, peer).
+                 or the clients figure (wheel).
    Shape scenes hand one shape from world to world and morph it; any other
    pair of scenes cross-fades while the fire passes.
 
    The engine writes --u on the elements of each section that read it (see
-   worlds.css) and never touches the words themselves. It paints nothing from the network: no images, no
-   fonts, no libraries. Under reduced motion the clock stops, the particles
-   go, and every figure is drawn complete.
+   worlds.css). It loads no fonts and no libraries, and the only pictures
+   it fetches are /built's, as their turn comes. Under reduced motion the
+   clock stops, the particles go, and every figure is drawn complete.
    ========================================================================== */
 (function () {
   "use strict";
@@ -297,7 +297,8 @@
     curve: { kind: "draw", box: true, draw: drawCurve },
     session: { kind: "draw", box: true, draw: drawSession },
     releases: { kind: "draw", box: true, draw: drawReleases },
-    peer: { kind: "draw", draw: drawPeer },
+    // Friends: the letters over the forge, with no figure
+    peer: {},
     wheel: { kind: "draw", box: true, draw: drawWheel },
     devices: { kind: "draw", box: true, draw: drawDevices },
     keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
@@ -869,34 +870,6 @@
     { at: [0.56, -0.5], r: 0.36, pts: [-0.55, -0.95, 0.9, -0.5, 0.6, 0.95, -0.95, 0.55] },
     { at: [0.3, 0.52], r: 0.44, pts: [-1, 0.05, -0.55, -0.75, 0.35, -0.85, 1, -0.15, 0.7, 0.7, -0.4, 0.8] }
   ];
-  // About, friends: our fire, and a friend's some way off, joined by a dotted
-  // line of light with one ember travelling along it.
-  function drawPeer(c, l, t, L, a) {
-    var plate = L.sec.querySelector(".logo-plate");
-    if (!plate) return;
-    var r = plate.getBoundingClientRect();
-    if (r.width < 2) return;
-    var P = L.portrait;
-    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(SW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
-    var tx = r.left + r.width * 0.12, ty = r.bottom - r.height * 0.1;
-    var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(0.0, 0.3, l);
-    c.save();
-    c.globalAlpha = a * on;
-    glowDot(c, ox, oy, 4.5, EMB, 1);
-    c.globalAlpha = a * 0.7;
-    c.strokeStyle = rgba(STAR, 1);
-    c.lineWidth = 1.3;
-    c.setLineDash([1.5, 7]);
-    c.lineCap = "round";
-    strokePart(c, [ox, oy, tx, ty], line);
-    c.setLineDash([]);
-    if (line >= 1 && !RM) {
-      var k = (t * 0.35) % 1;
-      glowDot(c, ox + (tx - ox) * k, oy + (ty - oy) * k, 2.2, EMB, a * Math.sin(k * Math.PI));
-    }
-    c.restore();
-    c.globalAlpha = 1;
-  }
 
   // Clients: a wheel of their logos that turns as the page
   // scrolls. The client in focus sits big at the point nearest the words, on
@@ -964,11 +937,11 @@
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
-    // the logos ride the pin as the next world arrives; the outline goes
-    // with them. The sticky pin's top, from where measure() found it.
+    // the logos ride the pin as the next world arrives, the outline with
+    // them, and fade as it leaves (ex). The sticky pin's top, from where
+    // measure() found it.
     var dy = Math.min(0, pinEnd[sections.indexOf(L.sec)] - sy);
     var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
-    // the wheel rides up with its pin as the next world arrives, and leaves with it
     var ex = L.exit === undefined ? 1 : L.exit;
     var place = [];
     for (var i = 0; i < n; i++) {
@@ -1169,8 +1142,8 @@
     // the stage (devices and words) and the bar dissolve as the world
     // leaves, most of the way in the first half, so the dark devices do not
     // hang over the light grid as a grey slab. Written here, only when it
-    // changes: as readers of --u the stage and the bar restyled everything
-    // inside them on every scroll frame.
+    // changes, rather than from --u in CSS, which would restyle everything
+    // inside them every frame.
     var ex = L.exit === undefined ? 1 : L.exit, gone = (ex * ex).toFixed(3);
     put(D.stage, "opacity", gone);
     // drifting up a little as it goes, as the words do (.r in worlds.css)
@@ -1489,7 +1462,7 @@
     // the last world's figure rises with its words, and a photograph is in the page
     var still = S && !last && !allScroll(sec) && !sec.querySelector(".card");
     from(sec.querySelector(".copy"), still ? S.top + S.h : head);
-    [].forEach.call(sec.querySelectorAll(".card, .logo-plate"), function (el) { from(el, head); });
+    [].forEach.call(sec.querySelectorAll(".card"), function (el) { from(el, head); });
     if (sec.classList.contains("wheel-world")) {
       var G = wheelGeom(P, wheelOf(sec).spokes.length, layoutOf(scenes[k], k).box);
       room = Math.min(room, G.cy - G.ry - G.big * 0.3 - head);
@@ -1527,8 +1500,7 @@
   }
   function measure() {
     root.classList.toggle("foot-over", !room && !!footer);
-    // every read, then every write, so the page is laid out once (the exits
-    // at the end are the exception)
+    // every read, then every write, so the page is laid out once
     sy = window.scrollY;
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + sy; });
     hs = sections.map(function (s) { return s.offsetHeight; });
