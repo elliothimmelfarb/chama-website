@@ -9,11 +9,27 @@
    the worlds and the figures; this sheet sets the words over them.
 
    Each <section class="world"> is several screens tall and its .pin sticks
-   to the viewport while the section passes. worlds.js writes one number on
+   to the viewport while the section passes. worlds.js writes one number for
    each section, --u: -1 while the world is arriving, 0..1 while it is held
    on screen, 2 once it has gone. Every .r element shows while --u sits
    between its own --in and --out, so the choreography lives in the markup.
+
+   --u is registered as not inherited, so a scroll frame restyles only the
+   elements that read it, not every node in the world. worlds.js writes it
+   on each of them (U_READERS there); a pseudo-element takes it from its
+   element with --u: inherit. A new rule that reads --u goes on one of
+   those, or joins the list (test/pages.test.js checks). A browser without
+   @property inherits it as before, from .world, which starts every reader
+   at the same 0.5.
+
+   --e, what is left of a world as its pin leaves, is worked out from --u,
+   so it is not inherited either: each element that reads it works it out
+   for itself (see .world), and so needs --u too.
    ========================================================================== */
+
+@property --u { syntax: "<number>"; inherits: false; initial-value: 0.5; }
+@property --e { syntax: "<number>"; inherits: false; initial-value: 1; }
+.pin::before { --u: inherit; }
 
 :root {
   --ember: #f4581f;
@@ -419,12 +435,12 @@ main { position: relative; z-index: 2; }
 
 .world {
   --u: 0.5;
-  /* what is left of the pin's contents as it leaves (worlds.js sets --gone) */
-  --e: clamp(0, (var(--gone, 99) - var(--u)) / (var(--gone, 99) - 1), 1);
   position: relative;
   height: calc(var(--h) * 1vh);
   color: var(--fg);
 }
+/* what is left of the pin's contents as it leaves (worlds.js sets --gone) */
+.pin::before, .r { --e: clamp(0, (var(--gone, 99) - var(--u)) / (var(--gone, 99) - 1), 1); }
 
 .pin {
   position: sticky;
@@ -538,7 +554,7 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
   white-space: nowrap;
   pointer-events: none;
 }
-.cap { --e: clamp(0, (var(--gone-cap, 99) - var(--u)) / (var(--gone-cap, 99) - 1), 1); }
+.cap .r { --e: clamp(0, (var(--gone-cap, 99) - var(--u)) / (var(--gone-cap, 99) - 1), 1); }
 .cap .r { display: block; }
 .cap-stack { display: grid; }
 .cap-stack > * { grid-area: 1 / 1; }
@@ -1306,9 +1322,8 @@ html.js .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
 html.js .made-words, html.js .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
 html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
 /* each bar is a link to its thing, with a taller target than it looks */
-/* the dark devices are gone in the first 40% of the way, so they never
-   linger as a grey slab over the light grid */
-html.js .devices-world .made-stage, html.js .made-ticks { opacity: clamp(0, (var(--e) - 0.6) * 2.5, 1); }
+/* the stage and the bar leave with the world: worlds.js sets their opacity
+   (drawDevices) */
 html.js .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw - 104rem) / 2) + var(--pad)); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
 .made-ticks a { position: relative; flex: 1; height: 27px; -webkit-tap-highlight-color: transparent; }
 .made-ticks a::before, .made-ticks a::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; border-radius: 2px; transition: var(--press); }

@@ -872,6 +872,20 @@
     var lastScrollAt = -1e9;
     var skipFrame = false;
 
+    /* The fire's budget while a reply streams on a phone. Streaming is the
+       fire at its fullest (most particles, longest lives), on a phone whose
+       GPU is also painting the words as they arrive. The governor below only
+       hears its own frame clock, and on a 120 Hz screen that clock never
+       slows: the GPU fills up, the page's frames are the ones that drop, and
+       the fire, reading 8 ms frames as room to spare, grows to its cap.
+       So while streaming on touch the fire paints frames at least this many
+       ms apart: every other frame at 120 Hz (60 a second), every frame at
+       90 Hz and below. That halves its GPU work on a fast screen, and the
+       governor, now timing 16 ms frames, stops growing the fire past where
+       it stood. Each frame is the same fire; dt still measures the real
+       interval, so it burns at its own speed. At rest nothing changes. */
+    var TOUCH_STREAM_FRAME_MS = 10;
+
     // the host tells the engine a scroll is under way. In worker mode there
     // is nothing to give the frame back to, so the host never calls it.
     function noteScroll() { lastScrollAt = now(); }
@@ -899,6 +913,7 @@
         skipFrame = !skipFrame;
         if (skipFrame) { rafId = raf(frame); return; }
       }
+      if (touchDevice && state === "streaming" && last && now - last < TOUCH_STREAM_FRAME_MS) { rafId = raf(frame); return; }
       frames++;
       if (!last) last = now;
       var raw = now - last;

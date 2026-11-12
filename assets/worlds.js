@@ -111,12 +111,17 @@
     var W = Math.max(1, Math.round(w * s)), H = Math.max(1, Math.round(h * s));
     if (sky.width !== W || sky.height !== H) { sky.width = W; sky.height = H; GL.gl.viewport(0, 0, W, H); }
   }
+  // a canvas given its own size again is still reallocated and cleared, so
+  // a resize that leaves it alone (a phone's toolbar, a page change) skips it
   function sizeActors() {
-    ADPR = Math.min(window.devicePixelRatio || 1, 2);
-    AW = act.clientWidth;
-    AH = act.clientHeight;
-    SW = Math.min(AW, 120 * (parseFloat(getComputedStyle(root).fontSize) || 16));
-    SX = (AW - SW) / 2;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), w = act.clientWidth, h = act.clientHeight;
+    // the stage follows the root font size, which can change at the same width
+    SW = Math.min(w, 120 * (parseFloat(getComputedStyle(root).fontSize) || 16));
+    SX = (w - SW) / 2;
+    if (w === AW && h === AH && dpr === ADPR) return;
+    ADPR = dpr;
+    AW = w;
+    AH = h;
     act.width = Math.round(AW * ADPR);
     act.height = Math.round(AH * ADPR);
   }
@@ -944,9 +949,18 @@
     var q = clamp((l - a) / ((1 - a) * (1 - WHEEL_HOLD))) * (n - 1), f = Math.min(Math.floor(q), n - 2);
     return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1, k: 1 };
   }
+  // a style is written only when its value changes, so a still wheel writes
+  // nothing and a turning one restyles only what moved
+  function put(el, prop, v) {
+    var k = el._put || (el._put = {});
+    if (k[prop] !== v) { k[prop] = v; el.style[prop] = v; }
+  }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
+    // the logos ride the pin as the next world arrives; the outline goes
+    // with them. The sticky pin's top, from where measure() found it.
+    var dy = Math.min(0, pinEnd[sections.indexOf(L.sec)] - sy);
     var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
     // the wheel rides up with its pin as the next world arrives, and leaves with it
     var ex = L.exit === undefined ? 1 : L.exit;
@@ -961,20 +975,21 @@
       var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
       place.push({ x: x, y: y, sc: sc, near: near, e: e });
       var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img, .spoke-mark")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
-      sp.style.width = sp.style.height = G.big + "px";
+      put(sp, "width", G.big + "px");
+      put(sp, "height", G.big + "px");
       // turned a little away on the far side, as a thing on a wheel would be
       var turn = (1 - near) * 38;
-      sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
-      sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
-      sp.style.opacity = (wp.show * ex).toFixed(3);
-      sp.style.visibility = wp.show * ex > 0.01 ? "visible" : "hidden";
+      put(sp, "transform", "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)");
+      put(sp, "zIndex", String(Math.round(near * 100) + (focus > 0.5 ? 100 : 0)));
+      put(sp, "opacity", (wp.show * ex).toFixed(3));
+      put(sp, "visibility", wp.show * ex > 0.01 ? "visible" : "hidden");
       // the rest are only their logos: further back, smaller, dimmer, darker, softer
       var dim = 1 - e;
-      img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
-      img.style.filter = dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none";
-      plate.style.opacity = sm(0.6, 1, focus).toFixed(3);
-      img.style.transform = "scale(" + (1 + 0.25 * dim).toFixed(3) + ")";
-      sp.classList.toggle("focus", focus > 0.5);
+      put(img, "opacity", (e + dim * (0.2 + 0.62 * near * near)).toFixed(3));
+      put(img, "filter", dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none");
+      put(plate, "opacity", sm(0.6, 1, focus).toFixed(3));
+      put(img, "transform", "scale(" + (1 + 0.25 * dim).toFixed(3) + ")");
+      if (sp._focus !== focus > 0.5) { sp._focus = focus > 0.5; sp.classList.toggle("focus", sp._focus); }
     }
     if (wp.k < 1) drawIntroShapes(c, t, L, a, W, G, place, wp.k);
     if (on !== W.on) {
@@ -986,8 +1001,6 @@
     var best = -1, bf = 0;
     for (var m = 0; m < n; m++) if (place[m].e > bf) { bf = place[m].e; best = m; }
     if (best < 0 || bf < 0.6) return;
-    // the logos ride the pin as the next world arrives; the outline goes with them
-    var pin = L.sec.querySelector(".pin"), dy = pin ? Math.min(0, pin.getBoundingClientRect().top) : 0;
     var f = place[best], shape = WHEEL_SHAPES[(+W.spokes[best].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length], half = G.big * f.sc / 2;
     var out = [];
     for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + dy + shape[qq + 1] * half * 1.12); }
@@ -1014,7 +1027,7 @@
     var P = L.portrait, n = W.spokes.length;
     // on a phone the shapes gather in the room between the header (still
     // full height before the first scroll) and the opening words
-    var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + headLift() : B.y, bh = B.y + B.h - by;
+    var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + liftPx : B.y, bh = B.y + B.h - by;
     var hx = P ? AW / 2 : sx(0.66), hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(SW * 0.16, AH * 0.27);
     var fly = sm(0.08, 0.82, k), fade = 1 - sm(0.42, 0.86, k);
     if (fade <= 0.002) return;
@@ -1126,20 +1139,33 @@
     if (D.fitted === key) return;
     D.fitted = key;
     D.rooms = [];
-    var f = 1, rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
-    function fits() {
-      D.stage.style.setProperty("--fit", f.toFixed(2));
+    var rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
+    var words = D.items.map(function (it) { return it.querySelector(".made-words"); }), lift = P ? headLift() : 0;
+    // the sizes run from 1 down in steps of 0.04 to 0.52, and each try is a
+    // layout, so the largest that fits is found by halving, in four tries
+    function fits(n) {
+      D.stage.style.setProperty("--fit", (1 - 0.04 * n).toFixed(2));
       if (!P) return true;
       var floor = D.bar.offsetTop - 12;
-      for (var i = 0; i < D.items.length; i++) { var w = D.items[i].querySelector(".made-words"); if (w.offsetTop + w.offsetHeight > floor) return false; }
-      return !lead || rig0.offsetTop + rig0.offsetHeight + headLift() + 12 <= lead.offsetTop;
+      for (var i = 0; i < words.length; i++) if (words[i].offsetTop + words[i].offsetHeight > floor) return false;
+      return !lead || rig0.offsetTop + rig0.offsetHeight + lift + 12 <= lead.offsetTop;
     }
-    while (!fits() && f > 0.55) f -= 0.04;
+    if (fits(0) || !fits(12)) return;
+    var lo = 0, hi = 12;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (fits(mid)) hi = mid; else lo = mid; }
+    D.stage.style.setProperty("--fit", (1 - 0.04 * hi).toFixed(2));
   }
   function drawDevices(c, l, t, L) {
     var D = devicesOf(L.sec), n = D.items.length;
     if (!n || !D.stage) return;
     devicesFit(D, L.portrait);
+    // the dark devices are gone in the first 40% of the way out, so they
+    // never linger as a grey slab over the light grid. Written here, only
+    // when it changes: as readers of --u the stage and the bar restyled
+    // everything inside them on every scroll frame.
+    var gone = root.classList.contains("js") ? clamp(((L.exit === undefined ? 1 : L.exit) - 0.6) * 2.5).toFixed(3) : "";
+    put(D.stage, "opacity", gone);
+    if (D.bar) put(D.bar, "opacity", gone);
     var a = devicesIntro(n), opening = l < a;
     var q = opening ? 0 : clamp((l - a) / ((1 - a) * (1 - DEV_HOLD))) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
     devicesLoad(D, i);
@@ -1362,7 +1388,17 @@
   }
 
   // ---- scroll ------------------------------------------------------------------------
-  var tops = [], hs = [], pins = [], gones = [], markG = 99;
+  // Where things are on the page, read once per layout rather than every
+  // frame: a read in the loop forces the browser to finish styling first.
+  // sy follows the scroll from its event, so a still page reads nothing.
+  var tops = [], hs = [], pins = [], pinEnd = [], sy = window.scrollY, gones = [], markG = 99;
+  var roomTop = 0, roomH = 0, footTop = 0, docH = 0, vh = 0, liftPx = 0;
+  function positions() {
+    if (room) { roomTop = room.getBoundingClientRect().top + sy; roomH = room.offsetHeight; }
+    if (footer) footTop = footer.getBoundingClientRect().top + sy;
+    docH = document.documentElement.scrollHeight;
+    vh = window.innerHeight;
+  }
   // ---- leaving: what rides up with a pin is gone before it reaches anything ----
   // A world's --u runs from 1 to 2 while its pin scrolls away. --gone is the
   // --u at which the first thing riding up with the pin would reach the
@@ -1396,32 +1432,50 @@
   function markGone() { var k = NW - 1, S = stacks[k]; return S ? 1 + Math.max(S.top - headBottom() + (portrait() ? headLift() : 0) - 8, 10) / (pins[k] || AH) : 99; }
   // how much of world k is left as its pin leaves, 0 to 1
   function exitOf(g, u) { g = g || 99; return clamp((g - u) / (g - 1)); }
+  // measure() writes a value only when it changes, so a measure that moves
+  // nothing leaves the layout it read clean for its second round of reads
+  function setVar(el, name, v) {
+    var k = el._vars || (el._vars = {});
+    if (k[name] === v) return;
+    k[name] = v;
+    if (v === "") el.style.removeProperty(name); else el.style.setProperty(name, v);
+  }
   function measure() {
-    var y = window.scrollY;
-    tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
+    root.classList.toggle("foot-over", !room && !!footer);
+    // every read, then every write, so the page is laid out once (the exits
+    // at the end are the exception)
+    sy = window.scrollY;
+    tops = sections.map(function (s) { return s.getBoundingClientRect().top + sy; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
-    var lift = headLift(), foot = footer ? footer.offsetHeight : 0;
+    // the scroll at which a sticky pin starts to leave, to the fraction of a pixel
+    pinEnd = sections.map(function (s) { return s.getBoundingClientRect().bottom + sy - s.firstElementChild.getBoundingClientRect().height; });
+    liftPx = headLift();
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
-    root.classList.toggle("foot-over", !room && !!footer);
-    root.style.setProperty("--head-lift", lift + "px");
+    var foot = footer ? footer.offsetHeight + "px" : "";
+    setVar(root, "--head-lift", liftPx + "px");
     sections.forEach(function (s, k) {
       var S = stacks[k];
-      s.style.setProperty("--copy-b", S ? Math.round(S.copyB) + "px" : "");
-      s.style.setProperty("--copy-t", S ? Math.round(S.copyT) + "px" : "");
-      s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
-      s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
+      setVar(s, "--copy-b", S ? Math.round(S.copyB) + "px" : "");
+      setVar(s, "--copy-t", S ? Math.round(S.copyT) + "px" : "");
+      setVar(s, "--fig-top", S ? Math.round(S.top) + "px" : "");
+      setVar(s, "--fig-h", S ? Math.round(S.h) + "px" : "");
     });
+    if (footer) setVar(root, "--foot", foot);
+    // The exits are read where the writes above put things (the words under
+    // a stacked figure sit at --copy-b, --foot moves the room and the
+    // footer), so they are a second round of reads. When nothing above
+    // changed, that layout is the one already read and costs nothing.
+    positions();
     gones = sections.map(function (s, k) { return goneOf(k); });
     markG = markGone();
     sections.forEach(function (s, k) {
-      s.style.setProperty("--gone", gones[k].toFixed(3));
-      s.style.setProperty("--gone-cap", (1 + 12 / (pins[k] || AH)).toFixed(3));
+      setVar(s, "--gone", gones[k].toFixed(3));
+      setVar(s, "--gone-cap", (1 + 12 / (pins[k] || AH)).toFixed(3));
     });
-    if (footer) root.style.setProperty("--foot", foot + "px");
   }
   function scrollState() {
-    var y = window.scrollY, i = 0;
+    var y = sy, i = 0;
     for (var k = 0; k < NW; k++) if (y >= tops[k] - 1) i = k;
     var range = Math.max(1, hs[i] - pins[i]);
     var l = clamp((y - tops[i]) / range), b = 0, tail = 0;
@@ -1430,12 +1484,18 @@
     else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, b, tail];
   }
-  var lastU = [];
+  // --u is not inherited (worlds.css), so it is written on each element
+  // whose rules read it, or read the exit (--e) worked out from it, and a
+  // scroll frame restyles those alone
+  var U_READERS = ".pin, .r, .ticks b, .qs li";
+  var lastU = [], readers = [];
   function setU(i, l, b) {
     for (var k = 0; k < NW; k++) {
       var u = k < i ? 2 : k > i + 1 ? -1 : k === i ? l + b : -1 + b;
       u = Math.round(u * 1000) / 1000;
-      if (u !== lastU[k]) { sections[k].style.setProperty("--u", u); lastU[k] = u; }
+      if (u === lastU[k]) continue;
+      lastU[k] = u;
+      for (var j = 0; j < readers[k].length; j++) readers[k][j].style.setProperty("--u", u);
     }
   }
   function placeCaps() {
@@ -1486,6 +1546,7 @@
     NW = sections.length;
     worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
     scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
+    readers = sections.map(function (s) { return [].slice.call(s.querySelectorAll(U_READERS)); });
     room = document.querySelector(".flame-room");
     footer = document.querySelector("body > footer");
     tops = []; hs = []; pins = []; stacks = []; gones = []; lastU = [];
@@ -1501,8 +1562,24 @@
     return { cx: L.cx, cy: L.cy, R: L.R, heat: 0, flame: 0 };
   }
 
+  // Ambient motion (the drift of the particles, the sky, a figure breathing)
+  // does not need a 120 Hz screen's every frame. Once the page has been
+  // still for STILL_MS, frames come at least AMBIENT_MS apart: every other
+  // one at 120 Hz, every one at 90 Hz and below. The first scroll, pointer
+  // move or page change brings back every frame.
+  var STILL_MS = 300, AMBIENT_MS = 10;
+  var stirAt = 0, stirY = -1, stirX = 0, stirP = 0;
+  function stirred(now) {
+    var moving = sy !== stirY || ptr.x !== stirX || ptr.y !== stirP || burnIn || leaveAt ||
+      Math.abs((ptr.on ? ptr.x : AW / 2) - ptr.sx) > 0.5 || Math.abs((ptr.on ? ptr.y : AH / 2) - ptr.sy) > 0.5;
+    stirY = sy; stirX = ptr.x; stirP = ptr.y;
+    if (moving) stirAt = now;
+    return now - stirAt < STILL_MS;
+  }
+
   function frame(now) {
     requestAnimationFrame(frame);
+    if (!stirred(now) && now - last < AMBIENT_MS) return;
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
@@ -1515,15 +1592,15 @@
 
     var inRoom = false, hidden = false;
     if (room) {
-      var rr = room.getBoundingClientRect();
+      var rt = roomTop - sy;
       // at the very end of the page the room is the screen, even where a
       // phone's toolbars leave it short of the top
-      inRoom = (rr.top < 80 && rr.bottom > 80) || window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
-      hidden = rr.top <= 0;
+      inRoom = (rt < 80 && rt + roomH > 80) || sy + vh >= docH - 2;
+      hidden = rt <= 0;
       if (inRoom !== lastRoom) { root.classList.toggle("in-room", inRoom); lastRoom = inRoom; }
     }
     // once the footer is on screen its nav is the one to use
-    var atEnd = !!footer && footer.getBoundingClientRect().top < AH - 8;
+    var atEnd = !!footer && footTop - sy < AH - 8;
     if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
     var compact = portrait() && (i > 0 || b > 0.5 || (allScroll(sections[i]) && l > 0.02));
     if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
@@ -1634,6 +1711,7 @@
     measure();
     placeCaps();
     placeSwitches(true);
+    stirAt = performance.now();
   }
   var queued = false;
   window.addEventListener("resize", function () {
@@ -1641,9 +1719,15 @@
     queued = true;
     requestAnimationFrame(function () { queued = false; resize(); });
   });
+  window.addEventListener("scroll", function () { sy = window.scrollY; }, { passive: true });
   window.addEventListener("load", function () { measure(); placeCaps(); });
   window.addEventListener("beforeprint", function () { printing = true; pinnable(); });
   window.addEventListener("afterprint", function () { printing = false; resize(); });
+  // the room and the footer are found from measure(), not read each frame,
+  // so anything that lengthens the page (a late picture) measures again
+  if (window.ResizeObserver) new ResizeObserver(function () {
+    if (document.documentElement.scrollHeight !== docH) { measure(); placeCaps(); }
+  }).observe(document.body);
   window.addEventListener("pointermove", function (e) { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = e.pointerType === "mouse"; }, { passive: true });
   document.addEventListener("pointerleave", function () { ptr.on = false; });
   window.addEventListener("blur", function () { ptr.on = false; });
@@ -1822,7 +1906,7 @@
   }
   // The flame room is mounted once a visit. Leaving the home page keeps it
   // (and any conversation in it) aside, and coming back puts it back.
-  var AGENT_CSS = "/assets/agent.css?v=fa745fb58e", FLAME_JS = "/assets/flame.js?v=6008c22bcf", AGENT_JS = "/assets/agent.js?v=0b8a928fa1";
+  var AGENT_CSS = "/assets/agent.css?v=fa745fb58e", FLAME_JS = "/assets/flame.js?v=5e57dbd6ed", AGENT_JS = "/assets/agent.js?v=72067bb626";
   function mountRoom(slot) {
     var host = slot.querySelector("#agent-embed");
     if (!host) return;

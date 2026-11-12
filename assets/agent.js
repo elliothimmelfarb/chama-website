@@ -364,7 +364,7 @@
       if (workerEligible()) {
         var w = null;
         try {
-          w = new Worker("/assets/flame-worker.js?v=a3940ce1c0");
+          w = new Worker("/assets/flame-worker.js?v=f4e5d0f475");
           w.onmessage = function (ev) {
             var m = ev.data;
             if (!m || !m.type) return;
@@ -2104,7 +2104,6 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     if (mode !== "page" && !touchDevice) {
       var SEAT_EPS = 2;
       var seatPending = null;
-      var seatTicking = false;
 
       function viewportH() {
         var vv = window.visualViewport;
@@ -2140,12 +2139,10 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         rootEl.classList.toggle("seat-pending", pending);
       }
 
-      function onPageScroll() {
-        if (!seatTicking) {
-          seatTicking = true;
-          window.requestAnimationFrame(function () { seatTicking = false; markSeat(); });
-        }
-      }
+      // read in the scroll event, where the layout is still the one last
+      // painted: in an animation frame it came after worlds.js had written
+      // the frame's styles, and forced them to be worked out early
+      function onPageScroll() { markSeat(); }
 
       window.addEventListener("scroll", onPageScroll, { passive: true });
       window.addEventListener("resize", markSeat, { passive: true });

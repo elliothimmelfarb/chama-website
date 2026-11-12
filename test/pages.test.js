@@ -590,3 +590,62 @@ test("the hero logo rows load copies sized for them, not the masters", () => {
     for (const x of logos) assert.ok(pixelWidth(path.join(ROOT, x.src)) <= 3.5 * parseInt(x.sizes), `${url}: ${x.src} is far wider than a 3x screen needs at ${x.sizes}`);
   }
 });
+
+// worlds.css registers --u as not inherited, so a scroll frame restyles only
+// the elements that read it, and worlds.js writes it on each of them
+// (U_READERS). A rule that reads --u anywhere else would sit at the initial
+// value for ever, and a browser without @property, where --u still inherits
+// from .world, must start every reader at that same value.
+test("every rule that reads --u is on an element worlds.js writes it on", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const js = readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8");
+  const readers = (/var U_READERS = "([^"]+)"/.exec(js)?.[1] ?? "").split(",").map((s) => s.trim().split(/\s+/));
+  assert.ok(readers.length >= 4, "worlds.js lists the elements it writes --u on");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((s) => s.trim()), body: m[2] }));
+  const reg = rules.find((r) => r.selectors[0] === "@property --u");
+  assert.ok(reg, "--u is registered");
+  assert.match(reg.body, /inherits:\s*false/);
+  const initial = /initial-value:\s*([-\d.]+)/.exec(reg.body)?.[1];
+  const world = rules.find((r) => r.selectors.includes(".world") && /--u:/.test(r.body));
+  assert.equal(/--u:\s*([-\d.]+)/.exec(world?.body ?? "")?.[1], initial, ".world starts --u where the registration does");
+  const inherits = new Set(rules.filter((r) => /--u:\s*inherit\b/.test(r.body)).flatMap((r) => r.selectors));
+  const has = (compound, part) => new RegExp(part.startsWith(".") ? `\\${part}(?![\\w-])` : `^${part}(?![\\w-])`).test(compound);
+  const split = (selector) => {
+    const pseudo = /::?(?:before|after)$/.exec(selector)?.[0] ?? "";
+    const parts = selector.slice(0, selector.length - pseudo.length).split(/\s+/);
+    return { pseudo, parts, last: parts[parts.length - 1] };
+  };
+  const onReader = ({ parts, last }) => readers.some((r) => has(last, r[r.length - 1]) && r.slice(0, -1).every((a) => parts.slice(0, -1).some((p) => has(p, a))));
+  let checked = 0;
+  for (const rule of rules) {
+    if (!/var\(--u\)/.test(rule.body)) continue;
+    for (const selector of rule.selectors) {
+      checked++;
+      const sel = split(selector);
+      assert.ok(onReader(sel), `"${selector}" reads --u, but worlds.js does not write it there (U_READERS)`);
+      if (sel.pseudo) assert.ok(inherits.has(sel.last + sel.pseudo), `"${selector}" reads --u but never takes it from its element (--u: inherit)`);
+    }
+  }
+  assert.ok(checked >= 6, "the rules that read --u were found");
+
+  // A variable worked out from --u and registered not to inherit (--e, the
+  // exit) is the same: every element that reads it must work it out itself,
+  // from its own --u, or it sits at its initial value and nothing fades.
+  const derived = rules
+    .filter((r) => /^@property --[\w-]+$/.test(r.selectors[0]) && /inherits:\s*false/.test(r.body))
+    .map((r) => r.selectors[0].slice("@property ".length))
+    .filter((n) => n !== "--u" && rules.some((r) => new RegExp(`${n}:[^;]*var\\(--u\\)`).test(r.body)));
+  assert.ok(derived.includes("--e"), "--e is worked out from --u and does not inherit");
+  for (const name of derived) {
+    const declared = rules.filter((r) => new RegExp(`(^|[;\\s])${name}:`).test(r.body)).flatMap((r) => r.selectors.map(split));
+    for (const rule of rules) {
+      if (!rule.body.includes(`var(${name})`)) continue;
+      for (const selector of rule.selectors) {
+        const sel = split(selector);
+        assert.ok(onReader(sel), `"${selector}" reads ${name}, which needs --u there, but worlds.js does not write it (U_READERS)`);
+        const works = declared.some((d) => d.pseudo === sel.pseudo && d.last.match(/\.[\w-]+/g)?.every((c) => has(sel.last, c)));
+        assert.ok(works, `"${selector}" reads ${name} but never works it out (${name} does not inherit)`);
+      }
+    }
+  }
+});
