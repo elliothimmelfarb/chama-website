@@ -1904,7 +1904,8 @@
     document.addEventListener("touchstart", warm, { passive: true });
     document.addEventListener("focusin", warm);
     var save = navigator.connection && navigator.connection.saveData;
-    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(function (p) { if (p !== here) fetchPage(p); }); }, 3000);
+    // the page in view too, so Back to the page the visit began on is warm
+    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(fetchPage); }, 3000);
   }
 
   bind();
