@@ -39,7 +39,7 @@ Copy is written here. The brain keeps its history and the reasons for each chang
 
 ## Clients and friends
 
-`/clients` shows the clients we have built software for or coached as a wheel of their logos that turns as the page scrolls (`drawWheel` in `assets/worlds.js`). Each client's words are a `.turn` whose `id` is the anchor the logo rows on `/` and `/coaching` link to, and a link to it turns the wheel to that client. `/simple/clients` is the same content as a still ledger. The page was `/work` until 2026-10-26, and `vercel.json` redirects the old addresses.
+`/clients` shows the clients we have built software for or coached as a wheel of their logos that turns as the page scrolls (`drawWheel` in `assets/worlds.js`). Each client's words are a `.turn` whose `id` is the anchor the logo rows on `/` and `/coaching` link to, and a link to it turns the wheel to that client. In one column (short screens, no JavaScript, print) the wheel lies flat, each logo on its plate beside its client's words. `/simple/clients` is the same content as a still ledger. The page was `/work` until 2026-10-26, and `vercel.json` redirects the old addresses.
 
 Our friends, people we introduce someone to when they fit better than we do, are a section of `/about` (a directory of letters over the forge world), not of `/clients`, because they say what kind of company we are rather than prove what we have done. The friends row in the heroes links to them there.
 
