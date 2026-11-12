@@ -27,8 +27,8 @@
   // the pinned layout (html.js), except where the words cannot fit on one
   // screen or the page is printed: there the worlds are one column
   // (worlds.css). The head of each page makes the same test before it paints.
-  var SHORT = window.matchMedia("(max-height: 500px)"), printing = false;
-  function pinnable() { root.classList.toggle("js", !SHORT.matches && !printing); }
+  var SHORT = window.matchMedia("(max-height: 500px)"), printing = false, pinned = true;
+  function pinnable() { pinned = !SHORT.matches && !printing; root.classList.toggle("js", pinned); }
   pinnable();
 
   var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -916,7 +916,7 @@
         spokes: [].slice.call(sec.querySelectorAll(".spoke")),
         turns: [].slice.call(sec.querySelectorAll(".turn")),
         count: sec.querySelector("[data-wheel-count]"),
-        on: -1
+        on: -2
       };
     }
     return sec._wheel;
@@ -1119,10 +1119,11 @@
   // sizes in the markup cannot know the phone's --fit, so each picture is
   // chosen for its screen's measured width, kept as a share of the window so
   // a resize still picks again
-  function devicesFetch(pair) {
+  function devicesFetch(pair, lazy) {
     pair.forEach(function (img) {
       var src = img.getAttribute("data-src");
       if (!src) return;
+      if (lazy) img.loading = "lazy";
       if (img.offsetWidth) img.sizes = (img.offsetWidth * 101 / innerWidth).toFixed(1) + "vw";
       img.srcset = img.getAttribute("data-srcset");
       img.src = src;
@@ -1208,6 +1209,38 @@
     if (el.classList.contains("turn")) return wheelY(el);
     if (el.classList.contains("made")) return devicesY(el);
     return null;
+  }
+
+  // In one column nothing is pinned: every thing on /built and every client
+  // on /clients is on the page at once, so none is inert or hidden, no
+  // picture keeps the scroll it had inside its screen, and every picture
+  // loads as it nears the screen (at once, for print). Back in the pinned
+  // layout the frame loop applies its state again from scratch.
+  function layFlat() {
+    sections.forEach(function (sec) {
+      var lay = pinned ? "pinned" : printing ? "print" : "flat";
+      if (sec._lay === lay) return;
+      sec._lay = lay;
+      if (sec.classList.contains("devices-world")) {
+        var D = devicesOf(sec);
+        D.words = -2; D.rig = -1; D.was = -1; D.fitted = "";
+        if (pinned) return;
+        D.items.forEach(function (it) { it.inert = false; it.classList.remove("on", "rig-on", "rig-was"); });
+        if (D.open) D.open.inert = false;
+        D.ticks.forEach(function (b) { b.removeAttribute("aria-current"); });
+        if (D.stage) put(D.stage, "opacity", "");
+        if (D.bar) put(D.bar, "opacity", "");
+        D.shots.forEach(function (pair) {
+          pair.forEach(function (img) { img.style.transform = ""; if (printing) img.loading = "eager"; });
+          devicesFetch(pair, !printing);
+        });
+      }
+      if (sec.classList.contains("wheel-world")) {
+        var W = wheelOf(sec);
+        W.on = -2;
+        if (!pinned) W.turns.forEach(function (tn) { tn.removeAttribute("aria-hidden"); });
+      }
+    });
   }
 
   // About us: the two lights circle the family's photograph, and a third,
@@ -1587,7 +1620,8 @@
     // the last world keeps counting on past its end, so what rises with it
     // can leave before it reaches the header
     var u = l + (b || st[3] / AH);
-    setU(i, l, b || st[3] / AH);
+    // in one column the words stand still (worlds.css), so --u has no readers
+    if (pinned) setU(i, l, b || st[3] / AH);
     var pass = crossing(b);
 
     var inRoom = false, hidden = false;
@@ -1664,6 +1698,8 @@
       gl.uniform1f(U.uHeat, focus.heat * lastOut);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
+    // in one column the figures are left out (their canvas is hidden)
+    if (!pinned) return;
 
     ctx.setTransform(ADPR, 0, 0, ADPR, 0, 0);
     ctx.clearRect(0, 0, AW, AH);
@@ -1706,6 +1742,7 @@
 
   function resize() {
     pinnable();
+    layFlat();
     sizeActors();
     sizeSky();
     measure();
@@ -1721,7 +1758,7 @@
   });
   window.addEventListener("scroll", function () { sy = window.scrollY; }, { passive: true });
   window.addEventListener("load", function () { measure(); placeCaps(); });
-  window.addEventListener("beforeprint", function () { printing = true; pinnable(); });
+  window.addEventListener("beforeprint", function () { printing = true; pinnable(); layFlat(); });
   window.addEventListener("afterprint", function () { printing = false; resize(); });
   // the room and the footer are found from measure(), not read each frame,
   // so anything that lengthens the page (a late picture) measures again

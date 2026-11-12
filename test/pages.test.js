@@ -670,3 +670,14 @@ test("every rule that reads --u is on an element worlds.js writes it on", () => 
     }
   }
 });
+
+// worlds.js hides the clients and things not in focus from assistive tech
+// while they are pinned. Without JavaScript, and in one column, every one
+// is on the page, so the markup must start with none hidden.
+for (const { worlds } of PAIRS) {
+  test(`${worlds} hides none of its entries in its markup`, () => {
+    for (const m of read(worlds).matchAll(/<(?:div|article)\b[^>]*\bclass="(?:turn|made)\b[^"]*"[^>]*>/g)) {
+      assert.ok(!/\saria-hidden="true"|\sinert\b/.test(m[0]), `${m[0]} is hidden before worlds.js has run`);
+    }
+  });
+}

@@ -1401,9 +1401,10 @@ html:not(.js) body > footer { margin-top: 0; }
 
 @media print {
   [data-theme] { --fg: #141412; --fg2: #57544d; --accent: #b8400f; --track: rgba(20, 20, 18, 0.14); }
-  body { background: #fff; }
+  /* ink on paper whether or not the reader prints background graphics */
+  html, body, .world, .pin { background: #fff !important; }
   canvas.layer, .skip-link, .worlds, .top .site-nav, .motion-toggle, .worlds-members, .flame-room, .top::before { display: none !important; }
-  .world { break-inside: avoid; }
+  .world, .made { break-inside: avoid; }
   body > footer { background: none; box-shadow: none; }
   .dir > * { animation: none; }
   /* a picture not fetched yet would print as an empty screen */
