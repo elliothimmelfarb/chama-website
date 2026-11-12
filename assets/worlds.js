@@ -15,8 +15,8 @@
    Shape scenes hand one shape from world to world and morph it; any other
    pair of scenes cross-fades while the fire passes.
 
-   The engine writes --u on each section (see worlds.css) and never touches
-   the words themselves. It paints nothing from the network: no images, no
+   The engine writes --u on the elements of each section that read it (see
+   worlds.css) and never touches the words themselves. It paints nothing from the network: no images, no
    fonts, no libraries. Under reduced motion the clock stops, the particles
    go, and every figure is drawn complete.
    ========================================================================== */
@@ -1539,6 +1539,10 @@
       cap.style.left = L.cx + "px";
       cap.style.top = (L.cy + L.R * (scenes[k].cap || 1.45)) + "px";
     });
+    // in one column there is no pin: the fire line (-0.4 + 1.8 * b of the
+    // screen from the bottom, crossing() below) stands on the next
+    // section's top edge, rather than sweeping up through this one's words
+    if (!pinned && i < NW - 1) b = clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
   }
 
   // ---- the index of worlds -------------------------------------------------------------

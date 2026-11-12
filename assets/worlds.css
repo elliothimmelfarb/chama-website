@@ -365,7 +365,8 @@ html:not(.gl) #sky { display: none; }
 .worlds {
   position: fixed;
   z-index: 6;
-  right: calc(14px + env(safe-area-inset-right));
+  /* at the stage's edge, which past 120rem is not the window's */
+  right: calc(var(--side) + 14px + env(safe-area-inset-right));
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -712,6 +713,10 @@ html.room-pinned { overflow: hidden; overscroll-behavior: none; }
 
 /* The footer: the same pages again, then the small print. Every page ends
    in a dark world, so it always wears the flame theme. */
+/* the room's sheet (agent.js, kb-pin) is fixed to the screen, but its z-index
+   counts inside main's stacking context, which sits under the footer: the
+   footer's pages covered the composer's fine print */
+html.room-pinned main { z-index: 60; }
 footer {
   position: relative;
   z-index: 3;
@@ -1391,6 +1396,9 @@ html:not(.js) .copy,
 html:not(.js) .flame .copy { position: static; width: auto; max-width: 46rem; transform: none; }
 html:not(.js) .flame .copy { margin-inline: auto; }
 html:not(.js) .qs li { opacity: 1; transform: none; }
+/* the sky's fire follows each section's lower edge, so the words end a
+   fifth of a screen above it and the handoff burns in the gap */
+@media screen { html:not(.js) .pin { padding-bottom: calc(clamp(3.5rem, 12vh, 7rem) + 20vh); } }
 html:not(.js) .card,
 html:not(.js) .logo-plate { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
 html:not(.js) .flame-room:has(.flame-noscript) { height: auto; }
