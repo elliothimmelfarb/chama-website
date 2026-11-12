@@ -48,6 +48,9 @@ body {
   color: #fff;
 }
 
+/* one focus ring everywhere; components only move it */
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
 .skip-link {
   position: fixed;
   z-index: 20;
@@ -181,10 +184,15 @@ body {
   box-shadow: 0 0 8px var(--ember);
 }
 
-.members-link:hover,
 .members-link:focus-visible {
   background: var(--ink);
   color: var(--paper);
+}
+@media (hover: hover) {
+  .members-link:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
 }
 
 .hero {
@@ -440,10 +448,15 @@ body {
   display: block;
 }
 
-.social-link:hover,
 .social-link:focus-visible {
   border-color: var(--ember);
   color: var(--ember);
+}
+@media (hover: hover) {
+  .social-link:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
 }
 
 .footer-social {
@@ -457,9 +470,13 @@ body {
   color: var(--quiet);
 }
 
-.footer-social .social-link:hover,
 .footer-social .social-link:focus-visible {
   color: var(--ember);
+}
+@media (hover: hover) {
+  .footer-social .social-link:hover {
+    color: var(--ember);
+  }
 }
 
 .founder-photo {
@@ -638,6 +655,12 @@ footer {
 
 /* The site map: the same four links on every page, the current page
    named but not underlined, so the reader can see where they stand. */
+.footer-map a {
+  /* a link's words stay together; the padding reaches past the line for a finger without moving it */
+  padding-block: 0.9em;
+  white-space: nowrap;
+}
+
 .footer-map a[aria-current="page"] {
   text-decoration: none;
   color: #ece7dc;
@@ -880,10 +903,15 @@ footer {
   color: var(--ember);
 }
 
-.also-links a:hover,
 .also-links a:focus-visible {
   color: var(--ember);
   border-color: var(--ember);
+}
+@media (hover: hover) {
+  .also-links a:hover {
+    color: var(--ember);
+    border-color: var(--ember);
+  }
 }
 
 /* Sub pages: the wordmark is the way home, and the page ends on paper
@@ -908,9 +936,11 @@ footer {
   text-underline-offset: 0.14em;
 }
 
-.section-copy a:hover,
-.shape-details a:hover {
-  color: var(--ember);
+@media (hover: hover) {
+  .section-copy a:hover,
+  .shape-details a:hover {
+    color: var(--ember);
+  }
 }
 
 .page-end {
@@ -1015,12 +1045,16 @@ footer {
   transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease;
 }
 
-.motion-toggle:hover {
-  color: var(--ember);
+@media (hover: hover) {
+  .motion-toggle:hover {
+    color: var(--ember);
+  }
 }
 
-.motion-toggle:hover .motion-track i {
-  transform: translateX(3px);
+@media (hover: hover) {
+  .motion-toggle:hover .motion-track i {
+    transform: translateX(3px);
+  }
 }
 
 .motion-toggle.on .motion-track {
@@ -1034,8 +1068,10 @@ footer {
 }
 
 /* On, the knob leans back toward off under the pointer. */
-.motion-toggle.on:hover .motion-track i {
-  transform: translateX(9px);
+@media (hover: hover) {
+  .motion-toggle.on:hover .motion-track i {
+    transform: translateX(9px);
+  }
 }
 
 .motion-toggle:focus {
@@ -1178,12 +1214,13 @@ footer {
    on /simple/clients, where the marks are shown as they are. */
 .clients { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.6rem; margin: 1.8rem 0 0; }
 .clients-all { flex-basis: 100%; color: var(--quiet); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; }
-.clients-all:hover { color: var(--ember); }
+@media (hover: hover) { .clients-all:hover { color: var(--ember); } }
 .clients a { display: inline-flex; align-items: center; min-height: 44px; border-radius: 6px; }
 .clients img { display: block; width: auto; height: 26px; filter: grayscale(1) brightness(0.62) contrast(1.5); opacity: 0.62; mix-blend-mode: multiply; transition: filter 0.3s ease, opacity 0.3s ease; }
 .clients img.round { height: 44px; }
 .clients img.tall { height: 36px; }
-.clients a:hover img, .clients a:focus-visible img { filter: none; opacity: 1; }
+.clients a:focus-visible img { filter: none; opacity: 1; }
+@media (hover: hover) { .clients a:hover img { filter: none; opacity: 1; } }
 .clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
 /* the clients and our friends, one line each: a label, then their marks */
 .worked { display: grid; gap: 0.7rem; margin: 1.9rem 0 0; }
