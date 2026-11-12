@@ -888,7 +888,6 @@
         spokes: [].slice.call(sec.querySelectorAll(".spoke")),
         turns: [].slice.call(sec.querySelectorAll(".turn")),
         count: sec.querySelector("[data-wheel-count]"),
-        pin: sec.querySelector(".pin"),
         on: -1
       };
     }
@@ -932,8 +931,8 @@
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
     // the logos ride the pin as the next world arrives; the outline goes
-    // with them. Read before this frame's writes, so the read costs nothing.
-    var dy = W.pin ? Math.min(0, W.pin.getBoundingClientRect().top) : 0;
+    // with them. The sticky pin's top, from where measure() found it.
+    var dy = Math.min(0, pinEnd[sections.indexOf(L.sec)] - sy);
     var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
     var place = [];
     for (var i = 0; i < n; i++) {
@@ -1341,7 +1340,7 @@
   // Where things are on the page, read once per layout rather than every
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
-  var tops = [], hs = [], pins = [], sy = window.scrollY;
+  var tops = [], hs = [], pins = [], pinEnd = [], sy = window.scrollY;
   var roomTop = 0, roomH = 0, footTop = 0, docH = 0, footWas = "";
   function positions() {
     if (room) { roomTop = room.getBoundingClientRect().top + sy; roomH = room.offsetHeight; }
@@ -1355,6 +1354,8 @@
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + sy; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
+    // the scroll at which a sticky pin starts to leave, to the fraction of a pixel
+    pinEnd = sections.map(function (s) { return s.getBoundingClientRect().bottom + sy - s.firstElementChild.getBoundingClientRect().height; });
     var lift = headLift() + "px";
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
     var foot = footer ? footer.offsetHeight + "px" : "";
