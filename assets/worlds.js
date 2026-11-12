@@ -1951,7 +1951,8 @@
         try { h.focus({ preventScroll: true }); } catch (e) {}
       }
     }).catch(function () {
-      if (seq === navSeq) location.assign(u.href);
+      // Back and Forward have already moved the history to this entry
+      if (seq === navSeq) { if (push) location.assign(u.href); else location.replace(u.href); }
     });
   }
 
