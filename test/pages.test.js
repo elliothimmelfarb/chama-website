@@ -692,7 +692,15 @@ test("every rule that reads --u is on an element worlds.js writes it on", () => 
   // style, and /built's stage as one doubled that page's. So a container of
   // a world's contents is never a reader.
   for (const box of [".world", ".pin", ".copy", ".made-stage", ".made-ticks", ".wheel"]) {
-    assert.ok(!readers.some((r) => r.length === 1 && r[0] === box), `${box} holds a world's contents, so writing --u on it restyles all of them every frame`);
+    assert.ok(!readers.some((r) => r.some((part) => has(part, box))), `${box} holds a world's contents, so writing --u on it restyles all of them every frame`);
+  }
+  // The chat lives inside <main> on the homepage, so a reader's class that
+  // the chat also uses would take the worlds' rules (the first scrim
+  // element was .scrim, the chat's own shade's name).
+  const chatCss = readFileSync(path.join(ROOT, "assets/agent.css"), "utf8"), chatJs = readFileSync(path.join(ROOT, "assets/agent.js"), "utf8");
+  for (const name of readers.flat().flatMap((p) => (p.match(/\.[\w-]+/g) || []).map((c) => c.slice(1)))) {
+    assert.ok(!new RegExp(`\\.${name}(?![\\w-])`).test(chatCss), `the chat's stylesheet also styles .${name}`);
+    assert.ok(!new RegExp(`class(Name)?="[^"]*\\b${name}\\b`).test(chatJs), `the chat also makes elements of class ${name}`);
   }
 
   // A variable worked out from --u and registered not to inherit (--e, the
