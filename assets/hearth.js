@@ -1200,13 +1200,16 @@
   // The parts of the room this member's permissions open, named by /me in
   // the order they register. Scripts added with async off run in the order
   // they were added. A part that fails to load leaves its rooms out, as a
-  // failed script tag always has.
+  // failed script tag always has. Their addresses come from the page
+  // (hearthEarly.parts), so a name /me sends that this page does not know is
+  // left out too.
   function loadParts(names) {
-    var list = (Array.isArray(names) ? names : []).filter(function (n) { return /^hearth-[a-z-]+$/.test(n); });
+    var parts = (window.hearthEarly && window.hearthEarly.parts) || {};
+    var list = (Array.isArray(names) ? names : []).filter(function (n) { return Object.prototype.hasOwnProperty.call(parts, n); });
     return Promise.all(list.map(function (name) {
       return new Promise(function (resolve) {
         var script = document.createElement("script");
-        script.src = "/assets/" + name + ".js";
+        script.src = parts[name];
         script.async = false;
         script.onload = script.onerror = resolve;
         document.head.appendChild(script);

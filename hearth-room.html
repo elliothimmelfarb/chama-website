@@ -15,7 +15,22 @@
   <script>
     // Ask who is here while the scripts download; hearth.js takes the answers.
     // The parts of the room /me names start downloading as soon as it answers.
+    // Their addresses are written here, versioned with this page, so a part
+    // always comes from the same deploy as the core (one per name in
+    // lib/hearth/modules.js; modules.test.js holds the two together).
     (function () {
+      var parts = {};
+      [
+        "/assets/hearth-admin.js",
+        "/assets/hearth-sessions.js",
+        "/assets/hearth-sessions-admin.js",
+        "/assets/hearth-transcripts.js",
+        "/assets/hearth-transcripts-admin.js",
+        "/assets/hearth-remember.js",
+        "/assets/hearth-agents.js",
+        "/assets/hearth-feed.js",
+        "/assets/hearth-ask.js"
+      ].forEach(function (src) { parts[/([a-z-]+)\.js/.exec(src)[1]] = src; });
       function ask(path) {
         var started = fetch("/api/hearth" + path, { credentials: "same-origin", headers: { Accept: "application/json" } });
         started.catch(function () {});
@@ -24,15 +39,15 @@
       var me = ask("/me");
       me.then(function (response) { return response.ok ? response.clone().json() : {}; }).then(function (body) {
         (body.modules || []).forEach(function (name) {
-          if (!/^hearth-[a-z-]+$/.test(name)) return;
+          if (!Object.prototype.hasOwnProperty.call(parts, name)) return;
           var hint = document.createElement("link");
           hint.rel = "preload";
           hint.as = "script";
-          hint.href = "/assets/" + name + ".js";
+          hint.href = parts[name];
           document.head.appendChild(hint);
         });
       }).catch(function () {});
-      window.hearthEarly = { "/config": ask("/config"), "/me": me };
+      window.hearthEarly = { "/config": ask("/config"), "/me": me, parts: parts };
     })();
   </script>
   <script src="/assets/flame.js" defer></script>
