@@ -1347,12 +1347,17 @@
     else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, b, tail];
   }
-  var lastU = [];
+  // --u is not inherited (worlds.css), so it is written on each element
+  // whose rules read it, and a scroll frame restyles those alone
+  var U_READERS = ".pin, .r, .ticks b, .qs li";
+  var lastU = [], readers = [];
   function setU(i, l, b) {
     for (var k = 0; k < NW; k++) {
       var u = k < i ? 2 : k > i + 1 ? -1 : k === i ? l + b : -1 + b;
       u = Math.round(u * 1000) / 1000;
-      if (u !== lastU[k]) { sections[k].style.setProperty("--u", u); lastU[k] = u; }
+      if (u === lastU[k]) continue;
+      lastU[k] = u;
+      for (var j = 0; j < readers[k].length; j++) readers[k][j].style.setProperty("--u", u);
     }
   }
   function placeCaps() {
@@ -1403,7 +1408,8 @@
     NW = sections.length;
     worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
     scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
-    room = document.querySelector(".flame-room");
+    readers = sections.map(function (s) { return [].slice.call(s.querySelectorAll(U_READERS)); });
+    room =document.querySelector(".flame-room");
     footer = document.querySelector("body > footer");
     tops = []; hs = []; pins = []; stacks = []; lastU = [];
     hugReady = false;

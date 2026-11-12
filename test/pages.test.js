@@ -425,3 +425,38 @@ test("worlds.css never hides a bare .turn, which would hide the chat's messages"
     }
   }
 });
+
+// worlds.css registers --u as not inherited, so a scroll frame restyles only
+// the elements that read it, and worlds.js writes it on each of them
+// (U_READERS). A rule that reads --u anywhere else would sit at the initial
+// value for ever, and a browser without @property, where --u still inherits
+// from .world, must start every reader at that same value.
+test("every rule that reads --u is on an element worlds.js writes it on", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const js = readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8");
+  const readers = (/var U_READERS = "([^"]+)"/.exec(js)?.[1] ?? "").split(",").map((s) => s.trim().split(/\s+/));
+  assert.ok(readers.length >= 4, "worlds.js lists the elements it writes --u on");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((s) => s.trim()), body: m[2] }));
+  const reg = rules.find((r) => r.selectors[0] === "@property --u");
+  assert.ok(reg, "--u is registered");
+  assert.match(reg.body, /inherits:\s*false/);
+  const initial = /initial-value:\s*([-\d.]+)/.exec(reg.body)?.[1];
+  const world = rules.find((r) => r.selectors.includes(".world") && /--u:/.test(r.body));
+  assert.equal(/--u:\s*([-\d.]+)/.exec(world?.body ?? "")?.[1], initial, ".world starts --u where the registration does");
+  const inherits = new Set(rules.filter((r) => /--u:\s*inherit\b/.test(r.body)).flatMap((r) => r.selectors));
+  const has = (compound, part) => new RegExp(part.startsWith(".") ? `\\${part}(?![\\w-])` : `^${part}(?![\\w-])`).test(compound);
+  let checked = 0;
+  for (const rule of rules) {
+    if (!/var\(--u\)/.test(rule.body)) continue;
+    for (const selector of rule.selectors) {
+      checked++;
+      const pseudo = /::?(?:before|after)$/.exec(selector)?.[0];
+      const host = pseudo ? selector.slice(0, -pseudo.length) : selector;
+      const parts = host.split(/\s+/), last = parts[parts.length - 1];
+      const written = readers.some((r) => has(last, r[r.length - 1]) && r.slice(0, -1).every((a) => parts.slice(0, -1).some((p) => has(p, a))));
+      assert.ok(written, `"${selector}" reads --u, but worlds.js does not write it there (U_READERS)`);
+      if (pseudo) assert.ok(inherits.has(last + pseudo), `"${selector}" reads --u but never takes it from its element (--u: inherit)`);
+    }
+  }
+  assert.ok(checked >= 6, "the rules that read --u were found");
+});

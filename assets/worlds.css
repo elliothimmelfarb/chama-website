@@ -13,7 +13,18 @@
    each section, --u: -1 while the world is arriving, 0..1 while it is held
    on screen, 2 once it has gone. Every .r element shows while --u sits
    between its own --in and --out, so the choreography lives in the markup.
+
+   --u is registered as not inherited, so a scroll frame restyles only the
+   elements that read it, not every node in the world. worlds.js writes it
+   on each of them (U_READERS there: the .pin, .r, .ticks b, .qs li); a
+   pseudo-element takes it from its element with --u: inherit. A new rule
+   that reads --u goes on one of those, or joins the list
+   (test/pages.test.js checks). A browser without @property inherits it as
+   before, from .world, which starts every reader at the same 0.5.
    ========================================================================== */
+
+@property --u { syntax: "<number>"; inherits: false; initial-value: 0.5; }
+.pin::before { --u: inherit; }
 
 :root {
   --ember: #f4581f;
