@@ -438,3 +438,85 @@ test("the hero's words and logos count as painted from their first frame", () =>
     for (const f of frames) assert.ok(!/opacity:\s*0\s*[;}]|opacity:\s*0$/.test(f[1].trim()), `@keyframes ${name} starts at opacity 0`);
   }
 });
+
+// Pictures come in several widths and the browser picks one from srcset by
+// the w descriptor, never by looking at the file. A descriptor wider than its
+// file makes the page soft wherever that copy is picked, and nothing else
+// would show it.
+function pixelWidth(file) {
+  const b = readFileSync(file);
+  if (b.toString("ascii", 0, 4) === "RIFF") {
+    const chunk = b.toString("ascii", 12, 16);
+    if (chunk === "VP8X") return 1 + b.readUIntLE(24, 3);
+    if (chunk === "VP8L") return 1 + (b.readUInt16LE(21) & 0x3fff);
+    return b.readUInt16LE(26) & 0x3fff;
+  }
+  for (let i = 2; i < b.length; ) {
+    const marker = b[i + 1];
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return b.readUInt16BE(i + 7);
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`${file}: not a WebP or JPEG`);
+}
+
+function imgs(html) {
+  return [...html.matchAll(/<img\b[^>]*>/g)].map((m) => {
+    const attr = (k) => (new RegExp(`\\s${k}="([^"]*)"`).exec(m[0]) || [])[1];
+    const set = attr("srcset") || attr("data-srcset");
+    return {
+      tag: m[0], src: attr("src") || attr("data-src"), sizes: attr("sizes"), lazy: !!attr("data-src"), high: attr("fetchpriority") === "high",
+      set: set ? set.split(",").map((c) => { const [url, w] = c.trim().split(/\s+/); return { url, w: parseInt(w) }; }) : null,
+    };
+  });
+}
+const outsideNoscript = (html) => html.replace(/<noscript>[\s\S]*?<\/noscript>/g, "");
+
+for (const url of PUBLIC) {
+  test(`${url}: every srcset width is the width of its file`, () => {
+    for (const img of imgs(read(url)).filter((x) => x.set)) {
+      assert.ok(img.sizes, `${img.src} has a srcset but no sizes, so it is picked as if it filled the window`);
+      for (const c of img.set) {
+        if (!c.url.startsWith("/")) continue;
+        const file = path.join(ROOT, c.url);
+        assert.ok(existsSync(file), `${c.url} is not in the repository`);
+        assert.equal(pixelWidth(file), c.w, `${c.url} is not ${c.w} pixels wide`);
+      }
+    }
+  });
+}
+
+// On a phone /built's first screen is two pictures. The first thing's pair
+// loads at once and first; every other thing's waits for worlds.js
+// (devicesLoad), which fetches the next only once the pair on the screens has
+// arrived. Each picture offers a copy small enough for a phone's screen.
+test("/built loads the first thing's pictures first and offers each picture at phone size", () => {
+  const shots = imgs(outsideNoscript(read("/built"))).filter((x) => x.src.startsWith("/assets/built/"));
+  assert.ok(shots.length >= 6);
+  shots.forEach((x, i) => {
+    assert.equal(x.lazy, i >= 2, `${x.src} ${i < 2 ? "must load at once" : "must wait for its turn (data-src)"}`);
+    assert.equal(x.high, i < 2, `${x.src} ${i < 2 ? "needs" : "must not have"} fetchpriority="high"`);
+    assert.ok(x.set, `${x.src} has no srcset`);
+    const small = Math.min(...x.set.map((c) => c.w));
+    assert.ok(small <= (/-phone/.test(x.src) ? 160 : 640), `${x.src}: the smallest copy is ${small} wide`);
+    assert.equal(Math.max(...x.set.map((c) => c.w)), +/width="(\d+)"/.exec(x.tag)[1], `${x.src}: the full-size picture is missing from srcset`);
+  });
+});
+
+// The low motion /built shows the top of each picture in a small frame:
+// cropped copies, never the full-length screenshots.
+test("/simple/built shows cropped thumbnails, not the full screenshots", () => {
+  for (const x of imgs(read("/simple/built")).filter((x) => x.src.startsWith("/assets/built/"))) {
+    assert.match(x.src, /-thumb-\d+\.webp$/);
+    for (const c of x.set) assert.ok(c.w <= 1080, `${c.url} is larger than a thumbnail needs`);
+  }
+});
+
+// The logo rows in the heroes show each mark at most 154 CSS px wide.
+test("the hero logo rows load copies sized for them, not the masters", () => {
+  for (const url of ["/", "/coaching", "/simple", "/simple/coaching"]) {
+    const rows = [...read(url).matchAll(/<div class="clients[^"]*">[\s\S]*?<\/div>/g)].map((m) => m[0]).join("");
+    const logos = imgs(rows);
+    assert.ok(logos.length >= 4, `${url} has no logo row`);
+    for (const x of logos) assert.ok(pixelWidth(path.join(ROOT, x.src)) <= 3.5 * parseInt(x.sizes), `${url}: ${x.src} is far wider than a 3x screen needs at ${x.sizes}`);
+  }
+});
