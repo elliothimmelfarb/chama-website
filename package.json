@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "evals": "node evals/run.js",
+    "evals:conversations": "node evals/simulate.js",
     "check": "node scripts/check.js",
     "stamp": "node scripts/stamp.js"
   },
