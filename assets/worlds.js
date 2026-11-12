@@ -1458,8 +1458,24 @@
     return { cx: L.cx, cy: L.cy, R: L.R, heat: 0, flame: 0 };
   }
 
+  // Ambient motion (the drift of the particles, the sky, a figure breathing)
+  // does not need a 120 Hz screen's every frame. Once the page has been
+  // still for STILL_MS, frames come at least AMBIENT_MS apart: every other
+  // one at 120 Hz, every one at 90 Hz and below. The first scroll, pointer
+  // move or page change brings back every frame.
+  var STILL_MS = 300, AMBIENT_MS = 10;
+  var stirAt = 0, stirY = -1, stirX = 0, stirP = 0;
+  function stirred(now) {
+    var moving = sy !== stirY || ptr.x !== stirX || ptr.y !== stirP || burnIn || leaveAt ||
+      Math.abs((ptr.on ? ptr.x : AW / 2) - ptr.sx) > 0.5 || Math.abs((ptr.on ? ptr.y : AH / 2) - ptr.sy) > 0.5;
+    stirY = sy; stirX = ptr.x; stirP = ptr.y;
+    if (moving) stirAt = now;
+    return now - stirAt < STILL_MS;
+  }
+
   function frame(now) {
     requestAnimationFrame(frame);
+    if (!stirred(now) && now - last < AMBIENT_MS) return;
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
@@ -1586,6 +1602,7 @@
     measure();
     placeCaps();
     placeSwitches(true);
+    stirAt = performance.now();
   }
   var queued = false;
   window.addEventListener("resize", function () {
