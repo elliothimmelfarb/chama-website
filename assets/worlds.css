@@ -440,8 +440,12 @@ main { position: relative; z-index: 2; }
   height: calc(var(--h) * 1vh);
   color: var(--fg);
 }
-/* what is left of the pin's contents as it leaves (worlds.js sets --gone) */
-.pin::before, .r { --e: clamp(0, (var(--gone, 99) - var(--u)) / (var(--gone, 99) - 1), 1); }
+/* What is left of the pin's contents as it leaves, 1 to 0: the scroll
+   still to go before the fade ends (--exit-at past the release, less how far
+   past it the pin is, in --pin-len a unit once it has let go and --hold-len
+   before), over the fade's length. worlds.js measures the lengths
+   (exitOf there is the same sum). */
+.pin::before, .r { --e: clamp(0, (var(--exit-at, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len, 1), 1); }
 
 .pin {
   position: sticky;
@@ -555,7 +559,7 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
   white-space: nowrap;
   pointer-events: none;
 }
-.cap .r { --e: clamp(0, (var(--gone-cap, 99) - var(--u)) / (var(--gone-cap, 99) - 1), 1); }
+.cap .r { --e: clamp(0, (var(--exit-at-cap, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len-cap, 1e4), 1); }
 .cap .r { display: block; }
 .cap-stack { display: grid; }
 .cap-stack > * { grid-area: 1 / 1; }
@@ -709,14 +713,14 @@ html:not(.js) .slot { display: block; }
   pointer-events: none;
 }
 html.room-pinned { overflow: hidden; overscroll-behavior: none; }
-.flame-noscript { margin: 0; padding: clamp(2rem, 6vw, 4rem); color: #ece7dc; font-size: 1.05rem; line-height: 1.5; }
-
-/* The footer: the same pages again, then the small print. Every page ends
-   in a dark world, so it always wears the flame theme. */
 /* the room's sheet (agent.js, kb-pin) is fixed to the screen, but its z-index
    counts inside main's stacking context, which sits under the footer: the
    footer's pages covered the composer's fine print */
 html.room-pinned main { z-index: 60; }
+.flame-noscript { margin: 0; padding: clamp(2rem, 6vw, 4rem); color: #ece7dc; font-size: 1.05rem; line-height: 1.5; }
+
+/* The footer: the same pages again, then the small print. Every page ends
+   in a dark world, so it always wears the flame theme. */
 footer {
   position: relative;
   z-index: 3;
@@ -1392,13 +1396,13 @@ html:not(.js) .directory > .pin { display: none; }
 html:not(.js) .world { height: auto; }
 html:not(.js) .pin { position: relative; height: auto; overflow: visible; padding: clamp(3.5rem, 12vh, 7rem) var(--pad); }
 html:not(.js) main > :where(.world:first-child) .pin { padding-top: calc(env(safe-area-inset-top) + 8.5rem); }
+/* the sky's fire follows each section's lower edge, so the words end a
+   fifth of a screen above it and the handoff burns in the gap */
+@media screen { html:not(.js) .pin { padding-bottom: calc(clamp(3.5rem, 12vh, 7rem) + 20vh); } }
 html:not(.js) .copy,
 html:not(.js) .flame .copy { position: static; width: auto; max-width: 46rem; transform: none; }
 html:not(.js) .flame .copy { margin-inline: auto; }
 html:not(.js) .qs li { opacity: 1; transform: none; }
-/* the sky's fire follows each section's lower edge, so the words end a
-   fifth of a screen above it and the handoff burns in the gap */
-@media screen { html:not(.js) .pin { padding-bottom: calc(clamp(3.5rem, 12vh, 7rem) + 20vh); } }
 html:not(.js) .card,
 html:not(.js) .logo-plate { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
 html:not(.js) .flame-room:has(.flame-noscript) { height: auto; }

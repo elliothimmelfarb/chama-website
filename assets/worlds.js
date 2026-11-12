@@ -1160,12 +1160,15 @@
     var D = devicesOf(L.sec), n = D.items.length;
     if (!n || !D.stage) return;
     devicesFit(D, L.portrait);
-    // the dark devices are gone in the first 40% of the way out, so they
-    // never linger as a grey slab over the light grid. Written here, only
-    // when it changes: as readers of --u the stage and the bar restyled
-    // everything inside them on every scroll frame.
-    var gone = root.classList.contains("js") ? clamp(((L.exit === undefined ? 1 : L.exit) - 0.6) * 2.5).toFixed(3) : "";
+    // the stage (devices and words) and the bar dissolve as the world
+    // leaves, most of the way in the first half, so the dark devices do not
+    // hang over the light grid as a grey slab. Written here, only when it
+    // changes: as readers of --u the stage and the bar restyled everything
+    // inside them on every scroll frame.
+    var ex = L.exit === undefined ? 1 : L.exit, gone = (ex * ex).toFixed(3);
     put(D.stage, "opacity", gone);
+    // drifting up a little as it goes, as the words do (.r in worlds.css)
+    put(D.stage, "translate", ex < 1 ? "0 " + (-(1 - ex) * 16).toFixed(1) + "px" : "");
     if (D.bar) put(D.bar, "opacity", gone);
     var a = devicesIntro(n), opening = l < a;
     var q = opening ? 0 : clamp((l - a) / ((1 - a) * (1 - DEV_HOLD))) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
@@ -1228,7 +1231,7 @@
         D.items.forEach(function (it) { it.inert = false; it.classList.remove("on", "rig-on", "rig-was"); });
         if (D.open) D.open.inert = false;
         D.ticks.forEach(function (b) { b.removeAttribute("aria-current"); });
-        if (D.stage) put(D.stage, "opacity", "");
+        if (D.stage) { put(D.stage, "opacity", ""); put(D.stage, "translate", ""); }
         if (D.bar) put(D.bar, "opacity", "");
         D.shots.forEach(function (pair) {
           pair.forEach(function (img) { img.style.transform = ""; if (printing) img.loading = "eager"; });
@@ -1424,7 +1427,7 @@
   // Where things are on the page, read once per layout rather than every
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
-  var tops = [], hs = [], pins = [], pinEnd = [], sy = window.scrollY, gones = [], markG = 99;
+  var tops = [], hs = [], pins = [], pinEnd = [], sy = window.scrollY, gones = [], markG = 1e4;
   var roomTop = 0, roomH = 0, footTop = 0, docH = 0, vh = 0, liftPx = 0;
   function positions() {
     if (room) { roomTop = room.getBoundingClientRect().top + sy; roomH = room.offsetHeight; }
@@ -1433,11 +1436,17 @@
     vh = window.innerHeight;
   }
   // ---- leaving: what rides up with a pin is gone before it reaches anything ----
-  // A world's --u runs from 1 to 2 while its pin scrolls away. --gone is the
-  // --u at which the first thing riding up with the pin would reach the
-  // header, or, for words under a figure on the fixed canvas, that figure;
-  // worlds.css fades the pin's contents out between 1 and --gone. Captions
-  // sit inside their figure's reach, so they go almost at once (--gone-cap).
+  // A world's --u runs from 1 to 2 while its pin scrolls away. goneOf is how
+  // far, in pixels of scroll past the pin's release, the first thing riding
+  // up with it can go before it would reach the header or, for words under a
+  // figure on the fixed canvas, that figure; on a phone that is often a few
+  // pixels. So the fade ends there, but takes at least EXIT_MIN of the
+  // screen: where the room is short it begins in the last of the hold, and
+  // the words dissolve as they start to move rather than blink out. Captions
+  // sit inside their figure's reach and end their fade at once (CAP_GONE).
+  // worlds.css works the fade out from --u per element (--e), from the
+  // lengths measure() writes on the section (--exit-*, --pin-len, --hold-len).
+  var EXIT_MIN = 0.15, CAP_GONE = 12;
   // the slide a .r element is given while it is hidden, which is not its place
   function shiftOf(el) { if (!el.classList.contains("r")) return 0; var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
   function goneOf(k) {
@@ -1459,12 +1468,25 @@
       var D = devicesOf(sec), it = D.items[D.items.length - 1];
       if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) room = Math.min(room, it.offsetTop + el.offsetTop - head); });
     }
-    return 1 + Math.max(room, 10) / H;
+    return Math.max(room, 10);
   }
   // the last world's figure rises with its words from above them, so it leaves first
-  function markGone() { var k = NW - 1, S = stacks[k]; return S ? 1 + Math.max(S.top - headBottom() + (portrait() ? headLift() : 0) - 8, 10) / (pins[k] || AH) : 99; }
-  // how much of world k is left as its pin leaves, 0 to 1
-  function exitOf(g, u) { g = g || 99; return clamp((g - u) / (g - 1)); }
+  function markGone() { var k = NW - 1, S = stacks[k]; return S ? Math.max(S.top - headBottom() + (portrait() ? headLift() : 0) - 8, 10) : 1e4; }
+  // A unit of --u is a screen of scroll once a pin has let go (the last
+  // world counts its tail in AH), and the hold's length before.
+  function pinLen(k) { return k === NW - 1 ? AH : pins[k] || AH; }
+  function holdLen(k) { return Math.max(1, hs[k] - pins[k]); }
+  function exitLen(gone) { return Math.max(Math.min(gone, AH), EXIT_MIN * AH); }
+  // Past the last world the page scrolls only as far as the footer. What
+  // that tail never carries into the header stays: with the floor, it would
+  // otherwise fade in place at the foot of the page.
+  function reach(k, gone) { return k === NW - 1 && docH - vh - (tops[k] + holdLen(k)) < gone ? 1e4 : gone; }
+  // how much of world k is left at --u = u, 0 to 1, for something gone
+  // `gone` pixels past the release; worlds.css's --e is the same sum
+  function exitOf(k, gone, u) {
+    if (gone === undefined) return 1;
+    return clamp((gone - Math.max(u - 1, 0) * pinLen(k) - Math.min(u - 1, 0) * holdLen(k)) / exitLen(gone));
+  }
   // measure() writes a value only when it changes, so a measure that moves
   // nothing leaves the layout it read clean for its second round of reads
   function setVar(el, name, v) {
@@ -1500,11 +1522,15 @@
     // footer), so they are a second round of reads. When nothing above
     // changed, that layout is the one already read and costs nothing.
     positions();
-    gones = sections.map(function (s, k) { return goneOf(k); });
-    markG = markGone();
+    gones = sections.map(function (s, k) { return reach(k, goneOf(k)); });
+    markG = reach(NW - 1, markGone());
     sections.forEach(function (s, k) {
-      setVar(s, "--gone", gones[k].toFixed(3));
-      setVar(s, "--gone-cap", (1 + 12 / (pins[k] || AH)).toFixed(3));
+      setVar(s, "--exit-at", gones[k].toFixed(1));
+      setVar(s, "--exit-len", exitLen(gones[k]).toFixed(1));
+      setVar(s, "--exit-at-cap", reach(k, CAP_GONE));
+      setVar(s, "--exit-len-cap", exitLen(CAP_GONE).toFixed(1));
+      setVar(s, "--pin-len", pinLen(k).toFixed(1));
+      setVar(s, "--hold-len", holdLen(k).toFixed(1));
     });
   }
   function scrollState() {
@@ -1513,6 +1539,10 @@
     var range = Math.max(1, hs[i] - pins[i]);
     var l = clamp((y - tops[i]) / range), b = 0, tail = 0;
     if (i < NW - 1) b = clamp((y - (tops[i] + range)) / Math.max(1, pins[i]));
+    // in one column there is no pin: the fire line (-0.4 + 1.8 * b of the
+    // screen from the bottom, crossing() below) stands on the next
+    // section's top edge, rather than sweeping up through this one's words
+    if (!pinned && i < NW - 1) b = clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
     // past the last world the page scrolls on, and the figure rises with the words
     else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, b, tail];
@@ -1539,10 +1569,6 @@
       cap.style.left = L.cx + "px";
       cap.style.top = (L.cy + L.R * (scenes[k].cap || 1.45)) + "px";
     });
-    // in one column there is no pin: the fire line (-0.4 + 1.8 * b of the
-    // screen from the bottom, crossing() below) stands on the next
-    // section's top edge, rather than sweeping up through this one's words
-    if (!pinned && i < NW - 1) b = clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
   }
 
   // ---- the index of worlds -------------------------------------------------------------
@@ -1663,9 +1689,9 @@
     var eb = b * b * (3 - 2 * b);
     var A = scenes[i], B = b > 0 ? scenes[i + 1] : null;
     var LA = layoutOf(A, i), LB = B ? layoutOf(B, i + 1) : null;
-    LA.exit = exitOf(gones[i], u);
+    LA.exit = exitOf(i, gones[i], u);
     // the last world's mark and its flame rise above the words, and leave before them
-    var lastOut = i === NW - 1 ? exitOf(markG, u) : 1;
+    var lastOut = i === NW - 1 ? exitOf(i, markG, u) : 1;
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));
     ptr.sy += ((ptr.on ? ptr.y : AH / 2) - ptr.sy) * (1 - Math.exp(-dt * 4));
     var px = (ptr.sx - AW / 2) * 0.012, py = (ptr.sy - AH / 2) * 0.012 - st[3];
