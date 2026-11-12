@@ -364,7 +364,7 @@
       if (workerEligible()) {
         var w = null;
         try {
-          w = new Worker("/assets/flame-worker.js");
+          w = new Worker("/assets/flame-worker.js?v=a3940ce1c0");
           w.onmessage = function (ev) {
             var m = ev.data;
             if (!m || !m.type) return;

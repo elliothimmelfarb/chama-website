@@ -14,7 +14,7 @@
    ========================================================================== */
 "use strict";
 
-importScripts("/assets/flame.js");
+importScripts("/assets/flame.js?v=6008c22bcf");
 
 var flame = null;
 

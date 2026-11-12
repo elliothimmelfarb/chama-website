@@ -1822,7 +1822,7 @@
   }
   // The flame room is mounted once a visit. Leaving the home page keeps it
   // (and any conversation in it) aside, and coming back puts it back.
-  var AGENT_CSS = "/assets/agent.css", FLAME_JS = "/assets/flame.js", AGENT_JS = "/assets/agent.js";
+  var AGENT_CSS = "/assets/agent.css?v=fa745fb58e", FLAME_JS = "/assets/flame.js?v=6008c22bcf", AGENT_JS = "/assets/agent.js?v=0b8a928fa1";
   function mountRoom(slot) {
     var host = slot.querySelector("#agent-embed");
     if (!host) return;

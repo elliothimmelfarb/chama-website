@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "evals": "node evals/run.js",
-    "check": "node scripts/check.js"
+    "check": "node scripts/check.js",
+    "stamp": "node scripts/stamp.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",
