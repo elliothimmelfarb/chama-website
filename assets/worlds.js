@@ -2048,6 +2048,8 @@
       swap(doc);
       root.classList.add("routed");
       here = path;
+      // .nav-leave lifts main by 2.5vh, so it goes before anything is measured
+      settleNav();
       bind();
       resize();
       var y = push ? 0 : (history.state && history.state.y) || 0;
@@ -2059,7 +2061,6 @@
         target.classList.add("is-target");
       }
       window.scrollTo({ top: y, behavior: "instant" });
-      settleNav();
       if (!RM) {
         wiped = [].slice.call(document.querySelectorAll("main .pin"));
         wipe(MIX_FROM);
@@ -2109,6 +2110,18 @@
         return;
       }
       go(u, true);
+    });
+    // A page left by a full load (go's fallback) is kept in the
+    // back/forward cache as it was: words lifted away, the tapped link
+    // marked, the change still under way, or the motion switch flipped. Back
+    // must find it whole.
+    window.addEventListener("pageshow", function (e) {
+      if (!e.persisted) return;
+      stay();
+      endBurn();
+      placeSwitches(true);
+      // the motion switch flipped on its way to the low motion page
+      [].forEach.call(document.querySelectorAll(".motion-toggle.on"), function (t) { t.classList.remove("on"); });
     });
     window.addEventListener("popstate", function () {
       var path = pathOf(location);
