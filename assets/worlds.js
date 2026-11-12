@@ -1444,7 +1444,7 @@
     worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
     scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
     readers = sections.map(function (s) { return [].slice.call(s.querySelectorAll(U_READERS)); });
-    room =document.querySelector(".flame-room");
+    room = document.querySelector(".flame-room");
     footer = document.querySelector("body > footer");
     tops = []; hs = []; pins = []; stacks = []; lastU = [];
     hugReady = false;
