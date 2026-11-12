@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Talk To Us</title>
+<meta name="description" content="Every page of chamainteligente.com now leads to the conversation, one Talk to us at a time, 2026-11-12.">
+<style>
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration-color: var(--ember); text-underline-offset: 0.18em; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  .wrap > * { min-width: 0; }
+  header { display: grid; gap: 0.9rem; }
+  h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
+  .lede { margin: 0; max-width: 58ch; color: var(--ink-dim); font-size: 1.12rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .note { margin: 0.8rem 0 0; color: var(--ink-dim); font-size: 0.9rem; max-width: 70ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+
+  .found { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+  .found > li { padding-top: 0.7rem; border-top: 2px solid var(--ember); }
+  .found b { display: block; font-size: 2.4rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .found span { color: var(--ink-dim); font-size: 0.92rem; }
+
+  .chart { width: 100%; height: auto; display: block; }
+  .chart text { font-family: var(--sans); font-size: 12px; fill: var(--ink-dim); }
+  .chart .axis { stroke: var(--line); stroke-width: 1; }
+  .chart .ideal { stroke: var(--line); stroke-width: 1; stroke-dasharray: 4 4; }
+  .chart .fill { stroke: var(--ember); stroke-width: 2.5; fill: none; }
+  .chart .mark { fill: var(--ember); }
+  .chart .lab { fill: var(--ink); font-weight: 600; }
+
+  .pics { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .pics figure { margin: 0; display: grid; gap: 0.4rem; }
+  .pics img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
+  .pics figcaption { font-size: 0.85rem; color: var(--ink-dim); }
+
+  .fixes { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+  .fixes > li { display: grid; grid-template-columns: 1.4rem minmax(0, 15rem) minmax(0, 1fr); gap: 0.2rem 0.8rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+  .fixes > li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+  .fixes > li.cut::before { content: "✕"; color: var(--ink-dim); }
+  .fixes b { font-weight: 600; }
+  .fixes span { color: var(--ink-dim); }
+  @media (max-width: 44rem) {
+    .found { grid-template-columns: minmax(0, 1fr); }
+    .pics { grid-template-columns: minmax(0, 1fr); }
+    .pics figure.phone img { max-width: 16rem; }
+    .fixes > li { grid-template-columns: 1.4rem minmax(0, 1fr); }
+    .fixes > li span { grid-column: 2; }
+  }
+</style>
+<style>
+  .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  .flow > li { position: relative; padding: 1rem 1.2rem 1rem 0; border-top: 2px solid var(--ember); display: grid; gap: 0.3rem; }
+  .flow > li + li { padding-left: 1.2rem; border-left: 1px solid var(--line); }
+  .flow b { font-size: 1.05rem; font-weight: 600; }
+  .flow em { font-style: normal; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ember); }
+  .flow span { color: var(--ink-dim); font-size: 0.92rem; }
+  .where { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  .where th, .where td { text-align: left; padding: 0.55rem 0.8rem 0.55rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .where th { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); font-weight: 600; }
+  .where code { font-size: 0.88em; }
+  .pics3 { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .pics3 figure { margin: 0; display: grid; gap: 0.4rem; }
+  .pics3 img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
+  .pics3 figcaption { font-size: 0.85rem; color: var(--ink-dim); }
+  @media (max-width: 44rem) {
+    .flow { grid-template-columns: minmax(0, 1fr); }
+    .flow > li + li { padding-left: 0; border-left: 0; }
+    .pics3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .pics3 figure.wide { grid-column: 1 / -1; }
+    .where thead { display: none; }
+    .where tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.2rem 0.8rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
+    .where td { padding: 0; border: 0; }
+    .where td:first-child { font-weight: 600; }
+    .where td:last-child { grid-column: 1 / -1; color: var(--ink-dim); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>One tap to the conversation</h1>
+  <p class="lede">The chat was fifteen screens down the home page with nothing pointing to it. Now every page offers "Talk to us", only ever one at a time, and from the home page it jumps straight into the room. The room's headline reads "Talk to us."</p>
+  <div class="chips">
+    <span class="chip">Live on chamainteligente.com</span>
+    <span class="chip">PR #192 merged</span>
+    <span class="chip">772 tests pass</span>
+  </div>
+</header>
+
+<section>
+  <ul class="found">
+    <li><b>11</b><span>headers carry it: the five animated pages, their five low motion twins, and the 404</span></li>
+    <li><b>1 tap</b><span>from anywhere on the home page into the room, instead of about fifteen screens of scrolling</span></li>
+    <li><b>2</b><span>design reviews, before and after. The second caught four things, all fixed before merge</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Only one on screen at a time</h2>
+  <ol class="flow">
+    <li><em>Home hero</em><b>Big button under the words</b><span>On screens at least 880px tall. Shorter ones get the header pill from the start.</span></li>
+    <li><em>Scrolling</em><b>The header pill takes over</b><span>It fades in as the hero button fades out, then rides along in every section.</span></li>
+    <li><em>Last section</em><b>It steps aside</b><span>That section's own button, or the room itself, is the one call there.</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2>What it looks like, in production</h2>
+  <div class="pics3">
+    <figure class="wide"><img src="2026-11-12-talk-to-us/desktop-header.jpg" alt="Desktop home page in the grid section with an ember Talk to us pill in the header after About"><figcaption>Desktop: the ember pill, the only colour fill in the header</figcaption></figure>
+    <figure><img src="2026-11-12-talk-to-us/phone-top.jpg" alt="Phone hero with a small ember chat disc beside the motion switch"><figcaption>Phone, top: a disc beside the switch</figcaption></figure>
+    <figure><img src="2026-11-12-talk-to-us/phone-scrolled.jpg" alt="Phone scrolled into the grid section with the disc just under the pages row and the figure clear of it"><figcaption>Phone, scrolled: it drops under the pages</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2>Where it goes</h2>
+  <table class="where">
+    <thead><tr><th>From</th><th>Goes to</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Home, /simple</td><td>The room, <code>#talk</code></td><td>An instant jump under the site's fire, not a scroll that strobes through every section. The message box gets focus with a mouse; the headline gets it on touch.</td></tr>
+      <tr><td>Coaching, Built, Clients, About</td><td><code>/agent</code></td><td>The same agent full screen. Sending a Coaching reader to the home page would flip them to Software.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>What the reviews changed</h2>
+  <ul class="fixes">
+    <li><b>Phone disc gets real room</b><span>Floating under the header it cut into a chart on Coaching. The figures now leave space for it on every page.</span></li>
+    <li><b>Clean hand-off</b><span>Hero button and pill showed together for about 100px of scroll. The pill now waits until the button is mostly gone.</span></li>
+    <li><b>One ink for the family</b><span>The disc's bubble matches the dark ink of the pill and the hero button.</span></li>
+    <li><b>Focus lands somewhere on touch</b><span>After the jump, focus went nowhere. It now goes to the room's headline.</span></li>
+    <li class="cut"><b>No hero button on phones</b><span>Every line under the words takes room from the drawing above them.</span></li>
+  </ul>
+  <p class="note">Found on the way: /coaching's header already overflowed at 760 to 830px wide. Between 760 and 899px the lockup now shows its mark only, which fixes it. Below 1100px the pill is a disc. A bug I introduced, a variable name that blacked out the sky, was caught by screenshot before commit and is noted in the site skill.</p>
+</section>
+</div>
+</body>
+</html>
