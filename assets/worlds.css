@@ -326,6 +326,65 @@ html:not(.gl) #sky { display: none; }
    shared name carries it across when the reader crosses between them */
 .motion-toggle { view-transition-name: motion-toggle; }
 
+/* "Talk to us": the one ember fill in the header, ember on every world
+   (the grid's accent is blue). Only one way to the conversation shows at a
+   time: on the home page it waits until the hero's own button has gone
+   (.past-hero), and from the last world on, that world's own button or the
+   room itself takes over (.last-world). Hidden, it keeps its slot, so the
+   nav never moves. On a phone it is a disc at the end of the pages row,
+   which stays when the lockup row folds away. */
+.nav-talk {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 32px;
+  margin-left: 2px;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  background: var(--ember);
+  color: #1a0a03;
+  box-shadow: 0 6px 20px -8px rgba(244, 88, 31, 0.6);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1), translate 0.3s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease, var(--press);
+}
+.nav-talk::after { content: ""; position: absolute; inset: -7px 0; }
+.talk-glyph { display: none; width: 18px; height: 18px; flex: none; }
+/* where the header is short of room it is a disc with a speech bubble, its
+   words kept for screen readers, as the low motion switch keeps its knob */
+@media (max-width: 1099px) {
+  .nav-talk { width: 32px; margin-left: 0; padding: 0; }
+  .talk-glyph { display: block; }
+  .talk-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (hover: hover) { .nav-talk:hover { background: color-mix(in srgb, var(--ember) 88%, #fff); box-shadow: 0 0 0 4px rgba(244, 88, 31, 0.18), 0 6px 20px -8px rgba(244, 88, 31, 0.6); } }
+.nav-talk:focus-visible { outline-color: var(--fg); outline-offset: 2px; }
+html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, translate 0s linear 0.2s, visibility 0s linear 0.2s; }
+/* with reduced motion it fades and never travels (the hidden states' nudge
+   happens while it is invisible) */
+@media (prefers-reduced-motion: reduce) {
+  .top .nav-talk { transition: opacity 0.2s ease, visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease; }
+}
+
+/* the home hero's own way in, only on a screen tall enough for it: the
+   hero's words are centred, and below 880px the button pushes them into the
+   header and the "Start here" cue. On a phone each line under the words also
+   takes room from the figure. Where it does not show, the header's is there
+   from the start. */
+.hero-talk { display: none; margin: 1.6rem 0 0; }
+.hero-talk .cta:focus-visible { outline-color: var(--fg); }
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) and (min-height: 880px) {
+  .hero-talk { display: block; }
+  html.js:not(.past-hero):has(main .hero-talk) .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, translate 0s linear 0.2s, visibility 0s linear 0.2s; }
+}
+
 /* The header's controls are drawn small to fit five pages on a phone; each
    one's target reaches 7px past it, to 44px there. */
 .motion-toggle, .worlds-members { position: relative; }
@@ -813,7 +872,8 @@ html.nav-wait .top .nav-about[aria-current="page"] { animation: wait-line 1.1s e
 
 @keyframes arrive { from { opacity: 0.01; } }
 @keyframes pop { from { opacity: 0; transform: scale(0.7); } }
-main h1:focus { outline: none; }
+main h1:focus,
+.flame-room h2:focus { outline: none; }
 
 /* ---- pressing ------------------------------------------------------------ */
 /* One press language for every control: what is touched sinks the moment
@@ -826,7 +886,8 @@ main h1:focus { outline: none; }
 .nav-about:active,
 .motion-toggle:active,
 .worlds-members:active { scale: 0.96; }
-.cta:active { scale: 0.97; }
+.cta:active,
+.nav-talk:active { scale: 0.97; }
 .worlds button:active i { scale: 0.7; opacity: 1; }
 .spoke { -webkit-tap-highlight-color: transparent; }
 .spoke-plate, .spoke img, .spoke-mark { transition: var(--press); }
@@ -1105,6 +1166,9 @@ html:has(main .ledger) .top::before {
    for the lockup, Members, five pages and the switch: the switch keeps its
    knob and drops its words, as on a phone, so the lockup never wraps */
 .mast b, .mast small { white-space: nowrap; }
+@media (min-width: 760px) and (max-width: 899px) and (min-aspect-ratio: 9/10) {
+  .mast span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 @media (max-width: 979px), (max-aspect-ratio: 9/10) {
   .motion-toggle { padding: 0 0.4rem; }
   .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -1131,7 +1195,15 @@ html:has(main .ledger) .top::before {
   .mast b, .mast small { overflow: hidden; text-overflow: ellipsis; }
   .worlds-members { grid-row: 1; }
   .top .site-nav { grid-row: 2; grid-column: 1 / -1; }
-  .nav-link { min-height: 34px; padding: 0 0.75rem; font-size: 0.8125rem; }
+  .nav-link { min-height: 34px; padding: 0 0.65rem; font-size: 0.8125rem; }
+  /* the pages fill their row, so the disc sits at the end of the lockup row,
+     and when that row folds away it drops to just under the pages as they
+     rise: the two rows trade places (the pages row is 40px tall) */
+  .top .site-nav { position: relative; }
+  .top:has(.nav-talk) .motion-toggle { margin-right: 38px; }
+  .top .nav-talk { position: absolute; top: calc(2px - var(--head-lift, 43px)); right: 0; width: 30px; min-height: 30px; height: 30px; transition: opacity 0.3s ease, translate 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease, var(--press); }
+  html.head-compact .top .nav-talk,
+  html.head-compact.last-world .top .nav-talk { translate: 0 calc(var(--head-lift, 43px) + 46px); }
   .worlds-members { min-height: 30px; padding: 0 0.65rem; font-size: 0.75rem; }
   /* on a phone the low motion switch keeps its knob and drops its words
      (the hero offers the same in a sentence) */
@@ -1220,6 +1292,9 @@ html:has(main .ledger) .top::before {
   /* On a phone the founder's photograph and the timeline share the top
      of the screen, one after the other. */
   .card-founder.r { --out: 0.42; }
+}
+@media ((max-width: 759px) or (max-aspect-ratio: 9/10)) and (prefers-reduced-motion: reduce) {
+  .top .nav-talk { transition: opacity 0.2s ease, visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease; }
 }
 
 @media (max-height: 700px) and (max-width: 759px) {
