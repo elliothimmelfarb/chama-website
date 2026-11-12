@@ -955,6 +955,12 @@
     var k = el._put || (el._put = {});
     if (k[prop] !== v) { k[prop] = v; el.style[prop] = v; }
   }
+  // takes back everything put() wrote
+  function unput(el) {
+    if (!el || !el._put) return;
+    for (var prop in el._put) el.style[prop] = "";
+    el._put = null;
+  }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
@@ -1079,7 +1085,7 @@
   // the scroll position at which a client is in focus
   function wheelY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
-    if (k < 0) return null;
+    if (k < 0 || !pinned) return null;
     var n = wheelOf(sec).spokes.length, i = +el.getAttribute("data-i") || 0, a = wheelIntro(n);
     return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - WHEEL_HOLD) * (n > 1 ? i / (n - 1) : 0));
   }
@@ -1202,16 +1208,23 @@
   // the scroll position at which a thing on /built is on the screens
   function devicesY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
-    if (k < 0) return null;
+    if (k < 0 || !pinned) return null;
     var items = devicesOf(sec).items, n = items.length, i = items.indexOf(el), a = devicesIntro(n);
     return i < 0 ? null : tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - DEV_HOLD) * (i + 0.25) / n);
   }
   // an anchor inside a pinned world is reached by scrolling to where it is
-  // in focus, not to the element, which stays in its sticky pin
+  // in focus, not to the element, which stays in its sticky pin. In one
+  // column there is no such place (null), and the anchor is where it is.
   function pinnedY(el) {
     if (el.classList.contains("turn")) return wheelY(el);
     if (el.classList.contains("made")) return devicesY(el);
     return null;
+  }
+  // where a link to an anchor lands: below the anchor's scroll-margin, or
+  // where it is in focus in its pin
+  function anchorY(el) {
+    var y = pinnedY(el);
+    return y !== null ? y : el.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0);
   }
 
   // In one column nothing is pinned: every thing on /built and every client
@@ -1241,6 +1254,13 @@
       if (sec.classList.contains("wheel-world")) {
         var W = wheelOf(sec);
         W.on = -2;
+        // the spokes lie flat in their rows; back on the wheel the loop
+        // places them again from scratch
+        W.spokes.forEach(function (sp) {
+          [sp, sp._img, sp._plate].forEach(unput);
+          sp._focus = undefined;
+          sp.classList.remove("focus");
+        });
         if (!pinned) W.turns.forEach(function (tn) { tn.removeAttribute("aria-hidden"); });
       }
     });
@@ -2084,10 +2104,9 @@
       resize();
       var y = push ? 0 : (history.state && history.state.y) || 0;
       var target = u.hash && document.getElementById(u.hash.slice(1));
-      // honour the target's scroll-margin, so an entry on /clients lands below
-      // the header; pushState does not move :target, so mark it by hand
+      // pushState does not move :target, so mark it by hand
       if (target) {
-        y = pinnedY(target) !== null ? pinnedY(target) : target.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
+        y = anchorY(target);
         target.classList.add("is-target");
       }
       window.scrollTo({ top: y, behavior: "instant" });
@@ -2134,9 +2153,7 @@
       }
       if (pathOf(u) === here) {
         var t = u.hash && document.getElementById(u.hash.slice(1));
-        if (t && pinnedY(t) !== null) window.scrollTo({ top: pinnedY(t), behavior: RM ? "auto" : "smooth" });
-        else if (t) t.scrollIntoView({ behavior: RM ? "auto" : "smooth" });
-        else window.scrollTo({ top: 0, behavior: RM ? "auto" : "smooth" });
+        window.scrollTo({ top: t ? anchorY(t) : 0, behavior: RM ? "auto" : "smooth" });
         return;
       }
       go(u, true);
@@ -2177,7 +2194,9 @@
   resize();
   // a link straight to a client on the wheel (/clients#toraya-lisboa) turns
   // the wheel to them, and one to a thing on /built (/built#shopintake) puts
-  // it on the screens, rather than the browser's jump to the top of the pin
+  // it on the screens, rather than the browser's jump to the top of the pin.
+  // In one column it lands on the entry, which pictures loading above it or
+  // the switch from the pinned layout may have moved since the browser's jump.
   function toHashTurn(smooth) {
     var t = location.hash && document.getElementById(location.hash.slice(1));
     if (!t || !(t.classList.contains("turn") || t.classList.contains("made"))) return;
@@ -2186,7 +2205,7 @@
     var pin = t.closest(".pin");
     if (pin) pin.scrollTop = 0;
     measure();
-    window.scrollTo({ top: pinnedY(t), behavior: smooth === true && !RM ? "smooth" : "instant" });
+    window.scrollTo({ top: anchorY(t), behavior: smooth === true && !RM ? "smooth" : "instant" });
   }
   requestAnimationFrame(toHashTurn);
   window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });

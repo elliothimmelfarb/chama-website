@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Clients | Chama Inteligente</title>
+  <!-- Crossing between pages, and between the two versions, dissolves.
+       Chrome reads the opt-in as the body starts, so it is here, not in a
+       stylesheet that may still be on its way. -->
+  <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <script>
     /* The pinned layout (html.js, as worlds.js decides it) from the first
        paint, not once the deferred worlds.js runs. Low motion: a reader
@@ -18,9 +22,9 @@
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="/assets/worlds.css?v=5177c83721">
+  <link rel="stylesheet" href="/assets/worlds.css?v=c445a9eaf0">
   <script src="/assets/sky.js?v=9c81e0061b" defer></script>
-  <script src="/assets/worlds.js?v=74ba092bcf" defer></script>
+  <script src="/assets/worlds.js?v=e1ac6c45ca" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">

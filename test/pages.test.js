@@ -704,3 +704,64 @@ for (const file of STYLED) {
     assert.deepEqual(ungatedHovers(css), []);
   });
 }
+
+// In one column (a screen under 500px tall, JavaScript off, print) the wheel
+// lies flat: every client's logo stands beside their words. The no-JS rule
+// that hid the wheel took every logo off /clients once short screens went to
+// one column too (2026-11-12). The spokes start invisible for worlds.js to
+// fade in, so one column must also show them, and every client needs one.
+test("/clients shows every client's logo beside their words in one column", () => {
+  const html = read("/clients");
+  const turns = [...html.matchAll(/<div class="turn\b[^"]*" id="([\w-]+)" data-i="(\d+)"/g)].map((m) => m[2]);
+  const spokes = [...html.matchAll(/<button class="spoke\b[^"]*"[^>]*\bdata-i="(\d+)"[^>]*>([\s\S]*?)<\/button>/g)];
+  assert.ok(turns.length >= 3, "the clients were found");
+  for (const i of turns) {
+    const sp = spokes.find((m) => m[1] === i);
+    assert.ok(sp && /<img\b|class="spoke-mark"/.test(sp[2]), `entry ${i} has no logo on the wheel`);
+  }
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((s) => s.trim()), body: m[2] }));
+  const hides = /display:\s*none|visibility:\s*hidden|opacity:\s*0\s*(;|$)/;
+  for (const r of rules) for (const s of r.selectors) {
+    if (/^html:not\(\.js\)/.test(s) && /\.(wheel|spoke(-plate|-mark)?)(?![\w-])|\.spoke img/.test(s)) assert.ok(!hides.test(r.body.trim()), `"${s}" hides the logos in one column`);
+  }
+  const shown = (sel) => rules.some((r) => r.selectors.includes(`html:not(.js) ${sel}`) && /opacity:\s*1\b/.test(r.body));
+  assert.ok(shown(".spoke"), "the spokes, invisible until worlds.js fades them in, are not shown in one column");
+  assert.ok(shown(".spoke-plate"), "the plates are not shown in one column");
+});
+
+// Chrome settles whether a page takes part in a cross-document view
+// transition when it starts the page's body. An opt-in in a stylesheet still
+// on its way then counts as none: on a slow or uncached load the dissolve was
+// skipped with "ViewTransition opt-in disabled" (2026-11-12). So each page
+// that dissolves says so in its own head, ahead of anything it fetches.
+const DISSOLVING = ["/", "/coaching", "/built", "/clients", "/about", "/simple", "/simple/coaching", "/simple/built", "/simple/clients", "/simple/about", "/404"];
+for (const url of DISSOLVING) {
+  test(`${url} opts in to the dissolve before it fetches anything`, () => {
+    const head = /<head>([\s\S]*?)<\/head>/.exec(read(url))[1];
+    const style = /<style>([\s\S]*?)<\/style>/.exec(head);
+    assert.ok(style && /@view-transition\s*\{\s*navigation:\s*auto;?\s*\}/.test(style[1]), "no @view-transition in an inline <style>");
+    assert.ok(/prefers-reduced-motion:\s*no-preference/.test(style[1]), "the dissolve is not left out for reduced motion");
+    const first = head.search(/<link rel="stylesheet"|<script src=/);
+    assert.ok(first < 0 || style.index < first, "the opt-in comes after a stylesheet or script");
+  });
+}
+test("no stylesheet carries the view transition opt-in, which would arrive too late", () => {
+  for (const sheet of ["assets/site.css", "assets/worlds.css"]) {
+    assert.ok(!/@view-transition/.test(readFileSync(path.join(ROOT, sheet), "utf8").replace(/\/\*[\s\S]*?\*\//g, "")), sheet);
+  }
+});
+
+// A spoke's box is a square round its logo, and on a phone the ring is small
+// enough that the client in front's square covered the logos behind it, so
+// tapping Alves or "Yours?" with Toraya in front did nothing (to 2026-11-12).
+// A spoke takes a tap only on its logo, which is what the eye aims at.
+test("a spoke on the /clients wheel takes a tap only on its logo", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((s) => s.trim()), body: m[2] }));
+  const pe = (sel) => rules.filter((r) => r.selectors.includes(sel)).map((r) => /pointer-events:\s*(\w+)/.exec(r.body)?.[1]).filter(Boolean).at(-1);
+  assert.equal(pe(".spoke"), "none", "the spoke's whole square takes taps");
+  assert.equal(pe(".spoke-plate"), undefined, "the plate takes taps");
+  assert.equal(pe(".spoke img"), "auto", "the logo does not take taps");
+  assert.equal(pe(".spoke-mark"), "auto", "the open place's mark does not take taps");
+});

@@ -1117,14 +1117,6 @@ footer {
   view-transition-name: motion-toggle;
 }
 
-/* Crossing between the two versions, or between pages, dissolves instead
-   of flashing. Both sides have to ask for it, so worlds.css says the same. */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-}
-
 @media (max-width: 760px) {
   /* The switch shares the first row with the lockup on every page. On
      the coaching page the Members pill moves to the end of the notes
