@@ -704,7 +704,8 @@ footer {
 
   .masthead-name {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, max-content);
+    justify-content: start;
     column-gap: clamp(0.45rem, 1.8vw, 0.85rem);
     row-gap: 0.15rem;
     align-items: baseline;
@@ -722,6 +723,7 @@ footer {
 
   .wordmark-translation {
     grid-column: 2;
+    grid-row: 2;
   }
 
   .members-link {
@@ -916,15 +918,32 @@ footer {
 
 /* Sub pages: the wordmark is the way home, and the page ends on paper
    with a dark footer band rather than inside the flame room. */
+/* the lockup's own box (not display: contents, which Chrome leaves out of
+   the tab order), laid out as .masthead-name lays out its children */
 .masthead-name a {
-  display: contents;
+  display: flex;
+  align-items: baseline;
+  gap: inherit;
+  min-width: 0;
   color: inherit;
   text-decoration: none;
 }
 
-.masthead-name a:focus-visible .wordmark {
+.masthead-name a:focus-visible {
   outline: 2px solid var(--ember);
   outline-offset: 4px;
+  border-radius: 4px;
+}
+/* on a phone the link keeps the mark and the wordmark in their places in
+   the lockup's grid (see the phone block), the translation beside them */
+@media (max-width: 760px) {
+  .masthead-name a {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / 3;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+  }
 }
 
 .section-copy a,
