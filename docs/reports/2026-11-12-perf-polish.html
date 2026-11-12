@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Speed and Polish Campaign</title>
+<meta name="description" content="chamainteligente.com audited, rebuilt for speed, response and finish, and re-measured in production, 2026-11-12.">
+<style>
+  /* One column on the site's paper: the run as a flow, the numbers as paired bars, the visible changes as picture pairs, then what is still open. */
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --old: #8d877c; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --warn: #8a5a00; --warn-soft: rgba(138, 90, 0, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --old: #6f6a62; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --old: #6f6a62; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --warn: #e7b85a; --warn-soft: rgba(231, 184, 90, 0.12); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ember); color: #fff; }
+  a { color: inherit; text-decoration-color: var(--ember); text-underline-offset: 0.18em; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  .wrap > * { min-width: 0; }
+  header { display: grid; gap: 0.9rem; }
+  h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; text-wrap: balance; }
+  .lede { margin: 0; max-width: 58ch; color: var(--ink-dim); font-size: 1.12rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .note { margin: 0.8rem 0 0; color: var(--ink-dim); font-size: 0.9rem; max-width: 70ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+  .chip.open { background: var(--warn-soft); color: var(--warn); }
+
+  .found { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+  .found > li { padding-top: 0.7rem; border-top: 2px solid var(--ember); }
+  .found b { display: block; font-size: 2.4rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .found span { color: var(--ink-dim); font-size: 0.92rem; }
+
+  .flow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.8rem; margin: 0; padding: 0; list-style: none; counter-reset: step; }
+  .flow > li { counter-increment: step; padding-top: 0.6rem; border-top: 2px solid var(--ink); font-size: 0.86rem; color: var(--ink-dim); }
+  .flow > li::before { content: counter(step); display: block; font-size: 0.78rem; font-weight: 700; color: var(--ember); }
+  .flow b { display: block; color: var(--ink); font-weight: 600; font-size: 0.98rem; }
+
+  .bars { display: grid; gap: 1.3rem; }
+  .metric { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 0.3rem 1.2rem; align-items: center; }
+  .metric > * { min-width: 0; }
+  .metric h3 { margin: 0; font-size: 0.98rem; font-weight: 600; }
+  .metric h3 span { display: block; font-weight: 400; font-size: 0.82rem; color: var(--ink-dim); }
+  .rows { display: grid; gap: 0.3rem; }
+  .row { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 5.5rem; gap: 0.6rem; align-items: center; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .row i { display: block; height: 0.85rem; border-radius: 2px; background: var(--old); min-width: 2px; }
+  .row.new i { background: var(--ember); }
+  .row b { font-weight: 600; }
+  .row .lab { color: var(--ink-dim); }
+
+  .shots { display: grid; gap: 2rem; }
+  .shot { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 1rem; margin: 0; }
+  .shot > * { min-width: 0; }
+  .shot h3 { grid-column: 1 / -1; margin: 0; font-size: 1rem; font-weight: 600; }
+  .shot h3 span { font-weight: 400; color: var(--ink-dim); }
+  .shot figure { margin: 0; display: grid; gap: 0.35rem; align-content: start; }
+  .shot img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
+  .shot.tall img { max-height: 26rem; width: auto; }
+  .shot figcaption { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim); }
+  .shot figure.new figcaption { color: var(--ember); }
+  .shot.strip { grid-template-columns: minmax(0, 1fr); }
+  .scroll { overflow-x: auto; }
+  .scroll img { max-width: none; height: 11rem; width: auto; }
+
+  .fixes { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+  .fixes > li { display: grid; grid-template-columns: 1.4rem minmax(0, 17rem) minmax(0, 1fr); gap: 0.2rem 0.8rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+  .fixes > li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+  .fixes > li.part::before { content: "◐"; color: var(--warn); }
+  .fixes b { font-weight: 600; }
+  .fixes span { color: var(--ink-dim); }
+
+  .asks { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+  .asks > li { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 1rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); }
+  .asks b { font-weight: 600; }
+  .asks span { color: var(--ink-dim); font-size: 0.95rem; }
+  @media (max-width: 60rem) { .flow { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 44rem) {
+    .found { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .metric { grid-template-columns: minmax(0, 1fr); }
+    .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .asks > li { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+    .fixes > li { grid-template-columns: 1.4rem minmax(0, 1fr); }
+    .fixes > li span { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Faster, quicker to answer, better finished</h1>
+  <p class="lede">chamainteligente.com was audited four ways, rebuilt by Opus agents working in parallel, reviewed, shipped, then measured again in production against the old code.</p>
+  <div class="chips">
+    <span class="chip">Live in production</span>
+    <span class="chip">4 pull requests merged</span>
+    <span class="chip">762 tests pass</span>
+    <span class="chip open">6 calls waiting on you</span>
+  </div>
+</header>
+
+<section>
+  <ul class="found">
+    <li><b>2.7 s</b><span>/built on a phone, largest paint. Was 4.7 s</span></li>
+    <li><b>0</b><span>scripts and styles re-fetched on a repeat visit. Was up to 13</span></li>
+    <li><b>0 px</b><span>of dead scroll at the end of /built. Was 324 px on your phone</span></li>
+    <li><b>72 fps</b><span>scrolling /built on a 6x slowed phone. Was 55</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>How it ran</h2>
+  <ol class="flow">
+    <li><b>Audit</b>Four agents: load, frame rate, input response, polish</li>
+    <li><b>Build</b>Six streams in separate worktrees, then asset versioning</li>
+    <li><b>Review</b>Design, code and security on the merged branch</li>
+    <li><b>Ship</b>Cache headers proven on the preview, then production</li>
+    <li><b>Re-measure</b>Old and new code alternated run by run</li>
+    <li><b>Fix again</b>What the re-measure caught, shipped the same day</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Before and after</h2>
+  <div class="bars">
+    <div class="metric"><h3>/built, largest paint<span>phone, slow 4G</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>4680 ms</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:57%"></i><b>2668 ms</b></div></div></div>
+    <div class="metric"><h3>Home, largest paint<span>desktop</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>2432 ms</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:9.5%"></i><b>232 ms</b></div></div></div>
+    <div class="metric"><h3>/coaching, largest paint<span>phone, slow 4G</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>3260 ms</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:55%"></i><b>1796 ms</b></div></div></div>
+    <div class="metric"><h3>/built, page weight<span>phone</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>719 KB</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:47.6%"></i><b>342 KB</b></div></div></div>
+    <div class="metric"><h3>/simple/built, page weight<span>desktop</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>1170 KB</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:12.3%"></i><b>144 KB</b></div></div></div>
+    <div class="metric"><h3>Members' sign-in form<span>phone, slow 4G, on production</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>3240 ms</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:71%"></i><b>2143 to 2485</b></div></div></div>
+    <div class="metric"><h3>Header link to a settled page<span>page already fetched, phone</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>1.5 to 1.6 s</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:74%"></i><b>1.1 to 1.2 s</b></div></div></div>
+    <div class="metric"><h3>Browser Back<span>to a settled page</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>1.9 to 2.2 s</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:55%"></i><b>1.07 to 1.18 s</b></div></div></div>
+    <div class="metric"><h3>/built, style work per scroll frame<span>phone slowed 6x</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>7.31 ms</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:24%"></i><b>1.75 ms</b></div></div></div>
+    <div class="metric"><h3>Dead scroll at the end of /built<span>your phone size; desktop was 585 px</span></h3><div class="rows">
+      <div class="row"><span class="lab">before</span><i style="width:100%"></i><b>324 px</b></div>
+      <div class="row new"><span class="lab">after</span><i style="width:0%"></i><b>0 px</b></div></div></div>
+  </div>
+  <p class="note">Load numbers are medians of three cold loads against production. Frame and input numbers come from the old tree (41d9f03) and the new one run back to back on the same machine, which was busy all day, so anything inside the run-to-run spread was left out. First paint did not change on any page.</p>
+</section>
+
+<section>
+  <h2>What you can see</h2>
+  <div class="shots">
+    <div class="shot strip">
+      <h3>Page change, Software to Coaching <span>your phone size, a frame every 100 ms. The heading is readable at about 0.8 s, was 1.6 s</span></h3>
+      <figure><figcaption>Before</figcaption><div class="scroll"><img src="2026-11-12-perf-polish/01-page-change-burn-phone-before.jpg" alt="Frames of the old page change: the sky burns for most of the strip before the Coaching heading appears."></div></figure>
+      <figure class="new"><figcaption>After</figcaption><div class="scroll"><img src="2026-11-12-perf-polish/01-page-change-burn-phone-after.jpg" alt="Frames of the new page change: the Coaching heading is readable by the eighth frame."></div></figure>
+    </div>
+    <div class="shot tall">
+      <h3>A failed chat reply <span>the message comes back, the line is readable, and Try again is one tap</span></h3>
+      <figure><figcaption>Before</figcaption><img src="2026-11-12-perf-polish/07-chat-error-phone-before.jpg" alt="The old chat error: a faint grey line and an empty message box."></figure>
+      <figure class="new"><figcaption>After</figcaption><img src="2026-11-12-perf-polish/07-chat-error-phone-after.jpg" alt="The new chat error: a clear line with a Try again button and the message back in the box."></figure>
+    </div>
+    <div class="shot">
+      <h3>A phone held sideways <span>the headline sat under the header; now the worlds become one column</span></h3>
+      <figure><figcaption>Before</figcaption><img src="2026-11-12-perf-polish/04-landscape-phone-before.jpg" alt="The old homepage at 844 by 390: the headline starts under the header and the cue overlaps the logos."></figure>
+      <figure class="new"><figcaption>After</figcaption><img src="2026-11-12-perf-polish/04-landscape-phone-after.jpg" alt="The new homepage at 844 by 390: a clean column under the header."></figure>
+    </div>
+    <div class="shot tall">
+      <h3>Low-motion pages <span>the five pages are now at the top, the current one marked</span></h3>
+      <figure><figcaption>Before</figcaption><img src="2026-11-12-perf-polish/06-low-motion-nav-before.jpg" alt="The old low-motion built page with no navigation at the top."></figure>
+      <figure class="new"><figcaption>After</figcaption><img src="2026-11-12-perf-polish/06-low-motion-nav-after.jpg" alt="The new low-motion built page with the five page links at the top."></figure>
+    </div>
+    <div class="shot">
+      <h3>JavaScript off <span>screens of empty colour became one column of sections</span></h3>
+      <figure><figcaption>Before</figcaption><img src="2026-11-12-perf-polish/09-no-javascript-home-before.jpg" alt="The old homepage with JavaScript off: mostly empty coloured screens."></figure>
+      <figure class="new"><figcaption>After</figcaption><img src="2026-11-12-perf-polish/09-no-javascript-home-after.jpg" alt="The new homepage with JavaScript off: each section readable in one column."></figure>
+    </div>
+  </div>
+  <p class="note">Also changed and not pictured: the /built progress bars now work, every control has a pressed state, a slow page fetch shows on the header and a hung one gives up after 8 seconds, members download only the parts of the room they can use, and the page prints.</p>
+</section>
+
+<section>
+  <h2>What the checks caught after shipping</h2>
+  <ul class="fixes">
+    <li><b>Sideways phone: links landed at the top</b><span>The one-column layout has no pinned positions. One function now decides where a link lands. 36 of 36 cases pass.</span></li>
+    <li><b>Sideways phone: /clients had no logos</b><span>A rule for JavaScript-off also hit short screens. The wheel now lies flat, each logo beside its client.</span></li>
+    <li><b>The pentagon rode up under the header</b><span>A misplaced condition lifted every figure with its leaving world. One line.</span></li>
+    <li><b>Words blinked out as a world left</b><span>Found by the design review before shipping. The fade now runs over at least 15% of the screen.</span></li>
+    <li><b>404 page shifted on load</b><span>It lacked a one-line head script the other pages have. Layout shift is 0 again.</span></li>
+    <li class="part"><b>Scrolling the word-heavy pages cost more</b><span>Cause found by bisecting: a shade had made whole worlds restyle every frame. Back to the old cost at 4x. At 6x three pages are still 0.1 to 0.5 ms a frame above it (production had been 1.3 to 1.8 above).</span></li>
+    <li class="part"><b>/clients re-downloaded logos on arrival</b><span>Three fetches became one. The last is Toraya's larger copy.</span></li>
+    <li><b>Older bugs fixed on the way</b><span>Front logo on the phone wheel blocked taps on its neighbours (62 of 708 taps missed, now 0). The dissolve into the low-motion pages was sometimes skipped. A blank page on Back after a full reload. One test file had never been run.</span></li>
+    <li><b>Your Gmail address in the old Alves picture</b><span>Recaptured without it. The old file now returns 404. It remains in git history.</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Yours to decide</h2>
+  <ul class="asks">
+    <li><b>The flame while a reply streams</b><span>On a 120 Hz touch screen it now draws 60 times a second to hold the page's frame rate. Unchanged at rest. Look at it on your Android phone; it is one named value.</span></li>
+    <li><b>The opening of /built</b><span>About 75vh after the header settles where nothing answers the scroll, longer than the pause you named. The idea is to let Toraya's pictures start moving under the opening words.</span></li>
+    <li><b>"The work" on /clients</b><span>The scroll cue looks left over from the /work rename. Not reworded.</span></li>
+    <li><b>/simple/coaching's masthead</b><span>Its note reads "Software shaped for your business" on the coaching page.</span></li>
+    <li><b>The new Alves picture</b><span>Shows today's app with a seeded price, €576 for 18 shirts. The Vivir Sin Fronteras pictures show Lucas Alves signed in.</span></li>
+    <li><b>"Page not found." in the Hearth</b><span>A member opening a room their role does not load used to read "You do not have access to this page."</span></li>
+  </ul>
+  <p class="note">Not verified on real hardware: momentum scrolling and the soft keyboard on a phone. Everything here was measured in desktop Chrome emulating one. Pull requests: <a href="https://github.com/elliothimmelfarb/chama-website/pull/184">#184</a>, <a href="https://github.com/elliothimmelfarb/chama-website/pull/185">#185</a>, <a href="https://github.com/elliothimmelfarb/chama-website/pull/186">#186</a>, <a href="https://github.com/elliothimmelfarb/chama-website/pull/187">#187</a>.</p>
+</section>
+
+</div>
+</body>
+</html>
