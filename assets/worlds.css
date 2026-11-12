@@ -140,7 +140,7 @@ html:not(.gl) #sky { display: none; }
   transition: color 0.6s ease, opacity 0.4s ease;
 }
 .top > * { pointer-events: auto; }
-.worlds { transition: color 0.6s ease, opacity 0.4s ease; }
+.worlds { transition: color 0.6s ease, background 0.6s ease, opacity 0.4s ease; }
 
 .mast {
   display: flex;
@@ -420,23 +420,36 @@ html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidd
   .alt-version a { font-weight: 600; }
 }
 
-/* The index of worlds, down the right edge. worlds.js builds it from the
-   sections' data-label. */
+/* The index of worlds: a rail down the right edge, from under the header
+   to near the bottom, that fills with the scroll. worlds.js builds it from
+   the sections' data-label and puts each mark at --at, where its world
+   becomes current; the dots sit on the rail, centred on it. */
 .worlds {
   position: fixed;
   z-index: 6;
   /* at the stage's edge, which past 120rem is not the window's */
-  right: calc(var(--side) + 14px + env(safe-area-inset-right));
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  right: calc(var(--side) + 20.5px + env(safe-area-inset-right));
+  top: var(--rail-top, 96px);
+  bottom: 24px;
+  width: 2px;
   color: var(--fg);
+  /* firmer than --track, which nearly vanishes on paper at this width */
+  background: color-mix(in srgb, var(--fg) 18%, transparent);
 }
+.worlds ol { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+/* only the dot takes the pointer: a hidden label would leave a strip of
+   the page that clicks and shows every label */
+.worlds li { position: absolute; top: var(--at, 0); right: -6.5px; transform: translateY(-50%); pointer-events: none; }
+.worlds button i { position: relative; pointer-events: auto; }
+.worlds button i::after { content: ""; position: absolute; inset: -9px; }
+.rail-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--ember);
+  transform: scaleY(0);
+  transform-origin: top;
+}
+.rail-mark { display: none; }
 .worlds button {
   appearance: none;
   display: flex;
@@ -453,16 +466,16 @@ html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidd
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.worlds i {
+.worlds button i {
   width: 7px;
   height: 7px;
   flex: none;
-  border: 1.5px solid currentColor;
+  border: 1.5px solid color-mix(in srgb, var(--fg) 50%, transparent);
   border-radius: 50%;
-  opacity: 0.5;
-  transition: transform 0.35s ease, background 0.35s ease, border-color 0.35s ease, opacity 0.35s ease, var(--press);
+  background: var(--bg);
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), background 200ms ease, border-color 200ms ease, var(--press);
 }
-.worlds span {
+.worlds button span {
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -473,8 +486,10 @@ html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidd
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .worlds button:focus-visible span { opacity: 0.85; transform: none; }
-@media (hover: hover) { .worlds:hover span { opacity: 0.85; transform: none; } }
-.worlds button[aria-current="true"] i { background: var(--ember); border-color: var(--ember); opacity: 1; transform: scale(1.35); }
+@media (hover: hover) { .worlds:has(button i:hover) button span { opacity: 0.85; transform: none; } }
+.worlds button[aria-current="true"] span { color: var(--ember); }
+.worlds button.is-passed i { background: var(--ember); border-color: var(--ember); }
+.worlds button[aria-current="true"] i { transform: scale(1.35); }
 .worlds button:focus-visible { outline-offset: 2px; border-radius: 4px; }
 
 /* Inside the flame room the room's own bar takes the top of the screen. */
@@ -885,7 +900,7 @@ main h1:focus,
 :is(main, body > footer) a:not(.chama-agent a) { -webkit-tap-highlight-color: transparent; }
 :is(main, body > footer) a:not(.cta, .nav-link, .made-ticks a, .chama-agent a):active { opacity: 0.6; }
 @media (hover: hover) and (pointer: fine) {
-  .worlds button:hover i { opacity: 0.9; }
+  .worlds button:not(.is-passed):hover i { border-color: var(--fg); }
 }
 
 /* ---- clients in the hero ---------------------------------------------- */
@@ -1161,7 +1176,15 @@ html:has(main .ledger) .top::before {
 
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  .worlds { display: none; }
+  /* a thin rail at the very edge, its marks as ticks, and nothing to press */
+  /* clear of the browser's own scroll indicator */
+  .worlds { right: calc(4px + env(safe-area-inset-right)); bottom: 12px; pointer-events: none; }
+  .worlds ol { display: none; }
+  .rail-mark { display: block; position: absolute; right: 0; top: var(--at, 0); width: 6px; height: 2px; margin-top: -1px; background: var(--track); transition: background 200ms ease; }
+  .rail-mark.is-passed { background: var(--ember); }
+  .rail-mark.is-current { width: 10px; }
+  /* /built counts its things in its own bar */
+  html:has(.devices-world) .worlds { display: none; }
   /* two rows at most: the lockup with Members and the low motion switch,
      then the pages. A grid, so a long lockup shrinks instead of pushing the
      switch onto a row of its own. */

@@ -1532,6 +1532,7 @@
     positions();
     gones = sections.map(function (s, k) { return reach(k, goneOf(k)); });
     markG = reach(NW - 1, markGone());
+    if (nav) placeRail();
     // the exits may have moved: the next frame writes every --u and --e again
     lastU = [];
   }
@@ -1579,12 +1580,34 @@
   }
 
   // ---- the index of worlds -------------------------------------------------------------
-  var nav = null, dots = [];
+  // A rail down the right edge whose fill follows the scroll, so a hold
+  // where nothing on the page moves still visibly does something. Each
+  // world's mark sits where it becomes current, halfway through its
+  // arrival, so the fill reaches a mark as its world takes over, and every
+  // mark behind the fill stays lit: the worlds already finished. On a
+  // phone the marks are ticks; elsewhere they are the dots, which take
+  // you to their world. Marks keep RAIL_GAP apart (the dots' labels), so
+  // the fill runs faster or slower between some of them, never stops.
+  var nav = null, fill = null, dots = [], ticks = [];
+  var RAIL_BOTTOM = 24, RAIL_BOTTOM_P = 12, RAIL_GAP = 28, RAIL_GAP_P = 8;
+  var railY = [], railD = [], railH = 1, maxS = 1, lastFill = -1, lastMark = -1;
   function buildIndex() {
   if (nav) nav.remove();
-  nav = document.createElement("ol");
+  nav = document.createElement("div");
   nav.className = "worlds";
-  nav.setAttribute("aria-label", "Sections");
+  fill = document.createElement("span");
+  fill.className = "rail-fill";
+  fill.setAttribute("aria-hidden", "true");
+  nav.appendChild(fill);
+  var ol = document.createElement("ol");
+  ol.setAttribute("aria-label", "Sections");
+  ticks = sections.map(function () {
+    var tick = document.createElement("i");
+    tick.className = "rail-mark";
+    tick.setAttribute("aria-hidden", "true");
+    nav.appendChild(tick);
+    return tick;
+  });
   dots = sections.map(function (sec, k) {
     var li = document.createElement("li"), btn = document.createElement("button"), span = document.createElement("span"), dot = document.createElement("i");
     btn.type = "button";
@@ -1597,10 +1620,46 @@
       window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
     });
     li.appendChild(btn);
-    nav.appendChild(li);
+    ol.appendChild(li);
     return btn;
   });
+  nav.appendChild(ol);
   document.body.appendChild(nav);
+  lastFill = -1; lastMark = -1;
+  }
+  // where on the scroll each world becomes current, and where its mark is
+  // drawn on the rail; read with the layout in measure()
+  function placeRail() {
+    var P = portrait(), gap = P ? RAIL_GAP_P : RAIL_GAP, top = Math.round(headBottom() + (P ? 8 : 16));
+    maxS = Math.max(1, docH - vh);
+    railH = Math.max(1, vh - top - (P ? RAIL_BOTTOM_P : RAIL_BOTTOM));
+    railY = sections.map(function (s, k) { return k ? Math.min(maxS, Math.max(0, tops[k] - pins[k - 1] / 2)) : 0; });
+    railD = railY.map(function (y) { return y / maxS * railH; });
+    for (var k = 1; k < NW; k++) railD[k] = Math.max(railD[k], railD[k - 1] + gap);
+    for (k = NW - 1; k > 0; k--) railD[k] = Math.min(railD[k], railH - (NW - 1 - k) * gap);
+    setVar(nav, "--rail-top", top + "px");
+    for (k = 0; k < NW; k++) {
+      var at = Math.round(railD[k]) + "px";
+      setVar(ticks[k], "--at", at);
+      setVar(dots[k].parentNode, "--at", at);
+    }
+    lastFill = -1;
+  }
+  function drawRail() {
+    if (railY.length !== NW) return;
+    var j = 0;
+    while (j < NW - 1 && sy >= railY[j + 1]) j++;
+    var y0 = railY[j], y1 = j < NW - 1 ? railY[j + 1] : maxS, d0 = railD[j], d1 = j < NW - 1 ? railD[j + 1] : railH;
+    var f = Math.round(Math.min(1, (d0 + (d1 - d0) * clamp((sy - y0) / Math.max(1, y1 - y0))) / railH) * 2000) / 2000;
+    if (f !== lastFill) { fill.style.transform = "scaleY(" + f + ")"; lastFill = f; }
+    if (j === lastMark) return;
+    for (var k = 0; k < NW; k++) {
+      ticks[k].classList.toggle("is-passed", k <= j);
+      ticks[k].classList.toggle("is-current", k === j);
+      dots[k].classList.toggle("is-passed", k <= j);
+      dots[k].setAttribute("aria-current", k === j ? "true" : "false");
+    }
+    lastMark = j;
   }
   var top = document.querySelector(".top");
   var themeMeta = document.querySelector('meta[name="theme-color"]');
@@ -1705,9 +1764,9 @@
     }
     if (wd !== lastDot) {
       nav.setAttribute("data-theme", THEME[worldOf[wd]]);
-      dots.forEach(function (d, k) { d.setAttribute("aria-current", k === wd ? "true" : "false"); });
       lastDot = wd;
     }
+    if (pinned) drawRail();
     if (hidden) return;
 
     var eb = b * b * (3 - 2 * b);

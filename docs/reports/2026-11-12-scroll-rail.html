@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scroll Rail</title>
+<meta name="description" content="The dots on the right of chamainteligente.com became a rail that fills with the scroll, 2026-11-12.">
+<style>
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration-color: var(--ember); text-underline-offset: 0.18em; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  .wrap > * { min-width: 0; }
+  header { display: grid; gap: 0.9rem; }
+  h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
+  .lede { margin: 0; max-width: 58ch; color: var(--ink-dim); font-size: 1.12rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .note { margin: 0.8rem 0 0; color: var(--ink-dim); font-size: 0.9rem; max-width: 70ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+
+  .found { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+  .found > li { padding-top: 0.7rem; border-top: 2px solid var(--ember); }
+  .found b { display: block; font-size: 2.4rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .found span { color: var(--ink-dim); font-size: 0.92rem; }
+
+  .chart { width: 100%; height: auto; display: block; }
+  .chart text { font-family: var(--sans); font-size: 12px; fill: var(--ink-dim); }
+  .chart .axis { stroke: var(--line); stroke-width: 1; }
+  .chart .ideal { stroke: var(--line); stroke-width: 1; stroke-dasharray: 4 4; }
+  .chart .fill { stroke: var(--ember); stroke-width: 2.5; fill: none; }
+  .chart .mark { fill: var(--ember); }
+  .chart .lab { fill: var(--ink); font-weight: 600; }
+
+  .pics { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .pics figure { margin: 0; display: grid; gap: 0.4rem; }
+  .pics img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; }
+  .pics figcaption { font-size: 0.85rem; color: var(--ink-dim); }
+
+  .fixes { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+  .fixes > li { display: grid; grid-template-columns: 1.4rem minmax(0, 15rem) minmax(0, 1fr); gap: 0.2rem 0.8rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+  .fixes > li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+  .fixes > li.cut::before { content: "✕"; color: var(--ink-dim); }
+  .fixes b { font-weight: 600; }
+  .fixes span { color: var(--ink-dim); }
+  @media (max-width: 44rem) {
+    .found { grid-template-columns: minmax(0, 1fr); }
+    .pics { grid-template-columns: minmax(0, 1fr); }
+    .pics figure.phone img { max-width: 16rem; }
+    .fixes > li { grid-template-columns: 1.4rem minmax(0, 1fr); }
+    .fixes > li span { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>The scroll always moves something</h1>
+  <p class="lede">The dots on the right are now a rail. An ember line grows down it as you scroll, so the pause at the end of each section still shows progress, and every finished section stays lit.</p>
+  <div class="chips">
+    <span class="chip">Live on chamainteligente.com</span>
+    <span class="chip">PR #190 merged</span>
+    <span class="chip">762 tests pass</span>
+  </div>
+</header>
+
+<section>
+  <ul class="found">
+    <li><b>0</b><span>scroll steps where the visible rail stood still, out of 1,200 sampled in production</span></li>
+    <li><b>18 / 18</b><span>page and screen-size pairs pass in production: the fill reaches each dot exactly as its section takes over</span></li>
+    <li><b>2</b><span>design reviews, before and after building. The second caught a blocker</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Fill against scroll, measured on the live homepage</h2>
+  <svg class="chart" viewBox="0 0 620 290" role="img" aria-label="The rail's fill rises steadily from 0 to 100 percent as the homepage scrolls from top to bottom, passing a dot at each section">
+    <line class="axis" x1="40" y1="250" x2="580" y2="250"/>
+    <line class="axis" x1="40" y1="30" x2="40" y2="250"/>
+    <line class="ideal" x1="40" y1="250" x2="580" y2="30"/>
+    <path class="fill" d="M40.0 250.0 L80.5 233.5 L121.0 217.0 L161.5 200.5 L202.0 184.0 L242.5 167.5 L283.0 151.0 L323.5 134.5 L364.0 118.0 L404.5 101.5 L445.0 85.0 L485.5 68.5 L522.6 53.3 L529.4 50.6 L546.2 43.8"/>
+    <g>
+      <circle class="mark" cx="40" cy="250" r="5"/>
+      <circle class="mark" cx="83.7" cy="232" r="5"/>
+      <circle class="mark" cx="171.8" cy="196.3" r="5"/>
+      <circle class="mark" cx="286.2" cy="149.5" r="5"/>
+      <circle class="mark" cx="401.3" cy="102.8" r="5"/>
+      <circle class="mark" cx="502.2" cy="61.5" r="5"/>
+    </g>
+    <text class="lab" x="52" y="262">Start here</text>
+    <text class="lab" x="96" y="236">Why it matters</text>
+    <text class="lab" x="184" y="200">The offer</text>
+    <text class="lab" x="298" y="153">How it starts</text>
+    <text class="lab" x="413" y="106">Over time</text>
+    <text class="lab" x="420" y="48">Start a conversation</text>
+    <text x="40" y="276">top of page</text>
+    <text x="580" y="276" text-anchor="end">bottom</text>
+    <text x="34" y="34" text-anchor="end">full</text>
+    <text x="580" y="84" text-anchor="end">flame room:</text>
+    <text x="580" y="99" text-anchor="end">rail hides</text>
+  </svg>
+  <p class="note">Each dot is a section becoming current. Between dots the line keeps climbing through the pauses that used to feel dead. Past the last dot the flame room takes the screen and the rail fades out, as the dots did before.</p>
+</section>
+
+<section>
+  <h2>What it looks like</h2>
+  <div class="pics">
+    <figure><img src="2026-11-12-scroll-rail/desktop.jpg" alt="Desktop homepage in the night section, with the rail on the right: finished sections lit in ember, labels showing on hover"><figcaption>Desktop, hovering a dot: labels show, the current section is ember</figcaption></figure>
+    <figure class="phone"><img src="2026-11-12-scroll-rail/phone.jpg" alt="Phone view of the About page with a thin ember line and ticks at the right edge"><figcaption>Phone: a thin line with ticks, nothing to tap</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2>What the design reviews changed</h2>
+  <ul class="fixes">
+    <li class="cut"><b>No pulse at each dot</b><span>It would fire on every pass, both ways. The dot turning ember is the marker.</span></li>
+    <li><b>Only the dots take clicks</b><span>Spread down the full height, the hidden labels left invisible clickable strips over the page.</span></li>
+    <li><b>Dots at least 28px apart</b><span>The fill speeds up or slows between two dots so their labels never collide. It never stops.</span></li>
+    <li><b>Firmer empty track</b><span>The old track colour nearly vanished on the light sections.</span></li>
+    <li><b>Phone line 4px in from the edge</b><span>Clear of the browser's own scroll indicator. Hidden on /built, which has its own bar.</span></li>
+  </ul>
+  <p class="note">Found on the way: the labels' CSS rule also caught the fill and eased it, so it trailed the scroll by half a screen. Fixed before merge, and noted in the site skill.</p>
+</section>
+</div>
+</body>
+</html>
