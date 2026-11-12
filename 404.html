@@ -112,7 +112,8 @@
       transform: translateX(6px);
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    .trail:hover span, html.playing .trail [data-here] span { opacity: 0.85; transform: none; }
+    html.playing .trail [data-here] span { opacity: 0.85; transform: none; }
+    @media (hover: hover) { .trail:hover span { opacity: 0.85; transform: none; } }
     .trail [data-on] i { background: currentColor; opacity: 0.8; }
     .trail [data-here] i { background: var(--ember); border-color: var(--ember); opacity: 1; transform: scale(1.35); }
 

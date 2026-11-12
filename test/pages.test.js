@@ -681,3 +681,26 @@ for (const { worlds } of PAIRS) {
     }
   });
 }
+
+// A phone keeps a :hover state after a tap, so a hovered look sticks to
+// whatever was last touched. Every :hover rule sits under (hover: hover).
+function ungatedHovers(css) {
+  css = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const found = [], stack = [];
+  let start = 0;
+  for (let i = 0; i < css.length; i++) {
+    if (css[i] === "{") { stack.push(css.slice(start, i).trim()); start = i + 1; }
+    else if (css[i] === "}") { stack.pop(); start = i + 1; }
+    else if (css[i] === ";") start = i + 1;
+    if (css[i] === "{" && /:hover\b/.test(stack.at(-1)) && !stack.slice(0, -1).some((p) => /@media[^{]*\(hover:\s*hover\)/.test(p))) found.push(stack.at(-1));
+  }
+  return found;
+}
+const STYLED = ["assets/admin.css", "assets/agent.css", "assets/hearth.css", "assets/site.css", "assets/worlds.css", "404.html", "brand/index.html", "hearth-public.html", "privacy.html"];
+for (const file of STYLED) {
+  test(`${file} shows :hover only on a device that hovers`, () => {
+    let css = readFileSync(path.join(ROOT, file), "utf8");
+    if (file.endsWith(".html")) css = [...css.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n");
+    assert.deepEqual(ungatedHovers(css), []);
+  });
+}

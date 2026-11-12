@@ -245,7 +245,7 @@ body.chama-agent-page {
   color: var(--text);
   padding: 0.2rem 0.1rem;
 }
-.chama-agent .brand:hover .brand-name { color: var(--ember); }
+@media (hover: hover) { .chama-agent .brand:hover .brand-name { color: var(--ember); } }
 .chama-agent .brand-name {
   font-size: 0.68rem;
   font-weight: 700;
@@ -493,7 +493,7 @@ body.chama-agent-page {
   cursor: pointer;
   border-bottom: 1px solid transparent;
 }
-.chama-agent .tune-reset:hover { color: var(--ember); border-bottom-color: var(--ember-soft); }
+@media (hover: hover) { .chama-agent .tune-reset:hover { color: var(--ember); border-bottom-color: var(--ember-soft); } }
 
 .chama-agent .tune-row { margin-bottom: 0.95rem; }
 .chama-agent .tune-row label,
@@ -609,7 +609,7 @@ body.chama-agent-page {
   cursor: pointer;
   transition: color 160ms ease, background-color 160ms ease;
 }
-.chama-agent .seg button:hover { color: var(--text); }
+@media (hover: hover) { .chama-agent .seg button:hover { color: var(--text); } }
 .chama-agent .seg button[aria-checked="true"] {
   color: #fff;
   background: rgba(244, 88, 31, 0.5);
@@ -655,7 +655,7 @@ body.chama-agent-page {
   border: 3px solid transparent;
   background-clip: padding-box;
 }
-.chama-agent .stage::-webkit-scrollbar-thumb:hover { background: rgba(244, 88, 31, 0.6); background-clip: padding-box; }
+@media (hover: hover) { .chama-agent .stage::-webkit-scrollbar-thumb:hover { background: rgba(244, 88, 31, 0.6); background-clip: padding-box; } }
 
 .chama-agent .column {
   width: min(100%, var(--col));
@@ -748,9 +748,11 @@ body.chama-agent-page {
   border-bottom: 1px solid var(--ember-soft);
   overflow-wrap: anywhere;
 }
-.chama-agent .turn-flame .turn-body a:hover {
-  color: #ff7a44;
-  border-bottom-color: #ff7a44;
+@media (hover: hover) {
+  .chama-agent .turn-flame .turn-body a:hover {
+    color: #ff7a44;
+    border-bottom-color: #ff7a44;
+  }
 }
 
 .chama-agent .turn-system {
