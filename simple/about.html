@@ -7,9 +7,9 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/site.css">
-  <link rel="stylesheet" href="/assets/figures.css">
-  <script src="/assets/figures.js" defer></script>
+  <link rel="stylesheet" href="/assets/site.css?v=41547cc2fb">
+  <link rel="stylesheet" href="/assets/figures.css?v=1bd12af0fb">
+  <script src="/assets/figures.js?v=b23504649b" defer></script>
   <meta name="description" content="Elliot Himmelfarb and Chama Inteligente, Lda., Lisbon: who is behind the company, how it came to be, and the friends we introduce people to when they fit better.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="theme-color" content="#f3f0e8">
@@ -40,6 +40,12 @@
     <div class="masthead-notes">
       <p><strong>Software shaped for your business</strong>Lisbon</p>
     </div>
+    <nav class="site-nav" aria-label="Pages" data-site-nav>
+      <span class="offer-switch"><a href="/simple">Software</a><a href="/simple/coaching">Coaching</a></span>
+      <a href="/simple/built">Built</a>
+      <a href="/simple/clients">Clients</a>
+      <a href="/simple/about" aria-current="page">About</a>
+    </nav>
     <a class="motion-toggle on" href="/about" data-motion="full" title="The same page, animated as you scroll"><span class="motion-track" aria-hidden="true"><i></i></span><span class="motion-label">Low motion</span></a>
   </header>
 
@@ -64,7 +70,7 @@
             <p>We are Elliot and Annie. We moved to Portugal in the fall of 2023, sight unseen, to explore more of the world, enjoy more of what life has to offer, and have our baby. Our daughter, Rozalie, was born in November 2025.</p>
             <p>We are growing our business together, and we want to help people become <span class="ember-accent">AI-native</span>, so they can adapt and take advantage of the incredible potential of this rapidly changing world.</p>
           </div>
-          <img class="about-photo" src="/assets/about-family-800.webp" srcset="/assets/about-family-400.webp 400w, /assets/about-family-800.webp 800w, /assets/about-family.jpg 900w" sizes="(max-width: 760px) min(100vw - 2.5rem, 24rem), 21rem" alt="Elliot and Annie with their daughter Rozalie, outdoors in Lisbon." width="900" height="1200" loading="lazy" decoding="async">
+          <img class="about-photo" src="/assets/about-family-800.webp" srcset="/assets/about-family-400.webp 400w, /assets/about-family-480.webp 480w, /assets/about-family-640.webp 640w, /assets/about-family-800.webp 800w, /assets/about-family.jpg 900w" sizes="(max-width: 760px) min(100vw - 2.5rem, 24rem), 21rem" alt="Elliot and Annie with their daughter Rozalie, outdoors in Lisbon." width="900" height="1200" loading="lazy" decoding="async">
         </div>
       </div>
     </section>
@@ -83,7 +89,7 @@
             GitHub
           </a>
         </div>
-        <img class="founder-photo" src="/assets/elliot-rozalie-480.webp" srcset="/assets/elliot-rozalie-240.webp 240w, /assets/elliot-rozalie-480.webp 480w, /assets/elliot-rozalie.webp 900w" sizes="15rem" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
+        <img class="founder-photo" src="/assets/elliot-rozalie-480.webp" srcset="/assets/elliot-rozalie-240.webp 240w, /assets/elliot-rozalie-360.webp 360w, /assets/elliot-rozalie-480.webp 480w, /assets/elliot-rozalie.webp 900w" sizes="15rem" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
       </div>
       <div class="section-copy">
         <p>Elliot started his career in software engineering in 2016. Since 2023, nearly all of his work has been devoted to learning what the most capable AI systems can do, applying them to real work, teaching others, and keeping pace as those capabilities change.</p>
@@ -143,7 +149,7 @@
   <script type="speculationrules">
   {
     "prefetch": [
-      { "source": "document", "where": { "href_matches": "/*" }, "eagerness": "moderate" }
+      { "source": "document", "where": { "href_matches": ["/", "/coaching", "/built", "/clients", "/about", "/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
     ]
   }
   </script>

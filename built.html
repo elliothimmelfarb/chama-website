@@ -5,19 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Built | Chama Inteligente</title>
   <script>
-    /* Low motion: a reader who chose it, or whose system asks for reduced
-       motion and who has not chosen the animated version, reads the low
-       motion version of this page instead. */
+    /* The pinned layout (html.js, as worlds.js decides it) from the first
+       paint, not once the deferred worlds.js runs. Low motion: a reader
+       who chose it, or whose system asks for reduced motion and who has
+       not chosen the animated version, reads the low motion version of
+       this page instead. */
     (function () {
+      if (!matchMedia("(max-height: 500px)").matches) document.documentElement.classList.add("js");
       try {
         var m = localStorage.getItem("chama-motion");
         if (m === "low" || (m !== "full" && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) location.replace("/simple/built" + location.search + location.hash);
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="/assets/worlds.css">
-  <script src="/assets/sky.js" defer></script>
-  <script src="/assets/worlds.js" defer></script>
+  <link rel="stylesheet" href="/assets/worlds.css?v=5177c83721">
+  <script src="/assets/sky.js?v=9c81e0061b" defer></script>
+  <script src="/assets/worlds.js?v=74ba092bcf" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -106,8 +109,8 @@
           </div>
             <article class="made" id="toraya-lisboa" aria-labelledby="toraya-lisboa-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img src="/assets/built/toraya-lisboa-desktop.webp" alt="" width="1800" height="4500" decoding="async"></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img src="/assets/built/toraya-lisboa-phone.webp" alt="" width="440" height="3836" decoding="async"></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img src="/assets/built/toraya-lisboa-desktop.webp" srcset="/assets/built/toraya-lisboa-desktop-640.webp 640w, /assets/built/toraya-lisboa-desktop-960.webp 960w, /assets/built/toraya-lisboa-desktop-1200.webp 1200w, /assets/built/toraya-lisboa-desktop-1440.webp 1440w, /assets/built/toraya-lisboa-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" fetchpriority="high" decoding="async"></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img src="/assets/built/toraya-lisboa-phone.webp" srcset="/assets/built/toraya-lisboa-phone-160.webp 160w, /assets/built/toraya-lisboa-phone-240.webp 240w, /assets/built/toraya-lisboa-phone-320.webp 320w, /assets/built/toraya-lisboa-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" fetchpriority="high" decoding="async"></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Made for one business</p>
@@ -119,8 +122,8 @@
             </article>
             <article class="made" id="vsf-lead-automation" aria-labelledby="vsf-lead-automation-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/vsf-lead-automation-desktop.webp" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/vsf-lead-automation-desktop.webp" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img data-src="/assets/built/vsf-lead-automation-phone.webp" alt="" width="440" height="3809" decoding="async"><noscript><img src="/assets/built/vsf-lead-automation-phone.webp" alt="" width="440" height="3809" loading="lazy" decoding="async"></noscript></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/vsf-lead-automation-desktop.webp" data-srcset="/assets/built/vsf-lead-automation-desktop-640.webp 640w, /assets/built/vsf-lead-automation-desktop-960.webp 960w, /assets/built/vsf-lead-automation-desktop-1200.webp 1200w, /assets/built/vsf-lead-automation-desktop-1440.webp 1440w, /assets/built/vsf-lead-automation-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/vsf-lead-automation-desktop.webp" srcset="/assets/built/vsf-lead-automation-desktop-640.webp 640w, /assets/built/vsf-lead-automation-desktop-960.webp 960w, /assets/built/vsf-lead-automation-desktop-1200.webp 1200w, /assets/built/vsf-lead-automation-desktop-1440.webp 1440w, /assets/built/vsf-lead-automation-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img data-src="/assets/built/vsf-lead-automation-phone.webp" data-srcset="/assets/built/vsf-lead-automation-phone-160.webp 160w, /assets/built/vsf-lead-automation-phone-240.webp 240w, /assets/built/vsf-lead-automation-phone-320.webp 320w, /assets/built/vsf-lead-automation-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3809" decoding="async"><noscript><img src="/assets/built/vsf-lead-automation-phone.webp" srcset="/assets/built/vsf-lead-automation-phone-160.webp 160w, /assets/built/vsf-lead-automation-phone-240.webp 240w, /assets/built/vsf-lead-automation-phone-320.webp 320w, /assets/built/vsf-lead-automation-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3809" loading="lazy" decoding="async"></noscript></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Made for one business</p>
@@ -132,8 +135,8 @@
             </article>
             <article class="made" id="alves-teamwear" aria-labelledby="alves-teamwear-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/alves-teamwear-desktop.webp" alt="" width="1100" height="1374" decoding="async"><noscript><img src="/assets/built/alves-teamwear-desktop.webp" alt="" width="1100" height="1374" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img data-src="/assets/built/alves-teamwear-phone.webp" alt="" width="360" height="4674" decoding="async"><noscript><img src="/assets/built/alves-teamwear-phone.webp" alt="" width="360" height="4674" loading="lazy" decoding="async"></noscript></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/alves-teamwear-desktop-1800.webp" data-srcset="/assets/built/alves-teamwear-desktop-640.webp 640w, /assets/built/alves-teamwear-desktop-960.webp 960w, /assets/built/alves-teamwear-desktop-1200.webp 1200w, /assets/built/alves-teamwear-desktop-1440.webp 1440w, /assets/built/alves-teamwear-desktop-1800.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="2248" decoding="async"><noscript><img src="/assets/built/alves-teamwear-desktop-1800.webp" srcset="/assets/built/alves-teamwear-desktop-640.webp 640w, /assets/built/alves-teamwear-desktop-960.webp 960w, /assets/built/alves-teamwear-desktop-1200.webp 1200w, /assets/built/alves-teamwear-desktop-1440.webp 1440w, /assets/built/alves-teamwear-desktop-1800.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="2248" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img data-src="/assets/built/alves-teamwear-phone.webp" data-srcset="/assets/built/alves-teamwear-phone-160.webp 160w, /assets/built/alves-teamwear-phone-240.webp 240w, /assets/built/alves-teamwear-phone.webp 360w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="360" height="4674" decoding="async"><noscript><img src="/assets/built/alves-teamwear-phone.webp" srcset="/assets/built/alves-teamwear-phone-160.webp 160w, /assets/built/alves-teamwear-phone-240.webp 240w, /assets/built/alves-teamwear-phone.webp 360w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="360" height="4674" loading="lazy" decoding="async"></noscript></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Made for one business</p>
@@ -145,8 +148,8 @@
             </article>
             <article class="made" id="shopintake" aria-labelledby="shopintake-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/shopintake-desktop.webp" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/shopintake-desktop.webp" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img data-src="/assets/built/shopintake-phone.webp" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/shopintake-phone.webp" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/shopintake-desktop.webp" data-srcset="/assets/built/shopintake-desktop-640.webp 640w, /assets/built/shopintake-desktop-960.webp 960w, /assets/built/shopintake-desktop-1200.webp 1200w, /assets/built/shopintake-desktop-1440.webp 1440w, /assets/built/shopintake-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/shopintake-desktop.webp" srcset="/assets/built/shopintake-desktop-640.webp 640w, /assets/built/shopintake-desktop-960.webp 960w, /assets/built/shopintake-desktop-1200.webp 1200w, /assets/built/shopintake-desktop-1440.webp 1440w, /assets/built/shopintake-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img data-src="/assets/built/shopintake-phone.webp" data-srcset="/assets/built/shopintake-phone-160.webp 160w, /assets/built/shopintake-phone-240.webp 240w, /assets/built/shopintake-phone-320.webp 320w, /assets/built/shopintake-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/shopintake-phone.webp" srcset="/assets/built/shopintake-phone-160.webp 160w, /assets/built/shopintake-phone-240.webp 240w, /assets/built/shopintake-phone-320.webp 320w, /assets/built/shopintake-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Our own product</p>
@@ -157,8 +160,8 @@
             </article>
             <article class="made" id="view-the-place" aria-labelledby="view-the-place-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/view-the-place-desktop.webp" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/view-the-place-desktop.webp" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img data-src="/assets/built/view-the-place-phone.webp" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/view-the-place-phone.webp" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/view-the-place-desktop.webp" data-srcset="/assets/built/view-the-place-desktop-640.webp 640w, /assets/built/view-the-place-desktop-960.webp 960w, /assets/built/view-the-place-desktop-1200.webp 1200w, /assets/built/view-the-place-desktop-1440.webp 1440w, /assets/built/view-the-place-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/view-the-place-desktop.webp" srcset="/assets/built/view-the-place-desktop-640.webp 640w, /assets/built/view-the-place-desktop-960.webp 960w, /assets/built/view-the-place-desktop-1200.webp 1200w, /assets/built/view-the-place-desktop-1440.webp 1440w, /assets/built/view-the-place-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img data-src="/assets/built/view-the-place-phone.webp" data-srcset="/assets/built/view-the-place-phone-160.webp 160w, /assets/built/view-the-place-phone-240.webp 240w, /assets/built/view-the-place-phone-320.webp 320w, /assets/built/view-the-place-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/view-the-place-phone.webp" srcset="/assets/built/view-the-place-phone-160.webp 160w, /assets/built/view-the-place-phone-240.webp 240w, /assets/built/view-the-place-phone-320.webp 320w, /assets/built/view-the-place-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Our own product</p>
@@ -169,8 +172,8 @@
             </article>
             <article class="made" id="the-hearth" aria-labelledby="the-hearth-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/the-hearth-desktop.webp" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/the-hearth-desktop.webp" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img data-src="/assets/built/the-hearth-phone.webp" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/the-hearth-phone.webp" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/the-hearth-desktop.webp" data-srcset="/assets/built/the-hearth-desktop-640.webp 640w, /assets/built/the-hearth-desktop-960.webp 960w, /assets/built/the-hearth-desktop-1200.webp 1200w, /assets/built/the-hearth-desktop-1440.webp 1440w, /assets/built/the-hearth-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/the-hearth-desktop.webp" srcset="/assets/built/the-hearth-desktop-640.webp 640w, /assets/built/the-hearth-desktop-960.webp 960w, /assets/built/the-hearth-desktop-1200.webp 1200w, /assets/built/the-hearth-desktop-1440.webp 1440w, /assets/built/the-hearth-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img data-src="/assets/built/the-hearth-phone.webp" data-srcset="/assets/built/the-hearth-phone-160.webp 160w, /assets/built/the-hearth-phone-240.webp 240w, /assets/built/the-hearth-phone-320.webp 320w, /assets/built/the-hearth-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/the-hearth-phone.webp" srcset="/assets/built/the-hearth-phone-160.webp 160w, /assets/built/the-hearth-phone-240.webp 240w, /assets/built/the-hearth-phone-320.webp 320w, /assets/built/the-hearth-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Our own product</p>
@@ -181,8 +184,8 @@
             </article>
             <article class="made" id="battle-of-mogadishu" aria-labelledby="battle-of-mogadishu-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/battle-of-mogadishu-desktop.webp" alt="" width="1800" height="3375" decoding="async"><noscript><img src="/assets/built/battle-of-mogadishu-desktop.webp" alt="" width="1800" height="3375" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img data-src="/assets/built/battle-of-mogadishu-phone.webp" alt="" width="440" height="2857" decoding="async"><noscript><img src="/assets/built/battle-of-mogadishu-phone.webp" alt="" width="440" height="2857" loading="lazy" decoding="async"></noscript></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/battle-of-mogadishu-desktop.webp" data-srcset="/assets/built/battle-of-mogadishu-desktop-640.webp 640w, /assets/built/battle-of-mogadishu-desktop-960.webp 960w, /assets/built/battle-of-mogadishu-desktop-1200.webp 1200w, /assets/built/battle-of-mogadishu-desktop-1440.webp 1440w, /assets/built/battle-of-mogadishu-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="3375" decoding="async"><noscript><img src="/assets/built/battle-of-mogadishu-desktop.webp" srcset="/assets/built/battle-of-mogadishu-desktop-640.webp 640w, /assets/built/battle-of-mogadishu-desktop-960.webp 960w, /assets/built/battle-of-mogadishu-desktop-1200.webp 1200w, /assets/built/battle-of-mogadishu-desktop-1440.webp 1440w, /assets/built/battle-of-mogadishu-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="3375" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img data-src="/assets/built/battle-of-mogadishu-phone.webp" data-srcset="/assets/built/battle-of-mogadishu-phone-160.webp 160w, /assets/built/battle-of-mogadishu-phone-240.webp 240w, /assets/built/battle-of-mogadishu-phone-320.webp 320w, /assets/built/battle-of-mogadishu-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="2857" decoding="async"><noscript><img src="/assets/built/battle-of-mogadishu-phone.webp" srcset="/assets/built/battle-of-mogadishu-phone-160.webp 160w, /assets/built/battle-of-mogadishu-phone-240.webp 240w, /assets/built/battle-of-mogadishu-phone-320.webp 320w, /assets/built/battle-of-mogadishu-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="2857" loading="lazy" decoding="async"></noscript></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Free to explore</p>
@@ -193,8 +196,8 @@
             </article>
             <article class="made" id="aimade-games" aria-labelledby="aimade-games-name">
               <div class="rig" aria-hidden="true">
-                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/aimade-games-desktop.webp" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/aimade-games-desktop.webp" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
-                <div class="phone"><div class="screen"><img data-src="/assets/built/aimade-games-phone.webp" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/aimade-games-phone.webp" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
+                <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/aimade-games-desktop.webp" data-srcset="/assets/built/aimade-games-desktop-640.webp 640w, /assets/built/aimade-games-desktop-960.webp 960w, /assets/built/aimade-games-desktop-1200.webp 1200w, /assets/built/aimade-games-desktop-1440.webp 1440w, /assets/built/aimade-games-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/aimade-games-desktop.webp" srcset="/assets/built/aimade-games-desktop-640.webp 640w, /assets/built/aimade-games-desktop-960.webp 960w, /assets/built/aimade-games-desktop-1200.webp 1200w, /assets/built/aimade-games-desktop-1440.webp 1440w, /assets/built/aimade-games-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
+                <div class="phone"><div class="screen"><img data-src="/assets/built/aimade-games-phone.webp" data-srcset="/assets/built/aimade-games-phone-160.webp 160w, /assets/built/aimade-games-phone-240.webp 240w, /assets/built/aimade-games-phone-320.webp 320w, /assets/built/aimade-games-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/aimade-games-phone.webp" srcset="/assets/built/aimade-games-phone-160.webp 160w, /assets/built/aimade-games-phone-240.webp 240w, /assets/built/aimade-games-phone-320.webp 320w, /assets/built/aimade-games-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
               </div>
               <div class="made-words">
                 <p class="made-kind">Free to play</p>
@@ -232,5 +235,14 @@
     </div>
     <p class="end-small"><a href="/simple/built" data-simple-version>Low motion version</a><a href="/privacy">Privacy</a><a href="/brand">Media kit</a><span><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</span></p>
   </footer>
+  <!-- the plain pages these leave for, fetched on hover or press; the
+       router fetches its own pages itself -->
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "source": "document", "where": { "href_matches": ["/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
+    ]
+  }
+  </script>
 </body>
 </html>

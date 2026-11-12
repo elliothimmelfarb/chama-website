@@ -15,8 +15,8 @@
    Shape scenes hand one shape from world to world and morph it; any other
    pair of scenes cross-fades while the fire passes.
 
-   The engine writes --u on each section (see worlds.css) and never touches
-   the words themselves. It paints nothing from the network: no images, no
+   The engine writes --u on the elements of each section that read it (see
+   worlds.css) and never touches the words themselves. It paints nothing from the network: no images, no
    fonts, no libraries. Under reduced motion the clock stops, the particles
    go, and every figure is drawn complete.
    ========================================================================== */
@@ -24,7 +24,12 @@
   "use strict";
 
   var root = document.documentElement;
-  root.classList.add("js");
+  // the pinned layout (html.js), except where the words cannot fit on one
+  // screen or the page is printed: there the worlds are one column
+  // (worlds.css). The head of each page makes the same test before it paints.
+  var SHORT = window.matchMedia("(max-height: 500px)"), printing = false, pinned = true;
+  function pinnable() { pinned = !SHORT.matches && !printing; root.classList.toggle("js", pinned); }
+  pinnable();
 
   var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var TAU = Math.PI * 2;
@@ -88,6 +93,10 @@
   if (!sky || !act) return;
   var ctx = act.getContext("2d");
   var AW = 0, AH = 0, ADPR = 1, quality = 1;
+  // past 120rem the figures keep to a centred stage, SW wide from SX, as the
+  // words do (worlds.css, --stage); sx(f) is a fraction of the way across it
+  var SW = 0, SX = 0;
+  function sx(f) { return SX + SW * f; }
 
   function initGL() { return window.ChamaSky ? window.ChamaSky.init(sky) : null; }
   var GL = initGL();
@@ -102,10 +111,17 @@
     var W = Math.max(1, Math.round(w * s)), H = Math.max(1, Math.round(h * s));
     if (sky.width !== W || sky.height !== H) { sky.width = W; sky.height = H; GL.gl.viewport(0, 0, W, H); }
   }
+  // a canvas given its own size again is still reallocated and cleared, so
+  // a resize that leaves it alone (a phone's toolbar, a page change) skips it
   function sizeActors() {
-    ADPR = Math.min(window.devicePixelRatio || 1, 2);
-    AW = act.clientWidth;
-    AH = act.clientHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), w = act.clientWidth, h = act.clientHeight;
+    // the stage follows the root font size, which can change at the same width
+    SW = Math.min(w, 120 * (parseFloat(getComputedStyle(root).fontSize) || 16));
+    SX = (w - SW) / 2;
+    if (w === AW && h === AH && dpr === ADPR) return;
+    ADPR = dpr;
+    AW = w;
+    AH = h;
     act.width = Math.round(AW * ADPR);
     act.height = Math.round(AH * ADPR);
   }
@@ -156,7 +172,7 @@
     // the wheel's world is all scrolling, so its header folds almost at once
     var top = headBottom() - (k > 0 || allScroll(sec) ? headLift() : 0) + 20, avail = H - base - foot - gap - ch - top;
     var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
-    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(AW * 0.16, AH * 0.27)) * tl[2];
+    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(SW * 0.16, AH * 0.27)) * tl[2];
     var up, down, fixed = false;
     if (scene.box) { up = 0; down = AH * (P ? 0.34 : 0.62); }
     else if (card) { up = 0; down = Math.min(Math.max(card.offsetHeight, 120), Math.max(avail, 110)); fixed = true; }
@@ -184,11 +200,11 @@
       var tl = scene.tall || [0.5, 0.26, 1], r = Math.min(AW * 0.27, AH * 0.16);
       L = { cx: AW * tl[0], cy: AH * tl[1], R: r * tl[2] };
     } else {
-      var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(AW * 0.16, AH * 0.27);
-      L = { cx: AW * at[0], cy: AH * at[1], R: R0 * at[2] };
+      var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(SW * 0.16, AH * 0.27);
+      L = { cx: sx(at[0]), cy: AH * at[1], R: R0 * at[2] };
     }
     if (P) L.box = S ? { x: 16, y: S.top, w: AW - 32, h: S.h } : { x: 16, y: AH * 0.1 + 10, w: AW - 32, h: AH * 0.34 };
-    else L.box = { x: AW * 0.47, y: AH * 0.17, w: AW * 0.44, h: AH * 0.62 };
+    else L.box = { x: sx(0.47), y: AH * 0.17, w: SW * 0.44, h: AH * 0.62 };
     if (scene.box) { L.cx = L.box.x + L.box.w / 2; L.cy = L.box.y + L.box.h / 2; L.R = Math.min(L.box.w, L.box.h) / 2; }
     L.top = S ? S.top : AH * 0.31 - 60;
     L.h = S ? S.h : 120;
@@ -509,6 +525,22 @@
     c.fillText(str, x, y);
     if ("letterSpacing" in c) c.letterSpacing = "0px";
   }
+  // a label that clears what is drawn under it, as a chart's labels do
+  function clearLabel(c, str, x, y, size, weight, color, align, spacing, alpha) {
+    if (alpha <= 0) return;
+    c.save();
+    c.globalCompositeOperation = "destination-out";
+    c.globalAlpha = alpha;
+    c.lineWidth = 7;
+    c.lineJoin = "round";
+    c.font = weight + " " + size + "px " + FONT;
+    c.textAlign = align;
+    c.textBaseline = "alphabetic";
+    if ("letterSpacing" in c) c.letterSpacing = spacing + "px";
+    c.strokeText(str, x, y);
+    c.restore();
+    label(c, str, x, y, size, weight, color, align, spacing);
+  }
   function strokePart(c, pts, f) {
     var n = pts.length / 2, total = 0, i;
     for (i = 1; i < n; i++) total += Math.hypot(pts[2 * i] - pts[2 * i - 2], pts[2 * i + 1] - pts[2 * i - 1]);
@@ -783,8 +815,8 @@
     c.shadowBlur = 0;
     if (p > 0.001 && p < 0.999) { glowDot(c, ht[0], ht[1], 3.4, EMB, a); c.fillStyle = rgba(foam, a); c.beginPath(); c.arc(hs[0], hs[1], 2.6, 0, TAU); c.fill(); }
     var end = sm(0.9, 1, p) * a, gx = x1 + Math.min(18, B.w * 0.04);
-    label(c, "A TRAINED TEAM", x1, lt - 12, 11, 700, "rgba(255,148,102," + end + ")", "right", 1.4);
-    label(c, "SAME HABITS", x1, ls + 22, 11, 700, rgba(foam, 0.85 * end), "right", 1.4);
+    clearLabel(c, "A TRAINED TEAM", x1, lt - 12, 11, 700, "rgba(255,148,102," + end + ")", "right", 1.4, end);
+    clearLabel(c, "SAME HABITS", x1, ls - 9, 11, 700, rgba(foam, 0.85 * end), "right", 1.4, end);
     if (end > 0) {
       c.globalAlpha = end;
       c.strokeStyle = "rgba(255,148,102,0.9)";
@@ -845,7 +877,7 @@
     var r = plate.getBoundingClientRect();
     if (r.width < 2) return;
     var P = L.portrait;
-    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(AW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
+    var ox = P ? r.left - r.width * 0.15 : r.left - Math.min(SW * 0.16, 220), oy = P ? r.bottom + 34 : r.bottom + 30;
     var tx = r.left + r.width * 0.12, ty = r.bottom - r.height * 0.1;
     var on = RM ? 1 : sm(-0.3, 0.1, l), line = RM ? 1 : sm(0.0, 0.3, l);
     c.save();
@@ -884,7 +916,7 @@
         spokes: [].slice.call(sec.querySelectorAll(".spoke")),
         turns: [].slice.call(sec.querySelectorAll(".turn")),
         count: sec.querySelector("[data-wheel-count]"),
-        on: -1
+        on: -2
       };
     }
     return sec._wheel;
@@ -901,8 +933,8 @@
       var bigP = Math.min(AW * 0.44, AH * 0.19, B.h * 0.9);
       return { cx: AW * 0.6, cy: B.y + B.h / 2, rx: AW * 0.145, ry: Math.max(0, Math.min(AH * 0.128, B.h / 2 - bigP * 0.16)), big: bigP, far: 0.28, step: step };
     }
-    var bigW = Math.min(AH * 0.33, AW * 0.23);
-    return { cx: AW * 0.68, cy: AH * 0.53, rx: AW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
+    var bigW = Math.min(AH * 0.33, SW * 0.23);
+    return { cx: sx(0.68), cy: AH * 0.53, rx: SW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
   }
   // where along the wheel the page is: first the introduction, the wheel
   // turning in with no one in focus; then each client holds and the wheel turns
@@ -917,10 +949,21 @@
     var q = clamp((l - a) / ((1 - a) * (1 - WHEEL_HOLD))) * (n - 1), f = Math.min(Math.floor(q), n - 2);
     return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1, k: 1 };
   }
+  // a style is written only when its value changes, so a still wheel writes
+  // nothing and a turning one restyles only what moved
+  function put(el, prop, v) {
+    var k = el._put || (el._put = {});
+    if (k[prop] !== v) { k[prop] = v; el.style[prop] = v; }
+  }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
+    // the logos ride the pin as the next world arrives; the outline goes
+    // with them. The sticky pin's top, from where measure() found it.
+    var dy = Math.min(0, pinEnd[sections.indexOf(L.sec)] - sy);
     var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
+    // the wheel rides up with its pin as the next world arrives, and leaves with it
+    var ex = L.exit === undefined ? 1 : L.exit;
     var place = [];
     for (var i = 0; i < n; i++) {
       var d = i - p;
@@ -932,20 +975,21 @@
       var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
       place.push({ x: x, y: y, sc: sc, near: near, e: e });
       var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img, .spoke-mark")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
-      sp.style.width = sp.style.height = G.big + "px";
+      put(sp, "width", G.big + "px");
+      put(sp, "height", G.big + "px");
       // turned a little away on the far side, as a thing on a wheel would be
       var turn = (1 - near) * 38;
-      sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
-      sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
-      sp.style.opacity = wp.show.toFixed(3);
-      sp.style.visibility = wp.show > 0.01 ? "visible" : "hidden";
+      put(sp, "transform", "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)");
+      put(sp, "zIndex", String(Math.round(near * 100) + (focus > 0.5 ? 100 : 0)));
+      put(sp, "opacity", (wp.show * ex).toFixed(3));
+      put(sp, "visibility", wp.show * ex > 0.01 ? "visible" : "hidden");
       // the rest are only their logos: further back, smaller, dimmer, darker, softer
       var dim = 1 - e;
-      img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
-      img.style.filter = dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none";
-      plate.style.opacity = sm(0.6, 1, focus).toFixed(3);
-      img.style.transform = "scale(" + (1 + 0.25 * dim).toFixed(3) + ")";
-      sp.classList.toggle("focus", focus > 0.5);
+      put(img, "opacity", (e + dim * (0.2 + 0.62 * near * near)).toFixed(3));
+      put(img, "filter", dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none");
+      put(plate, "opacity", sm(0.6, 1, focus).toFixed(3));
+      put(img, "transform", "scale(" + (1 + 0.25 * dim).toFixed(3) + ")");
+      if (sp._focus !== focus > 0.5) { sp._focus = focus > 0.5; sp.classList.toggle("focus", sp._focus); }
     }
     if (wp.k < 1) drawIntroShapes(c, t, L, a, W, G, place, wp.k);
     if (on !== W.on) {
@@ -957,15 +1001,13 @@
     var best = -1, bf = 0;
     for (var m = 0; m < n; m++) if (place[m].e > bf) { bf = place[m].e; best = m; }
     if (best < 0 || bf < 0.6) return;
-    // the logos ride the pin as the next world arrives; the outline goes with them
-    var pin = L.sec.querySelector(".pin"), dy = pin ? Math.min(0, pin.getBoundingClientRect().top) : 0;
     var f = place[best], shape = WHEEL_SHAPES[(+W.spokes[best].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length], half = G.big * f.sc / 2;
     var out = [];
     for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + dy + shape[qq + 1] * half * 1.12); }
     c.save();
     c.lineJoin = "round";
     c.lineCap = "round";
-    c.globalAlpha = a * (RM ? 1 : sm(0.6, 0.95, bf));
+    c.globalAlpha = a * ex * (RM ? 1 : sm(0.6, 0.95, bf));
     // the open place, for the next client: no plate yet, only its outline in dashes
     if (W.spokes[best].classList.contains("spoke-open")) c.setLineDash([7, 7]);
     c.strokeStyle = EMBER;
@@ -985,8 +1027,8 @@
     var P = L.portrait, n = W.spokes.length;
     // on a phone the shapes gather in the room between the header (still
     // full height before the first scroll) and the opening words
-    var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + headLift() : B.y, bh = B.y + B.h - by;
-    var hx = P ? AW / 2 : AW * 0.66, hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(AW * 0.16, AH * 0.27);
+    var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + liftPx : B.y, bh = B.y + B.h - by;
+    var hx = P ? AW / 2 : sx(0.66), hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(SW * 0.16, AH * 0.27);
     var fly = sm(0.08, 0.82, k), fade = 1 - sm(0.42, 0.86, k);
     if (fade <= 0.002) return;
     c.save();
@@ -1066,11 +1108,26 @@
   }
   function devicesIntro(n) { return DEV_OPEN / (DEV_OPEN + DEV_EACH * n); }
   // a picture is fetched when its thing is next, so a long page costs a
-  // visitor only what they scroll to
+  // visitor only what they scroll to. The things either side wait until the
+  // one on the screens has arrived, so they never compete with it.
   function devicesLoad(D, i) {
-    for (var k = Math.max(0, i - 1); k <= Math.min(D.items.length - 1, i + 1); k++) D.shots[k].forEach(function (img) {
+    devicesFetch(D.shots[i]);
+    if (!D.shots[i].every(function (img) { return img.complete; })) return;
+    if (i > 0) devicesFetch(D.shots[i - 1]);
+    if (i < D.items.length - 1) devicesFetch(D.shots[i + 1]);
+  }
+  // sizes in the markup cannot know the phone's --fit, so each picture is
+  // chosen for its screen's measured width, kept as a share of the window so
+  // a resize still picks again
+  function devicesFetch(pair, lazy) {
+    pair.forEach(function (img) {
       var src = img.getAttribute("data-src");
-      if (src) { img.src = src; img.removeAttribute("data-src"); }
+      if (!src) return;
+      if (lazy) img.loading = "lazy";
+      if (img.offsetWidth) img.sizes = (img.offsetWidth * 101 / innerWidth).toFixed(1) + "vw";
+      img.srcset = img.getAttribute("data-srcset");
+      img.src = src;
+      img.removeAttribute("data-src");
     });
   }
   // where the words sit under the devices (a phone), the devices are one
@@ -1083,20 +1140,36 @@
     if (D.fitted === key) return;
     D.fitted = key;
     D.rooms = [];
-    var f = 1, rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
-    function fits() {
-      D.stage.style.setProperty("--fit", f.toFixed(2));
+    var rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
+    var words = D.items.map(function (it) { return it.querySelector(".made-words"); }), lift = P ? headLift() : 0;
+    // the sizes run from 1 down in steps of 0.04 to 0.52, and each try is a
+    // layout, so the largest that fits is found by halving, in four tries
+    function fits(n) {
+      D.stage.style.setProperty("--fit", (1 - 0.04 * n).toFixed(2));
       if (!P) return true;
       var floor = D.bar.offsetTop - 12;
-      for (var i = 0; i < D.items.length; i++) { var w = D.items[i].querySelector(".made-words"); if (w.offsetTop + w.offsetHeight > floor) return false; }
-      return !lead || rig0.offsetTop + rig0.offsetHeight + headLift() + 12 <= lead.offsetTop;
+      for (var i = 0; i < words.length; i++) if (words[i].offsetTop + words[i].offsetHeight > floor) return false;
+      return !lead || rig0.offsetTop + rig0.offsetHeight + lift + 12 <= lead.offsetTop;
     }
-    while (!fits() && f > 0.55) f -= 0.04;
+    if (fits(0) || !fits(12)) return;
+    var lo = 0, hi = 12;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (fits(mid)) hi = mid; else lo = mid; }
+    D.stage.style.setProperty("--fit", (1 - 0.04 * hi).toFixed(2));
   }
   function drawDevices(c, l, t, L) {
     var D = devicesOf(L.sec), n = D.items.length;
     if (!n || !D.stage) return;
     devicesFit(D, L.portrait);
+    // the stage (devices and words) and the bar dissolve as the world
+    // leaves, most of the way in the first half, so the dark devices do not
+    // hang over the light grid as a grey slab. Written here, only when it
+    // changes: as readers of --u the stage and the bar restyled everything
+    // inside them on every scroll frame.
+    var ex = L.exit === undefined ? 1 : L.exit, gone = (ex * ex).toFixed(3);
+    put(D.stage, "opacity", gone);
+    // drifting up a little as it goes, as the words do (.r in worlds.css)
+    put(D.stage, "translate", ex < 1 ? "0 " + (-(1 - ex) * 16).toFixed(1) + "px" : "");
+    if (D.bar) put(D.bar, "opacity", gone);
     var a = devicesIntro(n), opening = l < a;
     var q = opening ? 0 : clamp((l - a) / ((1 - a) * (1 - DEV_HOLD))) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
     devicesLoad(D, i);
@@ -1141,6 +1214,38 @@
     return null;
   }
 
+  // In one column nothing is pinned: every thing on /built and every client
+  // on /clients is on the page at once, so none is inert or hidden, no
+  // picture keeps the scroll it had inside its screen, and every picture
+  // loads as it nears the screen (at once, for print). Back in the pinned
+  // layout the frame loop applies its state again from scratch.
+  function layFlat() {
+    sections.forEach(function (sec) {
+      var lay = pinned ? "pinned" : printing ? "print" : "flat";
+      if (sec._lay === lay) return;
+      sec._lay = lay;
+      if (sec.classList.contains("devices-world")) {
+        var D = devicesOf(sec);
+        D.words = -2; D.rig = -1; D.was = -1; D.fitted = "";
+        if (pinned) return;
+        D.items.forEach(function (it) { it.inert = false; it.classList.remove("on", "rig-on", "rig-was"); });
+        if (D.open) D.open.inert = false;
+        D.ticks.forEach(function (b) { b.removeAttribute("aria-current"); });
+        if (D.stage) { put(D.stage, "opacity", ""); put(D.stage, "translate", ""); }
+        if (D.bar) put(D.bar, "opacity", "");
+        D.shots.forEach(function (pair) {
+          pair.forEach(function (img) { img.style.transform = ""; if (printing) img.loading = "eager"; });
+          devicesFetch(pair, !printing);
+        });
+      }
+      if (sec.classList.contains("wheel-world")) {
+        var W = wheelOf(sec);
+        W.on = -2;
+        if (!pinned) W.turns.forEach(function (tn) { tn.removeAttribute("aria-hidden"); });
+      }
+    });
+  }
+
   // About us: the two lights circle the family's photograph, and a third,
   // smaller one joins them.
   function drawFamily(c, l, t, L, a) {
@@ -1160,7 +1265,7 @@
     var P = L.portrait, p = P ? sm(0.42, 0.92, l) : sm(0.1, 0.72, l);
     var x0, x1, y;
     if (P) { x0 = 34; x1 = AW - 30; y = L.top + Math.max(L.h - 34, 96); }
-    else { x0 = AW * 0.5; x1 = AW * 0.9; y = AH * 0.8; }
+    else { x0 = sx(0.5); x1 = sx(0.9); y = AH * 0.8; }
     var xNow = x0 + (x1 - x0) * 0.86, step = (xNow - x0) / 10, x23 = x0 + step * 7;
     var silver = [214, 222, 255], show = a * (P ? sm(0.36, 0.44, l) : 1);
     if (show < 0.01) return;
@@ -1319,40 +1424,141 @@
   }
 
   // ---- scroll ------------------------------------------------------------------------
-  var tops = [], hs = [], pins = [];
+  // Where things are on the page, read once per layout rather than every
+  // frame: a read in the loop forces the browser to finish styling first.
+  // sy follows the scroll from its event, so a still page reads nothing.
+  var tops = [], hs = [], pins = [], pinEnd = [], sy = window.scrollY, gones = [], markG = 1e4;
+  var roomTop = 0, roomH = 0, footTop = 0, docH = 0, vh = 0, liftPx = 0;
+  function positions() {
+    if (room) { roomTop = room.getBoundingClientRect().top + sy; roomH = room.offsetHeight; }
+    if (footer) footTop = footer.getBoundingClientRect().top + sy;
+    docH = document.documentElement.scrollHeight;
+    vh = window.innerHeight;
+  }
+  // ---- leaving: what rides up with a pin is gone before it reaches anything ----
+  // A world's --u runs from 1 to 2 while its pin scrolls away. goneOf is how
+  // far, in pixels of scroll past the pin's release, the first thing riding
+  // up with it can go before it would reach the header or, for words under a
+  // figure on the fixed canvas, that figure; on a phone that is often a few
+  // pixels. So the fade ends there, but takes at least EXIT_MIN of the
+  // screen: where the room is short it begins in the last of the hold, and
+  // the words dissolve as they start to move rather than blink out. Captions
+  // sit inside their figure's reach and end their fade at once (CAP_GONE).
+  // worlds.css works the fade out from --u per element (--e), from the
+  // lengths measure() writes on the section (--exit-*, --pin-len, --hold-len).
+  var EXIT_MIN = 0.15, CAP_GONE = 12;
+  // the slide a .r element is given while it is hidden, which is not its place
+  function shiftOf(el) { if (!el.classList.contains("r")) return 0; var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
+  function goneOf(k) {
+    var sec = sections[k], pin = sec.firstElementChild, H = pins[k] || AH, S = stacks[k], P = portrait(), last = k === NW - 1;
+    var head = headBottom() - (P && (k > 0 || allScroll(sec)) ? headLift() : 0) + 8, pt = pin.getBoundingClientRect().top, room = H;
+    function from(el, limit) {
+      if (!el || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return;
+      room = Math.min(room, el.getBoundingClientRect().top - shiftOf(el) - pt - limit);
+    }
+    // the last world's figure rises with its words, and a photograph is in the page
+    var still = S && !last && !allScroll(sec) && !sec.querySelector(".card");
+    from(sec.querySelector(".copy"), still ? S.top + S.h : head);
+    [].forEach.call(sec.querySelectorAll(".card, .logo-plate"), function (el) { from(el, head); });
+    if (sec.classList.contains("wheel-world")) {
+      var G = wheelGeom(P, wheelOf(sec).spokes.length, layoutOf(scenes[k], k).box);
+      room = Math.min(room, G.cy - G.ry - G.big * 0.3 - head);
+    }
+    if (sec.classList.contains("devices-world")) {
+      var D = devicesOf(sec), it = D.items[D.items.length - 1];
+      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) room = Math.min(room, it.offsetTop + el.offsetTop - head); });
+    }
+    return Math.max(room, 10);
+  }
+  // the last world's figure rises with its words from above them, so it leaves first
+  function markGone() { var k = NW - 1, S = stacks[k]; return S ? Math.max(S.top - headBottom() + (portrait() ? headLift() : 0) - 8, 10) : 1e4; }
+  // A unit of --u is a screen of scroll once a pin has let go (the last
+  // world counts its tail in AH), and the hold's length before.
+  function pinLen(k) { return k === NW - 1 ? AH : pins[k] || AH; }
+  function holdLen(k) { return Math.max(1, hs[k] - pins[k]); }
+  function exitLen(gone) { return Math.max(Math.min(gone, AH), EXIT_MIN * AH); }
+  // Past the last world the page scrolls only as far as the footer. What
+  // that tail never carries into the header stays: with the floor, it would
+  // otherwise fade in place at the foot of the page.
+  function reach(k, gone) { return k === NW - 1 && docH - vh - (tops[k] + holdLen(k)) < gone ? 1e4 : gone; }
+  // how much of world k is left at --u = u, 0 to 1, for something gone
+  // `gone` pixels past the release; worlds.css's --e is the same sum
+  function exitOf(k, gone, u) {
+    if (gone === undefined) return 1;
+    return clamp((gone - Math.max(u - 1, 0) * pinLen(k) - Math.min(u - 1, 0) * holdLen(k)) / exitLen(gone));
+  }
+  // measure() writes a value only when it changes, so a measure that moves
+  // nothing leaves the layout it read clean for its second round of reads
+  function setVar(el, name, v) {
+    var k = el._vars || (el._vars = {});
+    if (k[name] === v) return;
+    k[name] = v;
+    if (v === "") el.style.removeProperty(name); else el.style.setProperty(name, v);
+  }
   function measure() {
-    var y = window.scrollY;
-    tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
+    root.classList.toggle("foot-over", !room && !!footer);
+    // every read, then every write, so the page is laid out once (the exits
+    // at the end are the exception)
+    sy = window.scrollY;
+    tops = sections.map(function (s) { return s.getBoundingClientRect().top + sy; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
-    root.classList.toggle("foot-over", !room && !!footer);
-    root.style.setProperty("--head-lift", headLift() + "px");
+    // the scroll at which a sticky pin starts to leave, to the fraction of a pixel
+    pinEnd = sections.map(function (s) { return s.getBoundingClientRect().bottom + sy - s.firstElementChild.getBoundingClientRect().height; });
+    liftPx = headLift();
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
+    var foot = footer ? footer.offsetHeight + "px" : "";
+    setVar(root, "--head-lift", liftPx + "px");
     sections.forEach(function (s, k) {
       var S = stacks[k];
-      s.style.setProperty("--copy-b", S ? Math.round(S.copyB) + "px" : "");
-      s.style.setProperty("--copy-t", S ? Math.round(S.copyT) + "px" : "");
-      s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
-      s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
+      setVar(s, "--copy-b", S ? Math.round(S.copyB) + "px" : "");
+      setVar(s, "--copy-t", S ? Math.round(S.copyT) + "px" : "");
+      setVar(s, "--fig-top", S ? Math.round(S.top) + "px" : "");
+      setVar(s, "--fig-h", S ? Math.round(S.h) + "px" : "");
     });
-    if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
+    if (footer) setVar(root, "--foot", foot);
+    // The exits are read where the writes above put things (the words under
+    // a stacked figure sit at --copy-b, --foot moves the room and the
+    // footer), so they are a second round of reads. When nothing above
+    // changed, that layout is the one already read and costs nothing.
+    positions();
+    gones = sections.map(function (s, k) { return reach(k, goneOf(k)); });
+    markG = reach(NW - 1, markGone());
+    sections.forEach(function (s, k) {
+      setVar(s, "--exit-at", gones[k].toFixed(1));
+      setVar(s, "--exit-len", exitLen(gones[k]).toFixed(1));
+      setVar(s, "--exit-at-cap", reach(k, CAP_GONE));
+      setVar(s, "--exit-len-cap", exitLen(CAP_GONE).toFixed(1));
+      setVar(s, "--pin-len", pinLen(k).toFixed(1));
+      setVar(s, "--hold-len", holdLen(k).toFixed(1));
+    });
   }
   function scrollState() {
-    var y = window.scrollY, i = 0;
+    var y = sy, i = 0;
     for (var k = 0; k < NW; k++) if (y >= tops[k] - 1) i = k;
     var range = Math.max(1, hs[i] - pins[i]);
     var l = clamp((y - tops[i]) / range), b = 0, tail = 0;
     if (i < NW - 1) b = clamp((y - (tops[i] + range)) / Math.max(1, pins[i]));
+    // in one column there is no pin: the fire line (-0.4 + 1.8 * b of the
+    // screen from the bottom, crossing() below) stands on the next
+    // section's top edge, rather than sweeping up through this one's words
+    if (!pinned && i < NW - 1) b = clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
     // past the last world the page scrolls on, and the figure rises with the words
     else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, b, tail];
   }
-  var lastU = [];
+  // --u is not inherited (worlds.css), so it is written on each element
+  // whose rules read it, or read the exit (--e) worked out from it, and a
+  // scroll frame restyles those alone
+  var U_READERS = ".pin, .r, .ticks b, .qs li";
+  var lastU = [], readers = [];
   function setU(i, l, b) {
     for (var k = 0; k < NW; k++) {
       var u = k < i ? 2 : k > i + 1 ? -1 : k === i ? l + b : -1 + b;
       u = Math.round(u * 1000) / 1000;
-      if (u !== lastU[k]) { sections[k].style.setProperty("--u", u); lastU[k] = u; }
+      if (u === lastU[k]) continue;
+      lastU[k] = u;
+      for (var j = 0; j < readers[k].length; j++) readers[k][j].style.setProperty("--u", u);
     }
   }
   function placeCaps() {
@@ -1403,9 +1609,10 @@
     NW = sections.length;
     worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
     scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
+    readers = sections.map(function (s) { return [].slice.call(s.querySelectorAll(U_READERS)); });
     room = document.querySelector(".flame-room");
     footer = document.querySelector("body > footer");
-    tops = []; hs = []; pins = []; stacks = []; lastU = [];
+    tops = []; hs = []; pins = []; stacks = []; gones = []; lastU = [];
     hugReady = false;
     lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastCompact = false; lastSpark = 0;
     root.classList.remove("in-room", "at-end", "head-compact");
@@ -1418,28 +1625,46 @@
     return { cx: L.cx, cy: L.cy, R: L.R, heat: 0, flame: 0 };
   }
 
+  // Ambient motion (the drift of the particles, the sky, a figure breathing)
+  // does not need a 120 Hz screen's every frame. Once the page has been
+  // still for STILL_MS, frames come at least AMBIENT_MS apart: every other
+  // one at 120 Hz, every one at 90 Hz and below. The first scroll, pointer
+  // move or page change brings back every frame.
+  var STILL_MS = 300, AMBIENT_MS = 10;
+  var stirAt = 0, stirY = -1, stirX = 0, stirP = 0;
+  function stirred(now) {
+    var moving = sy !== stirY || ptr.x !== stirX || ptr.y !== stirP || burnIn || leaveAt ||
+      Math.abs((ptr.on ? ptr.x : AW / 2) - ptr.sx) > 0.5 || Math.abs((ptr.on ? ptr.y : AH / 2) - ptr.sy) > 0.5;
+    stirY = sy; stirX = ptr.x; stirP = ptr.y;
+    if (moving) stirAt = now;
+    return now - stirAt < STILL_MS;
+  }
+
   function frame(now) {
     requestAnimationFrame(frame);
+    if (!stirred(now) && now - last < AMBIENT_MS) return;
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
     var st = scrollState(), i = st[0], l = st[1], b = st[2];
-    // on a phone the last world's words keep counting on past its end, so
-    // they can fade before they reach the header (worlds.css, .flame)
-    setU(i, l, b || (portrait() ? st[3] / AH : 0));
+    // the last world keeps counting on past its end, so what rises with it
+    // can leave before it reaches the header
+    var u = l + (b || st[3] / AH);
+    // in one column the words stand still (worlds.css), so --u has no readers
+    if (pinned) setU(i, l, b || st[3] / AH);
     var pass = crossing(b);
 
     var inRoom = false, hidden = false;
     if (room) {
-      var rr = room.getBoundingClientRect();
+      var rt = roomTop - sy;
       // at the very end of the page the room is the screen, even where a
       // phone's toolbars leave it short of the top
-      inRoom = (rr.top < 80 && rr.bottom > 80) || window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
-      hidden = rr.top <= 0;
+      inRoom = (rt < 80 && rt + roomH > 80) || sy + vh >= docH - 2;
+      hidden = rt <= 0;
       if (inRoom !== lastRoom) { root.classList.toggle("in-room", inRoom); lastRoom = inRoom; }
     }
     // once the footer is on screen its nav is the one to use
-    var atEnd = !!footer && footer.getBoundingClientRect().top < AH - 8;
+    var atEnd = !!footer && footTop - sy < AH - 8;
     if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
     var compact = portrait() && (i > 0 || b > 0.5 || (allScroll(sections[i]) && l > 0.02));
     if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
@@ -1464,6 +1689,9 @@
     var eb = b * b * (3 - 2 * b);
     var A = scenes[i], B = b > 0 ? scenes[i + 1] : null;
     var LA = layoutOf(A, i), LB = B ? layoutOf(B, i + 1) : null;
+    LA.exit = exitOf(i, gones[i], u);
+    // the last world's mark and its flame rise above the words, and leave before them
+    var lastOut = i === NW - 1 ? exitOf(i, markG, u) : 1;
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));
     ptr.sy += ((ptr.on ? ptr.y : AH / 2) - ptr.sy) * (1 - Math.exp(-dt * 4));
     var px = (ptr.sx - AW / 2) * 0.012, py = (ptr.sy - AH / 2) * 0.012 - st[3];
@@ -1496,10 +1724,12 @@
       gl.uniform2f(U.uMouse, (ptr.sx - AW / 2) / AH, (AH / 2 - ptr.sy) / AH);
       gl.uniform2f(U.uFocus, (focus.cx - AW / 2) / AH, (AH / 2 - focus.cy) / AH);
       gl.uniform1f(U.uFocusR, focus.R / AH);
-      gl.uniform1f(U.uFlame, focus.flame);
-      gl.uniform1f(U.uHeat, focus.heat);
+      gl.uniform1f(U.uFlame, focus.flame * lastOut);
+      gl.uniform1f(U.uHeat, focus.heat * lastOut);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
+    // in one column the figures are left out (their canvas is hidden)
+    if (!pinned) return;
 
     ctx.setTransform(ADPR, 0, 0, ADPR, 0, 0);
     ctx.clearRect(0, 0, AW, AH);
@@ -1521,7 +1751,7 @@
     ctx.globalAlpha = 1;
     // the figures fade with the words when the page changes (here, not in
     // CSS: an opacity on the canvas costs a phone a frame it cannot spare)
-    var fa = figureAlpha();
+    var fa = figureAlpha() * lastOut;
     if (fa < 1 || pass) {
       ctx.globalCompositeOperation = "destination-in";
       if (pass) {
@@ -1541,11 +1771,14 @@
   }
 
   function resize() {
+    pinnable();
+    layFlat();
     sizeActors();
     sizeSky();
     measure();
     placeCaps();
     placeSwitches(true);
+    stirAt = performance.now();
   }
   var queued = false;
   window.addEventListener("resize", function () {
@@ -1553,7 +1786,15 @@
     queued = true;
     requestAnimationFrame(function () { queued = false; resize(); });
   });
+  window.addEventListener("scroll", function () { sy = window.scrollY; }, { passive: true });
   window.addEventListener("load", function () { measure(); placeCaps(); });
+  window.addEventListener("beforeprint", function () { printing = true; pinnable(); layFlat(); });
+  window.addEventListener("afterprint", function () { printing = false; resize(); });
+  // the room and the footer are found from measure(), not read each frame,
+  // so anything that lengthens the page (a late picture) measures again
+  if (window.ResizeObserver) new ResizeObserver(function () {
+    if (document.documentElement.scrollHeight !== docH) { measure(); placeCaps(); }
+  }).observe(document.body);
   window.addEventListener("pointermove", function (e) { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = e.pointerType === "mouse"; }, { passive: true });
   document.addEventListener("pointerleave", function () { ptr.on = false; });
   window.addEventListener("blur", function () { ptr.on = false; });
@@ -1649,9 +1890,14 @@
   }
   var here = pathOf(location);
 
+  // a fetch that hangs rather than fails gives up, and the visitor gets an
+  // ordinary navigation instead of an empty sky
+  var GIVE_UP = 8000;
   function fetchPage(path) {
     if (!cache[path]) {
-      cache[path] = fetch(path, { credentials: "same-origin" }).then(function (r) {
+      var opts = { credentials: "same-origin" };
+      if (window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(GIVE_UP);
+      cache[path] = fetch(path, opts).then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.text();
       });
@@ -1660,27 +1906,44 @@
     return cache[path];
   }
 
-  // the burn from the old page's world into the new one, read by the loop
+  // the burn from the old page's world into the new one, read by the loop.
+  // The shader's fire line stands at -0.4 + 1.8 * mix of the screen's
+  // height from the bottom, and its flames reach about 0.3 above the line,
+  // so the burn starts where they first touch the screen, not below it. It
+  // answers a tap, so it eases out: fast through the words, slowing as it
+  // passes the header.
+  var BURN = 850, MIX_FROM = 0.06;
+  // The new words show just behind the fire line: --wipe is written on the
+  // arriving page's pins, the only thing that reads it, and is registered
+  // not to inherit (worlds.css), so each frame restyles those pins alone.
+  // On <html> it restyled the whole document, about 10ms a frame on a phone.
+  var wiped = [];
+  function wipe(m) {
+    var v = m === null ? null : ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%";
+    wiped.forEach(function (pin) {
+      if (v === null) pin.style.removeProperty("--wipe");
+      else pin.style.setProperty("--wipe", v);
+    });
+    if (v === null) wiped = [];
+  }
+  function endBurn() {
+    burnIn = null;
+    root.classList.remove("nav-enter");
+    wipe(null);
+  }
   function crossing(b) {
     if (!burnIn) return null;
     var p = clamp((performance.now() - burnIn.start) / burnIn.dur);
-    var m = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(2 - 2 * p, 3) / 2;
-    // the shader's fire line stands at -0.4 + 1.8 * mix of the screen's
-    // height from the bottom; the new words show just behind it
-    root.style.setProperty("--wipe", ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%");
-    if (p >= 1) {
-      burnIn = null;
-      root.classList.remove("nav-enter");
-      root.style.removeProperty("--wipe");
-      return null;
-    }
+    var m = MIX_FROM + (1 - MIX_FROM) * (1 - Math.pow(1 - p, 3));
+    if (p >= 1) { endBurn(); return null; }
+    wipe(m);
     return b > 0.001 ? null : { from: burnIn.from, mix: m };
   }
 
   function figureAlpha() {
     var now = performance.now();
-    if (leaveAt) return 1 - clamp((now - leaveAt) / 300);
-    if (burnIn) return sm(0, 1, (now - burnIn.start) / 400);
+    if (leaveAt) return 1 - clamp((now - leaveAt) / LIFT);
+    if (burnIn) return sm(0, 1, (now - burnIn.start) / 300);
     return 1;
   }
 
@@ -1710,19 +1973,31 @@
   }
   // The flame room is mounted once a visit. Leaving the home page keeps it
   // (and any conversation in it) aside, and coming back puts it back.
+  var AGENT_CSS = "/assets/agent.css?v=4304adc11d", FLAME_JS = "/assets/flame.js?v=5e57dbd6ed", AGENT_JS = "/assets/agent.js?v=45b94ec90f";
   function mountRoom(slot) {
     var host = slot.querySelector("#agent-embed");
     if (!host) return;
     Promise.all([
-      needCss("/assets/agent.css"),
-      needScript("/assets/flame.js", function () { return window.ChamaFlame; })
-        .then(function () { return needScript("/assets/agent.js", function () { return window.ChamaAgent; }); })
+      needCss(AGENT_CSS),
+      needScript(FLAME_JS, function () { return window.ChamaFlame; })
+        .then(function () { return needScript(AGENT_JS, function () { return window.ChamaAgent; }); })
     ]).then(function () {
       if (host.isConnected && !host.firstChild && window.ChamaAgent) {
         window.ChamaAgent.mount(host, { mode: "embed" });
         measure();
       }
     }, function () {});
+  }
+
+  // Every address is versioned (scripts/stamp.js), so a page whose scripts
+  // or stylesheets this one does not already hold comes from another deploy
+  // (or another version of this engine) and gets a full load instead.
+  function sameDeploy(doc) {
+    return [].every.call(doc.head.querySelectorAll("script[src], link[rel=\"stylesheet\"]"), function (n) {
+      var u = n.getAttribute("src") || n.getAttribute("href");
+      return u === AGENT_CSS || u === FLAME_JS || u === AGENT_JS ||
+        !!document.querySelector('script[src="' + u + '"], link[rel="stylesheet"][href="' + u + '"]');
+    });
   }
 
   var HEAD = 'meta[name="description"], meta[name="author"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]';
@@ -1761,23 +2036,50 @@
     root.classList.remove("room-pinned");
   }
 
+  // A second tap never makes the wait longer: the same link again is
+  // ignored, another link keeps the lift already under way, and the page
+  // in view cancels the change. A fetch still out when the words have gone
+  // marks the header as waiting (.nav-wait), so the tap visibly took.
+  var LIFT = 200, going = null, waitT = 0;
+  function settleNav() {
+    going = null;
+    leaveAt = 0;
+    clearTimeout(waitT);
+    root.classList.remove("nav-leave", "nav-wait");
+  }
+  function stay() {
+    navSeq++;
+    settleNav();
+    setCurrent(here);
+  }
   function go(u, push) {
     var path = pathOf(u), seq = ++navSeq;
     var from = lastTheme >= 0 ? lastTheme : worldOf[0];
-    if (push) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
+    if (push && !going) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
+    going = path;
     setCurrent(path);
-    root.classList.remove("nav-enter");
+    endBurn();
     root.classList.add("nav-leave");
-    leaveAt = RM ? 0 : performance.now();
-    var lift = new Promise(function (res) { setTimeout(res, RM ? 0 : 380); });
-    Promise.all([fetchPage(path), lift]).then(function (r) {
+    var now = performance.now();
+    if (!RM && !leaveAt) leaveAt = now;
+    var left = RM ? 0 : Math.max(0, LIFT - (now - leaveAt));
+    var lift = new Promise(function (res) { setTimeout(res, left); });
+    var page = fetchPage(path), ready = false;
+    page.then(function () { ready = true; }, function () {});
+    clearTimeout(waitT);
+    waitT = setTimeout(function () { if (seq === navSeq && !ready) root.classList.add("nav-wait"); }, left);
+    Promise.all([page, lift]).then(function (r) {
       if (seq !== navSeq) return;
       var doc = new DOMParser().parseFromString(r[0], "text/html");
       var main = doc.querySelector("main");
       if (!main || !main.querySelector(".world")) throw new Error("not an animated page");
+      if (!sameDeploy(doc)) throw new Error("another deploy");
       if (push) history.pushState({ y: 0 }, "", u.pathname + u.search + u.hash);
       swap(doc);
+      root.classList.add("routed");
       here = path;
+      // .nav-leave lifts main by 2.5vh, so it goes before anything is measured
+      settleNav();
       bind();
       resize();
       var y = push ? 0 : (history.state && history.state.y) || 0;
@@ -1789,12 +2091,11 @@
         target.classList.add("is-target");
       }
       window.scrollTo({ top: y, behavior: "instant" });
-      root.classList.remove("nav-leave");
-      leaveAt = 0;
       if (!RM) {
-        root.style.setProperty("--wipe", "-40%");
+        wiped = [].slice.call(document.querySelectorAll("main .pin"));
+        wipe(MIX_FROM);
         root.classList.add("nav-enter");
-        burnIn = { from: from, start: performance.now(), dur: 1500 };
+        burnIn = { from: from, start: performance.now(), dur: BURN };
       }
       var h = document.querySelector("main h1");
       if (h) {
@@ -1802,7 +2103,8 @@
         try { h.focus({ preventScroll: true }); } catch (e) {}
       }
     }).catch(function () {
-      if (seq === navSeq) location.assign(u.href);
+      // Back and Forward have already moved the history to this entry
+      if (seq === navSeq) { if (push) location.assign(u.href); else location.replace(u.href); }
     });
   }
 
@@ -1825,6 +2127,11 @@
       var u = new URL(a.href, location.href);
       if (u.origin !== location.origin || !PAGES[pathOf(u)]) return;
       e.preventDefault();
+      if (going) {
+        if (pathOf(u) === here) stay();
+        else if (pathOf(u) !== going) go(u, true);
+        return;
+      }
       if (pathOf(u) === here) {
         var t = u.hash && document.getElementById(u.hash.slice(1));
         if (t && pinnedY(t) !== null) window.scrollTo({ top: pinnedY(t), behavior: RM ? "auto" : "smooth" });
@@ -1834,9 +2141,22 @@
       }
       go(u, true);
     });
+    // A page left by a full load (go's fallback) is kept in the
+    // back/forward cache as it was: words lifted away, the tapped link
+    // marked, the change still under way, or the motion switch flipped. Back
+    // must find it whole.
+    window.addEventListener("pageshow", function (e) {
+      if (!e.persisted) return;
+      stay();
+      endBurn();
+      placeSwitches(true);
+      // the motion switch flipped on its way to the low motion page
+      [].forEach.call(document.querySelectorAll(".motion-toggle.on"), function (t) { t.classList.remove("on"); });
+    });
     window.addEventListener("popstate", function () {
       var path = pathOf(location);
-      if (path !== here && PAGES[path]) go(new URL(location.href), false);
+      if (path === here) { if (going) stay(); }
+      else if (PAGES[path]) go(new URL(location.href), false);
     });
     // the next page is usually fetched before it is asked for
     var warm = function (e) {
@@ -1849,7 +2169,8 @@
     document.addEventListener("touchstart", warm, { passive: true });
     document.addEventListener("focusin", warm);
     var save = navigator.connection && navigator.connection.saveData;
-    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(function (p) { if (p !== here) fetchPage(p); }); }, 3000);
+    // the page in view too, so Back to the page the visit began on is warm
+    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(fetchPage); }, 3000);
   }
 
   bind();
@@ -1857,7 +2178,7 @@
   // a link straight to a client on the wheel (/clients#toraya-lisboa) turns
   // the wheel to them, and one to a thing on /built (/built#shopintake) puts
   // it on the screens, rather than the browser's jump to the top of the pin
-  function toHashTurn() {
+  function toHashTurn(smooth) {
     var t = location.hash && document.getElementById(location.hash.slice(1));
     if (!t || !(t.classList.contains("turn") || t.classList.contains("made"))) return;
     // the browser's own jump to the anchor scrolls the clipped pin itself,
@@ -1865,16 +2186,33 @@
     var pin = t.closest(".pin");
     if (pin) pin.scrollTop = 0;
     measure();
-    window.scrollTo(0, pinnedY(t));
+    window.scrollTo({ top: pinnedY(t), behavior: smooth === true && !RM ? "smooth" : "instant" });
   }
   requestAnimationFrame(toHashTurn);
   window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });
-  // a small logo on the wheel turns the wheel to that client
+  // Back and Forward between the things on /built (or clients on the wheel)
+  window.addEventListener("hashchange", function () { toHashTurn(true); });
+  // a small logo on the wheel turns the wheel to that client, and a bar of
+  // /built's progress bar puts its thing on the screens: the browser's own
+  // jump would find the anchor already "in view" in its sticky pin and not
+  // scroll at all
   document.addEventListener("click", function (e) {
     var sp = e.target.closest && e.target.closest(".spoke");
-    if (!sp) return;
-    var y = wheelY(sp);
-    if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+    if (sp) {
+      var y = wheelY(sp);
+      if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+      return;
+    }
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    var t = a && document.getElementById(a.getAttribute("href").slice(1));
+    var ty = t ? pinnedY(t) : null;
+    if (ty === null) return;
+    e.preventDefault();
+    if (location.hash !== "#" + t.id) { try { history.pushState({ y: ty }, "", "#" + t.id); } catch (err) {} }
+    var pin = t.closest(".pin");
+    if (pin) pin.scrollTop = 0;
+    window.scrollTo({ top: ty, behavior: RM ? "auto" : "smooth" });
   });
   seedParticles();
   ptr.sx = AW / 2;

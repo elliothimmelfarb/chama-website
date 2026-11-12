@@ -5,8 +5,9 @@
    API client, the router, the gate, the frame with the fire in it, and the
    views every member has (home, account, security). Other parts of the
    room register their own views through window.Hearth.register from their
-   own files (hearth-admin.js, and later sessions, transcripts, agents,
-   feed), which keeps each area in one place and this file small.
+   own files (hearth-admin.js, hearth-sessions.js and the rest), which
+   keeps each area in one place and this file small. Each member loads only
+   the parts /me names for their permissions (lib/hearth/modules.js).
 
    The hard rule, same as the flame admin: everything the API returns is
    data. It reaches the page only through textContent or attributes set
@@ -185,22 +186,54 @@
       init.headers["Content-Type"] = "application/json";
       init.body = JSON.stringify(opts.body);
     }
-    return fetch(API + path, init).then(function (response) {
-      return response.json().catch(function () { return {}; }).then(function (body) {
-        if (response.status === 401 && state.user && !opts.quiet) {
-          state.user = null;
-          render();
-        }
-        if (!response.ok) {
-          var error = new Error(body && body.error ? body.error : "Something went wrong.");
-          error.status = response.status;
-          error.body = body;
-          throw error;
-        }
-        return body;
-      });
+    return fetch(API + path, init).then(function (response) { return answer(response, opts); });
+  }
+
+  function answer(response, opts) {
+    return response.json().catch(function () { return {}; }).then(function (body) {
+      if (response.status === 401 && state.user && !opts.quiet) {
+        state.user = null;
+        render();
+      }
+      if (!response.ok) {
+        var error = new Error(body && body.error ? body.error : "Something went wrong.");
+        error.status = response.status;
+        error.body = body;
+        throw error;
+      }
+      return body;
     });
   }
+
+  /* ---------- buttons at work ---------- */
+
+  // A button that is working says what it is doing, keeps its colour (a
+  // dimmed button reads as unavailable) and cannot be pressed again. The
+  // returned function puts it back. Work that ends by leaving the page stays
+  // busy, so it is undone if the browser brings the page back from its cache
+  // (Back from GitHub, say).
+  var leaving = [];
+
+  function busyAs(node, label) {
+    var was = node.textContent;
+    node.setAttribute("aria-busy", "true");
+    if (node.tagName === "BUTTON") node.disabled = true;
+    node.textContent = label;
+    var undo = function () {
+      var at = leaving.indexOf(undo);
+      if (at === -1) return;
+      leaving.splice(at, 1);
+      node.removeAttribute("aria-busy");
+      if (node.tagName === "BUTTON") node.disabled = false;
+      node.textContent = was;
+    };
+    leaving.push(undo);
+    return undo;
+  }
+
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted) leaving.slice().forEach(function (undo) { undo(); });
+  });
 
   /* ---------- toasts ---------- */
 
@@ -687,6 +720,14 @@
       add(el("p", "form-error", reasons[q.error] || "Something went wrong signing in."));
     }
 
+    // The line under the form, for what every way in has to say.
+    var status = el("p", "small dim");
+    status.setAttribute("aria-live", "polite");
+    function say(text, bad) {
+      status.textContent = text;
+      status.className = bad ? "small form-error" : "small dim";
+    }
+
     var ways = el("div", "gate-ways");
     var providers = (state.config && state.config.providers) || {};
     var ref = q.ref || readRef();
@@ -696,7 +737,7 @@
     if (providers.google) {
       var slot = el("div", "gsi-slot");
       ways.appendChild(slot);
-      mountGoogle(slot, providers.google, ref, next);
+      mountGoogle(slot, providers.google, ref, next, say);
     }
     if (providers.github) ways.appendChild(providerButton("Continue with GitHub", "github", ref, next));
     if (providers.discord) ways.appendChild(providerButton("Continue with Discord", "discord", ref, next));
@@ -714,39 +755,48 @@
     pwField.hidden = true;
     var submit = button("Email me a sign-in link", "btn primary wide");
     submit.type = "submit";
-    var status = el("p", "small dim");
     var toggle = button("I have a password", "btn ghost sm", function () {
+      if (submit.disabled) return;
       usePassword = !usePassword;
       pwField.hidden = !usePassword;
       submit.textContent = usePassword ? "Sign in" : "Email me a sign-in link";
       toggle.textContent = usePassword ? "Email me a link instead" : "I have a password";
       if (usePassword) password.focus();
     });
+    // One reset email per address: asking again waits for a different one.
+    var resetSentTo = null;
     var forgot = button("Forgot it?", "btn ghost sm", function () {
       if (!email.value) { email.focus(); return; }
+      var done = busyAs(forgot, "Sending…");
       api("/auth/password/forgot", { method: "POST", body: { email: email.value } }).then(function () {
-        status.textContent = "If that address has a password, a reset link has been emailed to it.";
-      }).catch(function (e) { status.textContent = e.message; });
+        done();
+        resetSentTo = email.value;
+        forgot.disabled = true;
+        say("If that address has a password, a reset link has been emailed to it.");
+      }).catch(function (e) { done(); say(e.message, true); });
+    });
+    email.addEventListener("input", function () {
+      if (resetSentTo !== null && email.value !== resetSentTo) { resetSentTo = null; forgot.disabled = false; }
     });
     append(form, [field("Email", email), pwField, submit, append(el("div", "row"), [toggle, forgot]), status]);
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      submit.disabled = true;
-      status.textContent = "";
-      status.className = "small dim";
+      if (submit.disabled) return;
+      say("");
+      var done = busyAs(submit, usePassword ? "Signing in…" : "Sending…");
       var req = usePassword
         ? api("/auth/password", { method: "POST", body: { email: email.value, password: password.value, next: next } })
         : api("/auth/email/start", { method: "POST", body: { email: email.value, ref: ref, next: next } });
       req.then(function (result) {
+        // Signed in: the button stays busy while the page leaves.
         if (usePassword) { afterSignIn(result); return; }
         clear(card);
         var sent = el("div", "gate-sent");
         append(sent, [mark("mark"), el("h2", null, "Check your email"), el("p", "dim", "A sign-in link has been emailed to " + email.value + ". It works once and expires in 15 minutes."), button("Use another way", "btn ghost", function () { renderGate(); })]);
         card.appendChild(sent);
       }).catch(function (err) {
-        status.textContent = err.message;
-        status.className = "small form-error";
-        submit.disabled = false;
+        done();
+        say(err.message, true);
       });
     });
     add(form);
@@ -765,6 +815,12 @@
   function providerButton(label, provider, ref, next) {
     var url = API + "/auth/" + provider + "?ref=" + encodeURIComponent(ref || "") + "&next=" + encodeURIComponent(next || "");
     var a = link(label, url, "btn wide");
+    a.addEventListener("click", function (e) {
+      if (a.hasAttribute("aria-busy")) { e.preventDefault(); return; }
+      // A new tab or window leaves this page as it is.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+      busyAs(a, "Opening " + providerLabel(provider) + "…");
+    });
     return a;
   }
 
@@ -774,16 +830,18 @@
   }
 
   // Google Identity Services: the one external script on the domain, and
-  // only here. The library renders its own button into the slot.
-  function mountGoogle(slot, clientId, ref, next) {
+  // only here. The library renders its own button into the slot, in its own
+  // frame, so the gate's status line says when it is working.
+  function mountGoogle(slot, clientId, ref, next, say) {
     function renderButton() {
       if (!window.google || !window.google.accounts) return;
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: function (response) {
+          say("Signing in…");
           api("/auth/google", { method: "POST", body: { credential: response.credential, ref: ref, next: next } })
             .then(afterSignIn)
-            .catch(function (e) { toast(e.message, "bad"); });
+            .catch(function (e) { say(e.message, true); });
         },
         ux_mode: "popup",
         auto_select: false
@@ -814,12 +872,14 @@
     append(form, [field("Password", pw), submit, status]);
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      submit.disabled = true;
+      if (submit.disabled) return;
+      status.textContent = "";
+      var done = busyAs(submit, "Setting password…");
       api("/auth/password/reset", { method: "POST", body: { token: token, password: pw.value } }).then(function () {
         toast("Password set. Sign in with it now.", "good");
         history.replaceState(null, "", BASE);
         renderGate();
-      }).catch(function (err) { status.textContent = err.message; submit.disabled = false; });
+      }).catch(function (err) { done(); status.textContent = err.message; });
     });
     add(form);
   }
@@ -1117,13 +1177,57 @@
     countUp: countUp, barChart: barChart, can: can, state: state, BASE: BASE, viewAs: viewAs
   };
 
+  // The consent page arrives before sign-in. The gate only brings someone
+  // back where they were if the URL carries `next`, and an MCP client sends
+  // people to /hearth/authorize?req=... with nothing else, so add it here.
+  function keepTheReturnAddress() {
+    if (location.pathname !== BASE + "/authorize") return;
+    var params = new URLSearchParams(location.search);
+    if (!params.get("req") || params.get("next")) return;
+    params.set("next", location.pathname + location.search);
+    try {
+      history.replaceState(null, "", location.pathname + "?" + params.toString());
+    } catch (e) { /* the gate will simply land on the room's home */ }
+  }
+
+  // hearth-room.html asks for /config and /me before any script arrives;
+  // take those answers if they are there.
+  function early(path) {
+    var started = window.hearthEarly && window.hearthEarly[path];
+    return started ? started.then(function (response) { return answer(response, { quiet: true }); }) : api(path, { quiet: true });
+  }
+
+  // The parts of the room this member's permissions open, named by /me in
+  // the order they register. Scripts added with async off run in the order
+  // they were added. A part that fails to load leaves its rooms out, as a
+  // failed script tag always has. Their addresses come from the page
+  // (hearthEarly.parts), so a name /me sends that this page does not know is
+  // left out too.
+  function loadParts(names) {
+    var parts = (window.hearthEarly && window.hearthEarly.parts) || {};
+    var list = (Array.isArray(names) ? names : []).filter(function (n) { return Object.prototype.hasOwnProperty.call(parts, n); });
+    return Promise.all(list.map(function (name) {
+      return new Promise(function (resolve) {
+        var script = document.createElement("script");
+        script.src = parts[name];
+        script.async = false;
+        script.onload = script.onerror = resolve;
+        document.head.appendChild(script);
+      });
+    }));
+  }
+
   function boot() {
     state.root = document.querySelector("[data-mount]");
     if (!state.root) return;
+    keepTheReturnAddress();
     window.addEventListener("popstate", render);
-    api("/config", { quiet: true }).then(function (config) {
-      state.config = config;
-      return api("/me", { quiet: true }).then(function (me) {
+    var config = early("/config");
+    var who = early("/me");
+    who.catch(function () { /* read below, once the config is in */ });
+    config.then(function (c) {
+      state.config = c;
+      return who.then(function (me) {
         state.user = me.user;
         state.role = me.role;
         state.settings = me.settings;
@@ -1132,9 +1236,11 @@
         (me.user.permissions || []).forEach(function (p) { state.permissions[p] = true; });
         state.openInvoices = me.openInvoices || 0;
         state.invoices = me.invoices || 0;
-        if (query().welcome) { toast("Welcome to the Hearth.", "good"); history.replaceState(null, "", location.pathname); }
-        render();
-        invoiceNotice();
+        return loadParts(me.modules).then(function () {
+          if (query().welcome) { toast("Welcome to the Hearth.", "good"); history.replaceState(null, "", location.pathname); }
+          render();
+          invoiceNotice();
+        });
       }, function () {
         state.user = null;
         render();

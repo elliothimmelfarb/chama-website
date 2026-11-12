@@ -119,6 +119,7 @@
               '<button type="submit" class="send" id="send" aria-label="Send message">' +
                 '<svg class="send-arrow" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>' +
                 '<span class="send-orb" aria-hidden="true"></span>' +
+                '<span class="send-stop" aria-hidden="true"></span>' +
               '</button>' +
             '</form>' +
             '<p class="fineprint">Conversations are saved to improve the agent. Your contact details are sent only when you confirm them. The agent can make mistakes. <a href="/privacy">Privacy</a>' + siteLink + '</p>' +
@@ -151,6 +152,41 @@
       hex += Math.floor(Math.random() * 16).toString(16);
     }
     return hex;
+  }
+
+  /* What a message that got no answer leads to. "resting": the flame is out
+     (api/chat.js MESSAGES.offline, by kill switch or spend limit), so the
+     composer goes quiet. "retry": the network, a timeout or the server's own
+     fault, so the same message may well go through a second time. "final":
+     the server refused what was sent (400, 403, 429), and sending it again
+     would only be refused again. */
+  var RESTING = "The flame is resting";
+  // api/chat.js MESSAGES.overwhelmed, which asks for a second try
+  var BUSY = "The agent is busy right now. Please try again in a minute.";
+  var GENERIC = "Something went wrong. Please try again.";
+
+  function failureKind(status, message) {
+    if (typeof message === "string" && message.indexOf(RESTING) === 0) return "resting";
+    if (!status || status >= 500 || message === BUSY) return "retry";
+    return "final";
+  }
+  // a refusal without our JSON: a 429 is Vercel's firewall holding back a
+  // visitor who sent many messages in a minute
+  function bodylessFailure(status) { return status === 429 ? BUSY : GENERIC; }
+
+  // an address in a line this code shows, split out so it can be a mailto link
+  var EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
+
+  function emailParts(text) {
+    var parts = [], at = 0, m;
+    EMAIL.lastIndex = 0;
+    while ((m = EMAIL.exec(text))) {
+      if (m.index > at) parts.push({ text: text.slice(at, m.index) });
+      parts.push({ email: m[0] });
+      at = m.index + m[0].length;
+    }
+    if (at < text.length || !parts.length) parts.push({ text: text.slice(at) });
+    return parts;
   }
 
   function mount(rootEl, options) {
@@ -334,7 +370,7 @@
       if (workerEligible()) {
         var w = null;
         try {
-          w = new Worker("/assets/flame-worker.js");
+          w = new Worker("/assets/flame-worker.js?v=f4e5d0f475");
           w.onmessage = function (ev) {
             var m = ev.data;
             if (!m || !m.type) return;
@@ -598,20 +634,30 @@
     var segButtons = segText.querySelectorAll("button");
 
     var history = [];
+    var followEnd = null;   // keeps the transcript on its end as it grows
     var busy = false;
     var turns = 0;
     var totalTokens = 0;
     var openingGone = false;
 
-    var GENERIC = "Something went wrong. Please try again.";
+    var STOPPED = "Stopped.";
+
+    // the flame said it is resting: the composer stays quiet until it answers
+    var resting = false;
+    // the last message that got no answer at all: { message, turn, line }
+    var lastFailure = null;
+    // set while a reply has not started, and calling it gives up waiting
+    var stopWaiting = null;
+    var sentAt = 0;
 
     /* Only a line this code wrote is ever read out to a visitor. A browser
        error ("Failed to fetch", "The operation was aborted") is a fact about
        the network, not something anyone can act on, so anything untagged
        comes out as the generic line instead. */
-    function saidError(message) {
+    function saidError(message, status) {
       var e = new Error(typeof message === "string" && message ? message : GENERIC);
       e.said = true;
+      e.status = status;
       return e;
     }
 
@@ -627,11 +673,13 @@
       rootEl.style.setProperty("--scrim-left", pct.toFixed(1) + "%");
     }
 
+    // the scrim's edge follows the column, which only moves when the room is
+    // resized (scheduleLayout); placing it on every new turn would read
+    // layout in the middle of a send
     function refreshLegibility() {
       var busyTalking = transcript.childNodes.length > 0;
       flame.setDim(busyTalking ? 0.62 : 1);
       scrim.classList.toggle("on", busyTalking);
-      placeScrim();
       if (reduceMotion) staticRepaint();
     }
 
@@ -846,6 +894,16 @@
     function stick(wasNear) {
       if (wasNear) stage.scrollTop = stage.scrollHeight;
     }
+    // the same, on the next frame: that frame lays the page out anyway, so
+    // the scroll costs no layout of its own, and it lands before the paint
+    var stickRaf = 0;
+    function stickSoon(wasNear) {
+      if (!wasNear || stickRaf) return;
+      stickRaf = window.requestAnimationFrame(function () {
+        stickRaf = 0;
+        stick(true);
+      });
+    }
 
     function dissolveOpening() {
       if (openingGone || !opening) return;
@@ -858,8 +916,11 @@
       setTimeout(function () { if (opening.parentNode) opening.remove(); }, 480);
     }
 
-    function addTurn(who, text) {
-      var wasNear = nearBottom();
+    // near: whether the transcript was at its end, when the caller has
+    // already read it; given, nothing here reads layout
+    function addTurn(who, text, near) {
+      var known = typeof near === "boolean";
+      var wasNear = known ? near : nearBottom();
       var el = document.createElement("article");
       el.className = "turn " + (who === "you" ? "turn-you" : "turn-flame");
       var label = document.createElement("span");
@@ -873,19 +934,42 @@
       transcript.appendChild(el);
       trailThinking();
       refreshLegibility();
-      stick(wasNear);
+      if (known) stickSoon(wasNear); else stick(wasNear);
       return body;
     }
 
-    function addSystem(text, ok) {
+    /* A line from the room itself: a confirmation (ok) or a failure. An
+       address in it is a mailto link, and a failure worth repeating carries
+       the one button that repeats it. */
+    function addSystem(text, ok, onRetry) {
       var wasNear = nearBottom();
       var el = document.createElement("p");
-      el.className = "turn-system" + (ok ? " ok" : "");
-      el.textContent = text;
+      el.className = "turn-system " + (ok ? "ok" : "err");
+      var parts = emailParts(text);
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].email) {
+          var a = document.createElement("a");
+          a.href = "mailto:" + parts[i].email;
+          a.textContent = parts[i].email;
+          el.appendChild(a);
+        } else {
+          el.appendChild(document.createTextNode(parts[i].text));
+        }
+      }
+      if (onRetry) {
+        var again = document.createElement("button");
+        again.type = "button";
+        again.className = "retry";
+        again.textContent = "Try again";
+        again.addEventListener("click", function () { onRetry(again); });
+        el.appendChild(document.createTextNode(" "));
+        el.appendChild(again);
+      }
       transcript.appendChild(el);
       trailThinking();
       refreshLegibility();
       stick(wasNear);
+      return el;
     }
 
     /* ---- the wisp ---------------------------------------------------------
@@ -1086,9 +1170,10 @@
       }
     }
 
-    function showThinking() {
+    function showThinking(near) {
       if (thinkingEl) return;
-      var wasNear = nearBottom();
+      var known = typeof near === "boolean";
+      var wasNear = known ? near : nearBottom();
       var el = document.createElement("article");
       el.className = "turn turn-flame turn-thinking";
       el.setAttribute("aria-hidden", "true");
@@ -1106,7 +1191,7 @@
       transcript.appendChild(el);
       thinkingEl = el;
       refreshLegibility();
-      stick(wasNear);
+      if (known) stickSoon(wasNear); else stick(wasNear);
     }
 
     function hideThinking() {
@@ -1158,11 +1243,25 @@
       return slice;
     }
 
-    function setBusy(on) {
+    // stoppable: busy, but the reply has not started, so the button stops
+    // the wait instead of sitting disabled
+    function setBusy(on, stoppable) {
+      var stop = on && !!stoppable;
       busy = on;
       sendBtn.classList.toggle("busy", on);
-      sendBtn.disabled = on;
-      sendBtn.setAttribute("aria-label", on ? "The agent is replying" : "Send message");
+      sendBtn.classList.toggle("stoppable", stop);
+      sendBtn.disabled = resting || (on && !stop);
+      sendBtn.setAttribute("aria-label", stop ? "Stop waiting for a reply" : on ? "The agent is replying" : "Send message");
+    }
+
+    // for the rest of the visit: nothing the visitor can do brings it back,
+    // and the line above the composer says how to reach a person instead
+    function quietComposer() {
+      resting = true;
+      rootEl.classList.add("resting");
+      input.readOnly = true;
+      input.removeAttribute("placeholder");
+      sendBtn.disabled = true;
     }
 
     /* ---- links in agent replies ------------------------------------------
@@ -1317,7 +1416,9 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         var now = performance.now();
         settleOld(now);
         if (!pending) return;
-        var wasNear = nearBottom();
+        // with followEnd, the transcript growing is what scrolls it, after
+        // layout; without it, the old read before and after the write
+        var wasNear = followEnd ? false : nearBottom();
 
         if (pmode === "off") {
           settled.data += pending;
@@ -1370,29 +1471,69 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       };
     }
 
+    /* ---- a message that got no answer ------------------------------------
+       It stays on screen where it was written, dimmed, with a line saying
+       what happened under it. It leaves the history, so whatever is sent
+       next never carries it twice, and it goes back into an empty composer
+       so nothing typed is lost. Sending it again, by the button or from the
+       composer unchanged, replaces it rather than adding a second copy. */
+    function settleFailure(message) {
+      var f = lastFailure;
+      if (!f) return;
+      lastFailure = null;
+      var again = f.line.querySelector(".retry");
+      if (again) again.remove();
+      if (f.message !== message) return;
+      if (f.turn.parentNode) f.turn.remove();
+      if (f.line.parentNode) f.line.remove();
+    }
+
+    function retry(button) {
+      if (busy || !lastFailure) return;
+      var keyboard = document.activeElement === button;
+      send(lastFailure.message);
+      // the button is gone with its line; a keyboard keeps its place in the
+      // composer, while a thumb is not handed a keyboard it did not ask for
+      if (keyboard && !touchDevice) input.focus({ preventScroll: true });
+    }
+
     // ---- the request -------------------------------------------------------
     function send(text) {
       var message = (text || "").replace(/\s+$/, "");
-      if (!message || busy) return;
+      // a resting flame takes nothing, from the composer, a ?say= link or
+      // the page's own send()
+      if (!message || busy || resting) return;
 
+      // the one layout read a send makes; everything after it only writes,
+      // and the transcript follows its end on the next frame
+      var near = nearBottom();
+
+      settleFailure(message);
       dissolveOpening();
-      addTurn("you", message);
+      var youTurn = addTurn("you", message, near).parentNode;
       remember({ role: "user", content: message });
       turns += 1;
       setHudNumber(hud.turns, String(turns));
 
-      input.value = "";
-      autoGrow();
-      setBusy(true);
+      // the composer is emptied only when it held this message: a line
+      // handed in by the page must not wipe a draft the visitor is writing
+      if (input.value.replace(/\s+$/, "") === message) {
+        input.value = "";
+        resetGrow();
+      }
       setState("thinking");
-      showThinking();
+      showThinking(near);
 
       var body = null;
       var painter = null;
       var reply = "";
       var startedAt = performance.now();
+      sentAt = startedAt;
       var firstDelta = null;
       var finished = false;
+      var toolRan = false;        // a note went (or tried to): never repeat it
+      var streamError = null;     // an error event before any answer
+      var stopped = false;
 
       function ensureBody() {
         if (!body) {
@@ -1429,22 +1570,64 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         stallTimer = 0;
       }
 
-      function fail(msg) {
+      function settleState() {
+        setState(input === document.activeElement ? "listening" : "idle");
+      }
+
+      function fail(msg, status) {
         disarmStall();
         if (finished) return;
         finished = true;
+        stopWaiting = null;
         hideThinking();
         if (painter) painter.end(reply);
-        addSystem(msg || GENERIC);
-        setState("error");
-        setTimeout(function () { setState(input === document.activeElement ? "listening" : "idle"); }, 1400);
-        done();
+
+        // part of an answer already reached the visitor: it stays, and the
+        // next message carries on from it
+        if (firstDelta !== null || toolRan) {
+          addSystem(msg || GENERIC);
+          setState("error");
+          setTimeout(settleState, 1400);
+          done();
+          return;
+        }
+
+        if (history.length && history[history.length - 1].role === "user") history.pop();
+        turns -= 1;
+        setHudNumber(hud.turns, String(turns));
+
+        var kind = stopped ? "retry" : failureKind(status, msg);
+        var line = addSystem(stopped ? STOPPED : msg || GENERIC, false, kind === "retry" ? retry : null);
+        youTurn.classList.add("unsent");
+        lastFailure = { message: message, turn: youTurn, line: line };
+        if (kind === "resting") {
+          quietComposer();
+        } else if (!input.value) {
+          input.value = message;
+          autoGrow();
+        }
+        if (stopped) {
+          settleState();
+        } else {
+          setState("error");
+          setTimeout(settleState, 1400);
+        }
+        setBusy(false);
       }
 
       function done() {
+        stopWaiting = null;
         setBusy(false);
         if (reply) remember({ role: "assistant", content: reply });
       }
+
+      if (controller) {
+        stopWaiting = function () {
+          stopped = true;
+          try { controller.abort(); } catch (e) { /* already gone */ }
+        };
+      }
+      setBusy(true, !!stopWaiting);
 
       armStall(FIRST_BYTE_MS);
 
@@ -1457,9 +1640,9 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         armStall(IDLE_MS);
         if (!res.ok) {
           return res.json().then(function (data) {
-            throw saidError(data && data.error);
+            throw saidError(data && data.error, res.status);
           }, function () {
-            throw saidError(GENERIC);
+            throw saidError(bodylessFailure(res.status), res.status);
           });
         }
         if (!res.body) throw saidError(GENERIC);
@@ -1479,12 +1662,18 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
               firstDelta = performance.now() - startedAt;
               updateHud(null, firstDelta);
               setState("streaming");
+              // the answer has started: from here it is watched, not stopped
+              stopWaiting = null;
+              setBusy(true, false);
             }
             ensureBody();
             reply += event.text;
             painter.push(event.text);
             flicker(1);
           } else if (event.type === "tool" && event.name === "send_note_to_elliot") {
+            toolRan = true;
+            stopWaiting = null;
+            setBusy(true, false);
             if (event.ok) {
               if (painter) painter.end(reply);
               body = null;
@@ -1500,8 +1689,14 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
             var said = applyAgentConfig(event.settings);
             if (said) addSystem(said, true);
           } else if (event.type === "error") {
-            addSystem(event.error || GENERIC);
-            setState("error");
+            // before any answer this is a message that got none, and is
+            // handled as one when the stream closes
+            if (firstDelta === null && !toolRan) {
+              streamError = event.error || GENERIC;
+            } else {
+              addSystem(event.error || GENERIC);
+              setState("error");
+            }
           } else if (event.type === "done") {
             if (event.usage) updateHud(event.usage, undefined);
           }
@@ -1543,16 +1738,21 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
 
         return pump().then(function () {
           disarmStall();
+          if (streamError) { fail(streamError); return; }
           if (finished) return;
           finished = true;
           hideThinking();
           if (painter) painter.end(reply);
           done();
-          setState(input === document.activeElement ? "listening" : "idle");
+          settleState();
         });
       }).catch(function (err) {
+        // an error the server already sent is the truth, whatever ended
+        // the stream after it
+        if (streamError) { fail(streamError); return; }
+        if (stopped) { fail(null); return; }
         if (timedOut) { fail(TIMED_OUT); return; }
-        fail(err && err.said ? err.message : GENERIC);
+        fail(err && err.said ? err.message : GENERIC, err && err.status);
       });
     }
 
@@ -1565,10 +1765,20 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
        can give is the height of the text. */
     var GROW_MAX = 8.4 * 16;
 
+    var emptyH = 0;   // the empty box's height, as last measured
+
     function autoGrow() {
       input.style.height = "0px";
       var h = input.scrollHeight;
       input.style.height = Math.min(h, GROW_MAX) + "px";
+      if (!input.value) emptyH = h;
+    }
+
+    // a send empties the box; its height for that is already known, so the
+    // send does not measure it again
+    function resetGrow() {
+      if (emptyH) input.style.height = emptyH + "px";
+      else autoGrow();
     }
 
     input.addEventListener("input", function () {
@@ -1602,6 +1812,17 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     form.addEventListener("submit", function (ev) {
       ev.preventDefault();
       send(input.value);
+    });
+
+    /* Busy, the button only ever stops a reply that has not started. The
+       first half second after a send is deaf to it: the second click of a
+       double click, or a held key repeating on the button, is still the
+       send, not a change of mind. */
+    var STOP_DEAF_MS = 500;
+    sendBtn.addEventListener("click", function (ev) {
+      if (!busy) return;
+      ev.preventDefault();
+      if (stopWaiting && performance.now() - sentAt >= STOP_DEAF_MS) stopWaiting();
     });
 
     /* A hidden tab has nothing to paint. The loop stops with the tab and
@@ -1703,12 +1924,33 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     var stageNear = true;
     var embedTouch = touchDevice && mode !== "page";
 
+    // any move up is the reader's own (this code only ever scrolls down), and
+    // lets go of the end at once, however small; a move down, or the end
+    // itself, takes it back up within reach. A box that grew and clamped the
+    // scroll upward is still at its end, and still followed.
+    var stageTop = 0;
     stage.addEventListener("scroll", function () {
-      stageNear = nearBottom();
+      var top = stage.scrollTop;
+      var up = top < stageTop - 1;
+      stageTop = top;
+      stageNear = up ? stage.scrollHeight - top - stage.clientHeight <= 2 : nearBottom();
       if (touchDevice) noteScroll();
     }, { passive: true });
 
     function toBottom() { stage.scrollTop = stage.scrollHeight; }
+
+    /* A streaming reply grows the transcript every frame. Measuring whether
+       to follow it from the painter forced two layouts a frame (scrollHeight
+       before and after the words went in), which is what dropped a phone to
+       63 fps while the flame talked. A ResizeObserver is called after the
+       frame's own layout and before its paint, so here the read is free and
+       the scroll lands in the same frame. Whether to follow is stageNear,
+       kept by the scroll listener above: a reader who scrolls up is left
+       where they are, and one who comes back to the end is followed again. */
+    if (window.ResizeObserver) {
+      followEnd = new ResizeObserver(function () { if (stageNear) toBottom(); });
+      followEnd.observe(transcript);
+    }
 
     function visibleH() {
       if (vv && vv.height) return vv.height;
@@ -1869,7 +2111,6 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     if (mode !== "page" && !touchDevice) {
       var SEAT_EPS = 2;
       var seatPending = null;
-      var seatTicking = false;
 
       function viewportH() {
         var vv = window.visualViewport;
@@ -1905,12 +2146,10 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         rootEl.classList.toggle("seat-pending", pending);
       }
 
-      function onPageScroll() {
-        if (!seatTicking) {
-          seatTicking = true;
-          window.requestAnimationFrame(function () { seatTicking = false; markSeat(); });
-        }
-      }
+      // read in the scroll event, where the layout is still the one last
+      // painted: in an animation frame it came after worlds.js had written
+      // the frame's styles, and forced them to be worked out early
+      function onPageScroll() { markSeat(); }
 
       window.addEventListener("scroll", onPageScroll, { passive: true });
       window.addEventListener("resize", markSeat, { passive: true });
@@ -1977,8 +2216,8 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         say = params.get("say") || "";
         if (params.has("say") && window.history && window.history.replaceState) {
           params.delete("say");
-          var rest = params.toString();
-          window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+          var query = params.toString();
+          window.history.replaceState(null, "", window.location.pathname + (query ? "?" + query : "") + window.location.hash);
         }
       } catch (e6) { say = ""; }
     }
@@ -1988,5 +2227,5 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     return api;
   }
 
-  window.ChamaAgent = { mount: mount };
+  window.ChamaAgent = { mount: mount, failureKind: failureKind, bodylessFailure: bodylessFailure, emailParts: emailParts };
 })();

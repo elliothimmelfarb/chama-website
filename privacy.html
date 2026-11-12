@@ -7,8 +7,8 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="/assets/figures.css">
-  <script src="/assets/figures.js" defer></script>
+  <link rel="stylesheet" href="/assets/figures.css?v=1bd12af0fb">
+  <script src="/assets/figures.js?v=b23504649b" defer></script>
   <meta name="description" content="How Chama Inteligente handles conversations with its website agent and the notes you send.">
   <meta name="author" content="Elliot Himmelfarb">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -101,7 +101,10 @@
       text-underline-offset: 0.18em;
     }
 
-    a:hover { color: var(--ember); }
+    @media (hover: hover) { a:hover { color: var(--ember); } }
+
+    ::selection { background: var(--ember); color: #fff; }
+    :focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
 
     .frame {
       width: min(100%, 70rem);
@@ -144,8 +147,8 @@
       margin: 0 0 clamp(3rem, 7vw, 6rem);
       font-size: clamp(3.5rem, 9vw, 7rem);
       font-weight: 500;
-      letter-spacing: -0.07em;
-      line-height: 0.9;
+      letter-spacing: -0.045em;
+      line-height: 0.96;
     }
 
     .notice {
@@ -220,8 +223,8 @@
       text-underline-offset: 0.18em;
     }
 
-    .footer-inner a:hover,
     .footer-inner a:focus-visible { color: var(--ember); }
+    @media (hover: hover) { .footer-inner a:hover { color: var(--ember); } }
 
     .footer-map a[aria-current="page"] {
       text-decoration: none;
@@ -252,10 +255,15 @@
       display: block;
     }
 
-    .social-link:hover,
     .social-link:focus-visible {
       border-color: var(--ember);
       color: var(--ember);
+    }
+    @media (hover: hover) {
+      .social-link:hover {
+        border-color: var(--ember);
+        color: var(--ember);
+      }
     }
 
     @media (max-width: 760px) {
@@ -336,7 +344,7 @@
   <script type="speculationrules">
   {
     "prefetch": [
-      { "source": "document", "where": { "href_matches": "/*" }, "eagerness": "moderate" }
+      { "source": "document", "where": { "href_matches": ["/", "/coaching", "/built", "/clients", "/about", "/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
     ]
   }
   </script>

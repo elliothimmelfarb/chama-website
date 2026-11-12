@@ -193,10 +193,102 @@
     },
     {
       "source": "/assets/(.*)\\.(js|css)",
+      "has": [
+        {
+          "type": "query",
+          "key": "v",
+          "value": {
+            "inc": [
+              "0423b5bedc",
+              "08fe2359ca",
+              "1bd12af0fb",
+              "33b3a125d0",
+              "41547cc2fb",
+              "4304adc11d",
+              "45b94ec90f",
+              "5177c83721",
+              "5e57dbd6ed",
+              "71a9be7ec3",
+              "74ba092bcf",
+              "752d48d2a5",
+              "97e60958b4",
+              "9c81e0061b",
+              "a592622ad0",
+              "a7704ae7ed",
+              "b23504649b",
+              "b5f18f0e6c",
+              "b73e6c4eed",
+              "b889f167b2",
+              "dc632ba6b4",
+              "e001488e88",
+              "f4e5d0f475",
+              "fe17b7f65c"
+            ]
+          }
+        }
+      ],
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=600, s-maxage=31536000, stale-while-revalidate=86400"
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)\\.(js|css)",
+      "has": [
+        {
+          "type": "query",
+          "key": "v",
+          "value": {
+            "ninc": [
+              "0423b5bedc",
+              "08fe2359ca",
+              "1bd12af0fb",
+              "33b3a125d0",
+              "41547cc2fb",
+              "4304adc11d",
+              "45b94ec90f",
+              "5177c83721",
+              "5e57dbd6ed",
+              "71a9be7ec3",
+              "74ba092bcf",
+              "752d48d2a5",
+              "97e60958b4",
+              "9c81e0061b",
+              "a592622ad0",
+              "a7704ae7ed",
+              "b23504649b",
+              "b5f18f0e6c",
+              "b73e6c4eed",
+              "b889f167b2",
+              "dc632ba6b4",
+              "e001488e88",
+              "f4e5d0f475",
+              "fe17b7f65c"
+            ]
+          }
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)\\.(js|css)",
+      "missing": [
+        {
+          "type": "query",
+          "key": "v"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },

@@ -5,19 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>About | Chama Inteligente</title>
   <script>
-    /* Low motion: a reader who chose it, or whose system asks for reduced
-       motion and who has not chosen the animated version, reads the low
-       motion version of this page instead. */
+    /* The pinned layout (html.js, as worlds.js decides it) from the first
+       paint, not once the deferred worlds.js runs. Low motion: a reader
+       who chose it, or whose system asks for reduced motion and who has
+       not chosen the animated version, reads the low motion version of
+       this page instead. */
     (function () {
+      if (!matchMedia("(max-height: 500px)").matches) document.documentElement.classList.add("js");
       try {
         var m = localStorage.getItem("chama-motion");
         if (m === "low" || (m !== "full" && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) location.replace("/simple/about" + location.search + location.hash);
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="/assets/worlds.css">
-  <script src="/assets/sky.js" defer></script>
-  <script src="/assets/worlds.js" defer></script>
+  <link rel="stylesheet" href="/assets/worlds.css?v=5177c83721">
+  <script src="/assets/sky.js?v=9c81e0061b" defer></script>
+  <script src="/assets/worlds.js?v=74ba092bcf" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -140,7 +143,7 @@
           <p class="r" style="--in:0.3">We are growing our business together, and we want to help people become <span class="accent">AI-native</span>, so they can adapt and take advantage of the incredible potential of this rapidly changing world.</p>
         </div>
         <figure class="card card-family r" style="--in:-0.2">
-          <img src="/assets/about-family-800.webp" srcset="/assets/about-family-400.webp 400w, /assets/about-family-800.webp 800w, /assets/about-family.jpg 900w" sizes="(max-width: 759px) 13rem, 21rem" alt="Elliot and Annie with their daughter Rozalie, outdoors in Lisbon." width="900" height="1200" loading="lazy" decoding="async">
+          <img src="/assets/about-family-800.webp" srcset="/assets/about-family-400.webp 400w, /assets/about-family-480.webp 480w, /assets/about-family-640.webp 640w, /assets/about-family-800.webp 800w, /assets/about-family.jpg 900w" sizes="auto, (max-width: 759px) 46vw, 21rem" alt="Elliot and Annie with their daughter Rozalie, outdoors in Lisbon." width="900" height="1200" loading="lazy" decoding="async">
         </figure>
       </div>
     </section>
@@ -159,7 +162,7 @@
           <p class="r" style="--in:0.32">You get the benefit of that accumulated judgment and experience when you spend time with him.</p>
         </div>
         <figure class="card card-founder r" style="--in:-0.2">
-          <img src="/assets/elliot-rozalie-480.webp" srcset="/assets/elliot-rozalie-240.webp 240w, /assets/elliot-rozalie-480.webp 480w, /assets/elliot-rozalie.webp 900w" sizes="(max-width: 759px) 9.5rem, 15rem" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
+          <img src="/assets/elliot-rozalie-480.webp" srcset="/assets/elliot-rozalie-240.webp 240w, /assets/elliot-rozalie-360.webp 360w, /assets/elliot-rozalie-480.webp 480w, /assets/elliot-rozalie.webp 900w" sizes="auto, (max-width: 759px) 36vw, 15rem" alt="Elliot Himmelfarb holding his daughter Rozalie." width="900" height="1200" loading="lazy" decoding="async">
         </figure>
         <p class="sr-only">A timeline from 2016 to now. From 2016 to 2023 the line is ink, labeled software engineer. From 2023 the line turns ember and glows, labeled nearly all of his work: learning what the most capable AI can do, applying it, teaching it, keeping pace. Past now, a dashed ember line keeps going.</p>
       </div>
@@ -182,7 +185,7 @@
         <div class="dir-list">
           <article class="letter" id="tlc-automation" aria-labelledby="tlc-automation-name">
             <div class="letter-who">
-              <a class="plate letter-plate" href="https://tlcautomation.org/" rel="noopener" target="_blank" tabindex="-1" aria-hidden="true"><img src="/assets/work/tlc-automation.webp" alt="" width="776" height="152" decoding="async"></a>
+              <a class="plate letter-plate" href="https://tlcautomation.org/" rel="noopener" target="_blank" tabindex="-1" aria-hidden="true"><img src="/assets/work/tlc-automation-480.webp" srcset="/assets/work/tlc-automation-480.webp 480w, /assets/work/tlc-automation.webp 776w" sizes="(max-width: 759px) 98px, 148px" alt="" width="776" height="152" loading="lazy" decoding="async"></a>
               <div>
                 <h3 id="tlc-automation-name">TLC Automation</h3>
                 <p class="letter-place">Chris, in Boulder County, Colorado</p>
@@ -230,5 +233,14 @@
     </div>
     <p class="end-small"><a href="/simple/about" data-simple-version>Low motion version</a><a href="/privacy">Privacy</a><a href="/brand">Media kit</a><span><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</span></p>
   </footer>
+  <!-- the plain pages these leave for, fetched on hover or press; the
+       router fetches its own pages itself -->
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "source": "document", "where": { "href_matches": ["/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
+    ]
+  }
+  </script>
 </body>
 </html>

@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Page not found | Chama Inteligente</title>
-  <link rel="stylesheet" href="/assets/worlds.css">
-  <script src="/assets/sky.js" defer></script>
-  <script src="/assets/sparks.js" defer></script>
+  <link rel="stylesheet" href="/assets/worlds.css?v=5177c83721">
+  <script src="/assets/sky.js?v=9c81e0061b" defer></script>
+  <script src="/assets/sparks.js?v=33b3a125d0" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -112,7 +112,8 @@
       transform: translateX(6px);
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
-    .trail:hover span, html.playing .trail [data-here] span { opacity: 0.85; transform: none; }
+    html.playing .trail [data-here] span { opacity: 0.85; transform: none; }
+    @media (hover: hover) { .trail:hover span { opacity: 0.85; transform: none; } }
     .trail [data-on] i { background: currentColor; opacity: 0.8; }
     .trail [data-here] i { background: var(--ember); border-color: var(--ember); opacity: 1; transform: scale(1.35); }
 
@@ -204,7 +205,7 @@
   <script type="speculationrules">
   {
     "prefetch": [
-      { "source": "document", "where": { "href_matches": "/*" }, "eagerness": "moderate" }
+      { "source": "document", "where": { "href_matches": ["/", "/coaching", "/built", "/clients", "/about", "/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
     ]
   }
   </script>

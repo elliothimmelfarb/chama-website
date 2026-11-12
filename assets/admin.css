@@ -148,11 +148,13 @@ body {
   transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
 }
 
-.admin .btn:hover {
-  color: var(--paper);
-  border-color: var(--ember-soft);
-  background: rgba(244, 88, 31, 0.09);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .admin .btn:hover {
+    color: var(--paper);
+    border-color: var(--ember-soft);
+    background: rgba(244, 88, 31, 0.09);
+    transform: translateY(-1px);
+  }
 }
 
 .admin .btn:disabled { opacity: 0.45; cursor: default; transform: none; }
@@ -312,10 +314,10 @@ body {
   transition: background-color 160ms ease, padding-left 160ms ease;
 }
 
-.admin .row:hover { background: var(--ground-raised); padding-left: 0.9rem; }
+@media (hover: hover) { .admin .row:hover { background: var(--ground-raised); padding-left: 0.9rem; } }
 
 .admin li.row { cursor: default; }
-.admin li.row:hover { background: transparent; padding-left: 0.6rem; }
+@media (hover: hover) { .admin li.row:hover { background: transparent; padding-left: 0.6rem; } }
 
 .admin .row-meta {
   display: flex;
@@ -505,6 +507,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .admin .pulse { animation: none; opacity: 0.8; }
   .admin .btn, .admin .row { transition: none; }
-  .admin .btn:hover { transform: none; }
-  .admin .row:hover { padding-left: 0.6rem; }
+  @media (hover: hover) { .admin .btn:hover { transform: none; } }
+  @media (hover: hover) { .admin .row:hover { padding-left: 0.6rem; } }
 }

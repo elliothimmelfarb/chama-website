@@ -5,19 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Coaching and training | Chama Inteligente</title>
   <script>
-    /* Low motion: a reader who chose it, or whose system asks for reduced
-       motion and who has not chosen the animated version, reads the low
-       motion version of this page instead. */
+    /* The pinned layout (html.js, as worlds.js decides it) from the first
+       paint, not once the deferred worlds.js runs. Low motion: a reader
+       who chose it, or whose system asks for reduced motion and who has
+       not chosen the animated version, reads the low motion version of
+       this page instead. */
     (function () {
+      if (!matchMedia("(max-height: 500px)").matches) document.documentElement.classList.add("js");
       try {
         var m = localStorage.getItem("chama-motion");
         if (m === "low" || (m !== "full" && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) location.replace("/simple/coaching" + location.search + location.hash);
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="/assets/worlds.css">
-  <script src="/assets/sky.js" defer></script>
-  <script src="/assets/worlds.js" defer></script>
+  <link rel="stylesheet" href="/assets/worlds.css?v=5177c83721">
+  <script src="/assets/sky.js?v=9c81e0061b" defer></script>
+  <script src="/assets/worlds.js?v=74ba092bcf" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -99,8 +102,8 @@
           <h1 id="t-hero" class="r" style="--in:-3">AI changes what one person can do.</h1>
           <p class="deck r" style="--in:-3">Be ready, so when AI can do something new, you can too.</p>
           <div class="worked r" style="--in:-3">
-            <div class="clients"><a class="clients-all" href="/clients">Who we have worked with</a><a href="/clients#toraya-lisboa"><img class="round" src="/assets/work/toraya-lisboa.webp" alt="Toraya Lisboa" width="502" height="480" decoding="async"></a><a href="/clients#alves-limited-group"><img class="tall" src="/assets/work/alves-limited.webp" alt="Alves Limited Group" width="399" height="158" decoding="async"></a><a href="/clients#springlar"><img src="/assets/work/springlar.webp" alt="Springlar" width="864" height="146" decoding="async"></a></div>
-            <div class="clients friends"><a class="clients-all" href="/about#tlc-automation">Friends we recommend</a><a href="/about#tlc-automation"><img class="mark-wide" src="/assets/work/tlc-automation.webp" alt="TLC Automation" width="776" height="152" decoding="async"></a></div>
+            <div class="clients"><a class="clients-all" href="/clients">Who we have worked with</a><a href="/clients#toraya-lisboa"><img class="round" src="/assets/work/toraya-lisboa-150.webp" srcset="/assets/work/toraya-lisboa-150.webp 150w, /assets/work/toraya-lisboa.webp 502w" sizes="46px" alt="Toraya Lisboa" width="502" height="480" decoding="async"></a><a href="/clients#alves-limited-group"><img class="tall" src="/assets/work/alves-limited-280.webp" srcset="/assets/work/alves-limited-280.webp 280w, /assets/work/alves-limited.webp 399w" sizes="91px" alt="Alves Limited Group" width="399" height="158" decoding="async"></a><a href="/clients#springlar"><img src="/assets/work/springlar-480.webp" srcset="/assets/work/springlar-480.webp 480w, /assets/work/springlar.webp 864w" sizes="154px" alt="Springlar" width="864" height="146" decoding="async"></a></div>
+            <div class="clients friends"><a class="clients-all" href="/about#tlc-automation">Friends we recommend</a><a href="/about#tlc-automation"><img class="mark-wide" src="/assets/work/tlc-automation-480.webp" srcset="/assets/work/tlc-automation-480.webp 480w, /assets/work/tlc-automation.webp 776w" sizes="153px" alt="TLC Automation" width="776" height="152" decoding="async"></a></div>
           </div>
           <p class="alt-version r" style="--in:-3">Prefer less motion? <a href="/simple/coaching" data-simple-version>Read the low motion version.</a></p>
         </div>
@@ -208,5 +211,14 @@
     </div>
     <p class="end-small"><a href="/simple/coaching" data-simple-version>Low motion version</a><a href="/privacy">Privacy</a><a href="/brand">Media kit</a><span><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</span></p>
   </footer>
+  <!-- the plain pages these leave for, fetched on hover or press; the
+       router fetches its own pages itself -->
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "source": "document", "where": { "href_matches": ["/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
+    ]
+  }
+  </script>
 </body>
 </html>

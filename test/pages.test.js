@@ -141,6 +141,34 @@ for (const { words, worlds } of PAIRS) {
     }
   });
 
+  // worlds.js is deferred, so a page that waited for it to set html.js
+  // painted its no-JavaScript layout first and then jumped (on /built, eight
+  // things' words over each other while they faded out together).
+  test(`${worlds} sets html.js before its first paint`, () => {
+    const head = /<head>[\s\S]*?<\/head>/.exec(read(worlds))[0];
+    const at = head.search(/documentElement\.classList\.add\("js"\)/);
+    assert.ok(at >= 0, "no inline script in the head adds the js class");
+    assert.ok(at < head.indexOf('rel="stylesheet"'), "the js class is added after the stylesheet is requested");
+    const short = /var SHORT = window\.matchMedia\("([^"]+)"\)/.exec(readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8"));
+    assert.ok(short && head.includes(`matchMedia("${short[1]}").matches) document.documentElement.classList.add("js")`), "the head and worlds.js disagree on where the worlds are pinned");
+  });
+
+  test(`${words} reaches the five pages from the top, inside the low motion version`, () => {
+    const header = /<header\b[\s\S]*?<\/header>/.exec(read(words));
+    assert.ok(header, "the page has no header");
+    const nav = siteNavs(header[0]);
+    assert.equal(nav.length, 1, "the header has no site nav (a <nav data-site-nav>)");
+    const as = links(nav[0]);
+    const byUrl = Object.fromEntries(PAIRS.map((p) => [p.worlds, p.words]));
+    for (const { label, url } of SITE) {
+      const a = as.find((x) => x.text === label);
+      assert.ok(a, `the nav has no ${label} link`);
+      assert.equal(a.href, byUrl[url], `${label} goes to the wrong page`);
+      assert.equal(a.current, byUrl[url] === words, `${label} ${byUrl[url] === words ? "is not" : "is wrongly"} marked as the current page`);
+    }
+    assert.ok(links(header[0]).some((a) => a.href === "/simple" && /wordmark/.test(header[0])), "the lockup is not a link home");
+  });
+
   test(`${worlds} links into the simple version only through its simple-version links`, () => {
     const wordsUrls = new Set(PAIRS.map((p) => p.words));
     const strays = links(read(worlds))
@@ -301,7 +329,51 @@ test("the router and llms-full.txt know /built", () => {
   assert.ok(readFileSync(path.join(ROOT, "llms.txt"), "utf8").includes("](https://chamainteligente.com/built)"));
 });
 
-const PUBLIC = ["/", "/coaching", "/about", "/clients", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/built", "/simple/built", "/hearth-public"];
+// The animated pages leave for the plain ones (the low motion version, the
+// Hearth, privacy, the flame's own page) as full loads, so they ask the
+// browser to fetch those on hover or press. The router fetches its own
+// pages itself, so the rules leave those alone; files are never fetched
+// ahead; and a pattern is a path, so it can only ever reach this host.
+// A prefetch carries the visitor's cookies, and some GETs on this host
+// change state (a magic link's callback spends its token and signs in), so
+// every page's rules name the pages they are for and nothing else.
+function speculationMatches(html, href) {
+  const rules = [...html.matchAll(/<script type="speculationrules">([\s\S]*?)<\/script>/g)].flatMap((m) => JSON.parse(m[1]).prefetch || []);
+  const where = (w) => {
+    if (w.and) return w.and.every(where);
+    if (w.or) return w.or.some(where);
+    if (w.not) return !where(w.not);
+    return [].concat(w.href_matches).some((p) => {
+      assert.match(p, /^\/(?!\/)/, `speculation rule pattern ${p} is not a path on this host`);
+      return new URLPattern(p, "https://chamainteligente.com").test(new URL(href, "https://chamainteligente.com"));
+    });
+  };
+  return rules.some((r) => r.source === "document" && where(r.where));
+}
+
+for (const { worlds } of PAIRS) {
+  test(`${worlds} has the browser fetch the plain pages it leaves for, and nothing the router fetches`, () => {
+    const html = read(worlds);
+    for (const href of ["/simple", "/simple/coaching", "/hearth", "/privacy", "/agent", "/agent?say=hello"]) assert.ok(speculationMatches(html, href), `${href} is not fetched ahead`);
+    for (const { url } of SITE) assert.ok(!speculationMatches(html, url) && !speculationMatches(html, url + "#x"), `${url} is fetched by both the browser and the router`);
+    for (const href of ["/brand/chama-media-kit.zip", "/sitemap.xml", "/assets/worlds.css"]) assert.ok(!speculationMatches(html, href), `${href} is a file, fetched ahead for nothing`);
+  });
+}
+
+const NEVER_AHEAD = [
+  "/api/hearth/auth/email/callback?token=x", "/api/hearth/auth/google", "/api/hearth/auth/signout", "/api/chat",
+  "/hearth/sign-in", "/hearth/authorize?next=/hearth", "/hearth-room", "/admin", "/mcp", "/feed", "/feed.xml", "/oauth/authorize", "/somewhere-new",
+];
+const SPECULATING = ["/", "/coaching", "/about", "/clients", "/built", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/simple/built"];
+for (const url of SPECULATING) {
+  test(`${url} fetches ahead only the public pages it links to, never the API, the Hearth's inner paths or anything unnamed`, () => {
+    const html = read(url);
+    assert.ok(html.includes('<script type="speculationrules">'), `${url} has no speculation rules`);
+    for (const href of NEVER_AHEAD) assert.ok(!speculationMatches(html, href), `${href} is fetched ahead from ${url}`);
+  });
+}
+
+const PUBLIC = ["/","/coaching", "/about", "/clients", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/built", "/simple/built", "/hearth-public"];
 
 for (const url of PUBLIC) {
   test(`${url} requests nothing from another host`, () => {
@@ -416,6 +488,16 @@ for (const url of PUBLIC) {
 // The chat transcript on / marks each message .turn, and index.html loads
 // worlds.css. A bare .turn rule there hid every chat message (2026-10-22 to
 // 2026-11-01), so the clients wheel's turns are styled only inside .turns.
+// Two @keyframes with one name: the later silently replaces the earlier
+// everywhere, which lost the hero's blur-in (2026-11-11).
+for (const sheet of ["assets/worlds.css", "assets/site.css"]) {
+  test(`${sheet} names each @keyframes once`, () => {
+    const names = [...readFileSync(path.join(ROOT, sheet), "utf8").matchAll(/@keyframes\s+([\w-]+)/g)].map((m) => m[1]);
+    const twice = names.filter((n, i) => names.indexOf(n) !== i);
+    assert.deepEqual(twice, [], `defined more than once: ${twice.join(", ")}`);
+  });
+}
+
 test("worlds.css never hides a bare .turn, which would hide the chat's messages", () => {
   const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
@@ -425,3 +507,200 @@ test("worlds.css never hides a bare .turn, which would hide the chat's messages"
     }
   }
 });
+
+// Chrome scores Largest Contentful Paint when an element first paints with
+// any opacity. The hero's words and its logo row fade in from almost nothing;
+// starting them at exactly 0 made the last logo to catch the LCP, 2.4 s after
+// the words were readable (2026-11-11).
+test("the hero's words and logos count as painted from their first frame", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  // the animations the hero's words and its logo row actually run
+  const names = new Set([...css.matchAll(/([^{}]*\.(?:hero|clients)\b[^{}]*)\{([^{}]*)\}/g)]
+    .flatMap((m) => [...m[2].matchAll(/animation(?:-name)?:\s*([\w-]+)/g)].map((a) => a[1]))
+    .filter((n) => n !== "none"));
+  assert.ok(names.has("hero-arrive") && names.has("catch"), `the hero runs ${[...names].join(", ")}`);
+  for (const name of names) {
+    const frames = [...css.matchAll(new RegExp(`@keyframes ${name}\\s*\\{\\s*(?:from|0%)\\s*\\{([^}]*)\\}`, "g"))];
+    assert.ok(frames.length, `no @keyframes ${name}`);
+    for (const f of frames) assert.ok(!/opacity:\s*0\s*[;}]|opacity:\s*0$/.test(f[1].trim()), `@keyframes ${name} starts at opacity 0`);
+  }
+});
+
+// Pictures come in several widths and the browser picks one from srcset by
+// the w descriptor, never by looking at the file. A descriptor wider than its
+// file makes the page soft wherever that copy is picked, and nothing else
+// would show it.
+function pixelWidth(file) {
+  const b = readFileSync(file);
+  if (b.toString("ascii", 0, 4) === "RIFF") {
+    const chunk = b.toString("ascii", 12, 16);
+    if (chunk === "VP8X") return 1 + b.readUIntLE(24, 3);
+    if (chunk === "VP8L") return 1 + (b.readUInt16LE(21) & 0x3fff);
+    return b.readUInt16LE(26) & 0x3fff;
+  }
+  for (let i = 2; i < b.length; ) {
+    const marker = b[i + 1];
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return b.readUInt16BE(i + 7);
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`${file}: not a WebP or JPEG`);
+}
+
+function imgs(html) {
+  return [...html.matchAll(/<img\b[^>]*>/g)].map((m) => {
+    const attr = (k) => (new RegExp(`\\s${k}="([^"]*)"`).exec(m[0]) || [])[1];
+    const set = attr("srcset") || attr("data-srcset");
+    return {
+      tag: m[0], src: attr("src") || attr("data-src"), sizes: attr("sizes"), lazy: !!attr("data-src"), high: attr("fetchpriority") === "high",
+      set: set ? set.split(",").map((c) => { const [url, w] = c.trim().split(/\s+/); return { url, w: parseInt(w) }; }) : null,
+    };
+  });
+}
+const outsideNoscript = (html) => html.replace(/<noscript>[\s\S]*?<\/noscript>/g, "");
+
+for (const url of PUBLIC) {
+  test(`${url}: every srcset width is the width of its file`, () => {
+    for (const img of imgs(read(url)).filter((x) => x.set)) {
+      assert.ok(img.sizes, `${img.src} has a srcset but no sizes, so it is picked as if it filled the window`);
+      for (const c of img.set) {
+        if (!c.url.startsWith("/")) continue;
+        const file = path.join(ROOT, c.url);
+        assert.ok(existsSync(file), `${c.url} is not in the repository`);
+        assert.equal(pixelWidth(file), c.w, `${c.url} is not ${c.w} pixels wide`);
+      }
+    }
+  });
+}
+
+// On a phone /built's first screen is two pictures. The first thing's pair
+// loads at once and first; every other thing's waits for worlds.js
+// (devicesLoad), which fetches the next only once the pair on the screens has
+// arrived. Each picture offers a copy small enough for a phone's screen.
+test("/built loads the first thing's pictures first and offers each picture at phone size", () => {
+  const shots = imgs(outsideNoscript(read("/built"))).filter((x) => x.src.startsWith("/assets/built/"));
+  assert.ok(shots.length >= 6);
+  shots.forEach((x, i) => {
+    assert.equal(x.lazy, i >= 2, `${x.src} ${i < 2 ? "must load at once" : "must wait for its turn (data-src)"}`);
+    assert.equal(x.high, i < 2, `${x.src} ${i < 2 ? "needs" : "must not have"} fetchpriority="high"`);
+    assert.ok(x.set, `${x.src} has no srcset`);
+    const small = Math.min(...x.set.map((c) => c.w));
+    assert.ok(small <= (/-phone/.test(x.src) ? 160 : 640), `${x.src}: the smallest copy is ${small} wide`);
+    assert.equal(Math.max(...x.set.map((c) => c.w)), +/width="(\d+)"/.exec(x.tag)[1], `${x.src}: the full-size picture is missing from srcset`);
+  });
+});
+
+// The low motion /built shows the top of each picture in a small frame:
+// cropped copies, never the full-length screenshots. The first thing's
+// frames are on the first screen of a phone and are its LCP, so they load
+// at once; the rest wait until they are near.
+test("/simple/built shows cropped thumbnails, not the full screenshots", () => {
+  imgs(read("/simple/built")).filter((x) => x.src.startsWith("/assets/built/")).forEach((x, i) => {
+    assert.equal(/loading="lazy"/.test(x.tag), i >= 2, `${x.src} ${i < 2 ? "must load at once" : "must be lazy"}`);
+    assert.equal(x.high, i < 2, `${x.src} ${i < 2 ? "needs" : "must not have"} fetchpriority="high"`);
+    assert.match(x.src, /-thumb-\d+\.webp$/);
+    for (const c of x.set) assert.ok(c.w <= 1080, `${c.url} is larger than a thumbnail needs`);
+  });
+});
+
+// The logo rows in the heroes show each mark at most 154 CSS px wide.
+test("the hero logo rows load copies sized for them, not the masters", () => {
+  for (const url of ["/", "/coaching", "/simple", "/simple/coaching"]) {
+    const rows = [...read(url).matchAll(/<div class="clients[^"]*">[\s\S]*?<\/div>/g)].map((m) => m[0]).join("");
+    const logos = imgs(rows);
+    assert.ok(logos.length >= 4, `${url} has no logo row`);
+    for (const x of logos) assert.ok(pixelWidth(path.join(ROOT, x.src)) <= 3.5 * parseInt(x.sizes), `${url}: ${x.src} is far wider than a 3x screen needs at ${x.sizes}`);
+  }
+});
+
+// worlds.css registers --u as not inherited, so a scroll frame restyles only
+// the elements that read it, and worlds.js writes it on each of them
+// (U_READERS). A rule that reads --u anywhere else would sit at the initial
+// value for ever, and a browser without @property, where --u still inherits
+// from .world, must start every reader at that same value.
+test("every rule that reads --u is on an element worlds.js writes it on", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const js = readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8");
+  const readers = (/var U_READERS = "([^"]+)"/.exec(js)?.[1] ?? "").split(",").map((s) => s.trim().split(/\s+/));
+  assert.ok(readers.length >= 4, "worlds.js lists the elements it writes --u on");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((s) => s.trim()), body: m[2] }));
+  const reg = rules.find((r) => r.selectors[0] === "@property --u");
+  assert.ok(reg, "--u is registered");
+  assert.match(reg.body, /inherits:\s*false/);
+  const initial = /initial-value:\s*([-\d.]+)/.exec(reg.body)?.[1];
+  const world = rules.find((r) => r.selectors.includes(".world") && /--u:/.test(r.body));
+  assert.equal(/--u:\s*([-\d.]+)/.exec(world?.body ?? "")?.[1], initial, ".world starts --u where the registration does");
+  const inherits = new Set(rules.filter((r) => /--u:\s*inherit\b/.test(r.body)).flatMap((r) => r.selectors));
+  const has = (compound, part) => new RegExp(part.startsWith(".") ? `\\${part}(?![\\w-])` : `^${part}(?![\\w-])`).test(compound);
+  const split = (selector) => {
+    const pseudo = /::?(?:before|after)$/.exec(selector)?.[0] ?? "";
+    const parts = selector.slice(0, selector.length - pseudo.length).split(/\s+/);
+    return { pseudo, parts, last: parts[parts.length - 1] };
+  };
+  const onReader = ({ parts, last }) => readers.some((r) => has(last, r[r.length - 1]) && r.slice(0, -1).every((a) => parts.slice(0, -1).some((p) => has(p, a))));
+  let checked = 0;
+  for (const rule of rules) {
+    if (!/var\(--u\)/.test(rule.body)) continue;
+    for (const selector of rule.selectors) {
+      checked++;
+      const sel = split(selector);
+      assert.ok(onReader(sel), `"${selector}" reads --u, but worlds.js does not write it there (U_READERS)`);
+      if (sel.pseudo) assert.ok(inherits.has(sel.last + sel.pseudo), `"${selector}" reads --u but never takes it from its element (--u: inherit)`);
+    }
+  }
+  assert.ok(checked >= 6, "the rules that read --u were found");
+
+  // A variable worked out from --u and registered not to inherit (--e, the
+  // exit) is the same: every element that reads it must work it out itself,
+  // from its own --u, or it sits at its initial value and nothing fades.
+  const derived = rules
+    .filter((r) => /^@property --[\w-]+$/.test(r.selectors[0]) && /inherits:\s*false/.test(r.body))
+    .map((r) => r.selectors[0].slice("@property ".length))
+    .filter((n) => n !== "--u" && rules.some((r) => new RegExp(`${n}:[^;]*var\\(--u\\)`).test(r.body)));
+  assert.ok(derived.includes("--e"), "--e is worked out from --u and does not inherit");
+  for (const name of derived) {
+    const declared = rules.filter((r) => new RegExp(`(^|[;\\s])${name}:`).test(r.body)).flatMap((r) => r.selectors.map(split));
+    for (const rule of rules) {
+      if (!rule.body.includes(`var(${name})`)) continue;
+      for (const selector of rule.selectors) {
+        const sel = split(selector);
+        assert.ok(onReader(sel), `"${selector}" reads ${name}, which needs --u there, but worlds.js does not write it (U_READERS)`);
+        const works = declared.some((d) => d.pseudo === sel.pseudo && d.last.match(/\.[\w-]+/g)?.every((c) => has(sel.last, c)));
+        assert.ok(works, `"${selector}" reads ${name} but never works it out (${name} does not inherit)`);
+      }
+    }
+  }
+});
+
+// worlds.js hides the clients and things not in focus from assistive tech
+// while they are pinned. Without JavaScript, and in one column, every one
+// is on the page, so the markup must start with none hidden.
+for (const { worlds } of PAIRS) {
+  test(`${worlds} hides none of its entries in its markup`, () => {
+    for (const m of read(worlds).matchAll(/<(?:div|article)\b[^>]*\bclass="(?:turn|made)\b[^"]*"[^>]*>/g)) {
+      assert.ok(!/\saria-hidden="true"|\sinert\b/.test(m[0]), `${m[0]} is hidden before worlds.js has run`);
+    }
+  });
+}
+
+// A phone keeps a :hover state after a tap, so a hovered look sticks to
+// whatever was last touched. Every :hover rule sits under (hover: hover).
+function ungatedHovers(css) {
+  css = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const found = [], stack = [];
+  let start = 0;
+  for (let i = 0; i < css.length; i++) {
+    if (css[i] === "{") { stack.push(css.slice(start, i).trim()); start = i + 1; }
+    else if (css[i] === "}") { stack.pop(); start = i + 1; }
+    else if (css[i] === ";") start = i + 1;
+    if (css[i] === "{" && /:hover\b/.test(stack.at(-1)) && !stack.slice(0, -1).some((p) => /@media[^{]*\(hover:\s*hover\)/.test(p))) found.push(stack.at(-1));
+  }
+  return found;
+}
+const STYLED = ["assets/admin.css", "assets/agent.css", "assets/hearth.css", "assets/site.css", "assets/worlds.css", "404.html", "brand/index.html", "hearth-public.html", "privacy.html"];
+for (const file of STYLED) {
+  test(`${file} shows :hover only on a device that hovers`, () => {
+    let css = readFileSync(path.join(ROOT, file), "utf8");
+    if (file.endsWith(".html")) css = [...css.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n");
+    assert.deepEqual(ungatedHovers(css), []);
+  });
+}

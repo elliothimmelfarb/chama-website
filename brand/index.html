@@ -80,7 +80,7 @@
       text-underline-offset: 0.18em;
     }
 
-    a:hover { color: var(--ember); }
+    @media (hover: hover) { a:hover { color: var(--ember); } }
 
     .frame {
       width: min(100%, 70rem);
@@ -191,8 +191,8 @@
       text-underline-offset: 0.18em;
     }
 
-    .footer-inner a:hover,
     .footer-inner a:focus-visible { color: var(--ember); }
+    @media (hover: hover) { .footer-inner a:hover { color: var(--ember); } }
 
     .footer-map a[aria-current="page"] {
       text-decoration: none;
@@ -223,10 +223,15 @@
       display: block;
     }
 
-    .social-link:hover,
     .social-link:focus-visible {
       border-color: var(--ember);
       color: var(--ember);
+    }
+    @media (hover: hover) {
+      .social-link:hover {
+        border-color: var(--ember);
+        color: var(--ember);
+      }
     }
 
     @media (max-width: 760px) {
@@ -286,7 +291,8 @@
       text-decoration: none;
     }
 
-    .download:hover, .download:focus-visible { background: var(--ember); color: var(--ink); }
+    .download:focus-visible { background: var(--ember); color: var(--ink); }
+    @media (hover: hover) { .download:hover { background: var(--ember); color: var(--ink); } }
 
     blockquote {
       margin: 0 0 0.85rem;
@@ -408,7 +414,7 @@
   <script type="speculationrules">
   {
     "prefetch": [
-      { "source": "document", "where": { "href_matches": "/*" }, "eagerness": "moderate" }
+      { "source": "document", "where": { "href_matches": ["/", "/coaching", "/built", "/clients", "/about", "/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
     ]
   }
   </script>
