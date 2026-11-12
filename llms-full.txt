@@ -28,8 +28,7 @@ yours around the way you already work, then stay with it on a monthly
 subscription as your business grows.
 
 Start here. The second panel of the page is the conversation: a live Claude agent
-that opens with the question "What do you wish your software could do?" and a
-message box. It asks a question or two, and when you are ready it takes a name
+that opens with the words "Talk to us" and a message box. It asks a question or two, and when you are ready it takes a name
 and a way to reach you. Your contact details are sent only when you confirm them.
 
 ### Why it matters
