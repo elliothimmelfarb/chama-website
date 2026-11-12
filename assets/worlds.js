@@ -1066,11 +1066,25 @@
   }
   function devicesIntro(n) { return DEV_OPEN / (DEV_OPEN + DEV_EACH * n); }
   // a picture is fetched when its thing is next, so a long page costs a
-  // visitor only what they scroll to
+  // visitor only what they scroll to. The things either side wait until the
+  // one on the screens has arrived, so they never compete with it.
   function devicesLoad(D, i) {
-    for (var k = Math.max(0, i - 1); k <= Math.min(D.items.length - 1, i + 1); k++) D.shots[k].forEach(function (img) {
+    devicesFetch(D.shots[i]);
+    if (!D.shots[i].every(function (img) { return img.complete; })) return;
+    if (i > 0) devicesFetch(D.shots[i - 1]);
+    if (i < D.items.length - 1) devicesFetch(D.shots[i + 1]);
+  }
+  // sizes in the markup cannot know the phone's --fit, so each picture is
+  // chosen for its screen's measured width, kept as a share of the window so
+  // a resize still picks again
+  function devicesFetch(pair) {
+    pair.forEach(function (img) {
       var src = img.getAttribute("data-src");
-      if (src) { img.src = src; img.removeAttribute("data-src"); }
+      if (!src) return;
+      if (img.offsetWidth) img.sizes = (img.offsetWidth * 101 / innerWidth).toFixed(1) + "vw";
+      img.srcset = img.getAttribute("data-srcset");
+      img.src = src;
+      img.removeAttribute("data-src");
     });
   }
   // where the words sit under the devices (a phone), the devices are one
