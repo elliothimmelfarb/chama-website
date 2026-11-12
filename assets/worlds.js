@@ -1098,7 +1098,7 @@
   // and the words change. The opening words stand beside the first thing's
   // devices. The stretches are the --h on the section: 90
   // for the opening and 135 for each thing, after the 100 of the pin.
-  var DEV_OPEN = 90, DEV_EACH = 135, DEV_HOLD = 0.05;
+  var DEV_OPEN = 90, DEV_EACH = 135;
   function devicesOf(sec) {
     if (sec._dev) return sec._dev;
     var items = [].slice.call(sec.querySelectorAll(".made"));
@@ -1177,7 +1177,7 @@
     put(D.stage, "translate", ex < 1 ? "0 " + (-(1 - ex) * 16).toFixed(1) + "px" : "");
     if (D.bar) put(D.bar, "opacity", gone);
     var a = devicesIntro(n), opening = l < a;
-    var q = opening ? 0 : clamp((l - a) / ((1 - a) * (1 - DEV_HOLD))) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
+    var q = opening ? 0 : clamp((l - a) / (1 - a)) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
     devicesLoad(D, i);
     if (i !== D.rig) {
       if (D.was >= 0) D.items[D.was].classList.remove("rig-was");
@@ -1201,16 +1201,26 @@
     }
     // how far each picture can scroll inside its screen, read once per size
     var room = D.rooms[i] || (D.rooms[i] = D.shots[i].map(function (img) { return Math.max(0, img.offsetHeight - img.parentNode.clientHeight); }));
-    var s = RM ? 0 : sm(0.08, 0.9, f);
+    var k = sections.indexOf(L.sec), s = RM ? 0 : i < n - 1 ? sm(0.08, 0.9, f) : devicesLast(f, room[0], holdLen(k) * (1 - a) / n);
     D.shots[i].forEach(function (img, j) { img.style.transform = "translate3d(0," + (-room[j] * s).toFixed(1) + "px,0)"; });
     D.ticks.forEach(function (b, j) { b.style.setProperty("--t", opening || j > i ? 0 : j < i ? 1 : f.toFixed(3)); });
+  }
+  // The last thing's pictures move until the pin lets go, and the laptop's
+  // reaches the page's own speed as it does, so its picture runs on up the
+  // screen with the devices: one motion, with no stretch of scroll where
+  // nothing answers. A Hermite curve from rest whose end slope is the
+  // thing's scroll over the picture's room, so at the end a pixel of scroll
+  // moves the picture a pixel; capped at 3, past which it would run backwards.
+  function devicesLast(f, room, span) {
+    var g = clamp((f - 0.08) / 0.92), v = room > 0 ? Math.min(3, 0.92 * span / room) : 3;
+    return g * g * (3 - v + (v - 2) * g);
   }
   // the scroll position at which a thing on /built is on the screens
   function devicesY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
     if (k < 0 || !pinned) return null;
     var items = devicesOf(sec).items, n = items.length, i = items.indexOf(el), a = devicesIntro(n);
-    return i < 0 ? null : tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - DEV_HOLD) * (i + 0.25) / n);
+    return i < 0 ? null : tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (i + 0.25) / n);
   }
   // an anchor inside a pinned world is reached by scrolling to where it is
   // in focus, not to the element, which stays in its sticky pin. In one
