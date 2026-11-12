@@ -8,7 +8,10 @@
        Chrome reads the opt-in as the body starts, so it is here, not in a
        stylesheet that may still be on its way. -->
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
-  <link rel="stylesheet" href="/assets/worlds.css?v=c445a9eaf0">
+  <!-- The held world (html.js, which sparks.js sets on every screen) from
+       the first paint, not once the deferred sparks.js runs. -->
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="stylesheet" href="/assets/worlds.css?v=b6e81701c6">
   <script src="/assets/sky.js?v=9c81e0061b" defer></script>
   <script src="/assets/sparks.js?v=33b3a125d0" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -163,6 +166,7 @@
   <main id="main-content">
     <section class="world hero lost" data-theme="paper" aria-labelledby="t-lost">
       <div class="pin">
+        <div class="pin-shade"></div>
         <div class="copy copy-start">
           <p class="kicker">Error 404</p>
           <h1 id="t-lost">This page is off the map.</h1>

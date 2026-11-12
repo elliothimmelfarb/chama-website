@@ -12,7 +12,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -141,18 +141,6 @@ for (const { words, worlds } of PAIRS) {
     }
   });
 
-  // worlds.js is deferred, so a page that waited for it to set html.js
-  // painted its no-JavaScript layout first and then jumped (on /built, eight
-  // things' words over each other while they faded out together).
-  test(`${worlds} sets html.js before its first paint`, () => {
-    const head = /<head>[\s\S]*?<\/head>/.exec(read(worlds))[0];
-    const at = head.search(/documentElement\.classList\.add\("js"\)/);
-    assert.ok(at >= 0, "no inline script in the head adds the js class");
-    assert.ok(at < head.indexOf('rel="stylesheet"'), "the js class is added after the stylesheet is requested");
-    const short = /var SHORT = window\.matchMedia\("([^"]+)"\)/.exec(readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8"));
-    assert.ok(short && head.includes(`matchMedia("${short[1]}").matches) document.documentElement.classList.add("js")`), "the head and worlds.js disagree on where the worlds are pinned");
-  });
-
   test(`${words} reaches the five pages from the top, inside the low motion version`, () => {
     const header = /<header\b[\s\S]*?<\/header>/.exec(read(words));
     assert.ok(header, "the page has no header");
@@ -180,6 +168,34 @@ for (const { words, worlds } of PAIRS) {
 
 // The client logos on the Software and Coaching pages are a way into /clients:
 // each one opens that client's entry, in the same version of the site.
+// html.js is the pinned layout, and every html:not(.js) rule in worlds.css
+// is the one-column one. The script that sets the class runs deferred, so a
+// page styled by worlds.css that waited for it painted one column first and
+// then jumped (on /built, eight things' words over each other; on the 404,
+// a layout shift of 0.063). Every such page sets it in its head, where its
+// script will: worlds.js only above its short-screen query, sparks.js always.
+function htmlFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+    d.name.startsWith(".") || d.name === "node_modules" ? [] : d.isDirectory() ? htmlFiles(path.join(dir, d.name)) : d.name.endsWith(".html") ? [path.join(dir, d.name)] : []);
+}
+const WORLDS_STYLED = htmlFiles(ROOT).filter((f) => /<link rel="stylesheet" href="\/assets\/worlds\.css/.test(readFileSync(f, "utf8")));
+test("the pages styled by worlds.css are found", () => assert.ok(WORLDS_STYLED.length >= 6));
+for (const file of WORLDS_STYLED) {
+  test(`${path.relative(ROOT, file)} sets html.js before its first paint, as its script will`, () => {
+    const head = /<head>[\s\S]*?<\/head>/.exec(readFileSync(file, "utf8"))[0];
+    const at = head.search(/documentElement\.classList\.add\("js"\)/);
+    assert.ok(at >= 0, "no inline script in the head adds the js class");
+    assert.ok(at < head.indexOf('rel="stylesheet"'), "the js class is added after the stylesheet is requested");
+    if (head.includes("/assets/worlds.js")) {
+      const short = /var SHORT = window\.matchMedia\("([^"]+)"\)/.exec(readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8"));
+      assert.ok(short && head.includes(`matchMedia("${short[1]}").matches) document.documentElement.classList.add("js")`), "the head and worlds.js disagree on where the worlds are pinned");
+    } else {
+      assert.ok(head.includes("/assets/sparks.js"), "neither worlds.js nor sparks.js sets the class later");
+      assert.ok(/^\s*root\.classList\.add\("js"\);$/m.test(readFileSync(path.join(ROOT, "assets/sparks.js"), "utf8")), "sparks.js no longer sets the class on every screen; the head should match it");
+    }
+  });
+}
+
 for (const [page, work] of [["/", "/clients"], ["/coaching", "/clients"], ["/simple", "/simple/clients"], ["/simple/coaching", "/simple/clients"]]) {
   test(`${page} shows client logos that each open their entry on ${work}`, () => {
     const row = /<(?:div|p|ul)\b[^>]*\bclass="[^"]*\bclients\b[^"]*"[\s\S]*?<\/(?:div|p|ul)>/.exec(read(page));
@@ -572,6 +588,27 @@ for (const url of PUBLIC) {
   });
 }
 
+// A picture that has smaller copies offers them all, wherever it is shown,
+// so the browser can pick the one that fits, and so two pages that show the
+// same picture can share the copy already fetched. The /clients wheel showed
+// masters the homepage never loads, so arriving there through the router
+// fetched every logo again (2026-11-12); /simple/about and /simple/clients
+// served masters to every screen.
+for (const url of PUBLIC) {
+  test(`${url}: every picture with smaller copies offers them`, () => {
+    for (const img of imgs(read(url))) {
+      const m = /^(\/assets\/.+?)(?:-(\d+))?\.(webp|jpg)$/.exec(img.src || "");
+      if (!m) continue;
+      const dir = path.join(ROOT, path.dirname(m[1])), base = path.basename(m[1]);
+      const copies = readdirSync(dir).filter((f) => new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-\\d+\\.webp$`).test(f));
+      if (!copies.length) continue;
+      const offered = new Set((img.set || []).map((c) => path.basename(c.url)));
+      const missing = copies.filter((f) => !offered.has(f));
+      assert.deepEqual(missing, [], `${img.src} does not offer ${missing.join(", ")}`);
+    }
+  });
+}
+
 // On a phone /built's first screen is two pictures. The first thing's pair
 // loads at once and first; every other thing's waits for worlds.js
 // (devicesLoad), which fetches the next only once the pair on the screens has
@@ -647,28 +684,40 @@ test("every rule that reads --u is on an element worlds.js writes it on", () => 
       if (sel.pseudo) assert.ok(inherits.has(sel.last + sel.pseudo), `"${selector}" reads --u but never takes it from its element (--u: inherit)`);
     }
   }
-  assert.ok(checked >= 6, "the rules that read --u were found");
+  assert.ok(checked >= 4, "the rules that read --u were found");
 
-  // A variable worked out from --u and registered not to inherit (--e, the
-  // exit) is the same: every element that reads it must work it out itself,
-  // from its own --u, or it sits at its initial value and nothing fades.
-  const derived = rules
-    .filter((r) => /^@property --[\w-]+$/.test(r.selectors[0]) && /inherits:\s*false/.test(r.body))
-    .map((r) => r.selectors[0].slice("@property ".length))
-    .filter((n) => n !== "--u" && rules.some((r) => new RegExp(`${n}:[^;]*var\\(--u\\)`).test(r.body)));
-  assert.ok(derived.includes("--e"), "--e is worked out from --u and does not inherit");
-  for (const name of derived) {
-    const declared = rules.filter((r) => new RegExp(`(^|[;\\s])${name}:`).test(r.body)).flatMap((r) => r.selectors.map(split));
-    for (const rule of rules) {
-      if (!rule.body.includes(`var(${name})`)) continue;
-      for (const selector of rule.selectors) {
-        const sel = split(selector);
-        assert.ok(onReader(sel), `"${selector}" reads ${name}, which needs --u there, but worlds.js does not write it (U_READERS)`);
-        const works = declared.some((d) => d.pseudo === sel.pseudo && d.last.match(/\.[\w-]+/g)?.every((c) => has(sel.last, c)));
-        assert.ok(works, `"${selector}" reads ${name} but never works it out (${name} does not inherit)`);
-      }
+  // Chrome restyles everything inside an element whose --u changes, not
+  // inherited or not: the pin as a reader (for its ::before scrim) put
+  // every element of the worlds in view back into each scroll frame's
+  // style, and /built's stage as one doubled that page's. So a container of
+  // a world's contents is never a reader.
+  for (const box of [".world", ".pin", ".copy", ".made-stage", ".made-ticks", ".wheel"]) {
+    assert.ok(!readers.some((r) => r.some((part) => has(part, box))), `${box} holds a world's contents, so writing --u on it restyles all of them every frame`);
+  }
+  // The chat lives inside <main> on the homepage, so a reader's class that
+  // the chat also uses would take the worlds' rules (the first scrim
+  // element was .scrim, the chat's own shade's name).
+  const chatCss = readFileSync(path.join(ROOT, "assets/agent.css"), "utf8"), chatJs = readFileSync(path.join(ROOT, "assets/agent.js"), "utf8");
+  for (const name of readers.flat().flatMap((p) => (p.match(/\.[\w-]+/g) || []).map((c) => c.slice(1)))) {
+    assert.ok(!new RegExp(`\\.${name}(?![\\w-])`).test(chatCss), `the chat's stylesheet also styles .${name}`);
+    assert.ok(!new RegExp(`class(Name)?="[^"]*\\b${name}\\b`).test(chatJs), `the chat also makes elements of class ${name}`);
+  }
+
+  // The exit, --e, is registered not to inherit too, and worlds.js writes
+  // it beside --u: every rule that reads it must be on a reader, or it sits
+  // at its initial value and nothing fades.
+  const e = rules.find((r) => r.selectors[0] === "@property --e");
+  assert.ok(e && /inherits:\s*false/.test(e.body), "--e is registered not to inherit");
+  assert.match(js, /setProperty\("--e"/, "worlds.js writes --e");
+  let readsE = 0;
+  for (const rule of rules) {
+    if (!rule.body.includes("var(--e)")) continue;
+    for (const selector of rule.selectors) {
+      readsE++;
+      assert.ok(onReader(split(selector)), `"${selector}" reads --e, but worlds.js does not write it there (U_READERS)`);
     }
   }
+  assert.ok(readsE >= 2, "the rules that read --e were found");
 });
 
 // worlds.js hides the clients and things not in focus from assistive tech

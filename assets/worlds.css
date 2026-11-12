@@ -16,20 +16,21 @@
 
    --u is registered as not inherited, so a scroll frame restyles only the
    elements that read it, not every node in the world. worlds.js writes it
-   on each of them (U_READERS there); a pseudo-element takes it from its
-   element with --u: inherit. A new rule that reads --u goes on one of
-   those, or joins the list (test/pages.test.js checks). A browser without
+   on each of them (U_READERS there). A new rule that reads --u goes on one
+   of those, or joins the list (test/pages.test.js checks). Never on a
+   container (a pin, the words' box): Chrome restyles everything inside an
+   element whose --u changes, so the shade behind the words is an element
+   of its own (.pin-shade), not the pin's ::before. A browser without
    @property inherits it as before, from .world, which starts every reader
    at the same 0.5.
 
-   --e, what is left of a world as its pin leaves, is worked out from --u,
-   so it is not inherited either: each element that reads it works it out
-   for itself (see .world), and so needs --u too.
+   --e, what is left of a world as its pin leaves (1 to 0), is written the
+   same way, beside --u, by worlds.js (exitOf): worked out here, every
+   reader resolved the same sum on every frame.
    ========================================================================== */
 
 @property --u { syntax: "<number>"; inherits: false; initial-value: 0.5; }
 @property --e { syntax: "<number>"; inherits: false; initial-value: 1; }
-.pin::before { --u: inherit; }
 
 :root {
   --ember: #f4581f;
@@ -268,8 +269,7 @@ html:not(.gl) #sky { display: none; }
   50% { box-shadow: 0 0 0 5px rgba(244, 88, 31, 0); }
 }
 @media (hover: hover) { .nav-link:not([aria-current="page"]):hover { color: var(--ember); } }
-.nav-link:focus { outline: none; }
-.nav-link:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.nav-link:focus-visible { outline-offset: 2px; }
 
 /* The low motion version, one switch away at the top of every page. It
    flips on (worlds.js adds .on) and the low motion page follows. */
@@ -315,12 +315,13 @@ html:not(.gl) #sky { display: none; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease;
 }
-@media (hover: hover) { .motion-toggle:hover { color: var(--ember); } }
-@media (hover: hover) { .motion-toggle:hover .motion-track i { transform: translateX(3px); } }
+@media (hover: hover) {
+  .motion-toggle:hover { color: var(--ember); }
+  .motion-toggle:hover .motion-track i { transform: translateX(3px); }
+}
 .motion-toggle.on .motion-track { background: var(--ember); box-shadow: none; }
 .motion-toggle.on .motion-track i { transform: translateX(12px); background: #fff; }
-.motion-toggle:focus { outline: none; }
-.motion-toggle:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.motion-toggle:focus-visible { outline-offset: 2px; }
 /* the low motion pages carry the same switch, shown on (site.css); the
    shared name carries it across when the reader crosses between them */
 .motion-toggle { view-transition-name: motion-toggle; }
@@ -351,7 +352,7 @@ html:not(.gl) #sky { display: none; }
 }
 .worlds-members::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ember); }
 @media (hover: hover) { .worlds-members:hover { color: var(--ember); } }
-.worlds-members:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.worlds-members:focus-visible { outline-offset: 2px; }
 
 /* The simple version, offered under each page's opening words. */
 .copy p.alt-version { max-width: none; margin-top: 1.1rem; font-size: 0.875rem; }
@@ -415,7 +416,7 @@ html:not(.gl) #sky { display: none; }
 .worlds button:focus-visible span { opacity: 0.85; transform: none; }
 @media (hover: hover) { .worlds:hover span { opacity: 0.85; transform: none; } }
 .worlds button[aria-current="true"] i { background: var(--ember); border-color: var(--ember); opacity: 1; transform: scale(1.35); }
-.worlds button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; border-radius: 4px; }
+.worlds button:focus-visible { outline-offset: 2px; border-radius: 4px; }
 
 /* Inside the flame room the room's own bar takes the top of the screen. */
 /* Hidden things also leave the tab order, once they have faded. */
@@ -440,12 +441,6 @@ main { position: relative; z-index: 2; }
   height: calc(var(--h) * 1vh);
   color: var(--fg);
 }
-/* What is left of the pin's contents as it leaves, 1 to 0: the scroll
-   still to go before the fade ends (--exit-at past the release, less how far
-   past it the pin is, in --pin-len a unit once it has let go and --hold-len
-   before), over the fade's length. worlds.js measures the lengths
-   (exitOf there is the same sum). */
-.pin::before, .r { --e: clamp(0, (var(--exit-at, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len, 1), 1); }
 
 .pin {
   position: sticky;
@@ -455,9 +450,9 @@ main { position: relative; z-index: 2; }
   overflow: hidden;
 }
 
-/* A soft shade behind the words, so they read on any part of a world. */
-.pin::before {
-  content: "";
+/* A soft shade behind the words, so they read on any part of a world.
+   worlds.js puts one at the start of each pin (bind). */
+.pin-shade {
   position: absolute;
   top: -10%;
   bottom: -10%;
@@ -559,7 +554,6 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
   white-space: nowrap;
   pointer-events: none;
 }
-.cap .r { --e: clamp(0, (var(--exit-at-cap, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len-cap, 1e4), 1); }
 .cap .r { display: block; }
 .cap-stack { display: grid; }
 .cap-stack > * { grid-area: 1 / 1; }
@@ -686,7 +680,7 @@ html:not(.js) .slot { display: block; }
   transition: transform 0.25s ease, box-shadow 0.25s ease, var(--press);
 }
 @media (hover: hover) { .cta:hover { transform: translateY(-2px); box-shadow: 0 0 0 6px rgba(244, 88, 31, 0.18), 0 16px 50px -8px rgba(244, 88, 31, 0.85); } }
-.cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.cta:focus-visible { outline-color: #fff; }
 .cta svg { width: 16px; height: 16px; flex: none; }
 .cta { text-wrap: balance; }
 
@@ -737,7 +731,7 @@ footer {
 .end-small svg { width: 16px; height: 16px; }
 .end-small a { color: var(--fg); text-decoration: none; white-space: nowrap; }
 @media (hover: hover) { .end-small a:hover { color: var(--ember); } }
-.end-small a:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.end-small a:focus-visible { outline-offset: 2px; }
 /* After the last world the footer lies over the bottom of it (worlds.js
    measures it as --foot), so the page ends on that world, not one footer
    past it. */
@@ -846,7 +840,7 @@ main h1:focus { outline: none; }
 .clients img.tall { height: 36px; }
 .clients a:focus-visible img { filter: none; opacity: 1; }
 @media (hover: hover) { .clients a:hover img { filter: none; opacity: 1; } }
-.clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
+.clients a:focus-visible { outline-offset: 4px; }
 /* the clients and our friends, one line each: a label, then their marks */
 .worked { display: grid; gap: 0.7rem; margin: 1.9rem 0 0; }
 .worked .clients { display: grid; grid-template-columns: 16rem; grid-auto-flow: column; justify-content: start; align-items: center; gap: 0 1.6rem; margin: 0; }
@@ -888,7 +882,7 @@ main h1:focus { outline: none; }
 .turns .turn .accent { color: var(--accent); }
 .copy .turn-cta { margin-top: 1.5rem; }
 .copy .turn-more { margin-top: 1rem; font-size: 0.9rem; color: var(--fg2); }
-.spoke:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
+.spoke:focus-visible { outline-offset: 4px; }
 .wheel-world .copy { width: min(40vw, 35rem); }
 .copy .turn-count { margin: 0 0 0.5rem; color: var(--fg2); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
 .turn-intro h1 { margin-bottom: 0.4em; }
@@ -908,27 +902,7 @@ html:not(.js) .turns .turn { grid-area: auto; grid-column: 2; opacity: 1; visibi
   .turns .turn, .turns .turn.on { transition: none; transform: none; }
 }
 
-/* ---- /clients: a world for each client --------------------------------- */
-/* The client's logo sits on a plate cut to that client's shape (the same
-   points worlds.js draws its outline and ember fit around). The plate is
-   light on every ground, so each logo keeps its own colours. */
-.logo-plate {
-  position: absolute;
-  right: calc(var(--side) + var(--stage) * 0.12);
-  top: 50%;
-  width: min(30vw, 27rem);
-  aspect-ratio: 1.12;
-  margin: 0;
-  display: grid;
-  place-items: center;
-  background: #faf8f3;
-  translate: 0 -50%;
-}
-.logo-plate img { display: block; width: 50%; height: 44%; object-fit: contain; }
-.logo-plate img.round { width: 44%; height: 46%; translate: -4% 4%; }
-.logo-plate img.wide { width: 62%; }
-.peer-plate { aspect-ratio: 2.4; width: min(28vw, 24rem); border-radius: 6px; top: 40%; }
-.peer-plate img { width: 76%; height: 60%; }
+/* ---- /clients ----------------------------------------------------------- */
 .copy .visit { margin-top: 1.2rem; }
 .copy .visit a { font-weight: 600; }
 .peer-name { color: var(--fg); font-weight: 600; }
@@ -1116,7 +1090,7 @@ html:has(main .ledger) .top::before {
    for the lockup, Members, five pages and the switch: the switch keeps its
    knob and drops its words, as on a phone, so the lockup never wraps */
 .mast b, .mast small { white-space: nowrap; }
-@media (max-width: 979px) {
+@media (max-width: 979px), (max-aspect-ratio: 9/10) {
   .motion-toggle { padding: 0 0.4rem; }
   .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
@@ -1131,15 +1105,14 @@ html:has(main .ledger) .top::before {
   .top:has(.worlds-members) { grid-template-columns: minmax(0, 1fr) auto auto; }
   .top .mast { grid-row: 1; grid-column: 1; min-width: 0; margin-right: 0; }
   .mast span { min-width: 0; }
-  .mast b, .mast small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .mast b, .mast small { overflow: hidden; text-overflow: ellipsis; }
   .worlds-members { grid-row: 1; }
   .top .site-nav { grid-row: 2; grid-column: 1 / -1; }
   .nav-link { min-height: 34px; padding: 0 0.75rem; font-size: 0.8125rem; }
   .worlds-members { min-height: 30px; padding: 0 0.65rem; font-size: 0.75rem; }
   /* on a phone the low motion switch keeps its knob and drops its words
      (the hero offers the same in a sentence) */
-  .motion-toggle { grid-row: 1; grid-column: -2; min-height: 30px; padding: 0 0.4rem; }
-  .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .motion-toggle { grid-row: 1; grid-column: -2; min-height: 30px; }
   .mast b { font-size: 0.98rem; }
   /* past the opening world the lockup row folds away and the pages rise to
      the top, so each world's figure gets that row's height (worlds.js sets
@@ -1151,7 +1124,7 @@ html:has(main .ledger) .top::before {
   html.head-compact .top .worlds-members,
   html.head-compact .top .motion-toggle { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0s linear 0.25s; }
   .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
-  .pin::before { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
+  .pin-shade { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
   .copy,
   .hero .copy {
     left: 16px;
@@ -1200,8 +1173,6 @@ html:has(main .ledger) .top::before {
   .letter-quote blockquote p { font-size: 1.12rem; }
   .letter-quote blockquote p::before { margin-left: 0; }
   .letter-what { font-size: 0.92rem; }
-  .logo-plate { right: auto; left: 50%; top: var(--fig-top, calc(118px + env(safe-area-inset-top))); width: min(56vw, 15rem); translate: -50% 0; }
-  .peer-plate { width: min(62vw, 16rem); }
   .copy p.permission { font-size: 0.78rem; }
   .turns .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
   .copy .turn-kind { margin-bottom: 0.6rem; }
@@ -1290,13 +1261,12 @@ html:has(main .ledger) .top::before {
 .made-want a { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--fg2); font-size: 0.95rem; font-weight: 600; text-decoration: none; }
 @media (hover: hover) { .made-want a:hover { color: var(--accent); } }
 .made-want svg { color: var(--accent); }
-.made-words a:focus-visible, .made-open a:focus-visible, .made-ticks a:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; border-radius: 2px; }
+.made-words a:focus-visible, .made-open a:focus-visible, .made-ticks a:focus-visible { border-radius: 2px; }
 .made-ticks { display: none; }
 
 /* without JavaScript: the things, one under another */
-html:not(.js) .devices-world { height: auto; background: var(--bg); }
-html:not(.js) .devices-world .pin { position: static; height: auto; overflow: visible; padding: 0; }
-html:not(.js) .devices-world .pin::before { display: none; }
+html:not(.js) .devices-world { background: var(--bg); }
+html:not(.js) .devices-world .pin { position: static; padding: 0; }
 .made-stage { width: min(100%, 84rem); margin-inline: auto; padding: clamp(6rem, 13vh, 8rem) var(--pad) clamp(4rem, 10vh, 6rem); }
 .made { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; margin-top: clamp(4rem, 12vh, 7rem); }
 .made .made-words { grid-column: 1; grid-row: 1; }
@@ -1331,7 +1301,7 @@ html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility
 /* the stage and the bar leave with the world: worlds.js sets their opacity
    (drawDevices) */
 html.js .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw - 104rem) / 2) + var(--pad)); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
-.made-ticks a { position: relative; flex: 1; height: 27px; -webkit-tap-highlight-color: transparent; }
+.made-ticks a { position: relative; flex: 1; height: 27px; }
 .made-ticks a::before, .made-ticks a::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; border-radius: 2px; transition: var(--press); }
 .made-ticks a::before { background: var(--track); }
 .made-ticks a::after { background: var(--ember); transform-origin: left; transform: scaleX(var(--t, 0)); }
@@ -1385,7 +1355,7 @@ html:not(.js) .top { position: absolute; }
 /* hidden, not removed: worlds.js sizes everything from this canvas */
 html:not(.js) #actors { visibility: hidden; }
 html:not(.js) .worlds,
-html:not(.js) .pin::before,
+html:not(.js) .pin-shade,
 html:not(.js) .cap,
 html:not(.js) .cue,
 html:not(.js) .ticks,
@@ -1400,8 +1370,7 @@ html:not(.js) .copy,
 html:not(.js) .flame .copy { position: static; width: auto; max-width: 46rem; transform: none; }
 html:not(.js) .flame .copy { margin-inline: auto; }
 html:not(.js) .qs li { opacity: 1; transform: none; }
-html:not(.js) .card,
-html:not(.js) .logo-plate { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
+html:not(.js) .card { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
 html:not(.js) .flame-room:has(.flame-noscript) { height: auto; }
 html:not(.js) body > footer { margin-top: 0; }
 /* The wheel lies flat: each client's logo stands on its plate, cut to their
