@@ -332,8 +332,10 @@ body.chama-agent-page {
 /* and the room does not end on the fine print: it keeps a breath of dark
    below the composer, so the page returns to paper on empty ground. The
    floor is the reach of the footer's shadow (worlds.css), which lies over
-   the bottom of the room and would otherwise darken the last line. */
-.chama-agent-mode-embed .composer {
+   the bottom of the room and would otherwise darken the last line. The
+   selector has to outrank the base .composer rule below, which until
+   2026-11-11 silently won; the keyboard-open tightening still wins. */
+.chama-agent.chama-agent-mode-embed:not(.kb-open) .composer {
   padding-bottom: clamp(2.5rem, 4.6cqh, 3.6rem);
 }
 
