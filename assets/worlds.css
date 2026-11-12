@@ -661,6 +661,18 @@ html:not(.js) .slot { display: block; }
   background: #0e0c0a;
   overflow: hidden;
 }
+/* the fire's last world darkens into the room instead of meeting it at an
+   edge; under the pin, so the words stay clear of it */
+.world:has(+ .flame-room)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28svh;
+  background: linear-gradient(rgba(14, 12, 10, 0), #0e0c0a);
+  pointer-events: none;
+}
 html.room-pinned { overflow: hidden; overscroll-behavior: none; }
 .flame-noscript { margin: 0; padding: clamp(2rem, 6vw, 4rem); color: #ece7dc; font-size: 1.05rem; line-height: 1.5; }
 

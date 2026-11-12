@@ -1348,7 +1348,7 @@
   }
 
   // ---- scroll ------------------------------------------------------------------------
-  var tops = [], hs = [], pins = [], gones = [];
+  var tops = [], hs = [], pins = [], gones = [], markG = 99;
   // ---- leaving: what rides up with a pin is gone before it reaches anything ----
   // A world's --u runs from 1 to 2 while its pin scrolls away. --gone is the
   // --u at which the first thing riding up with the pin would reach the
@@ -1368,7 +1368,6 @@
     var still = S && !last && !allScroll(sec) && !sec.querySelector(".card");
     from(sec.querySelector(".copy"), still ? S.top + S.h : head);
     [].forEach.call(sec.querySelectorAll(".card, .logo-plate"), function (el) { from(el, head); });
-    if (last && S) room = Math.min(room, S.top - head);
     if (sec.classList.contains("wheel-world")) {
       var G = wheelGeom(P, wheelOf(sec).spokes.length, layoutOf(scenes[k], k).box);
       room = Math.min(room, G.cy - G.ry - G.big * 0.3 - head);
@@ -1379,8 +1378,10 @@
     }
     return 1 + Math.max(room, 10) / H;
   }
+  // the last world's figure rises with its words from above them, so it leaves first
+  function markGone() { var k = NW - 1, S = stacks[k]; return S ? 1 + Math.max(S.top - headBottom() + (portrait() ? headLift() : 0) - 8, 10) / (pins[k] || AH) : 99; }
   // how much of world k is left as its pin leaves, 0 to 1
-  function exitOf(k, u) { var g = gones[k] || 99; return clamp((g - u) / (g - 1)); }
+  function exitOf(g, u) { g = g || 99; return clamp((g - u) / (g - 1)); }
   function measure() {
     var y = window.scrollY;
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
@@ -1397,6 +1398,7 @@
       s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
     });
     gones = sections.map(function (s, k) { return goneOf(k); });
+    markG = markGone();
     sections.forEach(function (s, k) {
       s.style.setProperty("--gone", gones[k].toFixed(3));
       s.style.setProperty("--gone-cap", (1 + 12 / (pins[k] || AH)).toFixed(3));
@@ -1531,7 +1533,9 @@
     var eb = b * b * (3 - 2 * b);
     var A = scenes[i], B = b > 0 ? scenes[i + 1] : null;
     var LA = layoutOf(A, i), LB = B ? layoutOf(B, i + 1) : null;
-    LA.exit = exitOf(i, u);
+    LA.exit = exitOf(gones[i], u);
+    // the last world's mark and its flame rise above the words, and leave before them
+    var lastOut = i === NW - 1 ? exitOf(markG, u) : 1;
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));
     ptr.sy += ((ptr.on ? ptr.y : AH / 2) - ptr.sy) * (1 - Math.exp(-dt * 4));
     var px = (ptr.sx - AW / 2) * 0.012, py = (ptr.sy - AH / 2) * 0.012 - st[3];
@@ -1564,8 +1568,8 @@
       gl.uniform2f(U.uMouse, (ptr.sx - AW / 2) / AH, (AH / 2 - ptr.sy) / AH);
       gl.uniform2f(U.uFocus, (focus.cx - AW / 2) / AH, (AH / 2 - focus.cy) / AH);
       gl.uniform1f(U.uFocusR, focus.R / AH);
-      gl.uniform1f(U.uFlame, focus.flame);
-      gl.uniform1f(U.uHeat, focus.heat);
+      gl.uniform1f(U.uFlame, focus.flame * lastOut);
+      gl.uniform1f(U.uHeat, focus.heat * lastOut);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
@@ -1589,7 +1593,7 @@
     ctx.globalAlpha = 1;
     // the figures fade with the words when the page changes (here, not in
     // CSS: an opacity on the canvas costs a phone a frame it cannot spare)
-    var fa = figureAlpha() * (i === NW - 1 ? LA.exit : 1);
+    var fa = figureAlpha() * lastOut;
     if (fa < 1 || pass) {
       ctx.globalCompositeOperation = "destination-in";
       if (pass) {
