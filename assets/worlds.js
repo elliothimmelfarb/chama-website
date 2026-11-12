@@ -1319,15 +1319,28 @@
   }
 
   // ---- scroll ------------------------------------------------------------------------
-  var tops = [], hs = [], pins = [];
+  // Where things are on the page, read once per layout rather than every
+  // frame: a read in the loop forces the browser to finish styling first.
+  // sy follows the scroll from its event, so a still page reads nothing.
+  var tops = [], hs = [], pins = [], sy = window.scrollY;
+  var roomTop = 0, roomH = 0, footTop = 0, docH = 0, footWas = "";
+  function positions() {
+    if (room) { roomTop = room.getBoundingClientRect().top + sy; roomH = room.offsetHeight; }
+    if (footer) footTop = footer.getBoundingClientRect().top + sy;
+    docH = document.documentElement.scrollHeight;
+  }
   function measure() {
-    var y = window.scrollY;
-    tops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
+    root.classList.toggle("foot-over", !room && !!footer);
+    // every read, then every write, so the page is laid out once
+    sy = window.scrollY;
+    tops = sections.map(function (s) { return s.getBoundingClientRect().top + sy; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
-    root.classList.toggle("foot-over", !room && !!footer);
-    root.style.setProperty("--head-lift", headLift() + "px");
+    var lift = headLift() + "px";
     stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
+    var foot = footer ? footer.offsetHeight + "px" : "";
+    positions();
+    root.style.setProperty("--head-lift", lift);
     sections.forEach(function (s, k) {
       var S = stacks[k];
       s.style.setProperty("--copy-b", S ? Math.round(S.copyB) + "px" : "");
@@ -1335,10 +1348,12 @@
       s.style.setProperty("--fig-top", S ? Math.round(S.top) + "px" : "");
       s.style.setProperty("--fig-h", S ? Math.round(S.h) + "px" : "");
     });
-    if (footer) root.style.setProperty("--foot", footer.offsetHeight + "px");
+    if (footer) root.style.setProperty("--foot", foot);
+    // --foot sizes the room and pulls the footer up, which moves them
+    if (foot !== footWas) { footWas = foot; positions(); }
   }
   function scrollState() {
-    var y = window.scrollY, i = 0;
+    var y = sy, i = 0;
     for (var k = 0; k < NW; k++) if (y >= tops[k] - 1) i = k;
     var range = Math.max(1, hs[i] - pins[i]);
     var l = clamp((y - tops[i]) / range), b = 0, tail = 0;
@@ -1437,15 +1452,15 @@
 
     var inRoom = false, hidden = false;
     if (room) {
-      var rr = room.getBoundingClientRect();
+      var rt = roomTop - sy;
       // at the very end of the page the room is the screen, even where a
       // phone's toolbars leave it short of the top
-      inRoom = (rr.top < 80 && rr.bottom > 80) || window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
-      hidden = rr.top <= 0;
+      inRoom = (rt < 80 && rt + roomH > 80) || sy + window.innerHeight >= docH - 2;
+      hidden = rt <= 0;
       if (inRoom !== lastRoom) { root.classList.toggle("in-room", inRoom); lastRoom = inRoom; }
     }
     // once the footer is on screen its nav is the one to use
-    var atEnd = !!footer && footer.getBoundingClientRect().top < AH - 8;
+    var atEnd = !!footer && footTop - sy < AH - 8;
     if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
     var compact = portrait() && (i > 0 || b > 0.5 || (allScroll(sections[i]) && l > 0.02));
     if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
@@ -1559,7 +1574,13 @@
     queued = true;
     requestAnimationFrame(function () { queued = false; resize(); });
   });
+  window.addEventListener("scroll", function () { sy = window.scrollY; }, { passive: true });
   window.addEventListener("load", function () { measure(); placeCaps(); });
+  // the room and the footer are found from measure(), not read each frame,
+  // so anything that lengthens the page (a late picture) measures again
+  if (window.ResizeObserver) new ResizeObserver(function () {
+    if (document.documentElement.scrollHeight !== docH) { measure(); placeCaps(); }
+  }).observe(document.body);
   window.addEventListener("pointermove", function (e) { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = e.pointerType === "mouse"; }, { passive: true });
   document.addEventListener("pointerleave", function () { ptr.on = false; });
   window.addEventListener("blur", function () { ptr.on = false; });
