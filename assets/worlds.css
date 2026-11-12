@@ -1417,7 +1417,7 @@ html:not(.js) body > footer { margin-top: 0; }
   html, body, .world, .pin { background: #fff !important; }
   canvas.layer, .skip-link, .worlds, .top .site-nav, .motion-toggle, .worlds-members, .flame-room, .top::before { display: none !important; }
   .world, .made { break-inside: avoid; }
-  body > footer { background: none; box-shadow: none; }
+  body > footer { background: none !important; box-shadow: none; }
   .dir > * { animation: none; }
   /* a picture not fetched yet would print as an empty screen */
   .rig:has(.screen > img[data-src]) { display: none; }
