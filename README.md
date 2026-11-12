@@ -26,7 +26,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt` | Crawler policy, the canonical URLs, and the site text for AI crawlers. |
 | `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
 | `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
-| `assets/built/` | The pictures on `/built`: for each thing, a tall capture of its real pages at desktop width (`<id>-desktop.webp`, 1800 wide) and at phone width (`<id>-phone.webp`, 440 wide). See Built below. |
+| `assets/built/` | The pictures on `/built`: for each thing, a tall capture of its real pages at desktop width (`<id>-desktop.webp`, 1800 wide) and at phone width (`<id>-phone.webp`, 440 wide), smaller copies of each for phones, and the cropped thumbnails `/simple/built` shows. See Built below. |
 | `assets/work/` | The client and friends' logos for `/clients`, `/about` and the heroes' logo rows, self-hosted WebP. Each one is listed with that company's permission; see Clients and friends below. |
 | `brand/index.html`, `brand/kit/` | The media kit at `/brand`: logo PNGs, the mark, avatars, a zip and `GUIDELINES.txt` for people linking to us. `llms.txt` links the files directly. Rebuild with `sh brand/kit/build.sh` after the mark changes. |
 | `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
@@ -43,7 +43,7 @@ Copy is written here. The brain keeps its history and the reasons for each chang
 
 Our friends, people we introduce someone to when they fit better than we do, are a section of `/about` (a directory of letters over the forge world), not of `/clients`, because they say what kind of company we are rather than prove what we have done. The friends row in the heroes links to them there.
 
-A company goes on only with its written OK to its name, logo and exact words, and comes off the day it asks. To add a client: its logo as `assets/work/<slug>.webp` (transparent, about 240px tall), a `.spoke` and a `.turn` in `clients.html` (raise the section's `--h` by 95 per client), an entry in `simple/clients.html` and `llms-full.txt`, and a logo in the four hero rows. To add a friend: a `.letter` in `about.html`, an entry in `simple/about.html` and `llms-full.txt`, and a logo in the four hero friends rows.
+A company goes on only with its written OK to its name, logo and exact words, and comes off the day it asks. To add a client: its logo as `assets/work/<slug>.webp` (transparent, about 240px tall) and a copy three times as tall as the hero row shows it (`<slug>-<width>.webp`, for the rows' `srcset`), a `.spoke` and a `.turn` in `clients.html` (raise the section's `--h` by 95 per client), an entry in `simple/clients.html` and `llms-full.txt`, and a logo in the four hero rows. To add a friend: a `.letter` in `about.html`, an entry in `simple/about.html` and `llms-full.txt`, and a logo in the four hero friends rows.
 
 ## Built
 
@@ -51,7 +51,7 @@ A company goes on only with its written OK to its name, logo and exact words, an
 
 Work made for a client goes on only with their OK, the same rule as `/clients`. A thing that is not public shows "This is private software, built for one business." where its link would be, and its pictures come from seeded demo data, never from real records.
 
-To add a thing: its two pictures in `assets/built/`, an `article` of class `made` and a link in the progress bar in `built.html` (raise the section's `--h` by 135), the same entry in `simple/built.html`, and a paragraph in `llms-full.txt`. `test/pages.test.js` holds the two versions to the same list and the `--h` to the count.
+To add a thing: its two pictures in `assets/built/` and their copies, all WebP at quality 80 resized with Lanczos (Pillow; ffmpeg here has no WebP encoder): `<id>-desktop-{640,960,1200,1440}.webp`, `<id>-phone-{160,240,320}.webp`, the top 16:10 of the desktop picture as `<id>-thumb-{320,640,1080}.webp` and the top 1:2 of the phone picture as `<id>-phone-thumb-{160,280}.webp`; an `article` of class `made` and a link in the progress bar in `built.html` (raise the section's `--h` by 135), the same entry in `simple/built.html`, and a paragraph in `llms-full.txt`. `test/pages.test.js` holds the two versions to the same list, the `--h` to the count, and every `srcset` width to its file's real width.
 
 ## The flame
 

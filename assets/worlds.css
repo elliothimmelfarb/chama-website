@@ -478,7 +478,7 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
 .accent { color: var(--accent); }
 
 .hero .copy { animation: arrive 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
-@keyframes arrive { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: none; } }
+@keyframes arrive { from { opacity: 0.01; filter: blur(6px); } to { opacity: 1; filter: none; } }
 
 .cue {
   position: absolute;
@@ -749,7 +749,7 @@ html.nav-wait .top .nav-about[aria-current="page"] { animation: wait-line 1.1s e
   html.nav-wait .top .nav-about[aria-current="page"] { animation: none; }
 }
 
-@keyframes arrive { from { opacity: 0; } }
+@keyframes arrive { from { opacity: 0.01; } }
 @keyframes pop { from { opacity: 0; transform: scale(0.7); } }
 main h1:focus { outline: none; }
 
@@ -892,7 +892,7 @@ html:not(.js) .wheel { display: none; }
   .clients.friends a:nth-of-type(2) img { animation-delay: 2.1s; }
 }
 @keyframes catch {
-  0% { opacity: 0; filter: grayscale(1) brightness(0.62) contrast(1.5); }
+  0% { opacity: 0.01; filter: grayscale(1) brightness(0.62) contrast(1.5); }
   18% { opacity: 1; filter: drop-shadow(0 0 12px rgba(244, 88, 31, 0.8)); }
   50% { opacity: 1; filter: drop-shadow(0 0 4px rgba(244, 88, 31, 0.35)); }
   100% { opacity: 0.62; filter: grayscale(1) brightness(0.62) contrast(1.5); }
