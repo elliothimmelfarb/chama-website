@@ -888,6 +888,7 @@
         spokes: [].slice.call(sec.querySelectorAll(".spoke")),
         turns: [].slice.call(sec.querySelectorAll(".turn")),
         count: sec.querySelector("[data-wheel-count]"),
+        pin: sec.querySelector(".pin"),
         on: -1
       };
     }
@@ -921,9 +922,18 @@
     var q = clamp((l - a) / ((1 - a) * (1 - WHEEL_HOLD))) * (n - 1), f = Math.min(Math.floor(q), n - 2);
     return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1, k: 1 };
   }
+  // a style is written only when its value changes, so a still wheel writes
+  // nothing and a turning one restyles only what moved
+  function put(el, prop, v) {
+    var k = el._put || (el._put = {});
+    if (k[prop] !== v) { k[prop] = v; el.style[prop] = v; }
+  }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
+    // the logos ride the pin as the next world arrives; the outline goes
+    // with them. Read before this frame's writes, so the read costs nothing.
+    var dy = W.pin ? Math.min(0, W.pin.getBoundingClientRect().top) : 0;
     var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
     var place = [];
     for (var i = 0; i < n; i++) {
@@ -936,20 +946,21 @@
       var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
       place.push({ x: x, y: y, sc: sc, near: near, e: e });
       var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img, .spoke-mark")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
-      sp.style.width = sp.style.height = G.big + "px";
+      put(sp, "width", G.big + "px");
+      put(sp, "height", G.big + "px");
       // turned a little away on the far side, as a thing on a wheel would be
       var turn = (1 - near) * 38;
-      sp.style.transform = "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)";
-      sp.style.zIndex = Math.round(near * 100) + (focus > 0.5 ? 100 : 0);
-      sp.style.opacity = wp.show.toFixed(3);
-      sp.style.visibility = wp.show > 0.01 ? "visible" : "hidden";
+      put(sp, "transform", "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)");
+      put(sp, "zIndex", String(Math.round(near * 100) + (focus > 0.5 ? 100 : 0)));
+      put(sp, "opacity", wp.show.toFixed(3));
+      put(sp, "visibility", wp.show > 0.01 ? "visible" : "hidden");
       // the rest are only their logos: further back, smaller, dimmer, darker, softer
       var dim = 1 - e;
-      img.style.opacity = (e + dim * (0.2 + 0.62 * near * near)).toFixed(3);
-      img.style.filter = dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none";
-      plate.style.opacity = sm(0.6, 1, focus).toFixed(3);
-      img.style.transform = "scale(" + (1 + 0.25 * dim).toFixed(3) + ")";
-      sp.classList.toggle("focus", focus > 0.5);
+      put(img, "opacity", (e + dim * (0.2 + 0.62 * near * near)).toFixed(3));
+      put(img, "filter", dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none");
+      put(plate, "opacity", sm(0.6, 1, focus).toFixed(3));
+      put(img, "transform", "scale(" + (1 + 0.25 * dim).toFixed(3) + ")");
+      if (sp._focus !== focus > 0.5) { sp._focus = focus > 0.5; sp.classList.toggle("focus", sp._focus); }
     }
     if (wp.k < 1) drawIntroShapes(c, t, L, a, W, G, place, wp.k);
     if (on !== W.on) {
@@ -961,8 +972,6 @@
     var best = -1, bf = 0;
     for (var m = 0; m < n; m++) if (place[m].e > bf) { bf = place[m].e; best = m; }
     if (best < 0 || bf < 0.6) return;
-    // the logos ride the pin as the next world arrives; the outline goes with them
-    var pin = L.sec.querySelector(".pin"), dy = pin ? Math.min(0, pin.getBoundingClientRect().top) : 0;
     var f = place[best], shape = WHEEL_SHAPES[(+W.spokes[best].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length], half = G.big * f.sc / 2;
     var out = [];
     for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + dy + shape[qq + 1] * half * 1.12); }
