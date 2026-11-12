@@ -1822,19 +1822,31 @@
   }
   // The flame room is mounted once a visit. Leaving the home page keeps it
   // (and any conversation in it) aside, and coming back puts it back.
+  var AGENT_CSS = "/assets/agent.css", FLAME_JS = "/assets/flame.js", AGENT_JS = "/assets/agent.js";
   function mountRoom(slot) {
     var host = slot.querySelector("#agent-embed");
     if (!host) return;
     Promise.all([
-      needCss("/assets/agent.css"),
-      needScript("/assets/flame.js", function () { return window.ChamaFlame; })
-        .then(function () { return needScript("/assets/agent.js", function () { return window.ChamaAgent; }); })
+      needCss(AGENT_CSS),
+      needScript(FLAME_JS, function () { return window.ChamaFlame; })
+        .then(function () { return needScript(AGENT_JS, function () { return window.ChamaAgent; }); })
     ]).then(function () {
       if (host.isConnected && !host.firstChild && window.ChamaAgent) {
         window.ChamaAgent.mount(host, { mode: "embed" });
         measure();
       }
     }, function () {});
+  }
+
+  // Every address is versioned (scripts/stamp.js), so a page whose scripts
+  // or stylesheets this one does not already hold comes from another deploy
+  // (or another version of this engine) and gets a full load instead.
+  function sameDeploy(doc) {
+    return [].every.call(doc.head.querySelectorAll("script[src], link[rel=\"stylesheet\"]"), function (n) {
+      var u = n.getAttribute("src") || n.getAttribute("href");
+      return u === AGENT_CSS || u === FLAME_JS || u === AGENT_JS ||
+        !!document.querySelector('script[src="' + u + '"], link[rel="stylesheet"][href="' + u + '"]');
+    });
   }
 
   var HEAD = 'meta[name="description"], meta[name="author"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]';
@@ -1910,6 +1922,7 @@
       var doc = new DOMParser().parseFromString(r[0], "text/html");
       var main = doc.querySelector("main");
       if (!main || !main.querySelector(".world")) throw new Error("not an animated page");
+      if (!sameDeploy(doc)) throw new Error("another deploy");
       if (push) history.pushState({ y: 0 }, "", u.pathname + u.search + u.hash);
       swap(doc);
       root.classList.add("routed");
