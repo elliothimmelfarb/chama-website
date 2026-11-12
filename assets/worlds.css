@@ -871,18 +871,20 @@ main h1:focus { outline: none; }
   place-items: center;
   background: none;
   transform-origin: 50% 50%;
-  pointer-events: auto;
+  /* only the logo takes a tap: on a phone the square round the client in
+     front covers the small logos behind it */
+  pointer-events: none;
   cursor: pointer;
   opacity: 0;
   will-change: transform, opacity;
 }
 .spoke-plate { position: absolute; inset: 0; background: #faf8f3; opacity: 0; box-shadow: inset 0 0 0 1px rgba(15, 27, 38, 0.06); }
-.spoke img { position: relative; display: block; width: 58%; height: 46%; object-fit: contain; will-change: opacity, filter; }
+.spoke img { position: relative; display: block; pointer-events: auto; width: 58%; height: 46%; object-fit: contain; will-change: opacity, filter; }
 .spoke img.round { width: 52%; height: 54%; }
 .spoke img.wide { width: 66%; }
 /* the open place on the wheel, for the next client: no logo and no plate */
 .spoke-open .spoke-plate { background: rgba(250, 248, 243, 0.5); box-shadow: none; }
-.spoke-mark { position: relative; color: var(--fg); font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 500; letter-spacing: -0.04em; will-change: opacity, filter; }
+.spoke-mark { position: relative; pointer-events: auto; color: var(--fg); font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 500; letter-spacing: -0.04em; will-change: opacity, filter; }
 .turns .turn .accent { color: var(--accent); }
 .copy .turn-cta { margin-top: 1.5rem; }
 .copy .turn-more { margin-top: 1rem; font-size: 0.9rem; color: var(--fg2); }
@@ -1410,7 +1412,9 @@ html:not(.js) body > footer { margin-top: 0; }
 html:not(.js) .wheel-world .pin { display: grid; grid-template-columns: clamp(4.5rem, 22vw, 9rem) minmax(0, 36rem); grid-auto-flow: dense; column-gap: clamp(1.25rem, 4vw, 3rem); align-items: start; }
 html:not(.js) .wheel-world :is(.copy, .turns, .wheel) { display: contents; }
 html:not(.js) .turns .turn-intro { grid-column: 1 / -1; }
-html:not(.js) .spoke { position: relative; grid-column: 1; width: 100%; height: auto; aspect-ratio: 1; opacity: 1; pointer-events: none; cursor: auto; will-change: auto; }
+html:not(.js) .spoke { position: relative; grid-column: 1; width: 100%; height: auto; aspect-ratio: 1; opacity: 1; will-change: auto; }
+/* a flat logo is a picture, not a way to turn the wheel */
+html:not(.js) .spoke :is(img, .spoke-mark) { pointer-events: none; }
 html:not(.js) .spoke-plate { opacity: 1; }
 html:not(.js) .spoke-mark { font-size: clamp(0.95rem, 3.6vw, 1.6rem); }
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {

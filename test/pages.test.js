@@ -751,3 +751,17 @@ test("no stylesheet carries the view transition opt-in, which would arrive too l
     assert.ok(!/@view-transition/.test(readFileSync(path.join(ROOT, sheet), "utf8").replace(/\/\*[\s\S]*?\*\//g, "")), sheet);
   }
 });
+
+// A spoke's box is a square round its logo, and on a phone the ring is small
+// enough that the client in front's square covered the logos behind it, so
+// tapping Alves or "Yours?" with Toraya in front did nothing (to 2026-11-12).
+// A spoke takes a tap only on its logo, which is what the eye aims at.
+test("a spoke on the /clients wheel takes a tap only on its logo", () => {
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((s) => s.trim()), body: m[2] }));
+  const pe = (sel) => rules.filter((r) => r.selectors.includes(sel)).map((r) => /pointer-events:\s*(\w+)/.exec(r.body)?.[1]).filter(Boolean).at(-1);
+  assert.equal(pe(".spoke"), "none", "the spoke's whole square takes taps");
+  assert.equal(pe(".spoke-plate"), undefined, "the plate takes taps");
+  assert.equal(pe(".spoke img"), "auto", "the logo does not take taps");
+  assert.equal(pe(".spoke-mark"), "auto", "the open place's mark does not take taps");
+});
