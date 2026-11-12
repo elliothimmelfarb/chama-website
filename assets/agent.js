@@ -161,12 +161,18 @@
      the server refused what was sent (400, 403, 429), and sending it again
      would only be refused again. */
   var RESTING = "The flame is resting";
+  // api/chat.js MESSAGES.overwhelmed, which asks for a second try
+  var BUSY = "The agent is busy right now. Please try again in a minute.";
+  var GENERIC = "Something went wrong. Please try again.";
 
   function failureKind(status, message) {
     if (typeof message === "string" && message.indexOf(RESTING) === 0) return "resting";
-    if (!status || status >= 500) return "retry";
+    if (!status || status >= 500 || message === BUSY) return "retry";
     return "final";
   }
+  // a refusal without our JSON: a 429 is Vercel's firewall holding back a
+  // visitor who sent many messages in a minute
+  function bodylessFailure(status) { return status === 429 ? BUSY : GENERIC; }
 
   // an address in a line this code shows, split out so it can be a mailto link
   var EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
@@ -634,7 +640,6 @@
     var totalTokens = 0;
     var openingGone = false;
 
-    var GENERIC = "Something went wrong. Please try again.";
     var STOPPED = "Stopped.";
 
     // the flame said it is resting: the composer stays quiet until it answers
@@ -1495,7 +1500,9 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     // ---- the request -------------------------------------------------------
     function send(text) {
       var message = (text || "").replace(/\s+$/, "");
-      if (!message || busy) return;
+      // a resting flame takes nothing, from the composer, a ?say= link or
+      // the page's own send()
+      if (!message || busy || resting) return;
 
       // the one layout read a send makes; everything after it only writes,
       // and the transcript follows its end on the next frame
@@ -1635,7 +1642,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
           return res.json().then(function (data) {
             throw saidError(data && data.error, res.status);
           }, function () {
-            throw saidError(GENERIC, res.status);
+            throw saidError(bodylessFailure(res.status), res.status);
           });
         }
         if (!res.body) throw saidError(GENERIC);
@@ -1798,13 +1805,13 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       if (ev.isComposing || ev.keyCode === 229) return;
       if (ev.key === "Enter" && !ev.shiftKey) {
         ev.preventDefault();
-        if (!resting) send(input.value);
+        send(input.value);
       }
     });
 
     form.addEventListener("submit", function (ev) {
       ev.preventDefault();
-      if (!resting) send(input.value);
+      send(input.value);
     });
 
     /* Busy, the button only ever stops a reply that has not started. The
@@ -2220,5 +2227,5 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     return api;
   }
 
-  window.ChamaAgent = { mount: mount, failureKind: failureKind, emailParts: emailParts };
+  window.ChamaAgent = { mount: mount, failureKind: failureKind, bodylessFailure: bodylessFailure, emailParts: emailParts };
 })();

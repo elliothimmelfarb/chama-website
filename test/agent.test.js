@@ -12,7 +12,7 @@ import { MESSAGES } from "../api/chat.js";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sandbox = { window: {} };
 vm.runInNewContext(readFileSync(path.join(ROOT, "assets/agent.js"), "utf8"), sandbox);
-const { failureKind, emailParts } = sandbox.window.ChamaAgent;
+const { failureKind, bodylessFailure, emailParts } = sandbox.window.ChamaAgent;
 
 test("the flame resting is told apart from every other failure, however it arrives", () => {
   assert.equal(failureKind(503, MESSAGES.offline), "resting");
@@ -28,6 +28,15 @@ test("a failure the visitor can fix by sending again offers a retry", () => {
   assert.equal(failureKind(502, MESSAGES.failed), "retry");
   assert.equal(failureKind(undefined, MESSAGES.failed), "retry");
   assert.equal(failureKind(undefined, "Something went wrong. Please try again."), "retry");
+});
+
+// Vercel's firewall answers the chat's rate limit itself: a 429 with no
+// JSON body. It says what the server says when it is busy, and offers the
+// retry that line invites.
+test("a refusal with no readable body still says what happened and what to do", () => {
+  assert.equal(bodylessFailure(429), MESSAGES.overwhelmed);
+  assert.equal(failureKind(429, bodylessFailure(429)), "retry");
+  assert.equal(failureKind(502, bodylessFailure(502)), "retry");
 });
 
 test("a request the server refused for what it carried does not offer the same request again", () => {
