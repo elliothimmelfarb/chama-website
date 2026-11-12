@@ -684,7 +684,7 @@ test("every rule that reads --u is on an element worlds.js writes it on", () => 
       if (sel.pseudo) assert.ok(inherits.has(sel.last + sel.pseudo), `"${selector}" reads --u but never takes it from its element (--u: inherit)`);
     }
   }
-  assert.ok(checked >= 6, "the rules that read --u were found");
+  assert.ok(checked >= 4, "the rules that read --u were found");
 
   // Chrome restyles everything inside an element whose --u changes, not
   // inherited or not: the pin as a reader (for its ::before scrim) put
@@ -703,26 +703,21 @@ test("every rule that reads --u is on an element worlds.js writes it on", () => 
     assert.ok(!new RegExp(`class(Name)?="[^"]*\\b${name}\\b`).test(chatJs), `the chat also makes elements of class ${name}`);
   }
 
-  // A variable worked out from --u and registered not to inherit (--e, the
-  // exit) is the same: every element that reads it must work it out itself,
-  // from its own --u, or it sits at its initial value and nothing fades.
-  const derived = rules
-    .filter((r) => /^@property --[\w-]+$/.test(r.selectors[0]) && /inherits:\s*false/.test(r.body))
-    .map((r) => r.selectors[0].slice("@property ".length))
-    .filter((n) => n !== "--u" && rules.some((r) => new RegExp(`${n}:[^;]*var\\(--u\\)`).test(r.body)));
-  assert.ok(derived.includes("--e"), "--e is worked out from --u and does not inherit");
-  for (const name of derived) {
-    const declared = rules.filter((r) => new RegExp(`(^|[;\\s])${name}:`).test(r.body)).flatMap((r) => r.selectors.map(split));
-    for (const rule of rules) {
-      if (!rule.body.includes(`var(${name})`)) continue;
-      for (const selector of rule.selectors) {
-        const sel = split(selector);
-        assert.ok(onReader(sel), `"${selector}" reads ${name}, which needs --u there, but worlds.js does not write it (U_READERS)`);
-        const works = declared.some((d) => d.pseudo === sel.pseudo && d.last.match(/\.[\w-]+/g)?.every((c) => has(sel.last, c)));
-        assert.ok(works, `"${selector}" reads ${name} but never works it out (${name} does not inherit)`);
-      }
+  // The exit, --e, is registered not to inherit too, and worlds.js writes
+  // it beside --u: every rule that reads it must be on a reader, or it sits
+  // at its initial value and nothing fades.
+  const e = rules.find((r) => r.selectors[0] === "@property --e");
+  assert.ok(e && /inherits:\s*false/.test(e.body), "--e is registered not to inherit");
+  assert.match(js, /setProperty\("--e"/, "worlds.js writes --e");
+  let readsE = 0;
+  for (const rule of rules) {
+    if (!rule.body.includes("var(--e)")) continue;
+    for (const selector of rule.selectors) {
+      readsE++;
+      assert.ok(onReader(split(selector)), `"${selector}" reads --e, but worlds.js does not write it there (U_READERS)`);
     }
   }
+  assert.ok(readsE >= 2, "the rules that read --e were found");
 });
 
 // worlds.js hides the clients and things not in focus from assistive tech

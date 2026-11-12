@@ -24,9 +24,9 @@
    @property inherits it as before, from .world, which starts every reader
    at the same 0.5.
 
-   --e, what is left of a world as its pin leaves, is worked out from --u,
-   so it is not inherited either: each element that reads it works it out
-   for itself, and so needs --u too.
+   --e, what is left of a world as its pin leaves (1 to 0), is written the
+   same way, beside --u, by worlds.js (exitOf): worked out here, every
+   reader resolved the same sum on every frame.
    ========================================================================== */
 
 @property --u { syntax: "<number>"; inherits: false; initial-value: 0.5; }
@@ -441,12 +441,6 @@ main { position: relative; z-index: 2; }
   height: calc(var(--h) * 1vh);
   color: var(--fg);
 }
-/* What is left of the pin's contents as it leaves, 1 to 0: the scroll
-   still to go before the fade ends (--exit-at past the release, less how far
-   past it the pin is, in --pin-len a unit once it has let go and --hold-len
-   before), over the fade's length. worlds.js measures the lengths
-   (exitOf there is the same sum). */
-.pin-shade, .r { --e: clamp(0, (var(--exit-at, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len, 1), 1); }
 
 .pin {
   position: sticky;
@@ -560,7 +554,6 @@ h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
   white-space: nowrap;
   pointer-events: none;
 }
-.cap .r { --e: clamp(0, (var(--exit-at-cap, 1e4) - max(var(--u) - 1, 0) * var(--pin-len, 1) - min(var(--u) - 1, 0) * var(--hold-len, 1)) / var(--exit-len-cap, 1e4), 1); }
 .cap .r { display: block; }
 .cap-stack { display: grid; }
 .cap-stack > * { grid-area: 1 / 1; }
