@@ -119,7 +119,7 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 | `hearth-public.html` | The public page at `/hearth` for anyone without a session cookie: what the room is, for prospective coaching clients. Indexable, with its own sharing card (`og-hearth-2026-10-22.png` from `brand/og/og-hearth.html`). Static: it loads nothing from the room and calls no endpoint. |
 | `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. It paints the bar at once and asks `/config` and `/me` from an inline script while `hearth.js` downloads. |
 | `assets/hearth.js`, `assets/hearth.css` | The core app (router, sign-in, frame, account) and design. No `innerHTML` anywhere in the room. |
-| `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. `hearth.js` loads only the ones `/me` names for the member's permissions, from the list in `lib/hearth/modules.js`. A new file goes on that list, or `modules.test.js` fails. |
+| `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. `hearth.js` loads only the ones `/me` names for the member's permissions, from the list in `lib/hearth/modules.js`, at the versioned addresses written in `hearth-room.html`. A new file goes on that list and in that page, or `modules.test.js` fails. |
 | `api/hearth.js` | The router behind `/api/hearth/*`. The routes are in `lib/hearth/routes/`. |
 | `lib/hearth/` | Database and migrations, auth, users, providers, permissions, audit, mail, time and slots, calendar files, transcript records, the OAuth server and the MCP server. |
 | `api/mcp.js`, `api/oauth.js` | `/mcp` and the OAuth 2.1 endpoints with their well-known documents. |
@@ -211,11 +211,25 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 
 ## Checking and deploying
 
-`npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network. `vercel dev --listen 4990` serves the site locally; without a database the Hearth API answers 503, which still proves the routing.
+`npm run stamp` puts each script and stylesheet's version into every address that asks for it (see Caching below). Run it before committing a change to `assets/` or a page; it rewrites nothing on a tree that is already right. `npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network, and fails while any address is unstamped or stale. `vercel dev --listen 4990` serves the site locally; without a database the Hearth API answers 503, which still proves the routing.
 
 Merging to `main` deploys through Vercel's GitHub integration (project `chama-inteligente/chama-inteligente`), and PRs get preview URLs. Do not run `vercel deploy` by hand. `.vercelignore` keeps `docs/`, `evals/` and `test/` out of every deploy, so internal reports live only on GitHub.
 
 Storage and email are Vercel resources: the private Blob store `chama-inteligente-intake` in Paris (`BLOB_READ_WRITE_TOKEN`) and the Resend integration `chama-inteligente-email` (`RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`). Their values live only in Vercel. Crons: intake cleanup daily at 03:15 UTC, the watchdog at `:05` and `:35`, the Hearth at `:20`.
+
+### Caching
+
+Every script and stylesheet under `/assets` is asked for as `/assets/<file>?v=<first 10 hex of its sha256>`, and `vercel.json` serves an address with `?v` as `public, max-age=31536000, immutable`. A changed file gets a new address, so a browser fetches it once and never asks about an unchanged one again. The same path without `?v` is `public, max-age=0, must-revalidate`: it still works, and the browser checks it every time, so it can never run a copy from an earlier deploy.
+
+Why this scheme: the HTML is always revalidated, and it names the exact bytes of everything it runs, so a page and its scripts always come from one deploy. Before this, a browser kept an asset for up to a day after a deploy (`stale-while-revalidate`) and paired new pages with old scripts. A content hash in the query needs no renamed files and no build: the committed files are the deployed files. Vercel ignores the query string when it caches a static file and keeps a separate cache per deployment (docs: CDN cache, cache keys), so the edge always answers with the deployment's own file and the version only steers the browser. A per-deploy version for all files would have been simpler, but every deploy would download every file again.
+
+The rules `scripts/stamp.js` keeps, and `test/stamp.test.js` enforces:
+
+- Every address is a whole quoted literal: the pages' tags, the router's flame room addresses in `worlds.js`, the Worker in `agent.js`, `importScripts` in `flame-worker.js`, and the Hearth's parts in `hearth-room.html`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
+- A file's version covers the versions it carries, so changing `flame.js` re-versions `flame-worker.js`, `agent.js`, `worlds.js` and the pages. `npm run stamp` repeats until nothing moves.
+- The router only swaps in a page whose scripts and stylesheets the running page already has (or the flame room's three). Anything else is another deploy and gets a full load.
+
+One gap remains: if production switches deploy between a browser getting the HTML and its scripts, it runs the new scripts for that view and keeps them under the old address. Closing it would take Vercel's Skew Protection, which needs the deployment id in every address and so a build step.
 
 ### DNS
 
