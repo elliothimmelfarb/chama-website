@@ -588,6 +588,27 @@ for (const url of PUBLIC) {
   });
 }
 
+// A picture that has smaller copies offers them all, wherever it is shown,
+// so the browser can pick the one that fits, and so two pages that show the
+// same picture can share the copy already fetched. The /clients wheel showed
+// masters the homepage never loads, so arriving there through the router
+// fetched every logo again (2026-11-12); /simple/about and /simple/clients
+// served masters to every screen.
+for (const url of PUBLIC) {
+  test(`${url}: every picture with smaller copies offers them`, () => {
+    for (const img of imgs(read(url))) {
+      const m = /^(\/assets\/.+?)(?:-(\d+))?\.(webp|jpg)$/.exec(img.src || "");
+      if (!m) continue;
+      const dir = path.join(ROOT, path.dirname(m[1])), base = path.basename(m[1]);
+      const copies = readdirSync(dir).filter((f) => new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-\\d+\\.webp$`).test(f));
+      if (!copies.length) continue;
+      const offered = new Set((img.set || []).map((c) => path.basename(c.url)));
+      const missing = copies.filter((f) => !offered.has(f));
+      assert.deepEqual(missing, [], `${img.src} does not offer ${missing.join(", ")}`);
+    }
+  });
+}
+
 // On a phone /built's first screen is two pictures. The first thing's pair
 // loads at once and first; every other thing's waits for worlds.js
 // (devicesLoad), which fetches the next only once the pair on the screens has
