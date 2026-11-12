@@ -1568,11 +1568,10 @@
     for (var k = 0; k < NW; k++) if (y >= tops[k] - 1) i = k;
     var range = Math.max(1, hs[i] - pins[i]);
     var l = clamp((y - tops[i]) / range), b = 0, tail = 0;
-    if (i < NW - 1) b = clamp((y - (tops[i] + range)) / Math.max(1, pins[i]));
     // in one column there is no pin: the fire line (-0.4 + 1.8 * b of the
     // screen from the bottom, crossing() below) stands on the next
     // section's top edge, rather than sweeping up through this one's words
-    if (!pinned && i < NW - 1) b = clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
+    if (i < NW - 1) b = pinned ? clamp((y - (tops[i] + range)) / Math.max(1, pins[i])) : clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
     // past the last world the page scrolls on, and the figure rises with the words
     else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, b, tail];
