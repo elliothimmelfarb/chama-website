@@ -955,6 +955,12 @@
     var k = el._put || (el._put = {});
     if (k[prop] !== v) { k[prop] = v; el.style[prop] = v; }
   }
+  // takes back everything put() wrote
+  function unput(el) {
+    if (!el || !el._put) return;
+    for (var prop in el._put) el.style[prop] = "";
+    el._put = null;
+  }
   function drawWheel(c, l, t, L, a) {
     var W = wheelOf(L.sec), n = W.spokes.length;
     if (!n) return;
@@ -1248,6 +1254,13 @@
       if (sec.classList.contains("wheel-world")) {
         var W = wheelOf(sec);
         W.on = -2;
+        // the spokes lie flat in their rows; back on the wheel the loop
+        // places them again from scratch
+        W.spokes.forEach(function (sp) {
+          [sp, sp._img, sp._plate].forEach(unput);
+          sp._focus = undefined;
+          sp.classList.remove("focus");
+        });
         if (!pinned) W.turns.forEach(function (tn) { tn.removeAttribute("aria-hidden"); });
       }
     });

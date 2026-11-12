@@ -905,8 +905,7 @@ main h1:focus { outline: none; }
 .turns .turn.on { opacity: 1; visibility: visible; transform: none; transition: opacity 0.5s ease 0.2s, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s, visibility 0s 0.2s; }
 .copy .turn-kind { margin: 0 0 0.9rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
 .turns .turn h3 { margin: 0 0 0.45em; max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 0.94; text-wrap: balance; }
-html:not(.js) .turns .turn { grid-area: auto; opacity: 1; visibility: visible; transform: none; margin-bottom: 2rem; }
-html:not(.js) .wheel { display: none; }
+html:not(.js) .turns .turn { grid-area: auto; grid-column: 2; opacity: 1; visibility: visible; transform: none; margin-bottom: 2rem; scroll-margin-top: 1.5rem; }
 @media (prefers-reduced-motion: reduce) {
   .turns .turn, .turns .turn.on { transition: none; transform: none; }
 }
@@ -1407,6 +1406,17 @@ html:not(.js) .card,
 html:not(.js) .logo-plate { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
 html:not(.js) .flame-room:has(.flame-noscript) { height: auto; }
 html:not(.js) body > footer { margin-top: 0; }
+/* The wheel lies flat: each client's logo stands on its plate, cut to their
+   shape, beside their words, as the client in focus does on the wheel (light
+   plates on the light grid, so dark marks stay legible). The words and the
+   spokes become the grid's own items (display: contents), and dense placement
+   puts each spoke in the first free row of the first column: its client's. */
+html:not(.js) .wheel-world .pin { display: grid; grid-template-columns: clamp(4.5rem, 22vw, 9rem) minmax(0, 36rem); grid-auto-flow: dense; column-gap: clamp(1.25rem, 4vw, 3rem); align-items: start; }
+html:not(.js) .wheel-world :is(.copy, .turns, .wheel) { display: contents; }
+html:not(.js) .turns .turn-intro { grid-column: 1 / -1; }
+html:not(.js) .spoke { position: relative; grid-column: 1; width: 100%; height: auto; aspect-ratio: 1; opacity: 1; pointer-events: none; cursor: auto; will-change: auto; }
+html:not(.js) .spoke-plate { opacity: 1; }
+html:not(.js) .spoke-mark { font-size: clamp(0.95rem, 3.6vw, 1.6rem); }
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   html:not(.js) .pin { padding-inline: 16px; }
 }

@@ -704,3 +704,28 @@ for (const file of STYLED) {
     assert.deepEqual(ungatedHovers(css), []);
   });
 }
+
+// In one column (a screen under 500px tall, JavaScript off, print) the wheel
+// lies flat: every client's logo stands beside their words. The no-JS rule
+// that hid the wheel took every logo off /clients once short screens went to
+// one column too (2026-11-12). The spokes start invisible for worlds.js to
+// fade in, so one column must also show them, and every client needs one.
+test("/clients shows every client's logo beside their words in one column", () => {
+  const html = read("/clients");
+  const turns = [...html.matchAll(/<div class="turn\b[^"]*" id="([\w-]+)" data-i="(\d+)"/g)].map((m) => m[2]);
+  const spokes = [...html.matchAll(/<button class="spoke\b[^"]*"[^>]*\bdata-i="(\d+)"[^>]*>([\s\S]*?)<\/button>/g)];
+  assert.ok(turns.length >= 3, "the clients were found");
+  for (const i of turns) {
+    const sp = spokes.find((m) => m[1] === i);
+    assert.ok(sp && /<img\b|class="spoke-mark"/.test(sp[2]), `entry ${i} has no logo on the wheel`);
+  }
+  const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((s) => s.trim()), body: m[2] }));
+  const hides = /display:\s*none|visibility:\s*hidden|opacity:\s*0\s*(;|$)/;
+  for (const r of rules) for (const s of r.selectors) {
+    if (/^html:not\(\.js\)/.test(s) && /\.(wheel|spoke(-plate|-mark)?)(?![\w-])|\.spoke img/.test(s)) assert.ok(!hides.test(r.body.trim()), `"${s}" hides the logos in one column`);
+  }
+  const shown = (sel) => rules.some((r) => r.selectors.includes(`html:not(.js) ${sel}`) && /opacity:\s*1\b/.test(r.body));
+  assert.ok(shown(".spoke"), "the spokes, invisible until worlds.js fades them in, are not shown in one column");
+  assert.ok(shown(".spoke-plate"), "the plates are not shown in one column");
+});
