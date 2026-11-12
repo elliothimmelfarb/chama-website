@@ -636,7 +636,6 @@
 
     var GENERIC = "Something went wrong. Please try again.";
     var STOPPED = "Stopped.";
-    var PLACEHOLDER = input.getAttribute("placeholder");
 
     // the flame said it is resting: the composer stays quiet until it answers
     var resting = false;
@@ -644,6 +643,7 @@
     var lastFailure = null;
     // set while a reply has not started, and calling it gives up waiting
     var stopWaiting = null;
+    var sentAt = 0;
 
     /* Only a line this code wrote is ever read out to a visitor. A browser
        error ("Failed to fetch", "The operation was aborted") is a fact about
@@ -1249,13 +1249,14 @@
       sendBtn.setAttribute("aria-label", stop ? "Stop waiting for a reply" : on ? "The agent is replying" : "Send message");
     }
 
-    function rest(on) {
-      if (resting === on) return;
-      resting = on;
-      rootEl.classList.toggle("resting", on);
-      input.readOnly = on;
-      if (on) input.removeAttribute("placeholder"); else input.setAttribute("placeholder", PLACEHOLDER);
-      sendBtn.disabled = on || (busy && !stopWaiting);
+    // for the rest of the visit: nothing the visitor can do brings it back,
+    // and the line above the composer says how to reach a person instead
+    function quietComposer() {
+      resting = true;
+      rootEl.classList.add("resting");
+      input.readOnly = true;
+      input.removeAttribute("placeholder");
+      sendBtn.disabled = true;
     }
 
     /* ---- links in agent replies ------------------------------------------
@@ -1520,6 +1521,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       var painter = null;
       var reply = "";
       var startedAt = performance.now();
+      sentAt = startedAt;
       var firstDelta = null;
       var finished = false;
       var toolRan = false;        // a note went (or tried to): never repeat it
@@ -1592,7 +1594,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         youTurn.classList.add("unsent");
         lastFailure = { message: message, turn: youTurn, line: line };
         if (kind === "resting") {
-          rest(true);
+          quietComposer();
         } else if (!input.value) {
           input.value = message;
           autoGrow();
@@ -1735,10 +1737,12 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
           hideThinking();
           if (painter) painter.end(reply);
           done();
-          rest(false);              // it answered, so it is not resting
           settleState();
         });
       }).catch(function (err) {
+        // an error the server already sent is the truth, whatever ended
+        // the stream after it
+        if (streamError) { fail(streamError); return; }
         if (stopped) { fail(null); return; }
         if (timedOut) { fail(TIMED_OUT); return; }
         fail(err && err.said ? err.message : GENERIC, err && err.status);
@@ -1803,11 +1807,15 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
       if (!resting) send(input.value);
     });
 
-    // busy, the button only ever stops a reply that has not started
+    /* Busy, the button only ever stops a reply that has not started. The
+       first half second after a send is deaf to it: the second click of a
+       double click, or a held key repeating on the button, is still the
+       send, not a change of mind. */
+    var STOP_DEAF_MS = 500;
     sendBtn.addEventListener("click", function (ev) {
       if (!busy) return;
       ev.preventDefault();
-      if (stopWaiting) stopWaiting();
+      if (stopWaiting && performance.now() - sentAt >= STOP_DEAF_MS) stopWaiting();
     });
 
     /* A hidden tab has nothing to paint. The loop stops with the tab and
@@ -2204,8 +2212,8 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
         say = params.get("say") || "";
         if (params.has("say") && window.history && window.history.replaceState) {
           params.delete("say");
-          var rest = params.toString();
-          window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+          var query = params.toString();
+          window.history.replaceState(null, "", window.location.pathname + (query ? "?" + query : "") + window.location.hash);
         }
       } catch (e6) { say = ""; }
     }
