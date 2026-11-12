@@ -102,10 +102,14 @@
     var W = Math.max(1, Math.round(w * s)), H = Math.max(1, Math.round(h * s));
     if (sky.width !== W || sky.height !== H) { sky.width = W; sky.height = H; GL.gl.viewport(0, 0, W, H); }
   }
+  // a canvas given its own size again is still reallocated and cleared, so
+  // a resize that leaves it alone (a phone's toolbar, a page change) skips it
   function sizeActors() {
-    ADPR = Math.min(window.devicePixelRatio || 1, 2);
-    AW = act.clientWidth;
-    AH = act.clientHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), w = act.clientWidth, h = act.clientHeight;
+    if (w === AW && h === AH && dpr === ADPR) return;
+    ADPR = dpr;
+    AW = w;
+    AH = h;
     act.width = Math.round(AW * ADPR);
     act.height = Math.round(AH * ADPR);
   }
@@ -1083,15 +1087,21 @@
     if (D.fitted === key) return;
     D.fitted = key;
     D.rooms = [];
-    var f = 1, rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
-    function fits() {
-      D.stage.style.setProperty("--fit", f.toFixed(2));
+    var rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
+    var words = D.items.map(function (it) { return it.querySelector(".made-words"); }), lift = P ? headLift() : 0;
+    // the sizes run from 1 down in steps of 0.04 to 0.52, and each try is a
+    // layout, so the largest that fits is found by halving, in four tries
+    function fits(n) {
+      D.stage.style.setProperty("--fit", (1 - 0.04 * n).toFixed(2));
       if (!P) return true;
       var floor = D.bar.offsetTop - 12;
-      for (var i = 0; i < D.items.length; i++) { var w = D.items[i].querySelector(".made-words"); if (w.offsetTop + w.offsetHeight > floor) return false; }
-      return !lead || rig0.offsetTop + rig0.offsetHeight + headLift() + 12 <= lead.offsetTop;
+      for (var i = 0; i < words.length; i++) if (words[i].offsetTop + words[i].offsetHeight > floor) return false;
+      return !lead || rig0.offsetTop + rig0.offsetHeight + lift + 12 <= lead.offsetTop;
     }
-    while (!fits() && f > 0.55) f -= 0.04;
+    if (fits(0) || !fits(12)) return;
+    var lo = 0, hi = 12;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (fits(mid)) hi = mid; else lo = mid; }
+    D.stage.style.setProperty("--fit", (1 - 0.04 * hi).toFixed(2));
   }
   function drawDevices(c, l, t, L) {
     var D = devicesOf(L.sec), n = D.items.length;
