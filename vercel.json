@@ -196,13 +196,84 @@
       "has": [
         {
           "type": "query",
-          "key": "v"
+          "key": "v",
+          "value": {
+            "inc": [
+              "0423b5bedc",
+              "08fe2359ca",
+              "0e13151137",
+              "1bd12af0fb",
+              "1fb722f029",
+              "33b3a125d0",
+              "5e57dbd6ed",
+              "6619dea582",
+              "72067bb626",
+              "752d48d2a5",
+              "801219aa95",
+              "874006b686",
+              "97e60958b4",
+              "9c81e0061b",
+              "a7704ae7ed",
+              "b23504649b",
+              "b5f18f0e6c",
+              "b73e6c4eed",
+              "b889f167b2",
+              "e001488e88",
+              "f4e5d0f475",
+              "fa745fb58e",
+              "fb30a62655",
+              "fe17b7f65c"
+            ]
+          }
         }
       ],
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)\\.(js|css)",
+      "has": [
+        {
+          "type": "query",
+          "key": "v",
+          "value": {
+            "ninc": [
+              "0423b5bedc",
+              "08fe2359ca",
+              "0e13151137",
+              "1bd12af0fb",
+              "1fb722f029",
+              "33b3a125d0",
+              "5e57dbd6ed",
+              "6619dea582",
+              "72067bb626",
+              "752d48d2a5",
+              "801219aa95",
+              "874006b686",
+              "97e60958b4",
+              "9c81e0061b",
+              "a7704ae7ed",
+              "b23504649b",
+              "b5f18f0e6c",
+              "b73e6c4eed",
+              "b889f167b2",
+              "e001488e88",
+              "f4e5d0f475",
+              "fa745fb58e",
+              "fb30a62655",
+              "fe17b7f65c"
+            ]
+          }
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },

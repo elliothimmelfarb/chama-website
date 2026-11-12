@@ -4,7 +4,8 @@
 // says why. Run `npm run stamp` after changing anything in assets/ or a page:
 // it rewrites the versions in place and leaves a correct tree untouched.
 // `npm run check` fails while any address is missing its version or carries
-// a wrong one.
+// a wrong one. It also writes the tree's versions into vercel.json, which
+// caches an address for a year only when its v is one of them.
 //
 // A file's hash covers the versions it carries itself, so a change to
 // flame.js also changes flame-worker.js (which imports it), agent.js (which
@@ -13,7 +14,7 @@
 
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { lstatSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -50,6 +51,28 @@ function restamp(text, files) {
   });
 }
 
+// vercel.json's three rules for /assets: a v that is one of the tree's
+// versions is cached for a year, and any other v, or none, is revalidated
+// every time. Without the list, a v worked out from the public repo before
+// its deploy would cache the old body under the new address for a year.
+const ASSET_RULE = "/assets/(.*)\\.(js|css)";
+const cacheControl = (value) => [{ key: "Cache-Control", value }];
+function withVersions(config, files) {
+  const versions = [...new Set([...files].filter(([f]) => isAsset(f)).map(([, text]) => versionOf(text)))].sort();
+  const json = JSON.parse(config);
+  const headers = json.headers || [];
+  const at = headers.findIndex((r) => r.source === ASSET_RULE);
+  const rules = [
+    { source: ASSET_RULE, has: [{ type: "query", key: "v", value: { inc: versions } }], headers: cacheControl("public, max-age=31536000, immutable") },
+    { source: ASSET_RULE, has: [{ type: "query", key: "v", value: { ninc: versions } }], headers: cacheControl("public, max-age=0, must-revalidate") },
+    { source: ASSET_RULE, missing: [{ type: "query", key: "v" }], headers: cacheControl("public, max-age=0, must-revalidate") },
+  ];
+  const rest = headers.filter((r) => r.source !== ASSET_RULE);
+  rest.splice(at < 0 ? rest.length : at, 0, ...rules);
+  json.headers = rest;
+  return JSON.stringify(json, null, 2) + "\n";
+}
+
 // files: Map of repo-relative path to contents. Returns a new Map with every
 // address carrying its target's version.
 export function stamp(files) {
@@ -64,7 +87,10 @@ export function stamp(files) {
         moved.push(file);
       }
     }
-    if (!moved.length) return out;
+    if (!moved.length) {
+      if (out.has("vercel.json")) out.set("vercel.json", withVersions(out.get("vercel.json"), out));
+      return out;
+    }
     if (pass === out.size) throw new Error(`These files ask for each other, so their versions never settle: ${moved.join(", ")}`);
   }
   return out;
@@ -73,6 +99,8 @@ export function stamp(files) {
 // One line per address that is wrong, each naming its file.
 export function problems(files) {
   const found = [];
+  const config = files.get("vercel.json");
+  if (config !== undefined && withVersions(config, files) !== config) found.push("vercel.json: the asset cache rules list other versions than the tree's. Run npm run stamp.");
   for (const [file, text] of files) {
     if (!isReferrer(file)) continue;
     if (BUILT.test(text)) found.push(`${file}: puts an /assets/ address together at run time. Write each address out whole, so it can carry its version.`);
@@ -81,7 +109,7 @@ export function problems(files) {
       const [, , name, given] = m;
       quoted.add(m.index + 1);
       const target = files.get("assets/" + name);
-      if (target === undefined) found.push(`${file}: /assets/${name} does not exist.`);
+      if (target === undefined) found.push(`${file}: /assets/${name} does not exist, or is not added to git.`);
       else if (given === undefined) found.push(`${file}: /assets/${name} has no version.`);
       else if (given !== versionOf(target)) found.push(`${file}: /assets/${name} carries v=${given}, but the file is v=${versionOf(target)}.`);
     }
@@ -98,13 +126,17 @@ export function problems(files) {
   return found;
 }
 
+// The committed files as they stand on disk. An untracked file is not
+// deployed, so an address to one is named as missing; a symlink could lead
+// out of the repository, and the stamp writes back what it reads.
 export function readTree(root = ROOT) {
-  const listed = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" })
+  const listed = execFileSync("git", ["ls-files", "--cached"], { cwd: root, encoding: "utf8" })
     .split("\n")
-    .filter((f) => f && (isReferrer(f) || isAsset(f)));
+    .filter((f) => f && (isReferrer(f) || isAsset(f) || f === "vercel.json"));
   const files = new Map();
   for (const f of listed) {
     try {
+      if (lstatSync(path.join(root, f)).isSymbolicLink()) continue;
       files.set(f, readFileSync(path.join(root, f), "utf8"));
     } catch (e) {
       if (e.code !== "ENOENT") throw e;

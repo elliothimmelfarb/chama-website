@@ -219,7 +219,7 @@ Storage and email are Vercel resources: the private Blob store `chama-inteligent
 
 ### Caching
 
-Every script and stylesheet under `/assets` is asked for as `/assets/<file>?v=<first 10 hex of its sha256>`, and `vercel.json` serves an address with `?v` as `public, max-age=31536000, immutable`. A changed file gets a new address, so a browser fetches it once and never asks about an unchanged one again. The same path without `?v` is `public, max-age=0, must-revalidate`: it still works, and the browser checks it every time, so it can never run a copy from an earlier deploy.
+Every script and stylesheet under `/assets` is asked for as `/assets/<file>?v=<first 10 hex of its sha256>`, and `vercel.json` serves an address as `public, max-age=31536000, immutable` only when its `v` is one of this deploy's versions (`npm run stamp` writes the list). A changed file gets a new address, so a browser fetches it once and never asks about an unchanged one again. The same path without `?v`, or with any other `v`, is `public, max-age=0, must-revalidate`: it still works, and the browser checks it every time. Vercel does not look at `v` when it picks the file, so without the list any `v` was cached for a year: since the repo is public, a version worked out from a commit before its deploy finished could pin the old body under the new address in a visitor's browser.
 
 Why this scheme: the HTML is always revalidated, and it names the exact bytes of everything it runs, so a page and its scripts always come from one deploy. Before this, a browser kept an asset for up to a day after a deploy (`stale-while-revalidate`) and paired new pages with old scripts. A content hash in the query needs no renamed files and no build: the committed files are the deployed files. Vercel ignores the query string when it caches a static file and keeps a separate cache per deployment (docs: CDN cache, cache keys), so the edge always answers with the deployment's own file and the version only steers the browser. A per-deploy version for all files would have been simpler, but every deploy would download every file again.
 
@@ -227,9 +227,11 @@ The rules `scripts/stamp.js` keeps, and `test/stamp.test.js` enforces:
 
 - Every address is a whole quoted literal from the root: the pages' tags, the router's flame room addresses in `worlds.js`, the Worker in `agent.js`, `importScripts` in `flame-worker.js`, and the Hearth's parts in `hearth-room.html`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
 - A file's version covers the versions it carries, so changing `flame.js` re-versions `flame-worker.js`, `agent.js`, `worlds.js` and the pages. `npm run stamp` repeats until nothing moves.
+- `vercel.json`'s three `/assets/(.*)\.(js|css)` header rules carry the tree's versions, and the check fails while they are stale.
+- The tree is what is added to git, symlinks left out: an address to an asset nobody has added fails the check rather than 404 in production, and the stamp never writes outside the repository.
 - The router only swaps in a page whose scripts and stylesheets the running page already has (or the flame room's three). Anything else is another deploy and gets a full load.
 
-One gap remains: if production switches deploy between a browser getting the HTML and its scripts, it runs the new scripts for that view and keeps them under the old address for a year. That only shows again if that old HTML is served again, which an instant rollback does; after a rollback, a visitor who hit that window needs a hard reload. Closing it would take Vercel's Skew Protection, which needs the deployment id in every address and so a build step.
+The list also closes the gap between a page and its scripts coming from two deploys: if production switches deploy between a browser getting the HTML and its scripts, the new deploy answers the old address with its new body, but not as cacheable, so nothing outlives that one view.
 
 ### DNS
 
