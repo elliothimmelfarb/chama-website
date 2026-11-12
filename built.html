@@ -240,10 +240,7 @@
   <script type="speculationrules">
   {
     "prefetch": [
-      { "source": "document", "where": { "and": [
-        { "href_matches": "/*" },
-        { "not": { "href_matches": ["/", "/coaching", "/built", "/clients", "/about", "/*.*"] } }
-      ] }, "eagerness": "moderate" }
+      { "source": "document", "where": { "href_matches": ["/privacy", "/agent", "/brand", "/hearth", "/simple{/*}?"] }, "eagerness": "moderate" }
     ]
   }
   </script>

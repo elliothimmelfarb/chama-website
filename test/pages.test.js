@@ -334,6 +334,9 @@ test("the router and llms-full.txt know /built", () => {
 // browser to fetch those on hover or press. The router fetches its own
 // pages itself, so the rules leave those alone; files are never fetched
 // ahead; and a pattern is a path, so it can only ever reach this host.
+// A prefetch carries the visitor's cookies, and some GETs on this host
+// change state (a magic link's callback spends its token and signs in), so
+// every page's rules name the pages they are for and nothing else.
 function speculationMatches(html, href) {
   const rules = [...html.matchAll(/<script type="speculationrules">([\s\S]*?)<\/script>/g)].flatMap((m) => JSON.parse(m[1]).prefetch || []);
   const where = (w) => {
@@ -354,6 +357,19 @@ for (const { worlds } of PAIRS) {
     for (const href of ["/simple", "/simple/coaching", "/hearth", "/privacy", "/agent", "/agent?say=hello"]) assert.ok(speculationMatches(html, href), `${href} is not fetched ahead`);
     for (const { url } of SITE) assert.ok(!speculationMatches(html, url) && !speculationMatches(html, url + "#x"), `${url} is fetched by both the browser and the router`);
     for (const href of ["/brand/chama-media-kit.zip", "/sitemap.xml", "/assets/worlds.css"]) assert.ok(!speculationMatches(html, href), `${href} is a file, fetched ahead for nothing`);
+  });
+}
+
+const NEVER_AHEAD = [
+  "/api/hearth/auth/email/callback?token=x", "/api/hearth/auth/google", "/api/hearth/auth/signout", "/api/chat",
+  "/hearth/sign-in", "/hearth/authorize?next=/hearth", "/hearth-room", "/admin", "/mcp", "/feed", "/feed.xml", "/oauth/authorize", "/somewhere-new",
+];
+const SPECULATING = ["/", "/coaching", "/about", "/clients", "/built", "/privacy", "/brand", "/404", "/simple", "/simple/coaching", "/simple/about", "/simple/clients", "/simple/built"];
+for (const url of SPECULATING) {
+  test(`${url} fetches ahead only the public pages it links to, never the API, the Hearth's inner paths or anything unnamed`, () => {
+    const html = read(url);
+    assert.ok(html.includes('<script type="speculationrules">'), `${url} has no speculation rules`);
+    for (const href of NEVER_AHEAD) assert.ok(!speculationMatches(html, href), `${href} is fetched ahead from ${url}`);
   });
 }
 
@@ -498,7 +514,12 @@ test("worlds.css never hides a bare .turn, which would hide the chat's messages"
 // the words were readable (2026-11-11).
 test("the hero's words and logos count as painted from their first frame", () => {
   const css = readFileSync(path.join(ROOT, "assets/worlds.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
-  for (const name of ["arrive", "catch"]) {
+  // the animations the hero's words and its logo row actually run
+  const names = new Set([...css.matchAll(/([^{}]*\.(?:hero|clients)\b[^{}]*)\{([^{}]*)\}/g)]
+    .flatMap((m) => [...m[2].matchAll(/animation(?:-name)?:\s*([\w-]+)/g)].map((a) => a[1]))
+    .filter((n) => n !== "none"));
+  assert.ok(names.has("hero-arrive") && names.has("catch"), `the hero runs ${[...names].join(", ")}`);
+  for (const name of names) {
     const frames = [...css.matchAll(new RegExp(`@keyframes ${name}\\s*\\{\\s*(?:from|0%)\\s*\\{([^}]*)\\}`, "g"))];
     assert.ok(frames.length, `no @keyframes ${name}`);
     for (const f of frames) assert.ok(!/opacity:\s*0\s*[;}]|opacity:\s*0$/.test(f[1].trim()), `@keyframes ${name} starts at opacity 0`);
