@@ -1033,6 +1033,15 @@ html:has(main .ledger) .top::before {
 .ledger-note { grid-column: 2; margin: 0; max-width: 46ch; color: var(--fg2); font-size: 0.9rem; line-height: 1.5; }
 .ledger-end p:last-child { margin: 0; }
 
+/* a narrow wide screen (a phone held sideways, a small window) has one row
+   for the lockup, Members, five pages and the switch: the switch keeps its
+   knob and drops its words, as on a phone, so the lockup never wraps */
+.mast b, .mast small { white-space: nowrap; }
+@media (max-width: 979px) {
+  .motion-toggle { padding: 0 0.4rem; }
+  .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   .worlds { display: none; }
