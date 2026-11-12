@@ -12,7 +12,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -141,18 +141,6 @@ for (const { words, worlds } of PAIRS) {
     }
   });
 
-  // worlds.js is deferred, so a page that waited for it to set html.js
-  // painted its no-JavaScript layout first and then jumped (on /built, eight
-  // things' words over each other while they faded out together).
-  test(`${worlds} sets html.js before its first paint`, () => {
-    const head = /<head>[\s\S]*?<\/head>/.exec(read(worlds))[0];
-    const at = head.search(/documentElement\.classList\.add\("js"\)/);
-    assert.ok(at >= 0, "no inline script in the head adds the js class");
-    assert.ok(at < head.indexOf('rel="stylesheet"'), "the js class is added after the stylesheet is requested");
-    const short = /var SHORT = window\.matchMedia\("([^"]+)"\)/.exec(readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8"));
-    assert.ok(short && head.includes(`matchMedia("${short[1]}").matches) document.documentElement.classList.add("js")`), "the head and worlds.js disagree on where the worlds are pinned");
-  });
-
   test(`${words} reaches the five pages from the top, inside the low motion version`, () => {
     const header = /<header\b[\s\S]*?<\/header>/.exec(read(words));
     assert.ok(header, "the page has no header");
@@ -180,6 +168,34 @@ for (const { words, worlds } of PAIRS) {
 
 // The client logos on the Software and Coaching pages are a way into /clients:
 // each one opens that client's entry, in the same version of the site.
+// html.js is the pinned layout, and every html:not(.js) rule in worlds.css
+// is the one-column one. The script that sets the class runs deferred, so a
+// page styled by worlds.css that waited for it painted one column first and
+// then jumped (on /built, eight things' words over each other; on the 404,
+// a layout shift of 0.063). Every such page sets it in its head, where its
+// script will: worlds.js only above its short-screen query, sparks.js always.
+function htmlFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+    d.name.startsWith(".") || d.name === "node_modules" ? [] : d.isDirectory() ? htmlFiles(path.join(dir, d.name)) : d.name.endsWith(".html") ? [path.join(dir, d.name)] : []);
+}
+const WORLDS_STYLED = htmlFiles(ROOT).filter((f) => /<link rel="stylesheet" href="\/assets\/worlds\.css/.test(readFileSync(f, "utf8")));
+test("the pages styled by worlds.css are found", () => assert.ok(WORLDS_STYLED.length >= 6));
+for (const file of WORLDS_STYLED) {
+  test(`${path.relative(ROOT, file)} sets html.js before its first paint, as its script will`, () => {
+    const head = /<head>[\s\S]*?<\/head>/.exec(readFileSync(file, "utf8"))[0];
+    const at = head.search(/documentElement\.classList\.add\("js"\)/);
+    assert.ok(at >= 0, "no inline script in the head adds the js class");
+    assert.ok(at < head.indexOf('rel="stylesheet"'), "the js class is added after the stylesheet is requested");
+    if (head.includes("/assets/worlds.js")) {
+      const short = /var SHORT = window\.matchMedia\("([^"]+)"\)/.exec(readFileSync(path.join(ROOT, "assets/worlds.js"), "utf8"));
+      assert.ok(short && head.includes(`matchMedia("${short[1]}").matches) document.documentElement.classList.add("js")`), "the head and worlds.js disagree on where the worlds are pinned");
+    } else {
+      assert.ok(head.includes("/assets/sparks.js"), "neither worlds.js nor sparks.js sets the class later");
+      assert.ok(/^\s*root\.classList\.add\("js"\);$/m.test(readFileSync(path.join(ROOT, "assets/sparks.js"), "utf8")), "sparks.js no longer sets the class on every screen; the head should match it");
+    }
+  });
+}
+
 for (const [page, work] of [["/", "/clients"], ["/coaching", "/clients"], ["/simple", "/simple/clients"], ["/simple/coaching", "/simple/clients"]]) {
   test(`${page} shows client logos that each open their entry on ${work}`, () => {
     const row = /<(?:div|p|ul)\b[^>]*\bclass="[^"]*\bclients\b[^"]*"[\s\S]*?<\/(?:div|p|ul)>/.exec(read(page));
