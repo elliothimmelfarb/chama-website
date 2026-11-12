@@ -503,12 +503,16 @@ test("/built loads the first thing's pictures first and offers each picture at p
 });
 
 // The low motion /built shows the top of each picture in a small frame:
-// cropped copies, never the full-length screenshots.
+// cropped copies, never the full-length screenshots. The first thing's
+// frames are on the first screen of a phone and are its LCP, so they load
+// at once; the rest wait until they are near.
 test("/simple/built shows cropped thumbnails, not the full screenshots", () => {
-  for (const x of imgs(read("/simple/built")).filter((x) => x.src.startsWith("/assets/built/"))) {
+  imgs(read("/simple/built")).filter((x) => x.src.startsWith("/assets/built/")).forEach((x, i) => {
+    assert.equal(/loading="lazy"/.test(x.tag), i >= 2, `${x.src} ${i < 2 ? "must load at once" : "must be lazy"}`);
+    assert.equal(x.high, i < 2, `${x.src} ${i < 2 ? "needs" : "must not have"} fetchpriority="high"`);
     assert.match(x.src, /-thumb-\d+\.webp$/);
     for (const c of x.set) assert.ok(c.w <= 1080, `${c.url} is larger than a thumbnail needs`);
-  }
+  });
 });
 
 // The logo rows in the heroes show each mark at most 154 CSS px wide.
