@@ -1415,6 +1415,7 @@ html:not(.js) .turns .turn-intro { grid-column: 1 / -1; }
 html:not(.js) .spoke { position: relative; grid-column: 1; width: 100%; height: auto; aspect-ratio: 1; opacity: 1; will-change: auto; }
 /* a flat logo is a picture, not a way to turn the wheel */
 html:not(.js) .spoke :is(img, .spoke-mark) { pointer-events: none; }
+html:not(.js) .spoke img { will-change: auto; }
 html:not(.js) .spoke-plate { opacity: 1; }
 html:not(.js) .spoke-mark { font-size: clamp(0.95rem, 3.6vw, 1.6rem); }
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
