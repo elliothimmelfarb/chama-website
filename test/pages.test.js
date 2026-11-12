@@ -729,3 +729,25 @@ test("/clients shows every client's logo beside their words in one column", () =
   assert.ok(shown(".spoke"), "the spokes, invisible until worlds.js fades them in, are not shown in one column");
   assert.ok(shown(".spoke-plate"), "the plates are not shown in one column");
 });
+
+// Chrome settles whether a page takes part in a cross-document view
+// transition when it starts the page's body. An opt-in in a stylesheet still
+// on its way then counts as none: on a slow or uncached load the dissolve was
+// skipped with "ViewTransition opt-in disabled" (2026-11-12). So each page
+// that dissolves says so in its own head, ahead of anything it fetches.
+const DISSOLVING = ["/", "/coaching", "/built", "/clients", "/about", "/simple", "/simple/coaching", "/simple/built", "/simple/clients", "/simple/about", "/404"];
+for (const url of DISSOLVING) {
+  test(`${url} opts in to the dissolve before it fetches anything`, () => {
+    const head = /<head>([\s\S]*?)<\/head>/.exec(read(url))[1];
+    const style = /<style>([\s\S]*?)<\/style>/.exec(head);
+    assert.ok(style && /@view-transition\s*\{\s*navigation:\s*auto;?\s*\}/.test(style[1]), "no @view-transition in an inline <style>");
+    assert.ok(/prefers-reduced-motion:\s*no-preference/.test(style[1]), "the dissolve is not left out for reduced motion");
+    const first = head.search(/<link rel="stylesheet"|<script src=/);
+    assert.ok(first < 0 || style.index < first, "the opt-in comes after a stylesheet or script");
+  });
+}
+test("no stylesheet carries the view transition opt-in, which would arrive too late", () => {
+  for (const sheet of ["assets/site.css", "assets/worlds.css"]) {
+    assert.ok(!/@view-transition/.test(readFileSync(path.join(ROOT, sheet), "utf8").replace(/\/\*[\s\S]*?\*\//g, "")), sheet);
+  }
+});

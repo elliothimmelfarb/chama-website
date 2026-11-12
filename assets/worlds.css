@@ -752,10 +752,6 @@ html.foot-over body > footer {
   .end-small { margin: 0; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition { navigation: auto; }
-}
-
 /* ---- moving between pages ---------------------------------------------- */
 /* worlds.js moves between Software, Coaching and About without loading a
    new document. First the page in view lifts away (.nav-leave); then the
