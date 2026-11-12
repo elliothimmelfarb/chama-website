@@ -1341,11 +1341,12 @@
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
   var tops = [], hs = [], pins = [], pinEnd = [], sy = window.scrollY;
-  var roomTop = 0, roomH = 0, footTop = 0, docH = 0, footWas = "";
+  var roomTop = 0, roomH = 0, footTop = 0, docH = 0, vh = 0, footWas = "";
   function positions() {
     if (room) { roomTop = room.getBoundingClientRect().top + sy; roomH = room.offsetHeight; }
     if (footer) footTop = footer.getBoundingClientRect().top + sy;
     docH = document.documentElement.scrollHeight;
+    vh = window.innerHeight;
   }
   function measure() {
     root.classList.toggle("foot-over", !room && !!footer);
@@ -1491,7 +1492,7 @@
       var rt = roomTop - sy;
       // at the very end of the page the room is the screen, even where a
       // phone's toolbars leave it short of the top
-      inRoom = (rt < 80 && rt + roomH > 80) || sy + window.innerHeight >= docH - 2;
+      inRoom = (rt < 80 && rt + roomH > 80) || sy + vh >= docH - 2;
       hidden = rt <= 0;
       if (inRoom !== lastRoom) { root.classList.toggle("in-room", inRoom); lastRoom = inRoom; }
     }
