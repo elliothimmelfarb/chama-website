@@ -213,7 +213,7 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 
 `npm run stamp` puts each script and stylesheet's version into every address that asks for it (see Caching below). Run it before committing a change to `assets/` or a page; it rewrites nothing on a tree that is already right. `npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network, and fails while any address is unstamped or stale. `vercel dev --listen 4990` serves the site locally; without a database the Hearth API answers 503, which still proves the routing.
 
-Merging to `main` deploys through Vercel's GitHub integration (project `chama-inteligente/chama-inteligente`), and PRs get preview URLs. Do not run `vercel deploy` by hand. `.vercelignore` keeps `docs/`, `evals/` and `test/` out of every deploy, so internal reports live only on GitHub.
+Merging to `main` deploys through Vercel's GitHub integration (project `chama-inteligente/chama-inteligente`), and PRs get preview URLs. Do not run `vercel deploy` by hand. `.vercelignore` keeps `docs/`, `evals/`, `scripts/` and `test/` out of every deploy, so internal reports live only on GitHub.
 
 Storage and email are Vercel resources: the private Blob store `chama-inteligente-intake` in Paris (`BLOB_READ_WRITE_TOKEN`) and the Resend integration `chama-inteligente-email` (`RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`). Their values live only in Vercel. Crons: intake cleanup daily at 03:15 UTC, the watchdog at `:05` and `:35`, the Hearth at `:20`.
 

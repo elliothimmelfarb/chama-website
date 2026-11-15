@@ -1,7 +1,7 @@
 // The Chama Inteligente website agent: prompt and tool definitions.
 //
 // This file is the agent's entire identity. Authored by hand, reviewed like copy.
-// Rails that apply here (see CLAUDE.md): every factual claim in this prompt is
+// Rules for this prompt: every factual claim in it is
 // sourced from the live site (llms-full.txt), Elliot's public GitHub profile and
 // repositories, the public LinkedIn pages linked in the site footer, or Elliot's
 // own recorded words (the brain's wiki/topics/elliot-voice-interview.md, captured
