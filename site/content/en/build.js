@@ -26,6 +26,8 @@ export const build = {
       name: "Toraya Lisboa",
       kind: "Website and staff app",
       text: "A Japanese deli in Rossio station. We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour. The version they approved was ready four hours after we started.",
+      // on screen, beside the devices (the whole text is in llms-full.txt)
+      short: "We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour.",
       href: "https://toraya.pt",
       link: "toraya.pt",
     },

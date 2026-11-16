@@ -229,3 +229,27 @@ test("a stage's step buttons are marked at the ends with aria-disabled, never di
   assert.ok(!/\.disabled = |setAttribute\("disabled"/.test(JS), "disabled takes the button out of the focus order");
 });
 
+test("every pinned world on a built page sets --h, its hold", async () => {
+  // without --h a pinned world has no hold and its words never become
+  // readable (the home page had three); worlds.css falls back to 150, but the
+  // page should say how long each world holds
+  const { PAGES } = await import(path.join(ROOT, "site/site.js"));
+  const built = PAGES.map((p) => p.file).filter((f) => existsSync(path.join(ROOT, f)));
+  assert.ok(built.length >= 1, "no built page was found");
+  for (const file of built) {
+    for (const [tag] of read(file).matchAll(/<section\b[^>]*\bclass="[^"]*\bworld\b[^"]*"[^>]*>/g)) {
+      if (/\sdata-pin="off"/.test(tag)) continue;
+      assert.match(tag, /\sstyle="[^"]*--h:\s*\d/, `${file}: ${tag} is pinned with no --h`);
+    }
+  }
+});
+
+test("the char line marks only a change of ground, and only where there is no sky", () => {
+  const rule = RULES.find((r) => { const sel = r.selectors.join(","); return sel.includes("::before") && sel.startsWith("html:not(.gl)") && /var\(--accent\)/.test(r.body); });
+  assert.ok(rule, "worlds.css draws the char line");
+  const sel = rule.selectors.join(",");
+  assert.match(sel, /^html:not\(\.gl\):not\(\.pin\)/);
+  for (const g of ["paper", "grid", "tides", "ember"]) assert.ok(sel.includes(`.world[data-world="${g}"] + .world:not([data-world="${g}"])`), `no char line after ${g}`);
+  assert.match(rule.body, /top:\s*-64px/);
+});
+

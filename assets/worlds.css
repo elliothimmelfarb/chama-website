@@ -151,7 +151,9 @@ main { position: relative; z-index: 2; }
 .world {
   --u: 0.5;
   position: relative;
-  height: calc(var(--h) * 1vh);
+  /* a pinned world without --h still holds long enough to read its words
+     (test/engine.test.js asks every built page to set it) */
+  height: calc(var(--h, 150) * 1vh);
   /* each ground sets --fg in tokens.css; this is what makes it the text's */
   color: var(--fg);
 }
@@ -402,6 +404,28 @@ html:not([data-motion="low"]) [data-stage] :is([data-stage-step], [data-stage-co
 [data-stage][data-state="ended"] [data-stage-action="play"],
 [data-stage]:not([data-state="ended"]) [data-stage-action="replay"],
 html[data-motion="low"] [data-stage-action] { display: none; }
+
+/* ---- the char line ------------------------------------------------------ */
+/* Where there is no sky to burn (low motion, no WebGL) and two different
+   grounds meet in one column, the burn's still frame: a 2px ember line with
+   a torn lower edge across the full width, 64px above the next section. */
+html:not(.gl):not(.pin) :is(
+  .world[data-world="paper"] + .world:not([data-world="paper"]),
+  .world[data-world="grid"] + .world:not([data-world="grid"]),
+  .world[data-world="tides"] + .world:not([data-world="tides"]),
+  .world[data-world="ember"] + .world:not([data-world="ember"]))::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: -64px;
+  height: 5px;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0H96V2L91 2.6 86 2.1 80 3.4 74 2.2 69 2.9 62 2.1 57 4.2 51 2.3 45 2.8 39 2.1 33 3.6 27 2.2 21 2.7 15 2.1 9 3.9 4 2.3 0 2.8Z'/%3E%3C/svg%3E") 0 0 / 96px 5px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0H96V2L91 2.6 86 2.1 80 3.4 74 2.2 69 2.9 62 2.1 57 4.2 51 2.3 45 2.8 39 2.1 33 3.6 27 2.2 21 2.7 15 2.1 9 3.9 4 2.3 0 2.8Z'/%3E%3C/svg%3E") 0 0 / 96px 5px repeat-x;
+  pointer-events: none;
+}
 
 /* ---- the worlds as one column ------------------------------------------ */
 /* Pinned worlds need the words to fit on one screen under the header. Where

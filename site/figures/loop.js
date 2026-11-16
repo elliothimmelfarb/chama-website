@@ -46,7 +46,7 @@ const outline = (d, k) => {
   return `<path class="loop-fit" data-p pathLength="1" d="${d}" style="stroke-dashoffset:calc(1 - ${draw});opacity:calc(1 - ${gone})"/>`;
 };
 
-// The tail: three overlapping arcs behind the marker, shorter ones
+// The tail: two overlapping arcs behind the marker, shorter ones
 // stronger, so 40 degrees of trail fade toward the back.
 const tail = (len, op) =>
   `<path class="loop-tail" data-p pathLength="1" d="${RING}" style="stroke-dasharray:${len} ${1 - len};stroke-dashoffset:calc(${len} - ${LAPS_RUN});opacity:calc(${op} * ${c(0.08, 0.1)} * (1 - ${c(0.95, 1)}))"/>`;
@@ -59,10 +59,12 @@ const svg = raw(`<svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="
   ${OUTLINES.map(outline).join("\n  ")}
   <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:${c(at(2, 0.25), at(2, 0.25) + 0.02)};translate:0 calc(6px - 6px * ${c(at(2, 0.25), at(2, 0.25) + 0.02)})"/>
   <g class="loop-stations" data-p style="opacity:${c(0.08, 0.1)}"><circle cx="0" cy="${-RY}" r="5"/><circle cx="${RX}" cy="0" r="5"/><circle cx="0" cy="${RY}" r="5"/><circle cx="${-RX}" cy="0" r="5"/></g>
-  ${tail(0.111, 0.25)}
-  ${tail(0.07, 0.4)}
+  ${tail(0.111, 0.3)}
   <circle class="loop-marker" data-p r="7" style="offset-path:path('${RING}');offset-rotate:0deg;offset-distance:calc(${LAPS_RUN} * 100%);opacity:${c(0.08, 0.1)}"/>
 </svg>`);
+
+// Each station's label arrives with its station, after the ring has drawn.
+const STOP = c(0.085, 0.1);
 
 // Station labels and the "You" label are HTML over the figure, so they
 // stay readable at any width (figure text never goes under 12px).
@@ -74,13 +76,13 @@ export function loop({ stations, you = "You", label }) {
   );
   const ledger = html`<ol class="loop-ledger" aria-label="${label}">
     ${LAPS.map(
-      (e, k) => html`<li data-p style="${`opacity:${c(END[k] - 0.02, END[k])};translate:0 calc(8px - 8px * ${c(END[k] - 0.02, END[k])})`}"><span>${e.label}</span><span class="num">${e.minutes} min</span></li>`,
+      (e, k) => html`<li data-p style="${`opacity:${c(START[k] + 0.005, START[k] + 0.02)}`}"><span>${e.label}</span><span class="num" data-p style="${`opacity:${c(at(k, 0.75), at(k, 0.75) + 0.015)}`}">${e.minutes} min</span></li>`,
     )}
   </ol>`;
   const figure = html`<div class="loop-fig">
     ${svg}
-    <span class="loop-label loop-you-label" style="${pos(0, -2)}" aria-hidden="true">${you}</span>
-    <ol class="loop-stops" aria-label="${stations.join(", ")}">
+    <span class="loop-label loop-you-label" data-p style="${`${pos(0, -2)};opacity:${c(0.02, 0.04)}`}" aria-hidden="true">${you}</span>
+    <ol class="loop-stops" data-p style="${`opacity:${STOP}`}" aria-label="${stations.join(", ")}">
       <li class="at-top" style="${pos(0, -RY)}">${stations[0]}</li>
       <li class="at-right" style="${pos(RX, 0)}">${stations[1]}</li>
       <li class="at-bottom" style="${pos(0, RY)}">${stations[2]}</li>

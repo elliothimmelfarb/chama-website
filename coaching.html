@@ -8,14 +8,14 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches)d.classList.add("pin")})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css?v=2a21b1c00e">
-  <link rel="stylesheet" href="/assets/base.css?v=4c9c8822cf">
-  <link rel="stylesheet" href="/assets/worlds.css?v=9bb77748cf">
-  <link rel="stylesheet" href="/assets/talk.css?v=062ea7a73d">
-  <script src="/assets/sky.js?v=011d115dc0" defer></script>
+  <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
+  <link rel="stylesheet" href="/assets/base.css?v=44e11ef289">
+  <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
+  <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
+  <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
   <script src="/assets/worlds.js?v=464127a826" defer></script>
-  <script src="/assets/chrome.js?v=c329450176" defer></script>
-  <script src="/assets/talk.js?v=c835281b54" defer fetchpriority="low"></script>
+  <script src="/assets/chrome.js?v=63d4c9f255" defer></script>
+  <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -95,12 +95,12 @@
 </header>
 <main id="main">
 <style>
-.coaching-in { display: grid; gap: var(--s6); align-content: center; height: 100%; padding-top: 56px; padding-bottom: var(--s6); }
+.coaching-in { display: grid; gap: var(--s6); align-content: start; height: 100%; padding-top: calc(56px + var(--s6)); padding-bottom: var(--s6); }
 html:not(.pin) .coaching-in { height: auto; padding: 0; }
 .coaching-sec { padding: var(--s8) 0 calc(var(--s8) + 20vh); }
 .coaching-sec h2 { max-width: 22ch; }
 .coaching-sec .lead { margin-top: var(--s4); }
-.coaching-first { padding-bottom: calc(var(--s8) + 20vh); }
+.coaching-first { padding-bottom: var(--s6); }
 .coaching-first .lead { margin-top: var(--s4); }
 .coaching-first .talk-field { margin-top: var(--s6); }
 .coaching-in h2 { max-width: 20ch; }
@@ -109,11 +109,11 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
 .coaching-fig { margin: 0; width: 100%; max-width: 46rem; }
 .coaching-fig svg { width: 100%; height: auto; overflow: visible; }
 .cf-tangle, .cf-line, .cf-head { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.cf-tangle { stroke: var(--fg); stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, var(--p) / 0.4, 1)); }
-.cf-ring { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; opacity: clamp(0.01, (var(--p) - 0.25) * 8, 1); transform: rotate(calc(var(--p) * 120deg)); }
-.cf-mark { fill: var(--fg); opacity: clamp(0.01, (var(--p) - 0.32) * 8, 1); }
-.cf-line { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, (var(--p) - 0.45) / 0.4, 1)); }
-.cf-head { stroke: var(--accent); stroke-width: 3; opacity: clamp(0.01, (var(--p) - 0.83) * 12, 1); }
+.cf-tangle { stroke: var(--fg); stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, var(--p) / 0.22, 1)); }
+.cf-ring { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; opacity: clamp(0.01, (var(--p) - 0.14) * 10, 1); transform: rotate(calc(var(--p) * 120deg)); }
+.cf-mark { fill: var(--fg); opacity: clamp(0.01, (var(--p) - 0.2) * 10, 1); }
+.cf-line { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, (var(--p) - 0.26) / 0.2, 1)); }
+.cf-head { stroke: var(--accent); stroke-width: 3; opacity: clamp(0.01, (var(--p) - 0.44) * 16, 1); }
 .cf-labels { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: var(--s3); font: 600 var(--t-label)/1.2 var(--text); letter-spacing: 0.01em; color: var(--fg-2); }
 .cf-labels span:nth-child(2) { text-align: center; }
 .cf-labels span:nth-child(3) { text-align: right; color: var(--fg); }
@@ -130,26 +130,28 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
 .ef-at i { position: absolute; left: 87.5%; top: 1px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; }
 .ef-then i { background: var(--fg); }
 .ef-now i { background: var(--accent); }
-.ef-now { transform: translateX(calc(-50% * clamp(0, (var(--p) - 0.2) / 0.55, 1))); }
+.ef-now { transform: translateX(calc(-50% * clamp(0, (var(--p) - 0.1) / 0.4, 1))); }
 .ef-ghost { position: absolute; left: 87.5%; top: 1px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); }
 .ef-levels { display: grid; grid-template-columns: repeat(4, 1fr); font-size: var(--t-fine); color: var(--fg-2); text-align: center; }
 
-.coaching-video .frame { position: relative; margin-top: var(--s6); aspect-ratio: 16 / 9; max-width: 48rem; border-radius: var(--r-surface); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); display: grid; place-items: center; padding: var(--s5); }
-.coaching-video .frame .mark { width: clamp(48px, 9vw, 96px); height: auto; }
-.coaching-video .frame p { position: absolute; left: var(--s5); right: var(--s5); bottom: var(--s5); max-width: 40ch; font: 500 var(--t-stage)/1.3 var(--display); letter-spacing: -0.01em; color: var(--fg); text-wrap: pretty; }
 
-.coaching-shot { width: 100%; max-width: 44rem; }
-.coaching-shot img { width: 100%; height: auto; border-radius: var(--r-surface); box-shadow: 0 0 0 1px var(--line), var(--shadow-float); }
-.coaching-rise { transform: translateY(calc((1 - clamp(0, var(--p) * 2.5, 1)) * 16px)); }
+.hearth-fig { margin: 0; width: 100%; max-width: 30rem; }
+.hearth-fig svg { width: 100%; height: auto; overflow: visible; }
+.hearth-fig path, .hearth-fig rect { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.hearth-fig .hf-axis { stroke: var(--line-strong); }
+.hearth-fig .hf-dot { fill: var(--fg); }
+.hearth-fig .hf-tie { stroke: var(--line-strong); stroke-dasharray: 2 4; }
+.hearth-fig .hf-hot rect { stroke: var(--accent); stroke-width: 2; }
+.hf-rec { opacity: clamp(0.01, (var(--p) - var(--at)) * 6, 1); transform: translateY(calc((1 - clamp(0, (var(--p) - var(--at)) * 6, 1)) * 16px)); }
 
 @media (max-width: 1099px) {
-  .coaching-in { padding-top: calc(56px + var(--s4)); gap: var(--s5); }
+  .coaching-in { padding-top: calc(56px + var(--s5)); gap: var(--s5); }
 }
 @media (min-width: 1100px) {
-  .coaching-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-top: 72px; }
+  .coaching-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: start; padding-top: calc(72px + var(--s8)); }
   .coaching-in > :first-child { grid-column: 1 / span 5; }
   .coaching-in > :last-child { grid-column: 7 / span 6; }
-  .coaching-first { min-height: calc(100svh - 40px); display: grid; align-content: center; }
+  .coaching-first { padding-top: calc(72px + var(--s9)); }
   .coaching-sec { padding-top: var(--s9); }
 }
 </style>
@@ -167,10 +169,10 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
 <section class="world" data-world="tides" style="--h:230" data-label="A session">
   <div class="pin"><div class="wrap coaching-in">
     <div class="copy-block">
-      <h2 class="r">Time with someone who knows AI deeply and makes it simple.</h2>
-      <p class="lead r">Elliot uses AI every day and keeps up with every new capability. He has mentored software engineers and people new to AI, and he starts from the work in front of you, whatever your role.</p>
+      <h2 class="r" style="--in:-1">Time with someone who knows AI deeply and makes it simple.</h2>
+      <p class="lead r" style="--in:-1">Elliot uses AI every day and keeps up with every new capability. He has mentored software engineers and people new to AI, and he starts from the work in front of you, whatever your role.</p>
     </div>
-    <div class="r"><figure class="coaching-fig">
+    <div class="r" style="--in:-1"><figure class="coaching-fig">
   <svg viewBox="0 0 640 200" role="img" aria-label="A tangled line passes through a session and leaves as a straight line." focusable="false">
     <path class="cf-tangle" data-p pathLength="1" d="M20 118C36 44 112 52 92 112S18 158 42 98 152 34 138 112 66 150 112 78 206 58 192 122 136 142 170 88 238 78 266 100"/>
     <circle class="cf-ring" data-p cx="320" cy="100" r="52"/>
@@ -183,7 +185,7 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
   </div></div>
 </section>
 
-<section class="world coaching-sec coaching-who" data-world="paper" data-pin="off" data-label="Who it&#39;s for">
+<section class="world coaching-sec coaching-who" data-world="tides" data-pin="off" data-label="Who it&#39;s for">
   <div class="wrap">
     <h2>Who it&#39;s for</h2>
     <ul>
@@ -196,7 +198,7 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
   <div class="pin"><div class="wrap coaching-in">
     <div class="copy-block">
       <h2 class="r">Each new model can do more, and some old habits start to cost you.</h2>
-      <p class="lead r">With the older Claude Opus models, Elliot never set thinking effort below extra high. With the current ones, high effort costs more and drifts from what you asked, and low or medium effort gives better answers. A team still on its old settings pays more for worse work.</p>
+      <p class="lead r">With the current Claude Opus models, high effort costs more and drifts from what you asked, and low or medium effort gives better answers. A team still on its old settings pays more for worse work.</p>
     </div>
     <div class="r"><figure class="effort-fig" role="img" aria-label="Thinking effort: extra high with the older Claude Opus models, medium with the current ones.">
   <div class="ef-row" aria-hidden="true">
@@ -220,13 +222,6 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
   </div>
 </section>
 
-<section class="world coaching-sec coaching-video" data-world="paper" data-pin="off" data-label="Meet Elliot">
-  <div class="wrap">
-    <h2>Meet Elliot</h2>
-    <div class="frame" role="img" aria-label="Video of Elliot, coming soon"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="translate(2.06 0.06)" fill="var(--accent)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg><p>A short video of Elliot explaining how he coaches is on its way.</p></div>
-  </div>
-</section>
-
 <section class="world" data-world="ember" style="--h:170" data-label="The Hearth" id="hearth">
   <div class="pin"><div class="wrap coaching-in">
     <div class="copy-block">
@@ -234,11 +229,17 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
       <p class="lead r">Members book sessions in their own timezone, keep the record of every session, review what they learned, and can connect their own AI agent.</p>
       <a class="more r" href="/hearth">Members: go to the Hearth<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-    <div class="r"><div class="coaching-shot coaching-rise" data-p><img src="/assets/built/the-hearth-thumb-1080.webp" srcset="/assets/built/the-hearth-thumb-320.webp 320w, /assets/built/the-hearth-thumb-640.webp 640w, /assets/built/the-hearth-thumb-1080.webp 1080w" sizes="(min-width: 1100px) 44vw, calc(100vw - 32px)" width="1080" height="675" alt="The Hearth&#39;s page, where members sign in." loading="lazy" decoding="async"></div></div>
+    <div class="r"><figure class="hearth-fig" aria-hidden="true">
+  <svg viewBox="0 0 360 170" focusable="false">
+    <path class="hf-axis" d="M14 30H346"/>
+    <circle class="hf-dot" cx="40" cy="30" r="5"/><circle class="hf-dot" cx="110" cy="30" r="5"/><circle class="hf-dot" cx="180" cy="30" r="5"/><circle class="hf-dot" cx="250" cy="30" r="5"/><circle class="hf-dot" cx="320" cy="30" r="5"/>
+    <g class="hf-rec" data-p style="--at:0.00"><path class="hf-tie" d="M40 38V58"/><rect x="16" y="62" width="48" height="62" rx="5"/><path d="M26 80H54M26 92H48M26 104H51"/></g><g class="hf-rec" data-p style="--at:0.07"><path class="hf-tie" d="M110 38V58"/><rect x="86" y="62" width="48" height="62" rx="5"/><path d="M96 80H124M96 92H118M96 104H121"/></g><g class="hf-rec" data-p style="--at:0.14"><path class="hf-tie" d="M180 38V58"/><rect x="156" y="62" width="48" height="62" rx="5"/><path d="M166 80H194M166 92H188M166 104H191"/></g><g class="hf-rec" data-p style="--at:0.21"><path class="hf-tie" d="M250 38V58"/><rect x="226" y="62" width="48" height="62" rx="5"/><path d="M236 80H264M236 92H258M236 104H261"/></g><g class="hf-rec hf-hot" data-p style="--at:0.28"><path class="hf-tie" d="M320 38V58"/><rect x="296" y="62" width="48" height="62" rx="5"/><path d="M306 80H334M306 92H328M306 104H331"/></g>
+  </svg>
+</figure></div>
   </div></div>
 </section>
 
-<section class="world end" data-world="tides" data-pin="off" data-label="What would you like to be able to do?">
+<section class="world end" data-world="ember" data-pin="off" data-label="What would you like to be able to do?">
   <section class="talk-close" aria-label="Talk to us">
   <p class="talk-close-line">What would you like to be able to do?</p>
   <form class="talk-field" action="/agent" method="get" data-talk-form>

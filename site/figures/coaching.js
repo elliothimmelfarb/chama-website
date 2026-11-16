@@ -39,3 +39,20 @@ export function effortFigure({ alt, rows, levels }) {
   </div>
 </figure>`;
 }
+
+// The Hearth: sessions booked along a line, each leaving its record below
+// it, the latest record in ember. The words beside it say what it shows.
+export function hearthFigure() {
+  const xs = [40, 110, 180, 250, 320];
+  return html`<figure class="hearth-fig" aria-hidden="true">
+  ${raw(`<svg viewBox="0 0 360 170" focusable="false">
+    <path class="hf-axis" d="M14 30H346"/>
+    ${xs.map((x) => `<circle class="hf-dot" cx="${x}" cy="30" r="5"/>`).join("")}
+    ${xs
+      .map(
+        (x, i) => `<g class="hf-rec${i === xs.length - 1 ? " hf-hot" : ""}" data-p style="--at:${(i * 0.07).toFixed(2)}"><path class="hf-tie" d="M${x} 38V58"/><rect x="${x - 24}" y="62" width="48" height="62" rx="5"/><path d="M${x - 14} 80H${x + 14}M${x - 14} 92H${x + 8}M${x - 14} 104H${x + 11}"/></g>`,
+      )
+      .join("")}
+  </svg>`)}
+</figure>`;
+}

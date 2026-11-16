@@ -20,7 +20,7 @@
   // mixes between them, so a theme change eases every colour at once. Each
   // ground's main colour is its --ground in tokens.css (light / dark):
   // paper #f3f0e8 / #161513, grid #e3e8ec / #0e151c, tides #dcebe7 /
-  // #06343a, ember #f6e9de / #0f0b09, so low motion and the sky agree.
+  // #06343a, ember #f3dfcd / #0f0b09, so low motion and the sky agree.
   // docs/DESIGN.md (section 4) describes each look.
   var PAPER = {
     base: [[0.953, 0.941, 0.910], [0.086, 0.082, 0.075]],
@@ -59,7 +59,11 @@
     haze: [[0.0, 0.0, 0.0], [0.04, 0.11, 0.11]]
   };
   var EMBER_GROUND = {
-    base: [[0.965, 0.914, 0.871], [0.059, 0.043, 0.035]],
+    base: [[0.953, 0.875, 0.804], [0.059, 0.043, 0.035]],
+    // warm ash in the light: a haze of heat over the whole height, deepest
+    // at the bottom, light enough under the words for --accent-text (AA)
+    haze: [[0.902, 0.741, 0.624], [0.0, 0.0, 0.0]],
+    hazeA: [0.55, 0.0],
     heat: [[0.94, 0.62, 0.46], [0.957, 0.345, 0.122]],
     heatA: [0.45, 1.0],
     hot: [[0.98, 0.78, 0.60], [1.0, 0.72, 0.35]],
@@ -147,7 +151,8 @@
     "vec3 wEmber(vec2 uv, vec2 p) {",
     "  vec3 base = " + T("EMB", "base") + "; vec2 q = p * vec2(2.2, 1.6) + vec2(0.0, -uTime * 0.22);",
     "  float n = fbm(q + fbm3(q * 1.3 + vec2(uTime * 0.05, 0.0)) * 0.9); float low = smoothstep(0.45, -0.55, p.y);",
-    "  vec3 col = mix(base, " + T("EMB", "heat") + ", clamp(pow(n, 3.2) * (0.25 + 1.35 * low) * " + T("EMB", "heatA") + ", 0.0, 1.0));",
+    "  vec3 col = mix(base, " + T("EMB", "haze") + ", (0.35 + 0.65 * low) * (0.5 + 0.5 * n) * " + T("EMB", "hazeA") + ");",
+    "  col = mix(col, " + T("EMB", "heat") + ", clamp(pow(n, 3.2) * (0.25 + 1.35 * low) * " + T("EMB", "heatA") + ", 0.0, 1.0));",
     "  col = mix(col, " + T("EMB", "hot") + ", clamp(pow(n, 7.0) * low * 1.5 * " + T("EMB", "hotA") + ", 0.0, 1.0));",
     // a few sparks drifting up, each in its own cell of a rising lattice
     "  vec2 sg = p * vec2(9.0, 6.0) + vec2(0.0, -uTime * 0.5); vec2 sid = floor(sg); float sh = hash(sid + 4.1);",

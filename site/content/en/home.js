@@ -8,7 +8,11 @@ export const home = {
 
   descriptor: "Custom software and AI coaching, from a family business in Lisbon.",
   h1: ["What you have to do, made easier.", "What you wish you could do, made possible."],
-  sub: "You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem. If you'd like to learn it yourself, we teach that too.",
+  // Two paragraphs, so neither paints a larger text block than the H1 (LCP).
+  sub: [
+    "You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem.",
+    "If you'd like to learn it yourself, we teach that too.",
+  ],
 
   stageLabel: "How Chama works, in eight short scenes",
   // The opening stage: each beat's sentence, cut into the phrases it says

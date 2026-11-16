@@ -6,14 +6,14 @@
 import { html } from "../html.js";
 
 export const CLIENTS = [
-  { id: "toraya-lisboa", name: "Toraya Lisboa", src: "/assets/work/toraya-lisboa-300.webp", w: 300, h: 287 },
-  { id: "alves-limited", name: "Alves Limited", src: "/assets/work/alves-limited.webp", w: 399, h: 158 },
-  { id: "springlar", name: "Springlar", src: "/assets/work/springlar-480.webp", w: 480, h: 81 },
+  { id: "toraya-lisboa", name: "Toraya Lisboa", src: "/assets/work/toraya-lisboa-mask.webp", w: 300, h: 290 },
+  { id: "alves-limited", name: "Alves Limited", src: "/assets/work/alves-limited-mask.webp", w: 399, h: 158 },
+  { id: "springlar", name: "Springlar", src: "/assets/work/springlar-mask.webp", w: 480, h: 81 },
 ];
 
 export const PARTNERS = [
-  { id: "tlc-automation", name: "TLC Automation", src: "/assets/work/tlc-automation-480.webp", w: 480, h: 94 },
-  { id: "alves-limited", name: "Alves Limited Group", src: "/assets/work/alves-limited.webp", w: 399, h: 158 },
+  { id: "tlc-automation", name: "TLC Automation", src: "/assets/work/tlc-automation-mask.webp", w: 480, h: 55 },
+  { id: "alves-limited", name: "Alves Limited Group", src: "/assets/work/alves-limited-mask.webp", w: 399, h: 158 },
 ];
 
 // Equal area, capped height: a square mark and a wide wordmark read the

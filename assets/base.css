@@ -22,7 +22,7 @@ img, svg, video { display: block; max-width: 100%; }
 .skip:focus { top: 8px; }
 
 h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
-h1 { font-size: var(--t-display); line-height: 1.02; letter-spacing: -0.03em; }
+h1 { font-size: min(var(--t-display), 4rem); line-height: 1.02; letter-spacing: -0.03em; }
 h2 { font-size: var(--t-h2); line-height: 1.08; letter-spacing: -0.025em; }
 h3 { font-size: var(--t-h3); line-height: 1.15; letter-spacing: -0.015em; }
 p { margin: 0; }
@@ -178,6 +178,12 @@ p { margin: 0; }
 .door a { display: grid; grid-template-columns: 36px 1fr 20px; align-items: center; gap: var(--s3); min-height: 64px; padding: 12px 0; text-decoration: none; border-top: 1px solid var(--line); }
 .door:last-child a { border-bottom: 1px solid var(--line); }
 .door .g { width: 36px; height: 36px; }
+/* The door icons wait for the opening stage to hand them over (the catch,
+   site/figures/stage.js): hidden while it is about to play or playing, shown
+   in low motion, without JavaScript, and once it is paused or passed. */
+html.pin:not([data-motion="low"]) .first:has([data-stage]:not([data-state])) [data-doors]:not([data-catch]) .g,
+html:not([data-motion="low"]) [data-doors][data-catch="wait"] .g { opacity: 0; }
+[data-doors][data-catch="off"] .g { transition: opacity var(--dur-base) var(--ease-out); }
 .door h2 { font-size: 1.125rem; line-height: 1.15; letter-spacing: -0.015em; }
 .door p { margin-top: 2px; font-size: 0.9375rem; line-height: 1.35; color: var(--fg-2); }
 .door .arr { width: 20px; height: 20px; color: var(--accent-text); transition: translate var(--dur-quick) var(--ease-spring); }
@@ -233,10 +239,7 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 @keyframes h1-arrive { from { opacity: 0.01; translate: 0 12px; } }
 :root:not([data-motion="low"]) h1 .half { animation: h1-arrive 600ms var(--ease-out) both; }
 :root:not([data-motion="low"]) h1 .half + .half { animation-delay: 400ms; animation-duration: 800ms; }
-.sub { margin-top: var(--s4); }
 .first-words .talk-field { margin-top: var(--s5); }
-.doors-wrap { margin-top: var(--s5); padding-bottom: var(--s7); }
-.also { margin-top: var(--s4); }
 .more { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--s5); font-weight: 600; color: var(--accent-text); text-decoration: none; }
 .more .arr { width: 18px; height: 18px; transition: translate var(--dur-quick) var(--ease-spring); }
 @media (hover: hover) { .more:hover .arr { translate: 3px 0; } }
@@ -264,15 +267,12 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 :root[data-theme="dark"] .photo { box-shadow: 0 0 0 1px var(--line); }
 .photo-wrap figcaption { margin-top: var(--s3); }
 
-.belief-line { font: 600 var(--t-h2)/1.12 var(--display); letter-spacing: -0.025em; max-width: 24ch; text-wrap: balance; }
-.belief-line + .belief-line { margin-top: var(--s6); color: var(--fg-2); }
 
 @media (min-width: 1100px) {
   .first { padding-top: 72px; }
   .first-grid { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; min-height: calc(100svh - 72px - 140px); align-items: center; }
   .first-words { grid-column: 1 / span 7; padding: var(--s6) 0; }
   .descriptor { font-size: 1.0625rem; margin-bottom: var(--s5); max-width: none; }
-  .sub { margin-top: var(--s5); }
   .first-words .talk-field { margin-top: var(--s6); }
   .split { grid-template-columns: repeat(12, 1fr); column-gap: 24px; }
   .split > :first-child { grid-column: 1 / span 5; }
@@ -289,3 +289,13 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 /* /#thanks: where the no-JavaScript contact form lands. */
 .thanks { display: none; margin-bottom: var(--s5); padding: var(--s3) var(--s4); border-radius: var(--r-surface); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; }
 .thanks:target, .thanks.is-target { display: block; }
+
+/* Without JavaScript (and on short screens, where nothing is pinned) the
+   header can't watch the scroll, so it always has its strip. */
+html:not(.pin):not([data-motion]) .top::before { opacity: 1; }
+.thanks { scroll-margin-top: 88px; }
+
+/* One "Talk to us" button per screen: the header's pill steps aside while
+   a page's own Talk to us field is in view (chrome.js sets the class). */
+.talk-btn { transition: opacity var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+html.field-in-view .top .talk-btn { opacity: 0; pointer-events: none; }

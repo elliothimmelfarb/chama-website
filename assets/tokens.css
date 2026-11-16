@@ -115,7 +115,7 @@
 
 [data-world="grid"]  { --ground: #e3e8ec; --fg: #0f1b26; --fg-2: #3d4c59; --accent-text: #a5380a; --line-strong: #7d8b97; --line: rgb(15 27 38 / 0.14); }
 [data-world="tides"] { --ground: #dcebe7; --fg: #0b2829; --fg-2: #355a58; --accent-text: #a5380a; --line-strong: #6f8f8b; --line: rgb(11 40 41 / 0.14); }
-[data-world="ember"] { --ground: #f6e9de; --fg: #1f120b; --fg-2: #674637; --accent-text: #a1360a; --line-strong: #a08474; --line: rgb(31 18 11 / 0.14); }
+[data-world="ember"] { --ground: #f3dfcd; --fg: #1f120b; --fg-2: #674637; --accent-text: #a1360a; --line-strong: #a08474; --line: rgb(31 18 11 / 0.14); }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) [data-world="grid"]  { --ground: #0e151c; --fg: #e6edf3; --fg-2: #9cadbc; --accent-text: #ff7a45; --line-strong: #4f6273; --line: rgb(230 237 243 / 0.14); }

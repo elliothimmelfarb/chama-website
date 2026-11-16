@@ -8,14 +8,14 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches)d.classList.add("pin")})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css?v=2a21b1c00e">
-  <link rel="stylesheet" href="/assets/base.css?v=4c9c8822cf">
-  <link rel="stylesheet" href="/assets/worlds.css?v=9bb77748cf">
-  <link rel="stylesheet" href="/assets/talk.css?v=062ea7a73d">
-  <script src="/assets/sky.js?v=011d115dc0" defer></script>
+  <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
+  <link rel="stylesheet" href="/assets/base.css?v=44e11ef289">
+  <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
+  <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
+  <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
   <script src="/assets/worlds.js?v=464127a826" defer></script>
-  <script src="/assets/chrome.js?v=c329450176" defer></script>
-  <script src="/assets/talk.js?v=c835281b54" defer fetchpriority="low"></script>
+  <script src="/assets/chrome.js?v=63d4c9f255" defer></script>
+  <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -95,13 +95,43 @@
 </header>
 <main id="main">
 
+<style>
+.home-sub { margin-top: var(--s4); }
+.home-sub + .home-sub { margin-top: 0; }
+@media (min-width: 1100px) { .home-sub:not(.home-sub + .home-sub) { margin-top: var(--s5); } }
+.home-doors { margin-top: var(--s5); padding-bottom: var(--s7); }
+.home-also { margin-top: var(--s4); }
+
+/* the grid's horizon is 60% down the screen, and the words and chart stay above it */
+.home-proof .copy { top: 40%; }
+.home-proof .figure-box { position: absolute; right: var(--edge); top: auto; bottom: 45%; width: min(44vw, 38rem); }
+.home-photo { margin: 0; position: absolute; right: var(--edge); top: calc(50% + 36px); translate: 0 -50%;
+  width: min(42vw, 36rem, (100svh - 72px - 150px) * 8 / 7); }
+.home-photo figcaption { margin-top: var(--s3); }
+.home-belief .copy { width: min(56vw, 46rem); }
+.home-belief-line { font: 600 var(--t-h2)/1.12 var(--display); letter-spacing: -0.025em; max-width: 24ch; text-wrap: balance; }
+.home-belief-line + .home-belief-line { margin-top: var(--s6); color: var(--fg-2); }
+
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  /* words in the upper part of the screen: above the grid's horizon, and in
+     the upper 60% of the ember (docs/DESIGN.md section 4) */
+  :is(.home-proof, .home-people) .copy { top: calc(56px + env(safe-area-inset-top) + 20px); bottom: auto; }
+  .home-proof .figure-box { left: 16px; right: 16px; top: auto; bottom: calc(20px + env(safe-area-inset-bottom)); width: auto; translate: none; }
+  .home-proof .bars-list { gap: var(--s3); }
+  .home-proof .bars figcaption { margin-top: var(--s3); }
+  .home-photo { left: 16px; right: auto; top: auto; bottom: calc(20px + env(safe-area-inset-bottom)); translate: none;
+    width: min(100vw - 32px, (100svh - 400px) * 8 / 7); }
+}
+/* one column: the figures follow their words */
+html:not(.pin) :is(.home-proof .figure-box, .home-photo) { position: static; translate: none; width: min(100%, 36rem); margin-top: var(--s6); }
+</style>
 <section class="world first" data-world="paper" data-pin="off">
   <div class="first-grid wrap">
     <div class="first-words">
       <p class="thanks" id="thanks" role="status">Thank you. We have your details, and a person will reach out soon.</p>
       <p class="descriptor">Custom software and AI coaching, from a family business in Lisbon.</p>
       <h1><span class="half">What you have to do, made easier.</span> <span class="half">What you wish you could do, made possible.</span></h1>
-      <p class="lead sub">You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem. If you&#39;d like to learn it yourself, we teach that too.</p>
+      <p class="lead home-sub">You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem.</p><p class="lead home-sub">If you&#39;d like to learn it yourself, we teach that too.</p>
       <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-home"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-home" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
@@ -173,9 +203,15 @@ html[data-motion="low"] .stage-ctl { display: none; }
 html[data-motion="low"] .stage[data-state] .stage-step { display: flex; }
 html[data-motion="low"] .stage-ph { --in: 1; }
 
+/* After the catch the glyphs live in the doors, and the stage keeps the loop
+   as a quiet still behind Replay. */
+.stage[data-caught] .stage-gl { opacity: 0 !important; }
+.stage[data-caught] .stage-loop { opacity: 0.4 !important; transform: none !important; transition: opacity 600ms var(--ease-out); }
+
 @media (min-width: 1100px) {
   .stage { grid-column: 8 / span 5; margin: 0; height: auto; gap: var(--s4); container-type: inline-size; }
-  .stage-pic { flex: none; height: calc(82cqw * 190 / 400); }
+  .stage-pic { flex: none; height: calc(100cqw * 190 / 400); }
+  .stage-box { width: 100cqw; }
 }
 
 .stage [data-p], .stage-words { --t: calc(var(--p) * 28); }
@@ -272,7 +308,7 @@ html[data-motion="low"] .stage-ph { --in: 1; }
     <path class="stage-ink" d="M0 -12 L11.41 -3.71 L7.05 9.71 L-7.05 9.71 L-11.41 -3.71 Z"/>
     <path class="stage-ring" mask="url(#stage-lrn-m)" d="M0 -14 A27 14 0 1 1 0 14 A27 14 0 1 1 0 -14" style="stroke-dasharray: 1.5 4"/>
   </g>
-  <g class="stage-gl stage-gl1" data-p><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg></g><g class="stage-gl stage-gl2" data-p><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg></g><g class="stage-gl stage-gl3" data-p><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" x="24.5" y="12" width="9" height="16" rx="2"/></svg></g>
+  <g class="stage-gl stage-gl1" data-p data-door="engineering-department"><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg></g><g class="stage-gl stage-gl2" data-p data-door="coaching"><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg></g><g class="stage-gl stage-gl3" data-p data-door="build"><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" x="24.5" y="12" width="9" height="16" rx="2"/></svg></g>
 </svg>
     <span class="stage-lb stage-lb0" data-p style="--a:10.5" aria-hidden="true">Tell us</span><span class="stage-lb stage-lb1" data-p style="--a:11.375" aria-hidden="true">It gets built</span><span class="stage-lb stage-lb2" data-p style="--a:12.25" aria-hidden="true">You use it</span><span class="stage-lb stage-lb3" data-p style="--a:13.125" aria-hidden="true">What&#39;s next</span>
   </div></div>
@@ -290,56 +326,107 @@ html[data-motion="low"] .stage-ph { --in: 1; }
     <p class="stage-count" aria-live="polite"><span data-stage-count>1 of 8</span> · <span class="stage-name stage-name1">The old way</span><span class="stage-name stage-name2">The turn</span><span class="stage-name stage-name3">A small team</span><span class="stage-name stage-name4">The loop</span><span class="stage-name stage-name5">Fit</span><span class="stage-name stage-name6">Breadth</span><span class="stage-name stage-name7">Learning</span><span class="stage-name stage-name8">More time</span></p>
     <button class="stage-btn" type="button" data-stage-step="1" aria-label="Next scene"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="m7 4 5 5-5 5"/></svg></button>
   </div>
+  <noscript><style>
+    .stage { height: auto; }
+    .stage-words { display: block; max-width: 40ch; margin: 0; padding-left: 1.2em; }
+    .stage-say { display: list-item; opacity: 1; }
+    .stage-say + .stage-say { margin-top: var(--s2); }
+    .stage-ph { opacity: 1; transform: none; color: var(--fg-2); font-weight: 500; }
+    .stage-pic { display: none; }
+  </style></noscript>
+  <script>(function () {
+  if (document.documentElement.getAttribute("data-motion") === "low" || window.chamaCatch) return;
+  window.chamaCatch = true;
+  var io = window.IntersectionObserver && new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var st = e.target;
+      if (st.getAttribute("data-state") === "idle" && e.boundingClientRect.top < 0 && e.intersectionRatio < 0.6) set(st, "off");
+    });
+  }, { threshold: [0, 0.6] });
+  function doorsOf(st) { return document.querySelector("[data-doors]"); }
+  function set(st, v) { var d = doorsOf(st); if (d) d.setAttribute("data-catch", v); }
+  function fly(st) {
+    var d = doorsOf(st), moves = [];
+    st.setAttribute("data-caught", "");
+    if (!d || d.getAttribute("data-catch") !== "wait") return;
+    [].forEach.call(st.querySelectorAll("[data-door]"), function (g) {
+      var to = d.querySelector('[data-door="' + g.getAttribute("data-door") + '"] .g'), from = g.querySelector("svg");
+      if (!to || !from) return;
+      var a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
+      if (b.top < 0 || b.bottom > innerHeight || a.bottom < 0 || a.top > innerHeight) return;
+      moves.push([to, a.left + a.width / 2 - b.left - b.width / 2, a.top + a.height / 2 - b.top - b.height / 2, a.width / b.width]);
+    });
+    d.setAttribute("data-catch", moves.length ? "caught" : "off");
+    moves.forEach(function (m, i) {
+      if (m[0].animate) m[0].animate([{ transform: "translate(" + m[1] + "px, " + m[2] + "px) scale(" + m[3] + ")" }, { transform: "none" }],
+        { duration: 700, delay: i * 60, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "backwards" });
+    });
+  }
+  function change(st) {
+    var s = st.getAttribute("data-state"), was = st.chamaWas;
+    st.chamaWas = s;
+    if (s !== "ended") st.removeAttribute("data-caught");
+    if (s === "idle") { set(st, "wait"); if (io) io.observe(st); }
+    else if (s === "playing" && (was === "idle" || was === "ended")) set(st, "wait");
+    else if (s === "paused") set(st, "off");
+    else if (s === "ended" && was) fly(st);
+  }
+  new MutationObserver(function (list) {
+    list.forEach(function (m) { if (m.target.hasAttribute("data-stage")) change(m.target); });
+  }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ["data-state"] });
+})();</script>
 </figure>
   </div>
-  <div class="wrap doors-wrap">
+  <div class="wrap home-doors">
     <ul class="doors" data-doors>
-  <li class="door"><a href="/engineering-department"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg><div><h2>Your own engineering department</h2><p>Fits your process, and changes when you do.</p></div><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="door"><a href="/coaching"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg><div><h2>AI fluency coaching and training</h2><p>When AI can do something new, so can you.</p></div><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="door"><a href="/build"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" x="24.5" y="12" width="9" height="16" rx="2"/></svg><div><h2>Websites, apps and products</h2><p>Websites built to be found.</p></div><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+  <li class="door" data-door="engineering-department"><a href="/engineering-department"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg><div><h2>Your own engineering department</h2><p>Fits your process, and changes when you do.</p></div><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="door" data-door="coaching"><a href="/coaching"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg><div><h2>AI fluency coaching and training</h2><p>When AI can do something new, so can you.</p></div><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="door" data-door="build"><a href="/build"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" x="24.5" y="12" width="9" height="16" rx="2"/></svg><div><h2>Websites, apps and products</h2><p>Websites built to be found.</p></div><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
 </ul>
-    <p class="small also">We also partner with founders on new products, and help leadership teams with AI enablement.</p>
+    <p class="small home-also">We also partner with founders on new products, and help leadership teams with AI enablement.</p>
   </div>
 </section>
 
-<section class="world proof" data-world="grid">
-  <div class="pin"><div class="wrap split">
+<section class="world home-proof" data-world="grid" style="--h:180">
+  <div class="pin">
     <div class="copy">
       <h2 class="r">Most changes are live in under an hour.</h2>
       <p class="lead r">Measured on the software we run for an 88-person metal stamping plant in Toronto.</p>
       <a class="more r" href="/engineering-department">See how it works<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-    <div class="r"><figure class="bars" aria-label="Time from request to live, in minutes">
+    <div class="figure-box r"><figure class="bars" aria-label="Time from request to live, in minutes">
   <div class="bars-axis" aria-hidden="true"><span>0</span><span>15 min</span><span>30 min</span><span>45 min</span><span>1 hour</span></div>
   <ol class="bars-list">
     <li style="--v:0.23333333333333334;--i:0"><span class="bars-label">A fix</span><span class="bars-value num">14 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.5166666666666667;--i:1"><span class="bars-label">A new filter</span><span class="bars-value num">31 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.55;--i:2"><span class="bars-label">A new report</span><span class="bars-value num">33 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.7;--i:3"><span class="bars-label">Download to Excel</span><span class="bars-value num">42 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>
   </ol>
   <figcaption class="small">Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.</figcaption>
 </figure></div>
-  </div></div>
+  </div>
 </section>
 
 <section class="world clients" data-world="grid" data-pin="off">
   <div class="wrap">
     <h2 class="sr-only">Who we have worked with</h2>
-    <ul class="logos"><li><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-300.webp');--lw:46;--lh:44"></span></li><li><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited.webp');--lw:78;--lh:31"></span></li><li><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-480.webp');--lw:119;--lh:20"></span></li></ul>
+    <ul class="logos"><li><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-mask.webp');--lw:46;--lh:44"></span></li><li><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></li><li><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-mask.webp');--lw:119;--lh:20"></span></li></ul>
   </div>
 </section>
 
-<section class="world people" data-world="ember">
-  <div class="pin"><div class="wrap split">
-    <figure class="photo-wrap r"><img class="photo" src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 1100px) 40vw, calc(100vw - 32px)" width="2048" height="1804" alt="Elliot and Annie, smiling, with their baby daughter, in Lisbon." loading="lazy" decoding="async"><figcaption class="small">Elliot and Annie, in Lisbon.</figcaption></figure>
+<section class="world home-people" data-world="ember" style="--h:170">
+  <div class="pin">
     <div class="copy">
       <h2 class="r">Real people you can reach.</h2>
       <p class="lead r">You talk to a person. AI does the heavy work behind us.</p>
       <p class="lead r">We&#39;re a small, family-owned, AI-native business, based in Lisbon and working worldwide.</p>
       <a class="more r" href="/about">About us<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-  </div></div>
+    <figure class="figure-box home-photo r"><img class="photo" src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 40vw, 70vw" width="2048" height="1804" alt="Elliot and Annie, smiling, with their baby daughter, in Lisbon." loading="lazy" decoding="async"><figcaption class="small">Elliot and Annie, in Lisbon.</figcaption></figure>
+  </div>
 </section>
 
-<section class="world belief" data-world="tides">
-  <div class="pin"><div class="wrap">
-    <p class="belief-line r">We believe mastery of AI can give people more time for the things they want to do.</p><p class="belief-line r">More time for human things, and for each other.</p>
-  </div></div>
+<section class="world home-belief" data-world="tides" style="--h:170">
+  <div class="pin">
+    <div class="copy">
+      <p class="home-belief-line r" style="--in:-0.3">We believe mastery of AI can give people more time for the things they want to do.</p><p class="home-belief-line r" style="--in:0.15">More time for human things, and for each other.</p>
+    </div>
+  </div>
 </section>
 
 <section class="world end" data-world="tides" data-pin="off">

@@ -18,7 +18,9 @@
   left: 0;
   right: 0;
   bottom: var(--talk-kb, 0px);
-  height: min(86svh, calc(var(--talk-vh, 100svh) - 8px));
+  /* as tall as its contents, up to 86svh: an empty sheet is only the
+     intro, the chips, the field and the privacy line */
+  max-height: min(86svh, calc(var(--talk-vh, 100svh) - 8px));
   padding: var(--s2) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));
   border-radius: 20px 20px 0 0;
   box-shadow: var(--shadow-float);
@@ -38,6 +40,8 @@
 }
 .talk-scrim.is-open { opacity: 1; transition: opacity var(--dur-sheet) var(--ease-out); }
 html.talk-locked { overflow: hidden; }
+/* the header stays above the scrim, undimmed */
+html.talk-locked .top { z-index: 41; }
 
 .talk-grab {
   flex: none;
@@ -58,7 +62,8 @@ html.talk-locked { overflow: hidden; }
 .talk-intro { flex: none; margin-top: var(--s1); font-size: 0.9375rem; line-height: 1.4; color: var(--fg-2); max-width: 40ch; }
 
 /* ---- the thread ---- */
-.talk-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: var(--s3) calc(var(--s4) * -1) 0; padding: var(--s2) var(--s4) var(--s4); }
+.talk-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: var(--s3) calc(var(--s4) * -1) 0; padding: var(--s2) var(--s4) var(--s4); }
+.talk--sheet.talk-empty .talk-body { margin-top: 0; padding-block: 0; }
 .talk-thread { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s3); }
 .talk-msg { font-size: 0.9375rem; line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; }
 .talk-me {
@@ -154,6 +159,7 @@ html.talk-locked { overflow: hidden; }
     bottom: 16px;
     width: 440px;
     height: auto;
+    max-height: none;
     padding: var(--s5);
     border-radius: var(--r-surface);
     translate: 24px 0;
@@ -163,6 +169,7 @@ html.talk-locked { overflow: hidden; }
   .talk--sheet.is-open { translate: 0 0; opacity: 1; transition: translate 320ms var(--ease-out), opacity 320ms var(--ease-out); }
   .talk--sheet .talk-grab { display: none; }
   .talk--sheet .talk-head { touch-action: auto; cursor: auto; }
+  .talk--sheet .talk-body { flex: 1 1 auto; }
   .talk-body { margin: var(--s4) calc(var(--s5) * -1) 0; padding: var(--s2) var(--s5) var(--s4); }
   /* the phrase holds on "Talk to us" while the panel is open */
   .talk--sheet .talk-cycle { display: none; }
@@ -177,6 +184,7 @@ html.talk-locked { overflow: hidden; }
   padding: var(--s5) var(--gutter) var(--s4);
   background: transparent;
 }
+.talk--page .talk-body { flex: 1 1 auto; }
 .talk--page .talk-compose { background: var(--surface); }
 .talk--page .talk-title { font-size: var(--t-h2); }
 @media (min-width: 1100px) { .talk--page { height: calc(100svh - 72px); } }

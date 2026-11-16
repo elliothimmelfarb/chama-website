@@ -1,7 +1,9 @@
 // Buying software against having your own engineers (docs/DESIGN.md section
 // 7, /engineering-department row 2). Left: customers queue at one software
 // company and the queue moves up one step. Right: one business with its own
-// ember outline, which refits when the business changes shape. Complete at
+// ember outline, which refits when the business changes shape: the new
+// outline draws in before the old one goes, so an ember outline is always
+// there. Complete at
 // --p 1.
 import { html, raw } from "../html.js";
 
@@ -31,7 +33,7 @@ const GAP = 30, FRONT = 138;
 const queue = [0, 1, 2, 3, 4]
   .map((k) => {
     const x = FRONT - GAP * k;
-    const fade = k === 0 ? `opacity:calc(1 - ${c(0.45, 0.6)});` : k === 4 ? `opacity:${c(0.3, 0.55)};` : "";
+    const fade = k === 0 ? `opacity:calc(1 - ${c(0.3, 0.42)});` : k === 4 ? `opacity:${c(0.3, 0.55)};` : "";
     return `<path class="cx-q" data-p d="${pent(10)}" transform="translate(${x} 92)" style="${fade}translate:calc(${STEP} * ${GAP}px) 0"/>`;
   })
   .join("\n  ");
@@ -43,8 +45,8 @@ const svg = raw(`<svg class="cx-svg" viewBox="0 0 460 170" aria-hidden="true" fo
   <g transform="translate(378 92)">
     <path class="cx-you" data-p d="${pent(36)}" style="opacity:calc(1 - ${c(0.45, 0.55)})"/>
     <path class="cx-you" data-p d="${hex(36)}" style="opacity:${c(0.45, 0.55)}"/>
-    <path class="cx-fit" data-p pathLength="1" d="${pent(46)}" style="stroke-dashoffset:${c(0.4, 0.5)}"/>
-    <path class="cx-fit" data-p pathLength="1" d="${hex(46)}" style="stroke-dashoffset:calc(1 - ${c(0.5, 0.7)})"/>
+    <path class="cx-fit" data-p d="${pent(46)}" style="opacity:calc(1 - ${c(0.55, 0.65)})"/>
+    <path class="cx-fit" data-p pathLength="1" d="${hex(46)}" style="stroke-dashoffset:calc(1 - ${c(0.4, 0.6)})"/>
   </g>
 </svg>`);
 

@@ -8,14 +8,14 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches)d.classList.add("pin")})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css?v=2a21b1c00e">
-  <link rel="stylesheet" href="/assets/base.css?v=4c9c8822cf">
-  <link rel="stylesheet" href="/assets/worlds.css?v=9bb77748cf">
-  <link rel="stylesheet" href="/assets/talk.css?v=062ea7a73d">
-  <script src="/assets/sky.js?v=011d115dc0" defer></script>
+  <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
+  <link rel="stylesheet" href="/assets/base.css?v=44e11ef289">
+  <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
+  <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
+  <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
   <script src="/assets/worlds.js?v=464127a826" defer></script>
-  <script src="/assets/chrome.js?v=c329450176" defer></script>
-  <script src="/assets/talk.js?v=c835281b54" defer fetchpriority="low"></script>
+  <script src="/assets/chrome.js?v=63d4c9f255" defer></script>
+  <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -95,7 +95,7 @@
 </header>
 <main id="main">
 <style>
-.build-first { padding-bottom: calc(var(--s8) + 20vh); }
+.build-first { padding-bottom: var(--s6); }
 .build-first .lead { margin-top: var(--s4); }
 .build-first .talk-field { margin-top: var(--s6); }
 .build-dev .made-open h2 { max-width: 14ch; }
@@ -112,6 +112,7 @@
 .build-private { display: flex; align-items: flex-start; gap: var(--s2); margin-top: var(--s4); max-width: 40ch; font-size: var(--t-small); font-weight: 500; color: var(--fg); }
 .build-private svg { margin-top: 0.15em; color: var(--accent-text); }
 .made-ticks a:focus-visible { border-radius: 2px; }
+.build-ghost, .build-kind-apps { display: none; }
 html:not(.pin) .build-dev .made-stage { max-width: var(--max); padding: var(--s7) var(--gutter) calc(var(--s8) + 20vh); }
 html:not(.pin) .build-dev .made:first-of-type { margin-top: var(--s7); }
 
@@ -132,13 +133,24 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
   .build-what { margin-top: var(--s2); font-size: 0.9375rem; line-height: 1.4; }
   .build-kind { margin-top: 2px; }
   .build-link, .build-private { margin-top: var(--s2); }
+  /* the opening words stand right under where the first thing's devices
+     are, not at the foot of the screen: an invisible rig of the same size
+     holds the place (after the h2 in the markup, since drawDevices measures
+     the open's first child against the first rig) */
+  html.pin .build-dev .made-open { align-content: start; padding-bottom: 0; }
+  /* smaller devices, and the apps heading left to one column, so every
+     thing's words sit above the grid's horizon */
+  html.pin .build-dev .rig { width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1) * 0.72); }
+  html.pin .build-dev .made-words h2 { display: none; }
+  html.pin .build-dev .build-kind-apps { display: block; }
+  html.pin .build-dev .made-open > .build-ghost { display: block; order: -1; opacity: 0; visibility: hidden; margin-bottom: var(--s3); }
   .build-partner-in { gap: var(--s4); padding-top: calc(56px + var(--s3)); padding-bottom: var(--s4); }
   .build-proof { margin-top: var(--s4); padding-top: var(--s3); }
   .build-proof p { font-size: 0.9375rem; line-height: 1.4; }
   .build-shots { max-width: 13.5rem; }
 }
 @media (min-width: 1100px) {
-  .build-first { min-height: calc(100svh - 40px); display: grid; align-content: center; }
+  .build-first { padding-top: calc(72px + var(--s9)); }
   .build-partner-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-top: 72px; }
   .build-partner-in > :first-child { grid-column: 1 / span 5; }
   .build-partner-in > :last-child { grid-column: 7 / span 6; }
@@ -161,6 +173,7 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
       <div class="made-open on">
         <h2 id="build-websites">Websites built to be found.</h2>
         <p class="lead">Fast, clear, and set up for search from the first day.</p>
+        <div class="rig build-ghost" aria-hidden="true"><div class="laptop"><div class="lid"><div class="screen"></div></div><div class="base"></div></div><div class="phone"><div class="screen"></div></div></div>
       </div>
       <article class="made" id="toraya" aria-labelledby="toraya-name">
   <div class="rig" aria-hidden="true">
@@ -171,7 +184,7 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
     
     <h3 id="toraya-name">Toraya Lisboa</h3>
     <p class="build-kind">Website and staff app</p>
-    <p class="build-what">A Japanese deli in Rossio station. We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour. The version they approved was ready four hours after we started.</p>
+    <p class="build-what">We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour.</p>
     <p class="build-link"><a href="https://toraya.pt" rel="noopener" target="_blank">toraya.pt<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
     
   </div>
@@ -183,7 +196,7 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
   <div class="made-words">
     <h2>Apps made for one business.</h2>
     <h3 id="vsf-name">VSF Lead Automation</h3>
-    
+    <p class="build-kind build-kind-apps">App for one business</p>
     <p class="build-what">Vivir Sin Fronteras helps students get into universities abroad. When someone enquires, a bot messages them on WhatsApp, asks the questions the team would ask, and books the meeting straight into the team&#39;s calendar when it&#39;s worth it.</p>
     
     <p class="build-private"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3.2" y="7" width="9.6" height="6.8" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span>This is private software, built for one business.</span></p>
@@ -225,7 +238,7 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
   </div></div>
 </section>
 
-<section class="world end" data-world="paper" data-pin="off" data-label="What would you like built?">
+<section class="world end" data-world="ember" data-pin="off" data-label="What would you like built?">
   <section class="talk-close" aria-label="Talk to us">
   <p class="talk-close-line">What would you like built?</p>
   <form class="talk-field" action="/agent" method="get" data-talk-form>

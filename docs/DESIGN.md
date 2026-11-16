@@ -105,7 +105,7 @@ Each ground sets `--fg`, `--fg-2`, `--accent-text` and `--line-strong` for the t
 | Grid | dark | `#0e151c` / `#16212b` | `#e6edf3` 15.55 / 13.81 | `#9cadbc` 7.98 / 7.09 | `#ff7a45` 7.11 / 6.31 | `#4f6273` 2.91 / 2.59 * |
 | Tides | light | `#dcebe7` / `#c9e0da` | `#0b2829` 12.65 / 11.23 | `#355a58` 6.20 / 5.50 | `#a5380a` 5.39 / 4.78 | `#6f8f8b` 2.86 / 2.54 * |
 | Tides | dark | `#06343a` / `#0b4a4f` | `#f2fcf9` 12.86 / 9.53 | `#b4dcd4` 9.06 / 6.71 | `#ff9a6e` 6.47 / 4.79 | `#3f7c7a` 2.80 / 2.08 * |
-| Ember | light | `#f6e9de` / `#f0d6c4` | `#1f120b` 15.33 / 13.15 | `#674637` 7.03 / 6.03 | `#a1360a` 5.78 / 4.96 | `#a08474` 2.92 / 2.50 * |
+| Ember | light | `#f3dfcd` / `#eecfb8` | `#1f120b` 14.13 / 12.33 | `#674637` 6.48 / 5.65 | `#a1360a` 5.33 / 4.65 | `#a08474` 2.92 / 2.50 * |
 | Ember | dark | `#0f0b09` / `#2a140b` | `#fff4e8` 18.06 / 16.09 | `#cdb8a4` 10.25 / 9.13 | `#ff8a55` 8.41 / 7.49 | `#6e5546` 2.85 / 2.54 * |
 
 All text pairs pass AA (4.5:1) on both the base and the brightest text region. `*` The `--line-strong` values are hairlines for figures and dividers; they are decorative. Any outline that defines a control (an input, a segmented control, a quiet button) uses `--fg-2` on grounds where `--line-strong` is under 3:1, and controls that sit on a ground always have a `--surface` fill, which carries them. Ember fills used as data (the bars) are 2.7 to 2.9:1 on the light grounds; every bar's value is also printed as text beside it, so the bar is never the only carrier of the number.
@@ -123,7 +123,7 @@ One fragment shader (`sky.js`) paints them, with a `uTheme` uniform (0 light, 1 
 | **Paper contours** | Paper `#f3f0e8` with a slow topography of ink lines at 8.5% opacity, faint grain, a soft vignette, and a warm lift under the pointer. This is today's paper. | The same topography on warm charcoal `#161513`, lines in paper at 7%, grain at half strength, a faint ember warmth at the bottom edge (4%). | Contours drift at today's speed; the pointer bends them. | Home first screen and stage, About, the calm beginnings of offering pages. |
 | **Grid** | Cool sky `#e3e8ec` above a horizon, identical squares running to it in perspective, a faint scan line. Today's grid, with the blue tiles that flicker changed to ink. | Blueprint night: `#0e151c` with lines in `#9cadbc` at 10%, the horizon a thin cool glow, no flicker. | The floor scrolls toward the horizon slowly; the scan line passes every 15 seconds. | Off-the-shelf software, measurement, proof, the things we build. |
 | **Tides** | Pale sea foam `#dcebe7` with long slow domain-warped currents in teal at low contrast, and a few bright crest lines. | Today's Atlantic: deep teal `#06343a` with foam crests. | Currents flow; the pointer stirs them. | Coaching, belief, Talk to us at the end of a page. |
-| **Ember** | Warm ash `#f6e9de`: no flames, but heat rising as a soft ember haze in the lower third and a few drifting sparks. | Today's forge: near-black `#0f0b09`, embers rising from the bottom, a glow that grows with the figure's progress (`uHeat`). | Heat rises; sparks drift up. | The loop, the people, the Hearth, product partnership. |
+| **Ember** | Warm ash `#f3dfcd`: no flames, but heat rising as a soft ember haze in the lower third and a few drifting sparks. | Today's forge: near-black `#0f0b09`, embers rising from the bottom, a glow that grows with the figure's progress (`uHeat`). | Heat rises; sparks drift up. | The loop, the people, the Hearth, product partnership. |
 
 Rules for every ground: text sits in the upper 60% of an ember section and above the horizon line of the grid on phone; the shader keeps its brightest features out of the text column (the `uFocus` region already does this); ambient motion pauses when the tab is hidden and drops to 30fps after 8 seconds idle (the idle throttle stays).
 
@@ -190,7 +190,7 @@ This improves on the proposal in two ways: the phone gets one row instead of two
 
 ### Header behaviour
 
-The header has no background over a pinned world (as today; words never reach it). Over scrolling content (the /work list, objections, the footer) it gains a strip in the current ground's `--bg` and a `--line` bottom border, faded in over `--dur-quick`. No blur, no glass. The rail stays on the right edge on desktop (2px line, a dot per world, ember fill to the current position) and as a 2px edge line with ticks on the phone.
+The header has no background over a pinned world (words never reach it). Whenever content that is not pinned is under it (an unpinned world, every section in one column or low motion, the footer) it gains a strip in the current ground's `--bg` and a `--line` bottom border, faded in over `--dur-quick`. No blur, no glass. The rail stays on the right edge on desktop (2px line, a dot per world, ember fill to the current position) and as a 2px edge line with ticks on the phone.
 
 ### Footer
 
@@ -200,7 +200,7 @@ Ground: the page's last world continues into it; on a non-world page it sits on 
 
 ## 7. Pages, sections, grounds and motion
 
-"Pinned" means the section holds while its figure plays from `--p`. Every change of ground between sections is a burn; consecutive sections on the same ground scroll as one world with no burn. Every page ends with a Talk to us block and the footer.
+"Pinned" means the section holds while its figure plays from `--p`, for the hold its `--h` sets (in screens times 100; 150 by default). A pinned section without enough hold never shows its words. At most three burns per page, and never two within about two screens: merge short sections onto a neighbour's ground. Every change of ground between sections is a burn; consecutive sections on the same ground scroll as one world with no burn. Every page ends with a Talk to us block and the footer.
 
 ### `/` Home
 

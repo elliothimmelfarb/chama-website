@@ -484,10 +484,10 @@
 
   var doc = document, html = doc.documentElement;
   // The sheet's styles load with the script, after the first paint.
-  if (!doc.querySelector('link[href="/assets/talk.css?v=062ea7a73d"]')) {
+  if (!doc.querySelector('link[href="/assets/talk.css?v=1389dcb815"]')) {
     var css = doc.createElement("link");
     css.rel = "stylesheet";
-    css.href = "/assets/talk.css?v=062ea7a73d";
+    css.href = "/assets/talk.css?v=1389dcb815";
     doc.head.appendChild(css);
   }
   var DESK = matchMedia("(min-width: 1100px)");
@@ -732,6 +732,7 @@
 
       sendBtn.disabled = s.busy;
       rootEl.classList.toggle("talk-has-thread", s.items.length > 0);
+      rootEl.classList.toggle("talk-empty", !s.items.length && !s.composing && !showDetails && !fb);
       if (stick) body.scrollTop = body.scrollHeight;
     }
 
@@ -792,10 +793,13 @@
     view.closeBtn.addEventListener("click", function () { close(); });
     scrim.addEventListener("click", function () { close(); });
     box.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") { e.preventDefault(); close(); return; }
-      if (e.key !== "Tab" || DESK.matches) return;
-      // the phone sheet is modal: Tab goes round inside it
-      var f = focusables(box);
+      if (e.key === "Escape") { e.preventDefault(); close(); }
+    });
+    doc.addEventListener("keydown", function (e) {
+      if (e.key !== "Tab" || !sheet.open || DESK.matches) return;
+      // the phone sheet is modal: Tab goes round the header and the sheet
+      var top = doc.querySelector(".top");
+      var f = (top ? focusables(top) : []).concat(focusables(box));
       if (!f.length) return;
       var first = f[0], last = f[f.length - 1];
       if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -815,13 +819,15 @@
 
   // Phone: modal, with the rest of the page inert. Desktop: a panel beside
   // the page, which stays usable.
+  // The header stays above the scrim and usable (DESIGN.md 9), so it is
+  // part of the phone sheet's focus loop and is never made inert.
   function modal() {
     var phone = !DESK.matches && sheet.open;
     sheet.el.setAttribute("aria-modal", phone ? "true" : "false");
     sheet.scrim.hidden = !phone;
     html.classList.toggle("talk-locked", phone);
     [].forEach.call(doc.body.children, function (n) {
-      if (n === sheet.el || n === sheet.scrim || n.tagName === "SCRIPT") return;
+      if (n === sheet.el || n === sheet.scrim || n.tagName === "SCRIPT" || n.matches(".top")) return;
       if (phone) n.setAttribute("inert", ""); else n.removeAttribute("inert");
     });
   }
@@ -948,6 +954,9 @@
   doc.addEventListener("click", function (e) {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target.closest && e.target.closest("[data-talk]");
+    // On a phone, anything else in the header (the menu, the lockup) steps
+    // the sheet aside first; the conversation is kept.
+    if (!a && sheet && sheet.open && !DESK.matches && e.target.closest && e.target.closest(".top")) close({ quiet: true });
     if (!a) return;
     e.preventDefault();
     if (sheet && sheet.open && a.closest(".top")) { close(); return; }

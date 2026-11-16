@@ -174,12 +174,67 @@ html[data-motion="low"] .stage-ctl { display: none; }
 html[data-motion="low"] .stage[data-state] .stage-step { display: flex; }
 html[data-motion="low"] .stage-ph { --in: 1; }
 
+/* After the catch the glyphs live in the doors, and the stage keeps the loop
+   as a quiet still behind Replay. */
+.stage[data-caught] .stage-gl { opacity: 0 !important; }
+.stage[data-caught] .stage-loop { opacity: 0.4 !important; transform: none !important; transition: opacity 600ms var(--ease-out); }
+
 @media (min-width: 1100px) {
   .stage { grid-column: 8 / span 5; margin: 0; height: auto; gap: var(--s4); container-type: inline-size; }
-  .stage-pic { flex: none; height: calc(82cqw * ${VH} / ${VW}); }
+  .stage-pic { flex: none; height: calc(100cqw * ${VH} / ${VW}); }
+  .stage-box { width: 100cqw; }
 }
 ${scene}
 `;
+
+// The doors catch (docs/DESIGN.md, "the doors catch"): while the stage plays,
+// the door icons wait (data-catch="wait" on [data-doors], hidden in base.css);
+// when it ends, each icon flies from its glyph in the stage to its door.
+// A pause, or scrolling past a stage that never played, shows them where they
+// are. It watches data-state from document, so a stage the router swaps in
+// later is still caught; if this never ran (the page arrived by the router
+// first), the icons simply stay shown.
+const CATCH = `(function () {
+  if (document.documentElement.getAttribute("data-motion") === "low" || window.chamaCatch) return;
+  window.chamaCatch = true;
+  var io = window.IntersectionObserver && new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var st = e.target;
+      if (st.getAttribute("data-state") === "idle" && e.boundingClientRect.top < 0 && e.intersectionRatio < 0.6) set(st, "off");
+    });
+  }, { threshold: [0, 0.6] });
+  function doorsOf(st) { return document.querySelector("[data-doors]"); }
+  function set(st, v) { var d = doorsOf(st); if (d) d.setAttribute("data-catch", v); }
+  function fly(st) {
+    var d = doorsOf(st), moves = [];
+    st.setAttribute("data-caught", "");
+    if (!d || d.getAttribute("data-catch") !== "wait") return;
+    [].forEach.call(st.querySelectorAll("[data-door]"), function (g) {
+      var to = d.querySelector('[data-door="' + g.getAttribute("data-door") + '"] .g'), from = g.querySelector("svg");
+      if (!to || !from) return;
+      var a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
+      if (b.top < 0 || b.bottom > innerHeight || a.bottom < 0 || a.top > innerHeight) return;
+      moves.push([to, a.left + a.width / 2 - b.left - b.width / 2, a.top + a.height / 2 - b.top - b.height / 2, a.width / b.width]);
+    });
+    d.setAttribute("data-catch", moves.length ? "caught" : "off");
+    moves.forEach(function (m, i) {
+      if (m[0].animate) m[0].animate([{ transform: "translate(" + m[1] + "px, " + m[2] + "px) scale(" + m[3] + ")" }, { transform: "none" }],
+        { duration: 700, delay: i * 60, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "backwards" });
+    });
+  }
+  function change(st) {
+    var s = st.getAttribute("data-state"), was = st.chamaWas;
+    st.chamaWas = s;
+    if (s !== "ended") st.removeAttribute("data-caught");
+    if (s === "idle") { set(st, "wait"); if (io) io.observe(st); }
+    else if (s === "playing" && (was === "idle" || was === "ended")) set(st, "wait");
+    else if (s === "paused") set(st, "off");
+    else if (s === "ended" && was) fly(st);
+  }
+  new MutationObserver(function (list) {
+    list.forEach(function (m) { if (m.target.hasAttribute("data-stage")) change(m.target); });
+  }).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ["data-state"] });
+})();`;
 
 const ICON = {
   play: `<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M6 4.2v9.6l8-4.8z"/></svg>`,
@@ -191,7 +246,7 @@ const ICON = {
 
 // A door glyph, drawn inside the stage at a glyph's spot.
 const glyph = (id, n) =>
-  `<g class="stage-gl stage-gl${n}" data-p>${String(GLYPHS[id]).replace('<svg class="g"', '<svg class="g" x="-28" y="-28" width="56" height="56"')}</g>`;
+  `<g class="stage-gl stage-gl${n}" data-p data-door="${id}">${String(GLYPHS[id]).replace('<svg class="g"', '<svg class="g" x="-28" y="-28" width="56" height="56"')}</g>`;
 
 const FIG = `<svg class="stage-fig" viewBox="${-VW / 2} ${-VH / 2} ${VW} ${VH}" aria-hidden="true" focusable="false">
   <defs>
@@ -261,5 +316,14 @@ export function stage({ label, beats }) {
     <p class="stage-count" aria-live="polite"><span data-stage-count>1 of ${beats.length}</span> · ${beats.map((b, i) => html`<span class="stage-name stage-name${i + 1}">${b.name}</span>`)}</p>
     <button class="stage-btn" type="button" data-stage-step="1" aria-label="Next scene">${raw(ICON.next)}</button>
   </div>
+  <noscript><style>
+    .stage { height: auto; }
+    .stage-words { display: block; max-width: 40ch; margin: 0; padding-left: 1.2em; }
+    .stage-say { display: list-item; opacity: 1; }
+    .stage-say + .stage-say { margin-top: var(--s2); }
+    .stage-ph { opacity: 1; transform: none; color: var(--fg-2); font-weight: 500; }
+    .stage-pic { display: none; }
+  </style></noscript>
+  <script>${raw(CATCH)}</script>
 </figure>`;
 }

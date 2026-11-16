@@ -47,6 +47,8 @@ export const coaching = {
   example: {
     h2: "Each new model can do more, and some old habits start to cost you.",
     lead: "With the older Claude Opus models, Elliot never set thinking effort below extra high. With the current ones, high effort costs more and drifts from what you asked, and low or medium effort gives better answers. A team still on its old settings pays more for worse work.",
+    // On screen: two sentences (the whole lead is in llms-full.txt).
+    short: "With the current Claude Opus models, high effort costs more and drifts from what you asked, and low or medium effort gives better answers. A team still on its old settings pays more for worse work.",
     // The figure beside it: where Elliot sets thinking effort, then and now.
     figure: {
       alt: "Thinking effort: extra high with the older Claude Opus models, medium with the current ones.",
@@ -60,6 +62,7 @@ export const coaching = {
     lead: "Company AI policy, structure and enablement, from someone who led AI enablement at Campminder for two and a half years and then built AI platforms as an engineer.",
   },
 
+  // Not on the page until the video exists.
   video: {
     h2: "Meet Elliot",
     soon: "A short video of Elliot explaining how he coaches is on its way.",
@@ -70,7 +73,6 @@ export const coaching = {
     h2: "The Hearth",
     lead: "Members book sessions in their own timezone, keep the record of every session, review what they learned, and can connect their own AI agent.",
     members: "Members: go to the Hearth",
-    shotAlt: "The Hearth's page, where members sign in.",
   },
 
   close: "What would you like to be able to do?",

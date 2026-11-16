@@ -48,6 +48,8 @@ const STYLE = raw(`<style>
 /* /engineering-department. Type and colour from tokens.css and base.css. */
 .ed-first .wrap { padding-bottom: var(--s8); }
 .ed-first .lead { margin-top: var(--s4); }
+/* sized so the H1, not the lead, is the largest paint (the LCP) on a phone */
+.ed-first h1 { font-size: clamp(2.8rem, 1.6rem + 5vw, 4.5rem); }
 .ed-first .talk-field { margin-top: var(--s5); }
 
 /* The words and figure of a pinned world, under the header. */
@@ -63,7 +65,8 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .cx-q { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; }
 .cx-rule { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 2 5; }
 .cx-you { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; }
-.cx-fit { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-dasharray: 1; }
+.cx-fit { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
+.cx-fit[pathLength] { stroke-dasharray: 1; }
 .cx-labels { display: grid; grid-template-columns: 290fr 170fr; margin-top: var(--s2); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg-2); }
 .cx-labels span { text-align: center; }
 .cx-labels span:first-child { padding-left: 12%; }
@@ -85,16 +88,16 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .loop-you-label, .loop-stops li { position: absolute; font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); white-space: nowrap; }
 .loop-you-label { translate: -50% -50%; color: var(--fg-2); }
 .loop-stops { list-style: none; margin: 0; padding: 0; }
-.loop-stops .at-top { translate: -50% calc(-100% - 10px); }
-.loop-stops .at-bottom { translate: -50% 10px; }
-.loop-stops .at-right { translate: -100% calc(-100% - 10px); }
-.loop-stops .at-left { translate: 0 calc(-100% - 10px); }
+.loop-stops .at-top { translate: -50% calc(-100% - 12px); }
+.loop-stops .at-bottom { translate: -50% 12px; }
+.loop-stops .at-right { translate: calc(-100% - 4px) calc(-100% - 14px); }
+.loop-stops .at-left { translate: 4px calc(-100% - 14px); }
 .loop-notes { position: absolute; }
 .loop-note { position: absolute; left: 0; top: 0; translate: -50% -50%; white-space: nowrap; padding: 5px 10px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
 .loop-time { color: var(--accent-text); margin-left: 4px; }
 .loop-ledger { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: var(--t-small); }
 .loop-ledger li { display: flex; justify-content: space-between; gap: var(--s2); padding-top: 4px; border-top: 1px solid var(--line); white-space: nowrap; }
-.loop-ledger .num { font-weight: 600; color: var(--fg); }
+.loop-ledger .num { font-weight: 600; color: var(--accent-text); }
 .loop-ledger span:first-child { color: var(--fg-2); }
 .ed-after { font: 600 var(--t-h3)/1.2 var(--display); letter-spacing: -0.015em; }
 .ed-loop .more { margin-top: var(--s2); }
@@ -168,7 +171,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   .ed-hold { padding-top: calc(72px + var(--s5)); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: center; }
   .ed-hold > .ed-words { grid-column: 1 / span 5; }
   /* on the grid the words stay above the horizon */
-  :is(.ed-contrast, .ed-numbers) .ed-hold { align-content: start; align-items: start; padding-top: calc(72px + 12svh); }
+  .ed-numbers .ed-hold { align-content: start; align-items: start; padding-top: calc(72px + 12svh); }
   .ed-hold > .ed-figbox { grid-column: 7 / span 6; }
   .ed-loop .ed-hold > .ed-words { grid-column: 1 / span 4; display: grid; gap: var(--s5); }
   .ed-loop .ed-hold > .ed-figbox { grid-column: 6 / span 7; grid-row: 1; }
@@ -207,7 +210,7 @@ ${STYLE}
   </div>
 </section>
 
-<section id="contrast" class="world ed-contrast" data-world="grid" style="--h:220" data-label="${t.rail.contrast}">
+<section id="contrast" class="world ed-contrast" data-world="paper" style="--h:230" data-label="${t.rail.contrast}">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r">
       <h2>${t.contrast.h2}</h2>
@@ -229,7 +232,7 @@ ${STYLE}
   </div></div>
 </section>
 
-<section id="numbers" class="world ed-numbers" data-world="grid" style="--h:170" data-label="${t.rail.numbers}">
+<section id="numbers" class="world ed-numbers" data-world="grid" style="--h:200" data-label="${t.rail.numbers}">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r"><h2>${t.numbers.h2}</h2></div>
     <div class="ed-figbox r">${proofChart({ caption: t.numbers.caption })}</div>
@@ -251,7 +254,7 @@ ${STYLE}
   </div>
 </section>
 
-<section id="own" class="world ed-own" data-world="paper" style="--h:170" data-label="${t.rail.own}">
+<section id="own" class="world ed-own" data-world="paper" style="--h:190" data-label="${t.rail.own}">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r">
       <h2>${t.own.h2}</h2>

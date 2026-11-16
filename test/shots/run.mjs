@@ -86,7 +86,8 @@ const browser = await chromium.launch({ executablePath: CHROME, headless: true }
 
 // ---- results --------------------------------------------------------------------
 const failures = [];
-const shots = []; // { page, group, row, label, file, wide, full }
+const shots = []; // { page, row, label, file, vp, full }
+const stats = []; // how many text nodes each contrast pass measured
 function fail(page, state, check, detail, shot) {
   failures.push({ page, state, check, detail, shot: shot ? path.relative(process.cwd(), shot) : null });
 }
@@ -220,7 +221,8 @@ function probe({ scope, contrast, hidden }) {
     const wide = [];
     for (const el of document.querySelectorAll("body *")) {
       const r = el.getBoundingClientRect();
-      if (r.width && r.right > vw + 1 && !(el.parentElement && el.parentElement.getBoundingClientRect().right > vw + 1)) wide.push(`${name(el)} (right edge ${Math.round(r.right)})`);
+      const clip = info(el).clip;
+      if (r.width && r.right > vw + 1 && !(clip && clip.r <= vw + 1) && !(el.parentElement && el.parentElement.getBoundingClientRect().right > vw + 1)) wide.push(`${name(el)} (right edge ${Math.round(r.right)})`);
       if (wide.length >= 4) break;
     }
     out.overflow = `scrollWidth ${sw} > ${vw}: ${wide.join("; ")}`;
@@ -249,7 +251,9 @@ function probe({ scope, contrast, hidden }) {
     if (!inScope.length || inf.vis !== "visible") continue;
     const snippet = n.data.trim().replace(/\s+/g, " ").slice(0, 50);
 
-    if (hidden && inf.op < 0.5 && !inf.ariaHidden && el.closest("main")) {
+    // a stage shows one beat at a time by design, except without JavaScript,
+    // where nothing can step it
+    if (hidden && inf.op < 0.5 && !inf.ariaHidden && el.closest("main") && (hidden === "all" || !el.closest("[data-stage]"))) {
       out.hidden.push(`"${snippet}" at opacity ${inf.op.toFixed(2)} (${name(el)})`);
       continue;
     }
@@ -303,6 +307,7 @@ function probe({ scope, contrast, hidden }) {
 
 async function check(pg, state, page, shot, { scope = "viewport", contrast = true, hidden = false } = {}) {
   const r = await page.evaluate(probe, { scope, contrast, hidden });
+  stats.push({ page: pg, state, texts: r.texts, fadingSkipped: r.fading, unknownBackground: r.unknownBg });
   if (r.overflow) fail(pg, state, "horizontal overflow", r.overflow, shot);
   for (const u of r.under.slice(0, 6)) fail(pg, state, "text under header", u, shot);
   if (r.under.length > 6) fail(pg, state, "text under header", `and ${r.under.length - 6} more`, shot);
@@ -352,16 +357,17 @@ async function holdPoints(page) {
       const top = s.getBoundingClientRect().top + scrollY, h = s.offsetHeight;
       const pin = s.querySelector(":scope > .pin");
       const held = pinned && pin && s.dataset.pin !== "off";
-      const y = held ? top + (h - pin.offsetHeight) / 2 : top + (h - vh) / 2;
-      pts.push({ label: `w${k + 1}-${s.dataset.world}${held ? "" : "-flow"}`, y: Math.round(Math.max(0, Math.min(max, y))) });
+      const hold = held ? h - pin.offsetHeight : null;
+      const y = held ? top + hold / 2 : top + (h - vh) / 2;
+      pts.push({ label: `w${k + 1}-${s.dataset.world}${held ? "" : "-flow"}`, y: Math.round(Math.max(0, Math.min(max, y))), hold });
     });
     pts.push({ label: "end", y: Math.max(0, max) });
     return pts.filter((p, i) => i === 0 || Math.abs(p.y - pts[i - 1].y) > 24);
   });
 }
 
-// Viewport positions every half screen, for the layouts that scroll as one
-// column: the text-under-header check at each, a shot only where it fails.
+// Viewport positions every half screen between the shots: the
+// text-under-header check at each, a shot only where it fails.
 async function sweepHeader(pg, state, page, dir, stem) {
   const { max, vh } = await page.evaluate(() => ({ max: document.documentElement.scrollHeight - innerHeight, vh: innerHeight }));
   let failed = 0;
@@ -416,17 +422,19 @@ async function runState(pg, theme, motion, vp) {
         await page.screenshot({ path: shot });
         shots.push({ page: pg.id, row: stem, label: `${pt.label} @${pt.y}`, file: shot, vp });
         await check(pg.id, `${state} @${pt.label}`, page, shot);
+        if (pt.hold !== null && pt.hold < 1) fail(pg.id, `${state} @${pt.label}`, "pinned world without a hold", "the section is no taller than its pin (no --h), so its words leave as soon as they arrive", shot);
         const sky = await skyCentre(page);
         if (sky) {
           if (theme === "light" && Math.max(...sky) < 24) fail(pg.id, `${state} @${pt.label}`, "sky black", `sky centre is rgb(${sky}) in light theme`, shot);
           else if (theme === "light" ? luma(sky) < 0.45 : luma(sky) > 0.4) fail(pg.id, `${state} @${pt.label}`, "sky theme", `sky centre is rgb(${sky}), which does not read as ${theme}`, shot);
         }
       }
+      await sweepHeader(pg.id, state, page, dir, stem);
     } else {
       const shot = path.join(dir, `${stem}-full.png`);
       await page.screenshot({ path: shot, fullPage: true });
       shots.push({ page: pg.id, row: stem, label: "full page", file: shot, vp, full: true });
-      await check(pg.id, state, page, shot, { scope: "page", hidden: true });
+      await check(pg.id, state, page, shot, { scope: "page", hidden: "outside-stage" });
       await sweepHeader(pg.id, state, page, dir, stem);
     }
     reportLog(pg.id, state, log, top);
@@ -449,7 +457,7 @@ async function noJs(pg, vp, system) {
     const shot = path.join(dir, `${stem}.png`);
     await page.screenshot({ path: shot, fullPage: true });
     shots.push({ page: "extras", row: "no JavaScript", label: `${pg.id} ${system} ${vp.name}`, file: shot, vp, full: true });
-    await check(pg.id, state, page, shot, { scope: "page", hidden: true });
+    await check(pg.id, state, page, shot, { scope: "page", hidden: "all" });
     await sweepHeader(pg.id, state, page, dir, stem);
     reportLog(pg.id, state, log, shot);
   } catch (e) { fail(pg.id, state, "rig error", e.message.split("\n")[0]); } finally { await context.close(); }
@@ -466,7 +474,7 @@ async function oneColumn(pg) {
     await page.screenshot({ path: shot, fullPage: true });
     shots.push({ page: "extras", row: "610x364 one column", label: pg.id, file: shot, vp: LAND, full: true });
     if (await page.evaluate(() => document.documentElement.classList.contains("pin"))) fail(pg.id, state, "one column", "html.pin is set at 364px of height", shot);
-    await check(pg.id, state, page, shot, { scope: "page", hidden: true });
+    await check(pg.id, state, page, shot, { scope: "page", hidden: "outside-stage" });
     await sweepHeader(pg.id, state, page, dir, stem);
     reportLog(pg.id, state, log, shot);
   } catch (e) { fail(pg.id, state, "rig error", e.message.split("\n")[0]); } finally { await context.close(); }
@@ -585,7 +593,7 @@ await sheetCtx.close();
 await browser.close();
 server?.close();
 
-fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify({ base: BASE, pages: pages.map((p) => p.id), seconds: Math.round((Date.now() - started) / 1000), failures, sheets }, null, 2));
+fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify({ base: BASE, pages: pages.map((p) => p.id), seconds: Math.round((Date.now() - started) / 1000), failures, sheets, stats }, null, 2));
 const byCheck = {};
 for (const f of failures) byCheck[f.check] = (byCheck[f.check] || 0) + 1;
 console.log(`\n${done} states in ${Math.round((Date.now() - started) / 1000)}s, ${failures.length} failures`);

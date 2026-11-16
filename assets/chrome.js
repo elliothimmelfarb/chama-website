@@ -90,24 +90,53 @@
   }, HOLD);
 
   // ---- the header strip over scrolling content --------------------------
-  // A section marked data-strip (not a pinned world) gives the header a
-  // background while it is under the header.
+  // Words in a pinned world never reach the header. Anything else does: an
+  // unpinned world, every world in one column or low motion, the footer.
+  // While such content is under the header, the header gets a strip in that
+  // section's ground. Read in the scroll event, never in a frame.
   var top = null;
   function strip() {
     top = top || document.querySelector("[data-top]");
     if (!top) return;
     var h = top.offsetHeight, on = false, ground = "";
-    document.querySelectorAll("[data-strip]").forEach(function (s) {
-      var r = s.getBoundingClientRect();
-      if (r.top < h && r.bottom > 0) { on = true; ground = getComputedStyle(s).getPropertyValue("--ground"); }
-    });
-    top.classList.toggle("top-strip", on || scrollY > 8 && !document.querySelector(".world"));
-    if (ground) top.style.setProperty("--strip", ground.trim()); else top.style.removeProperty("--strip");
+    if (scrollY > 4) {
+      var pinned = root.classList.contains("pin");
+      var under = null;
+      document.querySelectorAll("main > section, main > .world, footer").forEach(function (s) {
+        var r = s.getBoundingClientRect();
+        if (r.top < h && r.bottom > 0) under = s;
+      });
+      if (!under || !pinned || under.tagName === "FOOTER" || !under.classList.contains("world") || under.dataset.pin === "off") {
+        on = true;
+        if (under) ground = getComputedStyle(under).getPropertyValue("--ground");
+      }
+    }
+    top.classList.toggle("top-strip", on);
+    if (ground && ground.trim()) top.style.setProperty("--strip", ground.trim()); else top.style.removeProperty("--strip");
   }
   addEventListener("scroll", strip, { passive: true });
   addEventListener("resize", strip);
 
-  function ready() { sync(); watch(); strip(); }
+  // ---- one Talk to us button per screen ----------------------------------
+  var fieldIo = "IntersectionObserver" in window ? new IntersectionObserver(function () {
+    var any = false;
+    document.querySelectorAll("main [data-talk-form]").forEach(function (f) {
+      var r = f.getBoundingClientRect();
+      if (r.bottom > 0 && r.top < innerHeight) any = true;
+    });
+    root.classList.toggle("field-in-view", any);
+  }) : null;
+  var fieldsSeen = new WeakSet();
+  function watchFields() {
+    if (!fieldIo) return;
+    document.querySelectorAll("main [data-talk-form]").forEach(function (f) {
+      if (fieldsSeen.has(f)) return;
+      fieldsSeen.add(f);
+      fieldIo.observe(f);
+    });
+  }
+
+  function ready() { sync(); watch(); strip(); watchFields(); }
   document.addEventListener("chama:swapped", ready);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ready); else ready();
 })();

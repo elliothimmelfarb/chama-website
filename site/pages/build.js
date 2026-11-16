@@ -16,7 +16,7 @@ const LOCK = raw(
 // The words that stand beside the devices are styled here; the rig, the
 // .made grid and its choreography are worlds.css's.
 const STYLE = html`<style>
-.build-first { padding-bottom: calc(var(--s8) + 20vh); }
+.build-first { padding-bottom: var(--s6); }
 .build-first .lead { margin-top: var(--s4); }
 .build-first .talk-field { margin-top: var(--s6); }
 .build-dev .made-open h2 { max-width: 14ch; }
@@ -33,6 +33,7 @@ const STYLE = html`<style>
 .build-private { display: flex; align-items: flex-start; gap: var(--s2); margin-top: var(--s4); max-width: 40ch; font-size: var(--t-small); font-weight: 500; color: var(--fg); }
 .build-private svg { margin-top: 0.15em; color: var(--accent-text); }
 .made-ticks a:focus-visible { border-radius: 2px; }
+.build-ghost, .build-kind-apps { display: none; }
 html:not(.pin) .build-dev .made-stage { max-width: var(--max); padding: var(--s7) var(--gutter) calc(var(--s8) + 20vh); }
 html:not(.pin) .build-dev .made:first-of-type { margin-top: var(--s7); }
 
@@ -53,13 +54,24 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
   .build-what { margin-top: var(--s2); font-size: 0.9375rem; line-height: 1.4; }
   .build-kind { margin-top: 2px; }
   .build-link, .build-private { margin-top: var(--s2); }
+  /* the opening words stand right under where the first thing's devices
+     are, not at the foot of the screen: an invisible rig of the same size
+     holds the place (after the h2 in the markup, since drawDevices measures
+     the open's first child against the first rig) */
+  html.pin .build-dev .made-open { align-content: start; padding-bottom: 0; }
+  /* smaller devices, and the apps heading left to one column, so every
+     thing's words sit above the grid's horizon */
+  html.pin .build-dev .rig { width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1) * 0.72); }
+  html.pin .build-dev .made-words h2 { display: none; }
+  html.pin .build-dev .build-kind-apps { display: block; }
+  html.pin .build-dev .made-open > .build-ghost { display: block; order: -1; opacity: 0; visibility: hidden; margin-bottom: var(--s3); }
   .build-partner-in { gap: var(--s4); padding-top: calc(56px + var(--s3)); padding-bottom: var(--s4); }
   .build-proof { margin-top: var(--s4); padding-top: var(--s3); }
   .build-proof p { font-size: 0.9375rem; line-height: 1.4; }
   .build-shots { max-width: 13.5rem; }
 }
 @media (min-width: 1100px) {
-  .build-first { min-height: calc(100svh - 40px); display: grid; align-content: center; }
+  .build-first { padding-top: calc(72px + var(--s9)); }
   .build-partner-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-top: 72px; }
   .build-partner-in > :first-child { grid-column: 1 / span 5; }
   .build-partner-in > :last-child { grid-column: 7 / span 6; }
@@ -71,8 +83,8 @@ const made = (thing, i) => html`<article class="made" id="${thing.id}" aria-labe
   <div class="made-words">
     ${thing.opensApps ? html`<h2>${t.apps.h2}</h2>` : ""}
     <h3 id="${thing.id}-name">${thing.name}</h3>
-    ${thing.opensApps ? "" : html`<p class="build-kind">${thing.kind}</p>`}
-    <p class="build-what">${thing.text}</p>
+    <p class="${thing.opensApps ? "build-kind build-kind-apps" : "build-kind"}">${thing.kind}</p>
+    <p class="build-what">${thing.short || thing.text}</p>
     ${thing.href ? html`<p class="build-link"><a href="${thing.href}" rel="noopener" target="_blank">${thing.link}${OUT}</a></p>` : ""}
     ${thing.private ? html`<p class="build-private">${LOCK}<span>${thing.private}</span></p>` : ""}
   </div>
@@ -95,6 +107,7 @@ export function render(p) {
       <div class="made-open on">
         <h2 id="build-websites">${t.websites.h2}</h2>
         <p class="lead">${t.websites.lead}</p>
+        <div class="rig build-ghost" aria-hidden="true"><div class="laptop"><div class="lid"><div class="screen"></div></div><div class="base"></div></div><div class="phone"><div class="screen"></div></div></div>
       </div>
       ${t.things.map(made)}
       <nav class="made-ticks" aria-label="${t.ticksLabel}">${t.things.map((x) => html`<a href="#${x.id}" aria-label="${x.name}"></a>`)}</nav>
@@ -117,7 +130,7 @@ export function render(p) {
   </div></div>
 </section>
 
-<section class="world end" data-world="paper" data-pin="off" data-label="${t.close}">
+<section class="world end" data-world="ember" data-pin="off" data-label="${t.close}">
   ${talkClose(t.close)}
 </section>`;
   return page(p, t, main);
