@@ -1,170 +1,158 @@
-import { html } from "../html.js";
+import { html, raw } from "../html.js";
 import { page, talkField, talkClose, ARROW } from "../parts/chrome.js";
 import { coaching as t } from "../content/en/coaching.js";
-import { coachingFigure, effortFigure, hearthFigure, whoGlyph, enablementFigure } from "../figures/coaching.js";
+import { sessionFigure, effortFigure, hearthFigure, whoGlyph, enablementFigure, ASPECT, STAGE_BUTTONS_CSS } from "../figures/coaching.js";
 
-// Every rule that reads var(--p) sits on a [data-p] element (worlds.css).
-const STYLE = html`<style>
-.coaching-in { display: grid; gap: var(--s6); align-content: start; height: 100%; padding-top: calc(56px + var(--s6)); padding-bottom: var(--s6); }
-html:not(.pin) .coaching-in { height: auto; padding: 0; }
-.coaching-sec { padding: var(--s8) 0; }
-.coaching-sec h2 { max-width: 22ch; }
-.coaching-sec .lead { margin-top: var(--s4); }
-.coaching-first { padding-bottom: var(--s6); }
-.coaching-first .lead { margin-top: var(--s4); }
+// Six worlds, each in one .frame (worlds.css): the first screen with the
+// session playing beside the words; who it's for (flow); new models (pinned,
+// the effort knob slides); AI enablement (flow, still); the Hearth (pinned,
+// the records rise); Talk to us. A figure's --p styles are inline on its
+// parts (site/figures/coaching.js); this sheet only paints them.
+// --sw is viewBox units per CSS pixel at each figure width (worlds.css,
+// "the figure language").
+const sw = (cls, w) => `
+.${cls} .fx-svg { --sw: calc(${w} / 330); }
+@container fx (min-width: 480px) { .${cls} .fx-svg { --sw: calc(${w} / 540); } }
+@container fx (min-width: 600px) { .${cls} .fx-svg { --sw: calc(${w} / 700); } }
+@container fx (min-width: 800px) { .${cls} .fx-svg { --sw: calc(${w} / 880); } }`;
+
+const STYLE = raw(`<style>
+.coaching-page .words > .lead, .coaching-page .words > h2 + .more { margin-top: var(--s4); }
+.coaching-page .words > .more { display: inline-flex; margin-top: var(--s5); }
+
+/* the first screen: the words and the session as one group, a screen tall */
+.world.coaching-first > .pin > .frame { min-height: 100svh; padding-top: calc(var(--head) + var(--s7)); padding-bottom: var(--s8); }
 .coaching-first .talk-field { margin-top: var(--s6); }
-.coaching-in h2 { max-width: 20ch; }
-.coaching-in .lead { margin-top: var(--s4); }
 
-.coaching-fig { margin: 0; width: 100%; }
-.coaching-fig svg { width: 100%; height: auto; overflow: visible; }
-.cf-tangle, .cf-line, .cf-head { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.cf-tangle { stroke: var(--fg); stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, (var(--p) - 0.05) / 0.3, 1)); }
-.cf-ring { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; opacity: clamp(0.01, (var(--p) - 0.3) * 10, 1); transform: rotate(calc(clamp(0, (var(--p) - 0.3) / 0.4, 1) * 120deg)); }
-.cf-mark { fill: var(--fg); opacity: clamp(0.01, (var(--p) - 0.36) * 10, 1); }
-.cf-line { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, (var(--p) - 0.42) / 0.22, 1)); }
-.cf-head { stroke: var(--accent); stroke-width: 3; opacity: clamp(0.01, (var(--p) - 0.62) * 16, 1); }
-.cf-labels { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: var(--s3); font: 600 var(--t-label)/1.2 var(--text); letter-spacing: 0.01em; color: var(--fg-2); }
-.cf-labels span:nth-child(2) { text-align: center; }
-.cf-labels span:nth-child(3) { text-align: right; color: var(--fg); }
-/* each label arrives with its part of the figure */
-.cf-labels span[data-p] { opacity: clamp(0.01, (var(--p) - var(--at)) * 8, 1); }
-@media (max-width: 759px) { .cf-labels { font-size: 0.75rem; } }
+/* C1, a session */
+${sw("cf", 600)}
+.cf-coin { stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); }
+.cf-mark-ring { fill: var(--fx-ink); }
+.cf-mark-spark { fill: var(--accent); }
+.cf-tube, .cf-tangle, .cf-tint, .cf-way, .cf-head { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.cf-tube { stroke: color-mix(in srgb, var(--fg) 8%, transparent); stroke-width: calc(12px * var(--sw)); }
+.cf-tangle { stroke: var(--fx-ink); stroke-width: calc(2px * var(--sw)); }
+.cf-tint { stroke: var(--fx-tint); stroke-width: calc(12px * var(--sw)); }
+.cf-way, .cf-head { stroke: var(--accent); stroke-width: calc(3px * var(--sw)); }
+.cf-you { r: calc(4.5px * var(--sw)); }
+${STAGE_BUTTONS_CSS}
 
+/* who it's for: the heading and lead stand while the rows scroll */
+.coaching-who .who > h2 { font-size: var(--t-h3); }
+.coaching-who ul { list-style: none; margin: var(--s5) 0 0; padding: 0; }
 .coaching-who .qa summary h3 { font-size: var(--t-h3); flex: 1; }
-.coaching-who ul { list-style: none; margin: var(--s6) 0 0; padding: 0; max-width: 46rem; }
-.wf { width: 40px; height: 40px; flex: none; overflow: visible; }
+.wf { width: 48px; height: 48px; flex: none; overflow: visible; }
 .wf circle { fill: var(--fg-2); transition: fill var(--dur-quick) var(--ease-out); }
-.wf .wf-hot { fill: var(--accent); }
-.wf .wf-table { stroke: var(--fg-2); stroke-width: 1.5; stroke-linecap: round; fill: none; }
+.wf .wf-hot { fill: var(--accent); stroke: var(--ground, var(--bg)); stroke-width: 1.5; paint-order: stroke; }
+.wf .wf-table { fill: color-mix(in srgb, var(--fg) 8%, transparent); }
 .qa[open] .wf circle:not(.wf-hot) { fill: var(--fg); }
 @media (hover: hover) { .qa summary:hover .wf circle:not(.wf-hot) { fill: var(--fg); } }
 
-/* AI enablement: the three layers beside the words, grounded on the grid's
-   paper so the floor lines never cross the text */
-.coaching-enable .wrap { display: grid; gap: var(--s6); }
-.en-fig { position: relative; margin: 0; width: min(100%, 26rem); }
-.en-fig svg { width: 78%; height: auto; overflow: visible; }
-.en-slab, .en-side { fill: var(--ground, var(--bg)); stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.en-side { fill: color-mix(in srgb, var(--fg) 6%, var(--ground, var(--bg))); }
-.en-hot { stroke: var(--accent); stroke-width: 2; }
-.en-labels { position: absolute; inset: 0 0 0 80%; font: 600 var(--t-label)/1.2 var(--text); color: var(--fg-2); }
-.en-labels span { position: absolute; left: 0; translate: 0 -50%; white-space: nowrap; }
-.en-labels span:nth-child(1) { top: 23%; color: var(--fg); }
-.en-labels span:nth-child(2) { top: 48%; }
-.en-labels span:nth-child(3) { top: 73%; }
+/* C3, thinking effort */
+${sw("ef", 560)}
+.ef-groove { fill: color-mix(in srgb, var(--fg) 7%, var(--ground, var(--bg))); stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); }
+.ef-notch { fill: none; stroke: var(--line-strong); stroke-width: calc(2px * var(--sw)); stroke-linecap: round; }
+.ef-knob { fill: var(--fx-ink); stroke: var(--fx-halo); stroke-width: calc(3px * var(--sw)); paint-order: stroke; }
+.ef-ghost { fill: none; stroke: var(--fx-ink-2); stroke-width: calc(1.5px * var(--sw)); stroke-dasharray: calc(3px * var(--sw)) calc(4px * var(--sw)); }
 
-.effort-fig { margin: 0; display: grid; gap: var(--s7); width: 100%; }
-.ef-row { display: grid; gap: var(--s2); }
-.ef-name { font: 600 var(--t-label)/1.2 var(--text); letter-spacing: 0.01em; }
-.ef-track { position: relative; height: 28px; }
-.ef-ticks { position: absolute; left: 12.5%; right: 12.5%; top: 13px; height: 2px; background: var(--line-strong); }
-.ef-at { position: absolute; inset: 0; }
-.ef-at i { position: absolute; left: 87.5%; top: 2px; width: 24px; height: 24px; margin-left: -12px; border-radius: 50%; }
-.ef-then i { background: var(--fg); }
-.ef-now i { background: var(--accent); }
-.ef-now { --k: clamp(0, (var(--p) - 0.15) / 0.45, 1); transform: translateX(calc(-50% * var(--k) * var(--k) * (3 - 2 * var(--k)))); }
-.ef-ghost { position: absolute; left: 87.5%; top: 2px; width: 24px; height: 24px; margin-left: -12px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-strong); }
-.ef-levels { display: grid; grid-template-columns: repeat(4, 1fr); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg-2); text-align: center; }
+/* C4, AI enablement */
+${sw("en", 520)}
+.en-top, .en-side { stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
+.en-side { fill: color-mix(in srgb, var(--fg) 12%, var(--ground, var(--bg))); }
+.en-side-r { fill: color-mix(in srgb, var(--fg) 20%, var(--ground, var(--bg))); }
+:is(.en-top, .en-side).en-hot { stroke: var(--accent); stroke-width: calc(2.5px * var(--sw)); }
 
+/* C5, the Hearth */
+${sw("hf", 520)}
+.hf-tie { fill: none; stroke: var(--line-strong); stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: calc(2px * var(--sw)) calc(4px * var(--sw)); stroke-linecap: round; }
+.hf-card { stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); }
+.hf-hot .hf-card { fill: var(--fx-owned); stroke: var(--accent); stroke-width: calc(2px * var(--sw)); }
+.hf-lines { fill: none; stroke: var(--fx-ink-2); stroke-width: calc(1.5px * var(--sw)); stroke-linecap: round; }
+.hf-dot { fill: var(--fx-ink); stroke: var(--fx-halo); stroke-width: calc(3px * var(--sw)); paint-order: stroke; }
 
-.hearth-fig { margin: 0; width: 100%; max-width: 44rem; }
-.hearth-fig svg { width: 100%; height: auto; overflow: visible; }
-.hearth-fig path, .hearth-fig rect { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.hearth-fig .hf-axis { stroke: var(--line-strong); }
-.hearth-fig .hf-dot { fill: var(--fg); }
-.hearth-fig .hf-tie { stroke: var(--line-strong); stroke-dasharray: 2 4; }
-.hearth-fig .hf-hot rect { stroke: var(--accent); stroke-width: 2; }
-.hearth-fig { position: relative; }
-.hf-labels { font: 600 var(--t-label)/1.2 var(--text); color: var(--fg-2); }
-.hf-labels span { position: absolute; }
-.hf-l-s { right: 0; top: calc(30 / 170 * 100% - 10px); translate: 0 -100%; }
-.hf-l-r { left: 0; top: calc(124 / 170 * 100% + 10px); }
-.hearth-fig { padding-bottom: var(--s5); }
-.hf-rec { opacity: clamp(0.01, (var(--p) - var(--at)) * 6, 1); transform: translateY(calc((1 - clamp(0, (var(--p) - var(--at)) * 6, 1)) * 16px)); }
+/* The flow worlds pad themselves: each follows a world on its own ground,
+   so it needs no room for a blend above it, and only a short one below,
+   where the engine's default (a fifth of a screen more) left a third of a
+   screen bare at every handoff. */
+.world:is(.coaching-who, .coaching-enable) > .pin > .frame { padding-top: var(--s8); padding-bottom: calc(var(--s8) + 10svh); }
+.world.coaching-close > .pin > .frame { padding-top: var(--s8); padding-bottom: var(--s9); }
 
-@media (max-width: 1099px) {
-  .coaching-in { padding-top: calc(56px + var(--s5)); gap: var(--s6); align-content: safe center; }
+/* the close: the line and the field, as on every page, in the frame */
+.coaching-close .talk-close { padding: 0; margin: 0; }
+
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  .world.coaching-first > .pin > .frame { min-height: 0; padding-top: calc(var(--head) + var(--s6)); padding-bottom: var(--s7); }
+  /* every figure here is wider than tall, so it takes the column's width;
+     its height then fits under the words on a 610px screen */
+  .coaching-page .frame { --fig-h: 46svh; }
 }
-@media (min-width: 1100px) {
-  .coaching-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: safe center; padding-top: calc(72px + var(--s5)); padding-bottom: var(--s7); }
-  .coaching-in > :first-child { grid-column: 1 / span 5; }
-  .coaching-in > :last-child { grid-column: 7 / span 6; }
-  .coaching-first { padding-top: calc(72px + var(--s9)); }
-  .coaching-sec { padding-top: var(--s9); padding-bottom: var(--s9); }
-  .coaching-who .wrap { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: start; }
-  .coaching-who h2 { grid-column: 1 / span 4; }
-  .coaching-who ul { grid-column: 6 / span 7; margin-top: 0; max-width: none; }
-  .coaching-enable .wrap { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; }
-  .en-words { grid-column: 1 / span 6; }
-  .en-fig { grid-column: 8 / span 4; width: 100%; }
-}
-</style>`;
+</style>`);
 
 export function render(p) {
   const main = html`${STYLE}
-<section class="world first coaching-first" data-world="tides" data-pin="off" data-label="Coaching">
-  <div class="wrap">
-    <h1><span class="half">${t.h1}</span></h1>
-    <p class="lead">${t.lead}</p>
-    ${talkField({ id: "ask-coaching" })}
-  </div>
-</section>
-
-<section class="world" data-world="tides" style="--h:200" data-label="A session">
-  <div class="pin"><div class="wrap coaching-in">
-    <div class="copy-block">
-      <h2 class="r">${t.figure.h2}</h2>
-      <p class="lead r">${t.figure.lead}</p>
+<section class="world first coaching-first coaching-page" data-world="tides" data-pin="off" data-pad="off" data-fill data-label="Coaching">
+  <div class="pin"><div class="frame" data-layout="split">
+    <div class="words">
+      <h1><span class="half">${t.h1}</span></h1>
+      <p class="lead">${t.lead}</p>
+      ${talkField({ id: "ask-coaching" })}
     </div>
-    <div class="r fig">${coachingFigure(t.figure)}</div>
+    <div class="fig" style="--ar:${ASPECT.session.toFixed(3)}">${sessionFigure(t.figure)}</div>
   </div></div>
 </section>
 
-<section class="world coaching-sec coaching-who" data-world="tides" data-pin="off" data-label="${t.forms.h2}">
-  <div class="wrap">
-    <h2>${t.forms.h2}</h2>
-    <ul>
-      ${t.forms.items.map(
-        (f, i) => html`<li><details class="qa"><summary>${whoGlyph(i)}<h3>${f.q}</h3></summary><div class="qa-a">${f.a.map((a) => html`<p>${a}</p>`)}</div></details></li>`,
-      )}
-    </ul>
-  </div>
+<section class="world coaching-who coaching-page" data-world="tides" data-pin="off" data-pad="off" data-fill data-label="${t.forms.h2}">
+  <div class="pin"><div class="frame" data-layout="pair">
+    <div class="words">
+      <h2>${t.figure.h2}</h2>
+      <p class="lead">${t.figure.lead}</p>
+    </div>
+    <div class="who">
+      <h2>${t.forms.h2}</h2>
+      <ul>
+        ${t.forms.items.map(
+          (f, i) => html`<li><details class="qa"><summary>${whoGlyph(i)}<h3>${f.q}</h3></summary><div class="qa-a">${f.a.map((a) => html`<p>${a}</p>`)}</div></details></li>`,
+        )}
+      </ul>
+    </div>
+  </div></div>
 </section>
 
-<section class="world" data-world="grid" style="--h:170" data-label="New models">
-  <div class="pin"><div class="wrap coaching-in">
-    <div class="copy-block">
+<section class="world coaching-page" data-world="grid" style="--h:160" data-fill data-label="New models">
+  <div class="pin"><div class="frame" data-layout="split">
+    <div class="words backed">
       <h2 class="r">${t.example.h2}</h2>
       <p class="lead r">${t.example.short}</p>
     </div>
-    <div class="r fig backed">${effortFigure(t.example.figure)}</div>
+    <div class="fig r backed" style="--ar:${ASPECT.effort.toFixed(3)}">${effortFigure(t.example.figure)}</div>
   </div></div>
 </section>
 
-<section class="world coaching-sec coaching-enable" data-world="grid" data-pin="off" data-label="${t.enablement.h2}">
-  <div class="wrap">
-    <div class="en-words backed">
+<section class="world coaching-enable coaching-page" data-world="grid" data-pin="off" data-pad="off" data-fill data-label="${t.enablement.h2}">
+  <div class="pin"><div class="frame" data-layout="split" data-flip>
+    <div class="words backed">
       <h2>${t.enablement.h2}</h2>
       <p class="lead">${t.enablement.lead}</p>
     </div>
-    ${enablementFigure(t.enablement)}
-  </div>
+    <div class="fig backed" style="--ar:${ASPECT.enablement.toFixed(3)}">${enablementFigure(t.enablement)}</div>
+  </div></div>
 </section>
 
-<section class="world" data-world="ember" style="--h:150" data-label="${t.hearth.h2}" id="hearth">
-  <div class="pin"><div class="wrap coaching-in">
-    <div class="copy-block">
+<section class="world coaching-page" data-world="ember" style="--h:140" data-fill data-label="${t.hearth.h2}" id="hearth">
+  <div class="pin"><div class="frame" data-layout="split">
+    <div class="words">
       <h2 class="r">${t.hearth.h2}</h2>
       <p class="lead r">${t.hearth.lead}</p>
       <a class="more r" href="/hearth">${t.hearth.members}${ARROW}</a>
     </div>
-    <div class="r fig">${hearthFigure(t.hearth.figure)}</div>
+    <div class="fig r" style="--ar:${ASPECT.hearth.toFixed(3)}">${hearthFigure(t.hearth.figure)}</div>
   </div></div>
 </section>
 
-<section class="world end" data-world="ember" data-pin="off" data-label="${t.close}">
-  ${talkClose(t.close, { work: "coaching" })}
+<section class="world end coaching-close" data-world="ember" data-pin="off" data-pad="off" data-fill data-label="${t.close}">
+  <div class="pin"><div class="frame" data-layout="statement">
+    <div class="words">${talkClose(t.close, { work: "coaching" })}</div>
+  </div></div>
 </section>`;
   return page(p, t, main);
 }
