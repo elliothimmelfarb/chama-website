@@ -8,14 +8,14 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches){d.classList.add("pin");addEventListener("DOMContentLoaded",function(){setTimeout(function(){if(!d.dataset.engine)d.classList.remove("pin")},4e3)})}})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css?v=90fbcb9cf7">
-  <link rel="stylesheet" href="/assets/base.css?v=64352538e0">
-  <link rel="stylesheet" href="/assets/worlds.css?v=de275a1e57">
-  <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
+  <link rel="stylesheet" href="/assets/tokens.css?v=e4a59e9718">
+  <link rel="stylesheet" href="/assets/base.css?v=62c4032636">
+  <link rel="stylesheet" href="/assets/worlds.css?v=354e27d1a3">
+  <link rel="stylesheet" href="/assets/talk.css?v=658634970f">
   <script src="/assets/sky.js?v=f524e540c3" defer></script>
-  <script src="/assets/worlds.js?v=5d7842046a" defer></script>
+  <script src="/assets/worlds.js?v=d7c1ef3156" defer></script>
   <script src="/assets/chrome.js?v=18940e8963" defer></script>
-  <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
+  <script src="/assets/talk.js?v=88c238f845" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -150,6 +150,8 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .loop-ledger .num { font-weight: 600; color: var(--accent-text); }
 .loop-ledger span:first-child { color: var(--fg-2); }
 .ed-after { font: 600 var(--t-h3)/1.2 var(--display); letter-spacing: -0.015em; }
+/* the closing line arrives late in the loop's hold, whole by 70% */
+.ed-after[data-p] { --t: clamp(0, (var(--p) - 0.62) / 0.08, 1); --a: calc(var(--t) * (2 - var(--t))); opacity: max(0.01, var(--a)); translate: 0 calc((1 - var(--a)) * var(--rise)); }
 .ed-loop .more { margin-top: var(--s2); }
 
 /* The numbers */
@@ -331,7 +333,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
       <h2>Software companies have engineers, and their customers wait in line.</h2>
       <p class="lead">Here the engineers work only for you. You get what a software company has, without becoming one.</p>
     </div>
-    <div class="ed-figbox r"><figure class="cx" role="group" aria-label="Software companies have engineers, and their customers wait in line.">
+    <div class="ed-figbox r fig"><figure class="cx" role="group" aria-label="Software companies have engineers, and their customers wait in line.">
   <svg class="cx-svg" viewBox="0 0 460 170" aria-hidden="true" focusable="false">
   <rect class="cx-co" x="170" y="50" width="84" height="84"/>
   <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(138 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.14) / 0.12, 1));translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
@@ -362,11 +364,11 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
     <li data-p style="opacity:clamp(0, (var(--p) - 0.085) / 0.015, 1)"><span>A new filter</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.137) / 0.015, 1)">31 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.275) / 0.015, 1)"><span>A fix</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.327) / 0.015, 1)">14 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.465) / 0.015, 1)"><span>Download to Excel</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.517) / 0.015, 1)">42 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.655) / 0.015, 1)"><span>A new report</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.681) / 0.015, 1)">33 min</span></li>
   </ol></div>
       <div class="r ed-close">
-        <p class="ed-after" data-p style="opacity:clamp(0.01, (var(--p) - 0.82) / 0.05, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.82) / 0.05, 1))">Most changes are live in under an hour.</p>
+        <p class="ed-after" data-p>Most changes are live in under an hour.</p>
         <a class="more" href="/agent" data-talk>Tell us yours<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </div>
-    <div class="ed-figbox r"><div class="loop-fig">
+    <div class="ed-figbox r fig"><div class="loop-fig">
     <svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
   <path class="loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0.03) / 0.03, 1);scale:calc(0.94 + 0.06 * clamp(0, (var(--p) - 0.03) / 0.03, 1))"/>
   <path class="loop-you" data-p pathLength="1" d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0) / 0.03, 1))"/>
@@ -396,7 +398,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 <section id="numbers" class="world ed-numbers" data-world="grid" style="--h:200" data-label="The numbers">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r"><h2>Measured on real requests.</h2></div>
-    <div class="ed-figbox r"><div class="backed"><figure class="bars" aria-label="Time from request to live, in minutes">
+    <div class="ed-figbox r fig"><div class="backed"><figure class="bars" aria-label="Time from request to live, in minutes">
   <div class="bars-axis" aria-hidden="true"><span>0</span><span>15 min</span><span>30 min</span><span>45 min</span><span>1 hour</span></div>
   <ol class="bars-list">
     <li style="--v:0.23333333333333334;--i:0"><span class="bars-label">A fix</span><span class="bars-value num" data-p>14 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.5166666666666667;--i:1"><span class="bars-label">A new filter</span><span class="bars-value num" data-p>31 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.55;--i:2"><span class="bars-label">A new report</span><span class="bars-value num" data-p>33 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.7;--i:3"><span class="bars-label">Download to Excel</span><span class="bars-value num" data-p>42 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>
@@ -456,7 +458,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
       <p class="lead">We manage it for you, and you can take it anywhere.</p>
       <p class="lead">If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.</p>
     </div>
-    <div class="ed-figbox r"><figure class="own-fig">
+    <div class="ed-figbox r fig"><figure class="own-fig">
   <svg class="own-svg" viewBox="-210 -100 420 170" aria-hidden="true" focusable="false">
   <ellipse class="own-ours" cx="-110" cy="0" rx="86" ry="50"/>
   <ellipse class="own-yours" cx="110" cy="0" rx="86" ry="50"/>

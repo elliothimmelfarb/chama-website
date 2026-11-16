@@ -114,10 +114,10 @@ export function render(p) {
 <section class="world" data-world="tides" style="--h:200" data-label="A session">
   <div class="pin"><div class="wrap coaching-in">
     <div class="copy-block">
-      <h2 class="r" style="--in:-1">${t.figure.h2}</h2>
-      <p class="lead r" style="--in:-1">${t.figure.lead}</p>
+      <h2 class="r">${t.figure.h2}</h2>
+      <p class="lead r">${t.figure.lead}</p>
     </div>
-    <div class="r" style="--in:-1">${coachingFigure(t.figure)}</div>
+    <div class="r fig">${coachingFigure(t.figure)}</div>
   </div></div>
 </section>
 
@@ -138,7 +138,7 @@ export function render(p) {
       <h2 class="r">${t.example.h2}</h2>
       <p class="lead r">${t.example.short}</p>
     </div>
-    <div class="r backed">${effortFigure(t.example.figure)}</div>
+    <div class="r fig backed">${effortFigure(t.example.figure)}</div>
   </div></div>
 </section>
 
@@ -159,7 +159,7 @@ export function render(p) {
       <p class="lead r">${t.hearth.lead}</p>
       <a class="more r" href="/hearth">${t.hearth.members}${ARROW}</a>
     </div>
-    <div class="r">${hearthFigure(t.hearth.figure)}</div>
+    <div class="r fig">${hearthFigure(t.hearth.figure)}</div>
   </div></div>
 </section>
 

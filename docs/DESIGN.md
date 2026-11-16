@@ -149,7 +149,12 @@ One rule, followed everywhere: anything you press is a pill (`--r-pill: 999px`):
 | `--dur-theme` | 250ms | The theme change, a view-transition dissolve (architecture). |
 | `--dur-sheet` | 420ms | Talk sheet open on phone. |
 | `--dur-arrive` | 1200ms | The H1's two halves, done by 1.2s, from opacity 0.01. |
-| Page change | 220ms lift, 300ms dissolve | The words in view lift away (`LIFT`), the sky dissolves into the new page's ground (`FADE`), and the new words rise in, done within 0.7s of the swap (`ENTER`). |
+| `--rise`, `--lift` | 16px, 8px | Every arrival rises 16px; every exit lifts 8px. Both 0 under reduced motion. |
+| `--dur-arrive-ui`, `--stagger-ms` | 450ms, 50ms | A timed arrival and the step between items (at most five). |
+| `--dur-leave` | 200ms | A timed exit (the router's lift). |
+| `--dur-swap-out`, `--swap-gap`, `--dur-swap-in` | 220ms, 120ms, 340ms | One thing replacing another in place: the cycling phrases, /build's words. |
+| `--dur-carry` | 700ms | The stage's glyphs flying to the doors. |
+| Page change | 200ms lift, 300ms dissolve | The words in view lift away (`LIFT`), the sky dissolves into the new page's ground (`FADE`), and the new words rise in by their place, done within 0.7s of the swap (`ENTER`). |
 | `--dur-beat` | 3500ms | One stage beat. |
 | `--dur-phrase` | 2800ms hold, 560ms swap | The cycling phrases. |
 | `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Everything that enters or responds. The default. |
@@ -158,7 +163,20 @@ One rule, followed everywhere: anything you press is a pill (`--r-pill: 999px`):
 | `--ease-spring` | `cubic-bezier(0.34, 1.45, 0.5, 1)` | Only the door arrow's 3px nudge on hover. |
 | Scroll-driven | linear in `--p` | Figures read `--p` (0 to 1); easing is authored into the figure's keyframes, never added on top of scroll. |
 
-Rules: hover effects sit under `@media (hover: hover)`; nothing animates when it was triggered from the keyboard except focus rings; content is visible by default and motion starts from an already-visible state; reduced motion (or `data-motion="low"`) keeps colour and opacity changes up to 200ms and drops all movement.
+Every transition is one of six moves, the same in scroll and in time. Arrivals are slower and longer than exits.
+
+| Move | In scroll (screens) | In time |
+|---|---|---|
+| Arrive | fade up and rise `--rise`, eased out over 0.25 from `--arrive-at` (-0.6) | `--dur-arrive-ui`, `--ease-out` |
+| Stagger | 0.05 per word in reading order (`--i`, written by the engine); a figure box (`.fig`) after its words, from `--fig-at` (-0.4) | `--stagger-ms` |
+| Draw, then the figure's own timeline | `--p`, per the figure kit | stage beats |
+| Hand off | the stage catch | `--dur-carry`, `--ease-in-out` |
+| Leave | the whole world: stands `EXIT_AT` (0.12), then each part fades over `EXIT_SPAN` (0.2), `EXIT_STAGGER` (0.03) apart, lifting `--lift`; a part goes sooner only where the next words or its pin's edge would reach it, and the next world's words then come as it fades | `--dur-leave`, `--ease-exit` |
+| Swap | `--in`/`--out` beats in a hold | out `--dur-swap-out` `--ease-exit`, in `--dur-swap-in` `--ease-out` after `--swap-gap` |
+
+A page writes only `--in` (0 to 0.5) and `--out` for a beat inside a hold; never `--k`, `--i` or `!important`. Popovers and the desktop Talk panel open on `--dur-base --ease-out` and close on `--dur-quick --ease-exit`; the header's Talk pill only fades; the rail and press use `--dur-quick` and `--dur-press` on `--ease-out`.
+
+Rules: hover effects sit under `@media (hover: hover)`; nothing animates when it was triggered from the keyboard except focus rings; content is visible by default and motion starts from an already-visible state; reduced motion (or `data-motion="low"`) keeps colour and opacity changes up to 200ms and drops all movement: under the system setting in full mode the same arrivals and exits run as fades (`--rise` and `--lift` are 0), the router fades the words in and still dissolves the sky, the H1 and /build's words fade, and the stage catch becomes a fade of the icons in place.
 
 ---
 

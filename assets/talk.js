@@ -484,10 +484,10 @@
 
   var doc = document, html = doc.documentElement;
   // The sheet's styles load with the script, after the first paint.
-  if (!doc.querySelector('link[href="/assets/talk.css?v=1389dcb815"]')) {
+  if (!doc.querySelector('link[href="/assets/talk.css?v=658634970f"]')) {
     var css = doc.createElement("link");
     css.rel = "stylesheet";
-    css.href = "/assets/talk.css?v=1389dcb815";
+    css.href = "/assets/talk.css?v=658634970f";
     doc.head.appendChild(css);
   }
   var DESK = matchMedia("(min-width: 1100px)");

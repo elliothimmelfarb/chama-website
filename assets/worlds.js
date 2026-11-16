@@ -369,16 +369,13 @@
     var D = devicesOf(sec), n = D.items.length;
     if (!n || !D.stage) return;
     devicesFit(D, portrait());
-    // the stage (devices and words) and the bar dissolve as the world
-    // leaves, most of the way in the first half, so the dark devices do not
-    // hang over the next world as a grey slab. Written here, only when it
+    // the stage (devices and words) and the bar leave as the words do (Leave):
+    // standing still, fading, lifting --lift. Written here, only when it
     // changes, rather than from --u in CSS, which would restyle everything
     // inside them every frame.
-    // (held still as it leaves, it fades evenly: it never rides up over the next)
-    var gone = (stand ? ex : ex * ex).toFixed(3);
+    var gone = ex.toFixed(3);
     put(D.stage, "opacity", gone);
-    // drifting up a little as it goes, as the words do (.r in worlds.css)
-    var dy = (stand || 0) - (1 - ex) * 16;
+    var dy = (stand || 0) - (1 - ex) * liftPx;
     put(D.stage, "translate", dy ? "0 " + dy.toFixed(1) + "px" : "");
     if (D.bar) put(D.bar, "opacity", gone);
     var a = devicesIntro(n), opening = l < a;
@@ -474,26 +471,27 @@
   // Where things are on the page, read once per layout rather than every
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
-  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [], goneEls = [], devStay = [];
+  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [], goneEls = [], devStay = [], devGone = [], places = [], liftPx = 8, arriveAt = -0.6;
   var docH = 0, vh = 0;
-  // ---- leaving: what rides up with a pin is gone before it reaches anything ----
-  // A world's --u runs from 1 to 2 while its pin scrolls away. goneOf is how
-  // far, in pixels of scroll past the pin's release, the first thing that
-  // fades with it (a .r) can go before it would reach the header; on a
-  // phone that is often a few pixels. So the fade ends there, but takes at
-  // least EXIT_MIN of the screen: where the room is short it begins in the
-  // last of the hold, and the words dissolve as they start to move rather
-  // than blink out. setU writes what is left (exitOf) on each reader as --e.
+  // ---- leaving: a world leaves as one ----------------------------------------
+  // A world's --u runs from 1 to 2 while its pin scrolls away. Its .r all
+  // leave on one exit (Leave, docs/DESIGN.md section 5): the world stands
+  // complete for EXIT_AT of a screen, then each .r fades over EXIT_SPAN,
+  // EXIT_STAGGER after the one before it in reading order (--i), lifting
+  // --lift. goneOf finds where that exit starts: at EXIT_AT, or earlier
+  // (into the hold, on a phone) where the last of them would otherwise
+  // still show when the next world's first words reach it, its pin's own
+  // clipping edge reaches it, or it rides up into the header. setU writes
+  // what is left of each (exitOf) as --e.
   //
-  // Where another world follows, each .r instead stands still as its pin
-  // leaves (--sx, --pl: worlds.css adds back the pin's travel) and
-  // dissolves in place (while the new ground rises under it, where there is
-  // one), gone a little before the next world's first words would reach it. So the scroll
-  // between two worlds is never bare (2026-11-16: up to a screen of empty
-  // ground on home and /engineering-department, measured by test/shots'
-  // dead scroll check). Readers that are not a .r (the shade) leave with the
-  // world's first word.
-  var EXIT_MIN = 0.15, MEET_GAP = 0.12, STAY_MAX = 0.8;
+  // Where another world follows, each .r stands still as its pin leaves
+  // (--sx, --pl: worlds.css adds back the pin's travel) until it is gone or
+  // the pin's edge reaches it, so the scroll between two worlds is never
+  // bare (2026-11-16: up to a screen of empty ground on home and
+  // /engineering-department, measured by test/shots' dead scroll check).
+  // Readers that are not a .r (the shade) leave with the world's first word.
+  var EXIT_AT = 0.12, EXIT_SPAN = 0.2, EXIT_STAGGER = 0.03, STAGGER_MAX = 5, MEET_GAP = 0.12;
+  var ARRIVE_EARLIEST = -0.85, ARRIVE_OVERLAP = 0.04;
   // the slide a .r element is given while it is hidden, which is not its place
   function shiftOf(el) { var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
   // where the next world's first words sit, as a share of the screen from
@@ -509,66 +507,113 @@
     }
     return y / AH;
   }
+  // the --i of a .r: the world's words in reading order, then its figure
+  // boxes (.fig), at most STAGGER_MAX; a .r inside another inherits its
+  // outer one's, so only the outer ones get it
+  function placeWords(k) {
+    var pin = pinOf[k], outer = [];
+    if (!pin) return [];
+    readers[k].forEach(function (el) { if (el.classList.contains("r") && !el.parentElement.closest(".world > .pin .r")) outer.push(el); });
+    var order = outer.filter(function (el) { return !el.classList.contains("fig"); }).concat(outer.filter(function (el) { return el.classList.contains("fig"); }));
+    order.forEach(function (el, n) { setVar(el, "--i", String(Math.min(n, STAGGER_MAX))); });
+    return readers[k].map(function (el) {
+      var r = el.classList.contains("r") ? el : null, o = r && (r.parentElement.closest(".world > .pin .r") || r);
+      return o ? Math.min(order.indexOf(o), STAGGER_MAX) : 0;
+    });
+  }
+  // how far past the release (in pixels of scroll; negative is in the hold)
+  // something with its top at y and its foot at foot in the pin must be
+  // gone. Where a world follows, it stands still as its pin leaves, so it
+  // must be gone before the next world's first words, rising from below,
+  // reach it. Once the pin's own clipping edge reaches its foot it either
+  // rides up with the pin (ride: nothing of its world shows above it, so
+  // it crosses nothing) and must be gone before the header, or it must be
+  // gone by then (on a phone, where the parts are stacked). The last world
+  // rides up with its pin and must be gone before the header.
+  function mustGo(len, y, foot, blend, next, top, ride) {
+    if (!blend) return y - top;
+    var meet = len + next * AH - foot - MEET_GAP * AH, edge = len - foot;
+    return meet < edge || !ride ? Math.min(meet, edge) : edge + Math.max(0, y - top);
+  }
+  // Where a world starts to leave, before the guards: EXIT_AT after its
+  // release when a pinned world follows (whose words arrive at --arrive-at).
+  // When the next world scrolls in as flow, its words come in plain and
+  // often few (a closing "Say hello"), so the world stays until they reach
+  // the middle of the screen, the same lead later: the two always overlap
+  // rather than leave bare ground between them.
+  function leaveFrom(k, len, next) {
+    if (k >= NW - 1) return EXIT_AT * AH;
+    var lead = (1 + arriveAt) * AH - EXIT_AT * AH;
+    var comes = held[k + 1] ? (1 + arriveAt) * len : len + next * AH - 0.5 * AH;
+    return Math.max(EXIT_AT * AH, comes - lead);
+  }
+  // Each .r is gone EXIT_SPAN after the world's start plus its place's
+  // stagger, or by its own guard (mustGo) if that is sooner: on a phone the
+  // lowest parts meet the pin's edge first and leave in the last of the hold.
   function goneOf(k) {
     var sec = sections[k], pin = pinOf[k], blend = k < NW - 1, next = blend ? firstWords(k + 1) : 0;
-    var top = headBottom() + 8, pt = pin.getBoundingClientRect().top, room = pins[k] || AH;
-    // everything that fades with the world, except what is gone before the
-    // pin lets go (its --out is under 1)
-    var len = pins[k] || AH;
-    var stay = [], own = readers[k].map(function (el, j) {
-      stay[j] = 0;
-      if (!el.classList.contains("r") || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return null;
-      var r = el.getBoundingClientRect(), y = r.top - shiftOf(el) - pt, foot = (y + r.height) / len;
-      room = Math.min(room, y - top);
-      // a .r inside another moves and fades with it (its own stand would
-      // add the pin's travel twice)
-      if (!blend || el.parentElement.closest(".world > .pin .r")) return null;
-      // the share of the pin's exit before the next world's words, rising
-      // from below, would reach this one's foot, and never past the moment
-      // the pin's own bottom edge (it clips) would reach it: an element low
-      // in the pin starts to fade in the last of the hold instead
-      var x = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - foot - MEET_GAP), Math.max(0.02, 1 - foot));
-      stay[j] = x;
-      return x * len;
+    var top = headBottom() + 8, pt = pin.getBoundingClientRect().top, len = pins[k] || AH;
+    var span = EXIT_SPAN * AH, step = EXIT_STAGGER * AH, start = leaveFrom(k, len, next);
+    var place = places[k] || [], by = [], first = Infinity;
+    // everything that leaves with the world, except what is gone before the
+    // pin lets go (its --out is under 1); a .r inside another moves and
+    // fades with its outer one
+    var box = [];
+    readers[k].forEach(function (el, j) {
+      if (!el.classList.contains("r") || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return;
+      if (el.parentElement.closest(".world > .pin .r")) return;
+      var r = el.getBoundingClientRect(), y = r.top - shiftOf(el) - pt;
+      box[j] = { y: y, foot: y + r.height, l: r.left, r: r.right };
     });
-    var devices = 0;
+    box.forEach(function (b, j) {
+      b.ride = !box.some(function (o) { return o !== b && o.foot <= b.y + 1 && o.l < b.r && b.l < o.r; });
+      by[j] = mustGo(len, b.y, b.foot, blend, next, top, b.ride);
+      first = Math.min(first, by[j]);
+    });
     if (sec.classList.contains("devices-world")) {
-      var D = devicesOf(sec), it = D.items[D.items.length - 1];
-      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) room = Math.min(room, it.offsetTop + el.offsetTop - top); });
-      // /build's devices leave together: drawDevices stands the stage still
-      // and fades it as one, for the share of the exit in devStay
-      own = own.map(function () { return null; });
-      stay = stay.map(function () { return 0; });
-      // the lowest of the last thing's devices and words, where the pin's edge would cut first
-      var dLow = 0;
-      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) dLow = Math.max(dLow, el.getBoundingClientRect().bottom - pt); });
-      var dFoot = (dLow || D.stage.offsetHeight * 0.75) / len;
-      if (blend) devices = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - dFoot - MEET_GAP), Math.max(0.02, 1 - dFoot));
+      // /build's devices leave as one: drawDevices stands the stage still,
+      // then lets it ride up with the pin (nothing of its world is above
+      // it), and fades it; its words leave with it
+      var D = devicesOf(sec), it = D.items[D.items.length - 1], dTop = len, dLow = 0;
+      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) {
+        if (!el) return;
+        var b = el.getBoundingClientRect();
+        dTop = Math.min(dTop, b.top - pt);
+        dLow = Math.max(dLow, b.bottom - pt);
+      });
+      dLow = dLow || D.stage.offsetHeight * 0.75;
+      var dGone = Math.min(start + span, mustGo(len, Math.min(dTop, dLow), dLow, blend, next, top, true));
+      var all = readers[k].map(function () { return dGone; });
+      return { world: dGone, els: all, stay: all.map(function () { return 0; }), devices: { gone: dGone, stay: blend ? clamp(Math.min(dGone, len - dLow) / len) : 0 } };
     }
-    room = Math.max(room, 10);
-    // a nested .r takes its outer .r's exit
-    own = own.map(function (r, j) {
-      if (r !== null) return r;
-      var outer = readers[k][j].parentElement && readers[k][j].parentElement.closest(".world > .pin .r");
-      var at = outer ? readers[k].indexOf(outer) : -1;
-      return at >= 0 && own[at] !== null ? own[at] : null;
+    var gone = readers[k].map(function (el, j) {
+      var o = el.classList.contains("r") && el.parentElement.closest(".world > .pin .r"), at = o ? readers[k].indexOf(o) : j;
+      var own = start + (place[j] || 0) * step + span;
+      return by[at] === undefined ? own : Math.min(own, by[at]);
     });
-    return { world: room, els: own.map(function (r) { return r === null ? room : r; }), stay: stay, devices: devices };
+    return {
+      world: Math.min(start + span, first),
+      els: gone,
+      // a .r with its own guard stands until it is gone or its pin's edge
+      // reaches it; a nested one rides with its outer one
+      stay: gone.map(function (g, j) { return blend && box[j] ? clamp(Math.min(g, len - box[j].foot) / len) : 0; }),
+      devices: null
+    };
   }
   // A unit of --u is a screen of scroll once a pin has let go (the last
   // world counts its tail in AH), and the hold's length before.
   function pinLen(k) { return k === NW - 1 ? AH : pins[k] || AH; }
   function holdLen(k) { return Math.max(1, hs[k] - pins[k]); }
-  function exitLen(gone) { return Math.max(Math.min(gone, AH), EXIT_MIN * AH); }
   // Past the last world the page scrolls only as far as the footer. What
   // that tail never carries into the header stays: with the floor, it would
   // otherwise fade in place at the foot of the page.
   function reach(k, gone) { return k === NW - 1 && docH - vh - (tops[k] + holdLen(k)) < gone ? 1e4 : gone; }
   // how much of world k is left at --u = u, 0 to 1, for something gone
-  // `gone` pixels past the release
+  // `gone` pixels past the release (negative: in the hold), after a fade
+  // of EXIT_SPAN of a screen
   function exitOf(k, gone, u) {
     if (gone === undefined) return 1;
-    return clamp((gone - Math.max(u - 1, 0) * pinLen(k) - Math.min(u - 1, 0) * holdLen(k)) / exitLen(gone));
+    return clamp((gone - Math.max(u - 1, 0) * pinLen(k) - Math.min(u - 1, 0) * holdLen(k)) / (EXIT_SPAN * AH));
   }
   // measure() writes a value only when it changes, so a measure that moves
   // nothing leaves the layout it read clean for its second round of reads
@@ -587,14 +632,17 @@
     pins = sections.map(function (s, k) { return held[k] ? pinOf[k].offsetHeight : 0; });
     docH = root.scrollHeight;
     vh = window.innerHeight;
-    goneEls = []; devStay = [];
+    var rootStyle = getComputedStyle(root);
+    liftPx = parseFloat(rootStyle.getPropertyValue("--lift")) || 0;
+    arriveAt = parseFloat(rootStyle.getPropertyValue("--arrive-at")) || -0.6;
+    goneEls = []; devStay = []; devGone = [];
     var stays = [];
     gones = sections.map(function (s, k) {
       if (!held[k]) return undefined;
       var g = goneOf(k);
       goneEls[k] = g.els.map(function (r) { return reach(k, r); });
       stays[k] = g.stay;
-      devStay[k] = g.devices;
+      if (g.devices) { devStay[k] = g.devices.stay; devGone[k] = reach(k, g.devices.gone); }
       return reach(k, g.world);
     });
     // then the writes: how long each .r stands still as its pin leaves
@@ -604,6 +652,19 @@
         setVar(el, "--sx", x ? String(round3(x)) : "");
         setVar(el, "--pl", x ? Math.round(pins[k]) + "px" : "");
       });
+      // Where a world had to be gone early (a phone, /build's devices under
+      // the header), the next pinned world's words start as its last part
+      // fades rather than at --arrive-at, but never before they can be seen
+      // (ARRIVE_EARLIEST). Written once per layout on the pin, which holds
+      // only what reads it then: no frame writes it.
+      if (!pinOf[k]) return;
+      var at = "";
+      if (k > 0 && held[k] && held[k - 1] && goneEls[k - 1]) {
+        var last = devGone[k - 1] !== undefined ? devGone[k - 1] : Math.max.apply(null, goneEls[k - 1].concat([gones[k - 1]]));
+        var want = Math.max(ARRIVE_EARLIEST, -1 + (last - ARRIVE_OVERLAP * AH) / (pins[k - 1] || AH));
+        if (want < arriveAt - 0.001) at = String(round3(want));
+      }
+      setVar(pinOf[k], "--arrive-at", at);
     });
     if (nav) placeRail();
     // the exits may have moved: the next frame writes every --u, --e and --p again
@@ -781,6 +842,7 @@
     pReaders = sections.map(function (s, k) {
       return pinOf[k] ? [].filter.call(s.querySelectorAll(P_READERS), function (el) { return !el.closest("[data-stage]"); }) : [];
     });
+    places = sections.map(function (s, k) { return placeWords(k); });
     lastE = readers.map(function () { return []; });
     tops = []; hs = []; pins = []; held = []; gones = []; goneEls = []; lastU = []; lastP = [];
     shown = worldOf[0] || 0;
@@ -824,8 +886,8 @@
     if (pinned) {
       drawRail();
       if (isDevices(i) && held[i]) {
-        var ds = devStay[i] || 0, dPx = ds * (pins[i] || AH);
-        drawDevices(sections[i], l, ts, exitOf(i, ds ? dPx : gones[i], u), ds ? Math.min(Math.max(u - 1, 0), ds) * (pins[i] || AH) : 0);
+        var ds = devStay[i] || 0;
+        drawDevices(sections[i], l, ts, exitOf(i, devGone[i], u), Math.min(Math.max(u - 1, 0), ds) * (pins[i] || AH));
       }
       if (a > 0 && isDevices(i + 1) && held[i + 1]) drawDevices(sections[i + 1], 0, ts, 1);
       // a jump past the devices leaves them as they were; settle them gone
@@ -1010,7 +1072,7 @@
       swap(doc);
       root.classList.add("routed");
       here = path;
-      // .nav-leave lifts main by 2.5vh, so it goes before anything is measured
+      // .nav-leave lifts main by --lift, so it goes before anything is measured
       settleNav();
       bind();
       bindStages();
@@ -1026,11 +1088,11 @@
       // the new <main> is in place and measured: per-page setup elsewhere
       // (chrome.js, talk.js) binds to it now
       document.dispatchEvent(new CustomEvent("chama:swapped"));
-      if (!RM) {
-        root.classList.add("nav-enter");
-        enterT = setTimeout(function () { root.classList.remove("nav-enter"); }, ENTER);
-        arrival = { from: from, start: performance.now() };
-      }
+      // under reduced motion the words only fade in (worlds.css) and the
+      // sky's dissolve is a change of colour, so both stay
+      root.classList.add("nav-enter");
+      enterT = setTimeout(function () { root.classList.remove("nav-enter"); }, ENTER);
+      arrival = { from: from, start: performance.now() };
       var h = document.querySelector("main h1");
       if (h) {
         h.setAttribute("tabindex", "-1");

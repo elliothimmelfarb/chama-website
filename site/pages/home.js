@@ -57,9 +57,9 @@ const STYLE = `
   .home-photo .photo { height: 100%; object-fit: cover; object-position: 50% 30%; }
   /* there is no room for the caption and the logos at once: the logos take
      the caption's place once the bars are whole and it has been read */
-  .home-logos { left: 16px; right: 28px; bottom: calc(24px + env(safe-area-inset-bottom)); --in: 0.62 !important; }
+  .home-logos { left: 16px; right: 28px; bottom: calc(24px + env(safe-area-inset-bottom)); }
   .home-logos .logos { gap: var(--s4) var(--s5); }
-  .home-caption { --out: 0.58; }
+  .home-caption { --out: 0.5; }
   .home-proof .bars-axis { display: none; }
 }
 /* one column: the figures follow their words */
@@ -93,7 +93,7 @@ export function render(p) {
       <p class="lead r">${SITE.laMetalNamed ? t.proof.leadNamed : t.proof.lead}</p>
       <a class="more r" href="${t.proof.cta.href}">${t.proof.cta.text}${ARROW}</a>
     </div>
-    <div class="figure-box r"><div class="backed">${proofChart({ caption: t.proof.caption, captionClass: "r home-caption" })}</div></div>
+    <div class="figure-box r fig"><div class="backed">${proofChart({ caption: t.proof.caption, captionClass: "r home-caption" })}</div></div>
     <div class="home-logos r" style="--in:0.5">
       <h2 class="sr-only">${t.proof.clientsLabel}</h2>
       ${logoStrip(CLIENTS)}
@@ -109,14 +109,14 @@ export function render(p) {
       <p class="lead r">${t.people.more}</p>
       <a class="more r" href="${t.people.cta.href}">${t.people.cta.text}${ARROW}</a>
     </div>
-    <figure class="figure-box home-photo r"><div class="home-photo-crop">${photo(t.people.photoAlt)}</div><figcaption class="small">${t.people.caption}</figcaption></figure>
+    <figure class="figure-box home-photo r fig"><div class="home-photo-crop">${photo(t.people.photoAlt)}</div><figcaption class="small">${t.people.caption}</figcaption></figure>
   </div>
 </section>
 
 <section class="world home-belief" data-world="tides" style="--h:170" data-label="What we believe">
   <div class="pin">
     <div class="copy">
-      ${t.belief.lines.map((l, i) => html`<p class="home-belief-line r"${i ? raw(' style="--in:0.3;--k:4"') : ""}>${l}</p>`)}
+      ${t.belief.lines.map((l, i) => html`<p class="home-belief-line r"${i ? raw(' style="--in:0.3"') : ""}>${l}</p>`)}
     </div>
   </div>
 </section>

@@ -164,9 +164,9 @@ html.talk-locked .top { z-index: 41; }
     border-radius: var(--r-surface);
     translate: 24px 0;
     opacity: 0;
-    transition: translate var(--dur-base) var(--ease-exit), opacity var(--dur-base) var(--ease-exit);
+    transition: translate var(--dur-quick) var(--ease-exit), opacity var(--dur-quick) var(--ease-exit);
   }
-  .talk--sheet.is-open { translate: 0 0; opacity: 1; transition: translate 320ms var(--ease-out), opacity 320ms var(--ease-out); }
+  .talk--sheet.is-open { translate: 0 0; opacity: 1; transition: translate var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out); }
   .talk--sheet .talk-grab { display: none; }
   .talk--sheet .talk-head { touch-action: auto; cursor: auto; }
   .talk--sheet .talk-body { flex: 1 1 auto; }
