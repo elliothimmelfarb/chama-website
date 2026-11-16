@@ -1,0 +1,18 @@
+{
+  "about": "Captions for note-to-change-2026-11-16. Start times are in seconds and differ slightly between the wide and tall cuts.",
+  "wide": [
+    { "start": 0, "text": "Someone in the office asks for a change from inside the app." },
+    { "start": 3, "text": "They type what they need: a way to see one supplier's orders at a time." },
+    { "start": 10.5, "text": "The note reaches us with the page they were on." },
+    { "start": 12, "text": "We build it, test it and ship it. This one took 31 minutes." },
+    { "start": 15, "text": "The new Vendor filter is live in their app." }
+  ],
+  "tall": [
+    { "start": 0, "text": "Someone in the office asks for a change from inside the app." },
+    { "start": 3, "text": "They type what they need: a way to see one supplier's orders at a time." },
+    { "start": 9, "text": "The note reaches us with the page they were on." },
+    { "start": 10.5, "text": "We build it, test it and ship it. This one took 31 minutes." },
+    { "start": 13.5, "text": "The new Vendor filter is live in their app." }
+  ],
+  "note": "A reenactment on a demo copy of the real app with made-up data. The time skip is labelled on screen; the 31 minutes is the measured time of the real request."
+}

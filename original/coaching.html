@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://chamainteligente.com/original/coaching">
+  <title>Coaching and training | Chama Inteligente</title>
+  <!-- Crossing between pages, and between the two versions, dissolves.
+       Chrome reads the opt-in as the body starts, so it is here, not in a
+       stylesheet that may still be on its way. -->
+  <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
+  <script>
+    /* The pinned layout (html.js, as worlds.js decides it) from the first
+       paint, not once the deferred worlds.js runs. Low motion: a reader
+       who chose it, or whose system asks for reduced motion and who has
+       not chosen the animated version, reads the low motion version of
+       this page instead. */
+    (function () {
+      if (!matchMedia("(max-height: 500px)").matches) document.documentElement.classList.add("js");
+      try {
+        var m = localStorage.getItem("chama-motion");
+        if (m === "low" || (m !== "full" && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) location.replace("/original/simple/coaching" + location.search + location.hash);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/original/assets/worlds.css">
+  <script src="/original/assets/sky.js" defer></script>
+  <script src="/original/assets/worlds.js" defer></script>
+  <link rel="icon" href="/original/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/original/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/original/apple-touch-icon.png">
+  <meta name="description" content="AI fluency coaching for individuals and teams in any role, and agentic engineering training for engineering teams. Elliot Himmelfarb, Lisbon.">
+  <meta name="author" content="Elliot Himmelfarb">
+  <meta name="theme-color" content="#f3f0e8">
+  <meta name="color-scheme" content="light">
+  <meta property="og:title" content="Coaching and training | Chama Inteligente">
+  <meta property="og:description" content="AI fluency coaching for individuals and teams in any role, and agentic engineering training for engineering teams. Elliot Himmelfarb, Lisbon.">
+  <meta property="og:url" content="https://chamainteligente.com/original/coaching">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Chama Inteligente">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://chamainteligente.com/original/og-2026-09-22.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Software shaped for your business. Most businesses change how they work to fit the software they buy. Yours does not have to. Chama Inteligente, Lisbon.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Coaching and training | Chama Inteligente">
+  <meta name="twitter:description" content="AI fluency coaching for individuals and teams in any role, and agentic engineering training for engineering teams. Elliot Himmelfarb, Lisbon.">
+  <meta name="twitter:image" content="https://chamainteligente.com/original/og-2026-09-22.png">
+  <style>
+    /* The archive note: fixed above everything but an engaged chat sheet
+       (z-index 60), and the old header is moved below it. */
+    :root { --archive-h: 30px; }
+    .archive-note { position: fixed; z-index: 50; top: 0; left: 0; right: 0; box-sizing: border-box; min-height: var(--archive-h); margin: 0; padding: calc(7px + env(safe-area-inset-top)) 16px 7px; background: #0e0c0a; color: #f6f0e6; font: 400 12px/16px "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.01em; text-align: center; -webkit-font-smoothing: antialiased; }
+    .archive-note a { color: #ff7a3d; text-decoration: underline; text-underline-offset: 2px; }
+    .archive-note a:focus-visible { outline: 2px solid #f4581f; outline-offset: 2px; }
+    @media (max-width: 720px) { :root { --archive-h: 46px; } }
+    .top { top: calc(var(--archive-h) + 16px + env(safe-area-inset-top)) !important; }
+    @media (max-width: 759px) { .top { top: calc(var(--archive-h) + 12px + env(safe-area-inset-top)) !important; } }
+    body > .skip-link:focus { top: calc(var(--archive-h) + 0.75rem); }
+    body.archive-flow { padding-top: var(--archive-h); }
+    .chama-agent-mode-page { top: var(--archive-h); height: calc(100% - var(--archive-h)); }
+  </style>
+</head>
+<body>
+  <p class="archive-note" role="note">This is the original chamainteligente.com, kept as it was. The current site is at <a href="/">chamainteligente.com</a></p>
+  <script>
+    /* the note wraps to however many lines the screen needs */
+    (function () {
+      var n = document.querySelector(".archive-note");
+      function fit() { document.documentElement.style.setProperty("--archive-h", n.offsetHeight + "px"); }
+      fit();
+      addEventListener("resize", fit);
+    })();
+  </script>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <canvas id="sky" class="layer" aria-hidden="true"></canvas>
+  <canvas id="actors" class="layer" aria-hidden="true"></canvas>
+
+  <header class="top" data-theme="paper">
+    <a class="mast" href="/original">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>
+      <span><b>Chama Inteligente</b><small>Intelligent Flame</small></span>
+    </a>
+    <a class="worlds-members" href="/hearth">Members</a>
+    <nav class="site-nav" aria-label="Pages" data-site-nav>
+      <span class="offer-switch"><a class="nav-link" href="/original">Software</a><a class="nav-link" href="/original/coaching" aria-current="page">Coaching</a></span>
+      <a class="nav-link nav-about" href="/original/built">Built</a>
+      <a class="nav-link nav-about" href="/original/clients">Clients</a>
+      <a class="nav-link nav-about" href="/original/about">About</a>
+      <a class="nav-talk" href="/original/agent"><svg class="talk-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-7.5L7 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V7A1.5 1.5 0 0 1 5 5.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="talk-label">Talk to us</span></a>
+    </nav>
+    <a class="motion-toggle" href="/original/simple/coaching" data-simple-version title="The same page, with less motion"><span class="motion-track" aria-hidden="true"><i></i></span><span class="motion-label">Low motion</span></a>
+  </header>
+
+  <main id="main-content">
+    <!-- 1. Paper: the coil of sessions -->
+    <section class="world hero" data-theme="paper" data-world="paper" data-scene="coil" data-label="AI changes what one person can do" style="--h:165" aria-labelledby="t-hero">
+      <div class="pin">
+        <div class="copy">
+          <h1 id="t-hero" class="r" style="--in:-3">AI changes what one person can do.</h1>
+          <p class="deck r" style="--in:-3">Be ready, so when AI can do something new, you can too.</p>
+          <div class="worked r" style="--in:-3">
+            <div class="clients"><a class="clients-all" href="/original/clients">Who we have worked with</a><a href="/original/clients#toraya-lisboa"><img class="round" src="/original/assets/work/toraya-lisboa-150.webp" srcset="/original/assets/work/toraya-lisboa-150.webp 150w, /original/assets/work/toraya-lisboa-300.webp 300w, /original/assets/work/toraya-lisboa.webp 502w" sizes="46px" alt="Toraya Lisboa" width="502" height="480" decoding="async"></a><a href="/original/clients#alves-limited-group"><img class="tall" src="/original/assets/work/alves-limited-280.webp" srcset="/original/assets/work/alves-limited-280.webp 280w, /original/assets/work/alves-limited.webp 399w" sizes="91px" alt="Alves Limited Group" width="399" height="158" decoding="async"></a><a href="/original/clients#springlar"><img src="/original/assets/work/springlar-480.webp" srcset="/original/assets/work/springlar-480.webp 480w, /original/assets/work/springlar.webp 864w" sizes="154px" alt="Springlar" width="864" height="146" decoding="async"></a></div>
+            <div class="clients friends"><a class="clients-all" href="/original/about#tlc-automation">Friends we recommend</a><a href="/original/about#tlc-automation"><img class="mark-wide" src="/original/assets/work/tlc-automation-480.webp" srcset="/original/assets/work/tlc-automation-480.webp 480w, /original/assets/work/tlc-automation.webp 776w" sizes="153px" alt="TLC Automation" width="776" height="152" decoding="async"></a></div>
+          </div>
+          <p class="alt-version r" style="--in:-3">Prefer less motion? <a href="/original/simple/coaching" data-simple-version>Read the low motion version.</a></p>
+        </div>
+        <p class="sr-only">A line loops upward in a widening coil. Each loop is a session with Elliot, and each one is wider and higher than the one before. The top loop is drawn in ember, and a faint line leaves it, heading up and out.</p>
+        <p class="cue r" style="--in:-3;--out:0.3;--k:5" aria-hidden="true"><i></i></p>
+      </div>
+    </section>
+
+    <!-- 2. The grid: the learning curve, on graph paper -->
+    <section class="world" data-theme="grid" data-world="grid" data-scene="curve" data-label="The shortest path up the learning curve" style="--h:260" aria-labelledby="t-curve">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker r">The shortest path up the learning curve</p>
+          <h2 id="t-curve" class="r" style="--in:-0.25">AI <span class="accent">changes</span> more than the tools we use.</h2>
+          <p class="r" style="--in:-0.15">It changes how we think, work, organize, and lead.</p>
+          <div class="beats">
+            <div class="ticks r" aria-hidden="true"><b style="--at:0"></b><b style="--at:0.3"></b><b style="--at:0.58"></b></div>
+            <div class="slot">
+              <p class="r" style="--in:-0.1;--out:0.32;--k:10">Most AI courses teach you how to use today&rsquo;s tools and capabilities for a handful of tasks.</p>
+              <p class="r" style="--in:0.3;--out:0.6;--k:10">We teach what lasts: the ideas and habits that help you explore your environment for new capabilities that may not have been available yesterday.</p>
+              <p class="r" style="--in:0.58;--k:10">So you grow with AI instead of chasing it.</p>
+            </div>
+          </div>
+        </div>
+        <p class="sr-only">Two lines over time. Chasing the tools gives the same short burst with every new capability, then drops back. Growing with AI compounds past it and keeps climbing.</p>
+      </div>
+    </section>
+
+    <!-- 3. The night: a session -->
+    <section class="world" data-theme="night" data-world="night" data-scene="session" data-label="How coaching works" style="--h:300" aria-labelledby="t-session">
+      <div class="pin">
+        <div class="copy">
+          <h2 class="kicker r" id="t-session">How coaching works</h2>
+          <p class="lead r" style="--in:-0.25">Coaching for <span class="accent">individuals</span> and teams.</p>
+          <div class="beats">
+            <div class="ticks r" aria-hidden="true"><b style="--at:0"></b><b style="--at:0.33"></b><b style="--at:0.64"></b></div>
+            <div class="slot">
+              <p class="r" style="--in:-0.1;--out:0.35;--k:10">You do not need a technical background. The coaching starts from the work you already do, whatever your role.</p>
+              <p class="r" style="--in:0.33;--out:0.66;--k:10">You meet with Elliot regularly, so he can get to know how you work, keep track of what you are trying to do, and make each conversation build on the last.</p>
+              <p class="r" style="--in:0.64;--k:10">Bring the questions, decisions, and ideas in front of you. Or just bring yourself, and Elliot will teach you what is new since the last time you talked, or something old you have not learned yet.</p>
+            </div>
+          </div>
+        </div>
+        <p class="sr-only">One line, drawn left to right. It arrives tangled in loops: unsure what is possible. It turns ember and circles the flame once, a session. It leaves straight, ending in an arrow: with a direction.</p>
+      </div>
+    </section>
+
+    <!-- 4. The tides: each new model -->
+    <section class="world" data-theme="tides" data-world="tides" data-scene="releases" data-label="Training for engineering teams" style="--h:340" aria-labelledby="t-training">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker r">Training for engineering teams</p>
+          <h2 id="t-training" class="h2-long r" style="--in:-0.25">Each new model can do more, and some old habits start to <span class="accent">cost you</span>.</h2>
+          <div class="beats">
+            <div class="ticks r" aria-hidden="true"><b style="--at:0"></b><b style="--at:0.25"></b><b style="--at:0.5"></b><b style="--at:0.76"></b></div>
+            <div class="slot">
+              <p class="r" style="--in:-0.1;--out:0.27;--k:10">Elliot trains engineering teams in agentic engineering: building software with AI agents that plan, write, and verify code.</p>
+              <p class="r" style="--in:0.25;--out:0.52;--k:10">When a new model drops, the team that learns what it can do first has it before its competitors do. A team that keeps the habits it formed on the last model runs into problems it did not have before.</p>
+              <p class="r" style="--in:0.5;--out:0.78;--k:10">One example: with the older Claude Opus models, Elliot never set thinking effort below extra high. With the current ones, high effort costs more and drifts from what you asked, and low or medium effort gives better answers. A team still on its old settings pays more for worse work.</p>
+              <p class="r" style="--in:0.76;--k:10">Using AI the same way for months is a risk. We teach the habits that keep a team current: picking up each new capability early, and reviewing how you work every time a new model drops.</p>
+            </div>
+          </div>
+        </div>
+        <p class="sr-only">Four new models arrive one after another. After each one, a trained team, drawn in ember, climbs a step. A team that keeps the same habits falls into a pit at each new model, marked with a cross, and climbs out a little lower. The gap between the two grows with every model.</p>
+      </div>
+    </section>
+
+    <!-- 5. The forge: building it yourselves -->
+    <section class="world" data-theme="forge" data-world="forge" data-scene="build" data-label="Building it yourselves" style="--h:230" aria-labelledby="t-build">
+      <div class="pin">
+        <div class="copy">
+          <h2 class="kicker r" id="t-build">Building it yourselves</h2>
+          <p class="lead r" style="--in:-0.25">Prefer to build your own <span class="accent">software</span>?</p>
+          <p class="r" style="--in:-0.05">We also build alongside individuals and small teams, and teach them to develop software the AI-native way.</p>
+          <p class="r" style="--in:0.3">Whichever suits you, we would be glad to help. See <a href="/original">the software we build for businesses</a>, or <a href="/original/agent">start a conversation</a> and tell us what you have in mind.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. The flame: be AI-native, and get in touch -->
+    <section class="world flame tall" data-theme="flame" data-world="flame" data-scene="markhigh" data-label="Get in touch" style="--h:230" aria-labelledby="t-talk">
+      <div class="pin">
+        <div class="copy">
+          <p class="badge r" style="--in:0.3;--out:9">Be AI-native.</p>
+          <p class="equation r" style="--in:0.34;--out:9" role="img" aria-label="You, times AI fluency, equals incredible things only you can do.">
+            <span aria-hidden="true">you <span class="op">&times;</span> AI fluency</span>
+            <span aria-hidden="true"><span class="op">=</span> incredible things</span>
+            <span aria-hidden="true"><em>only you</em> can do.</span>
+          </p>
+          <h2 id="t-talk" class="r" style="--in:0.55;--out:9">Want to talk it <span class="accent">through</span>?</h2>
+          <p class="r" style="--in:0.62;--out:9"><a class="cta" href="/original/agent">Start a conversation and ask Elliot to get in touch. <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4 12.5 8l-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer data-theme="flame">
+    <div class="end-row">
+      <nav class="site-nav" aria-label="Site" data-site-nav>
+        <span class="offer-switch"><a class="nav-link" href="/original">Software</a><a class="nav-link" href="/original/coaching" aria-current="page">Coaching</a></span>
+        <a class="nav-link nav-about" href="/original/built">Built</a>
+      <a class="nav-link nav-about" href="/original/clients">Clients</a>
+        <a class="nav-link nav-about" href="/original/about">About</a>
+      </nav>
+    </div>
+    <p class="end-small"><a href="/original/simple/coaching" data-simple-version>Low motion version</a><a href="/privacy">Privacy</a><a href="/brand">Media kit</a><span><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.0612 0.0639)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg>Chama Inteligente, Lda. &middot; Lisbon, Portugal</span></p>
+  </footer>
+  <!-- the plain pages these leave for, fetched on hover or press; the
+       router fetches its own pages itself -->
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      { "source": "document", "where": { "href_matches": ["/original/agent", "/original/simple{/*}?"] }, "eagerness": "moderate" }
+    ]
+  }
+  </script>
+</body>
+</html>

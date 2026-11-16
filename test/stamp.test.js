@@ -35,6 +35,18 @@ test("stamping a stamped tree changes nothing", () => {
   assert.deepEqual([...stamp(once)], [...once]);
 });
 
+test("the frozen copy of the old site under original/ is neither stamped nor checked", () => {
+  const files = tree({
+    "assets/a.js": "a",
+    "original/index.html": '<script src="/original/assets/a.js"></script>',
+    "original/assets/a.js": 'new Worker("/original/assets/b.js");'
+  });
+  const once = stamp(files);
+  assert.equal(once.get("original/index.html"), files.get("original/index.html"));
+  assert.equal(once.get("original/assets/a.js"), files.get("original/assets/a.js"));
+  assert.deepEqual(problems(once), []);
+});
+
 test("files that ask for each other are refused, naming them", () => {
   const files = tree({ "assets/a.js": '"/assets/b.js"', "assets/b.js": '"/assets/a.js"' });
   assert.throws(() => stamp(files), /assets\/a\.js.*assets\/b\.js|assets\/b\.js.*assets\/a\.js/);

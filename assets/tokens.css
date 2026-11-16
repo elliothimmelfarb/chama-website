@@ -1,0 +1,127 @@
+/* The design tokens, in three layers: primitives, then the semantic colours
+   for light and dark, then the ground each section sits on. docs/DESIGN.md
+   gives every value's job and its measured contrast. No colour is written
+   anywhere else on the public pages (test/site.test.js). */
+
+@font-face {
+  font-family: "Funnel Display";
+  src: url("/assets/fonts/funnel-display-latin-wght.woff2") format("woff2");
+  font-weight: 300 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Funnel Sans";
+  src: url("/assets/fonts/funnel-sans-latin-wght.woff2") format("woff2");
+  font-weight: 300 800;
+  font-display: swap;
+}
+/* Fallbacks sized to Funnel, so the swap moves the H1 by less than a line. */
+@font-face { font-family: "Funnel Display Fallback"; src: local("Helvetica Neue"), local("Arial"); size-adjust: 98%; ascent-override: 96%; descent-override: 26%; }
+@font-face { font-family: "Funnel Sans Fallback"; src: local("Helvetica Neue"), local("Arial"); size-adjust: 97%; ascent-override: 96%; descent-override: 26%; }
+
+/* ---- 1. Primitives ---------------------------------------------------- */
+:root {
+  --ember: #f4581f;
+  --ink: #141412;
+  --paper: #f3f0e8;
+
+  --display: "Funnel Display", "Funnel Display Fallback", "Helvetica Neue", Arial, sans-serif;
+  --text: "Funnel Sans", "Funnel Sans Fallback", "Helvetica Neue", Arial, sans-serif;
+
+  --t-display: clamp(2rem, 1.15rem + 4vw, 4.5rem);
+  --t-h2: clamp(1.625rem, 1rem + 2.6vw, 3rem);
+  --t-h3: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  --t-stage: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
+  --t-lead: clamp(1.0625rem, 1rem + 0.2vw, 1.1875rem);
+  --t-body: 1rem;
+  --t-small: 0.875rem;
+  --t-label: 0.8125rem;
+  --t-fine: 0.75rem;
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px; --s9: 96px;
+  --gutter: clamp(16px, 4.4vw, 64px);
+  --max: 1500px;
+  --r-pill: 999px;
+  --r-surface: 16px;
+
+  --dur-press: 120ms;
+  --dur-quick: 180ms;
+  --dur-base: 240ms;
+  --dur-theme: 250ms;
+  --dur-sheet: 420ms;
+  --dur-arrive: 1200ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+
+  color-scheme: light dark;
+}
+
+/* ---- 2. Semantic colours ----------------------------------------------
+   Light is the base. Dark applies when the visitor chose it, or when the
+   system asks for it and the visitor has not chosen light. The two dark
+   blocks must stay identical. */
+:root {
+  color-scheme: light;
+  --bg: #f3f0e8;
+  --surface: #fbf9f4;
+  --fg: #141412;
+  --fg-2: #57544d;
+  --line: rgb(20 20 18 / 0.14);
+  --line-strong: #8a857b;
+  --accent: #f4581f;
+  --accent-text: #b33d0b;
+  --on-accent: #141412;
+  --scrim-sheet: rgb(20 20 18 / 0.32);
+  --shadow-float: 0 18px 48px -24px rgb(20 20 18 / 0.35), 0 2px 6px -2px rgb(20 20 18 / 0.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #161513;
+    --surface: #22201c;
+    --fg: #f3f0e8;
+    --fg-2: #aaa498;
+    --line: rgb(243 240 232 / 0.14);
+    --line-strong: #6b665d;
+    --accent: #f4581f;
+    --accent-text: #ff7a45;
+    --on-accent: #141412;
+    --scrim-sheet: rgb(0 0 0 / 0.5);
+    --shadow-float: 0 18px 48px -20px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(243 240 232 / 0.06);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #161513;
+  --surface: #22201c;
+  --fg: #f3f0e8;
+  --fg-2: #aaa498;
+  --line: rgb(243 240 232 / 0.14);
+  --line-strong: #6b665d;
+  --accent: #f4581f;
+  --accent-text: #ff7a45;
+  --on-accent: #141412;
+  --scrim-sheet: rgb(0 0 0 / 0.5);
+  --shadow-float: 0 18px 48px -20px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(243 240 232 / 0.06);
+}
+
+/* ---- 3. Grounds ------------------------------------------------------
+   Each section names its ground (data-world). The ground sets the text
+   colours for what sits on it; --ground is what low motion and no-WebGL
+   paint. Paper is the page's own colours, so it needs no block. */
+[data-world="paper"] { --ground: var(--bg); }
+
+[data-world="grid"]  { --ground: #e3e8ec; --fg: #0f1b26; --fg-2: #3d4c59; --accent-text: #a5380a; --line-strong: #7d8b97; --line: rgb(15 27 38 / 0.14); }
+[data-world="tides"] { --ground: #dcebe7; --fg: #0b2829; --fg-2: #355a58; --accent-text: #a5380a; --line-strong: #6f8f8b; --line: rgb(11 40 41 / 0.14); }
+[data-world="ember"] { --ground: #f3dfcd; --fg: #1f120b; --fg-2: #674637; --accent-text: #a1360a; --line-strong: #a08474; --line: rgb(31 18 11 / 0.14); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [data-world="grid"]  { --ground: #0e151c; --fg: #e6edf3; --fg-2: #9cadbc; --accent-text: #ff7a45; --line-strong: #4f6273; --line: rgb(230 237 243 / 0.14); }
+  :root:not([data-theme="light"]) [data-world="tides"] { --ground: #06343a; --fg: #f2fcf9; --fg-2: #b4dcd4; --accent-text: #ff9a6e; --line-strong: #3f7c7a; --line: rgb(242 252 249 / 0.16); }
+  :root:not([data-theme="light"]) [data-world="ember"] { --ground: #0f0b09; --fg: #fff4e8; --fg-2: #cdb8a4; --accent-text: #ff8a55; --line-strong: #6e5546; --line: rgb(255 244 232 / 0.14); }
+}
+:root[data-theme="dark"] [data-world="grid"]  { --ground: #0e151c; --fg: #e6edf3; --fg-2: #9cadbc; --accent-text: #ff7a45; --line-strong: #4f6273; --line: rgb(230 237 243 / 0.14); }
+:root[data-theme="dark"] [data-world="tides"] { --ground: #06343a; --fg: #f2fcf9; --fg-2: #b4dcd4; --accent-text: #ff9a6e; --line-strong: #3f7c7a; --line: rgb(242 252 249 / 0.16); }
+:root[data-theme="dark"] [data-world="ember"] { --ground: #0f0b09; --fg: #fff4e8; --fg-2: #cdb8a4; --accent-text: #ff8a55; --line-strong: #6e5546; --line: rgb(255 244 232 / 0.14); }

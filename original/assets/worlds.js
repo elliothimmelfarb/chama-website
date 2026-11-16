@@ -1,0 +1,2331 @@
+/* ==========================================================================
+   Worlds: the engine behind /, /coaching, /clients and /about, and the router that
+   moves between them without loading a new page.
+
+   Each <section class="world"> names two things in its markup:
+     data-world  the ground it stands on: paper, grid, forge, night, tides
+                 or flame. One WebGL sky paints whichever world is on screen,
+                 and as the page scrolls from one section to the next the
+                 next world burns up through the last one from below.
+     data-scene  the figure drawn over that ground, on a 2D canvas: the
+                 business's shape (fit, shelf, offer, questions, change,
+                 build, mark) or one of the coaching and about figures
+                 (coil, curve, session, releases, keepers, family, timeline)
+                 or the clients figure (wheel).
+   Shape scenes hand one shape from world to world and morph it; any other
+   pair of scenes cross-fades while the fire passes.
+
+   The engine writes --u on the elements of each section that read it (see
+   worlds.css). It loads no fonts and no libraries, and the only pictures
+   it fetches are /built's, as their turn comes. Under reduced motion the
+   clock stops, the particles go, and every figure is drawn complete.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  // the pinned layout (html.js), except where the words cannot fit on one
+  // screen or the page is printed: there the worlds are one column
+  // (worlds.css). The head of each page makes the same test before it paints.
+  var SHORT = window.matchMedia("(max-height: 500px)"), printing = false, pinned = true;
+  function pinnable() { pinned = !SHORT.matches && !printing; root.classList.toggle("js", pinned); }
+  pinnable();
+
+  var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var TAU = Math.PI * 2;
+  var EMBER = "#f4581f";
+  var FONT = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+  var WORLD = { paper: 0, grid: 1, forge: 2, night: 3, tides: 4, flame: 5 };
+  var BG = ["#f3f0e8", "#e3e8ec", "#0e0c0a", "#070a1f", "#06343a", "#0a0705"];
+  var THEME = ["paper", "grid", "forge", "night", "tides", "flame"];
+
+  function clamp(x, a, b) { if (a === undefined) { a = 0; b = 1; } return x < a ? a : x > b ? b : x; }
+  function sm(a, b, x) { var t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function outBack(t) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+  function rgba(c, a) { return "rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + "," + a + ")"; }
+
+  // ---- geometry: the business's shape, its changes, and the mark --------
+  var NP = 180;
+  function seg(a, b) { return { len: Math.hypot(b[0] - a[0], b[1] - a[1]), at: function (t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; } }; }
+  function arc(r, a0, a1) { a0 *= Math.PI / 180; a1 *= Math.PI / 180; return { len: Math.abs(a1 - a0) * r, at: function (t) { var a = a0 + (a1 - a0) * t; return [r * Math.cos(a), r * Math.sin(a)]; } }; }
+  function polyPieces(v) { return v.map(function (a, i) { return seg(a, v[(i + 1) % v.length]); }); }
+  function build(pieces) {
+    var total = pieces.reduce(function (s, p) { return s + p.len; }, 0);
+    var counts = pieces.map(function (p) { return Math.max(1, Math.round(NP * p.len / total)); });
+    counts[counts.indexOf(Math.max.apply(null, counts))] += NP - counts.reduce(function (a, b) { return a + b; }, 0);
+    var out = new Float32Array(NP * 2), k = 0;
+    pieces.forEach(function (p, i) {
+      for (var j = 0; j < counts[i]; j++) { var q = p.at(j / counts[i]); out[2 * k] = q[0]; out[2 * k + 1] = q[1]; k++; }
+    });
+    return out;
+  }
+  function norm(raw, cx, cy, s) { return raw.map(function (v) { return [(v[0] - cx) / s, (v[1] - cy) / s]; }); }
+  function polar(r, deg) { return [r * Math.cos(deg * Math.PI / 180), r * Math.sin(deg * Math.PI / 180)]; }
+
+  // The hero figure's shape on the Words page, and the two changes it goes
+  // through in the "Over time" figure.
+  var PENT_V = norm([[160, 66], [240, 138], [209, 249], [118, 264], [69, 169]], 159.2, 177.2, 105);
+  var RI = 13.2 / 21;
+  var G = {
+    pent: build(polyPieces(PENT_V)),
+    tA: build(polyPieces(norm([[0, -52], [42, -14], [52, 36], [-22, 52], [-36, -4]], 7, 4, 52))),
+    tB: build(polyPieces(norm([[8, -56], [54, -22], [40, 50], [-30, 44], [-52, 4]], 4, 4, 52))),
+    // The mark's ring, traced from the top clockwise so the shape curls into it.
+    ring: build([arc(1, 270, 322), seg(polar(1, 322), polar(RI, 312)), arc(RI, 312, 48), seg(polar(RI, 48), polar(1, 38)), arc(1, 38, 270)])
+  };
+  function lerpG(a, b, t) {
+    if (t <= 0) return a;
+    if (t >= 1) return b;
+    var o = new Float32Array(a.length);
+    for (var i = 0; i < a.length; i++) o[i] = a[i] + (b[i] - a[i]) * t;
+    return o;
+  }
+  var RING = new Path2D("M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z");
+  var SPARK = new Path2D("M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57.0 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z");
+
+  // ---- the sky --------------------------------------------------------------
+  // The sky's shader and its WebGL setup live in sky.js, shared with the
+  // 404 page.
+
+  var sky = document.getElementById("sky");
+  var act = document.getElementById("actors");
+  if (!sky || !act) return;
+  var ctx = act.getContext("2d");
+  var AW = 0, AH = 0, ADPR = 1, quality = 1;
+  // past 120rem the figures keep to a centred stage, SW wide from SX, as the
+  // words do (worlds.css, --stage); sx(f) is a fraction of the way across it
+  var SW = 0, SX = 0;
+  function sx(f) { return SX + SW * f; }
+
+  function initGL() { return window.ChamaSky ? window.ChamaSky.init(sky) : null; }
+  var GL = initGL();
+  if (GL) root.classList.add("gl");
+  sky.addEventListener("webglcontextlost", function (e) { e.preventDefault(); GL = null; root.classList.remove("gl"); });
+
+  function sizeSky() {
+    if (!GL) return;
+    var w = sky.clientWidth, h = sky.clientHeight;
+    var s = Math.min(window.devicePixelRatio || 1, 1.5) * quality;
+    if (w * h * s * s > 2.1e6) s = Math.sqrt(2.1e6 / (w * h));
+    var W = Math.max(1, Math.round(w * s)), H = Math.max(1, Math.round(h * s));
+    if (sky.width !== W || sky.height !== H) { sky.width = W; sky.height = H; GL.gl.viewport(0, 0, W, H); }
+  }
+  // a canvas given its own size again is still reallocated and cleared, so
+  // a resize that leaves it alone (a phone's toolbar, a page change) skips it
+  function sizeActors() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), w = act.clientWidth, h = act.clientHeight;
+    // the stage follows the root font size, which can change at the same width
+    SW = Math.min(w, 120 * (parseFloat(getComputedStyle(root).fontSize) || 16));
+    SX = (w - SW) / 2;
+    if (w === AW && h === AH && dpr === ADPR) return;
+    ADPR = dpr;
+    AW = w;
+    AH = h;
+    act.width = Math.round(AW * ADPR);
+    act.height = Math.round(AH * ADPR);
+  }
+
+  // ---- the sections ------------------------------------------------------------
+  // Everything the engine knows about the page in view. bind() reads it
+  // again when the router (at the end of this file) brings in another page.
+  if (!document.querySelector(".world")) return;
+  var sections = [], NW = 0, worldOf = [], room = null, scenes = [];
+
+  // the same test as the phone block in worlds.css, so the two always agree
+  var PQ = window.matchMedia("(max-width: 759px), (max-aspect-ratio: 9/10)");
+  function portrait() { return PQ.matches; }
+
+  // ---- stacking: the figure above the words, as one group ----------------------
+  // On a phone every world stacks its figure over its words, and the last
+  // world of a page does the same at any width. The figure and the words
+  // share the band between the masthead and the bottom of the screen (less
+  // the footer, under the last world); measure() sizes the figure to the
+  // band and centres the pair in it, so a short text does not leave a hole
+  // between the two. It writes the words' place back as --copy-b (from the
+  // bottom of the screen) and --copy-t (from the top), and a photograph's as
+  // --fig-top.
+  var stacks = [];
+  var footer = null;
+  var head = [document.querySelector(".top")];
+  function stacked(k) { return portrait() || sections[k].classList.contains("flame"); }
+  function headBottom() {
+    var b = 0;
+    head.forEach(function (el) { if (el) b = Math.max(b, el.getBoundingClientRect().bottom); });
+    return b;
+  }
+  // on a phone the lockup row folds away past the opening world, lifting
+  // the pages' row by this much (worlds.css, .head-compact)
+  function headLift() {
+    var nav = head[0] && head[0].querySelector(".site-nav");
+    return portrait() && nav ? nav.offsetTop : 0;
+  }
+  // and past the opening world the phone's "Talk to us" disc drops under the
+  // pages' row (worlds.css), so the worlds before the last keep clear of it;
+  // from the last world on it is hidden
+  function talkDrop(k) {
+    var t = head[0] && head[0].querySelector(".nav-talk");
+    return portrait() && t && k < NW - 1 ? t.offsetHeight + 8 : 0;
+  }
+  // the wheel of clients and the devices on /built open their page and are
+  // all scrolling, so the header folds almost at once on them
+  function allScroll(sec) { return sec.classList.contains("wheel-world") || sec.classList.contains("devices-world"); }
+  function stackOf(k) {
+    var P = portrait(), sec = sections[k], scene = scenes[k];
+    var copy = sec.querySelector(".copy"), card = sec.querySelector(".card");
+    var H = pins[k] || AH, ch = copy ? copy.offsetHeight : 0;
+    var foot = k === NW - 1 && !room && footer ? footer.offsetHeight : 0;
+    var base = P ? 22 : 30, gap = P ? 26 : 22;
+    // the wheel's world is all scrolling, so its header folds almost at once
+    var top = headBottom() - (k > 0 || allScroll(sec) ? headLift() - talkDrop(k) : 0) + 20, avail = H - base - foot - gap - ch - top;
+    var tl = (P ? scene.tall : scene.at) || (P ? [0.5, 0.26, 1] : [0.5, 0.4, 1]);
+    var R0 = (P ? Math.min(AW * 0.27, AH * 0.16) : Math.min(SW * 0.16, AH * 0.27)) * tl[2];
+    var up, down, fixed = false;
+    if (scene.box) { up = 0; down = AH * (P ? 0.34 : 0.62); }
+    else if (card) { up = 0; down = Math.min(Math.max(card.offsetHeight, 120), Math.max(avail, 110)); fixed = true; }
+    else {
+      // the drawn reach of the figure above and below its centre, in radii;
+      // the hero shape reaches 1.2 up and 0.95 down with its outline
+      var e = scene.ext || [1.2, 0.95];
+      up = e[0] * R0;
+      down = sec.querySelector(".cap") ? Math.max(e[1] * R0, (scene.cap || 1.45) * R0 + 38) : e[1] * R0;
+    }
+    // on a short phone the figure shrinks rather than sit on the words
+    var need = up + down, g = fixed ? 1 : clamp(avail / need, P && !scene.box ? 0.22 : 0.4, P ? 1.3 : 1.15);
+    var extra = Math.max(0, avail - need * g), figTop = top + extra * 0.45;
+    return {
+      cx: AW * tl[0], cy: figTop + up * g, R: R0 * g, top: figTop, h: need * g,
+      copyB: base + foot + extra * 0.55, copyT: H - base - foot - extra * 0.55 - ch
+    };
+  }
+
+  function layoutOf(scene, k) {
+    var P = portrait(), L, S = stacked(k) ? stacks[k] : null;
+    if (S) {
+      L = { cx: S.cx, cy: S.cy, R: S.R };
+    } else if (P) {
+      var tl = scene.tall || [0.5, 0.26, 1], r = Math.min(AW * 0.27, AH * 0.16);
+      L = { cx: AW * tl[0], cy: AH * tl[1], R: r * tl[2] };
+    } else {
+      var at = scene.at || [0.7, 0.5, 1], R0 = Math.min(SW * 0.16, AH * 0.27);
+      L = { cx: sx(at[0]), cy: AH * at[1], R: R0 * at[2] };
+    }
+    if (P) L.box = S ? { x: 16, y: S.top, w: AW - 32, h: S.h } : { x: 16, y: AH * 0.1 + 10, w: AW - 32, h: AH * 0.34 };
+    else L.box = { x: sx(0.47), y: AH * 0.17, w: SW * 0.44, h: AH * 0.62 };
+    if (scene.box) { L.cx = L.box.x + L.box.w / 2; L.cy = L.box.y + L.box.h / 2; L.R = Math.min(L.box.w, L.box.h) / 2; }
+    L.top = S ? S.top : AH * 0.31 - 60;
+    L.h = S ? S.h : 120;
+    L.portrait = P;
+    L.sec = sections[k];
+    return L;
+  }
+
+  // ---- shape scenes: one shape, handed from world to world ---------------------
+  var INK = [20, 20, 18], EMB = [244, 88, 31], SHELF = [43, 108, 155], CREAM = [246, 240, 230], FOAM = [226, 245, 240], STAR = [214, 222, 255], COLD = [16, 28, 40];
+  var STAR_AT = [0.05, 0.19, 0.33, 0.47, 0.64];
+
+  function shapeBase(L) {
+    return {
+      geom: G.pent, cx: L.cx, cy: L.cy, R: L.R,
+      ink: INK, inkA: 1, lw: 1.8, draw: 1,
+      fill: INK, fillA: 0.05,
+      hug: EMB, hugA: 0, hugDraw: 1, hugScale: 1.12, follow: 10,
+      glow: 0, wob: 0,
+      sq: 1.45, sqA: 0, ghost: 0, lab: 0,
+      stars: [0, 0, 0, 0, 0], edges: 0, constA: 0,
+      mark: 0, spark: 0,
+      attract: 0, heat: 0, flame: 0
+    };
+  }
+
+  function markState(s, l) {
+    var k = sm(0.02, 0.3, l);
+    s.geom = lerpG(G.pent, G.ring, k);
+    s.cx -= 1.94 * s.R / 21;
+    s.ink = [255, 236, 220]; s.inkA = 1 - k;
+    s.fill = EMB; s.fillA = 0.9 + 0.1 * k;
+    s.hugA = 1 - k; s.hugScale = lerp(1.12, 1.0, k);
+    s.mark = sm(0.3, 0.38, l); s.fillA *= 1 - s.mark;
+    s.spark = sm(0.32, 0.44, l);
+    s.glow = 16 + 22 * s.spark; s.flame = sm(0.3, 0.62, l); s.heat = 1;
+  }
+
+  var SCENES = {
+    // the business, as it is: drawn, then fitted
+    fit: { kind: "shape", at: [0.71, 0.52, 1.1], cap: 1.45, state: function (s, l, t) {
+      s.draw = RM ? 1 : sm(0.2, 1.7, t); s.fillA = 0.05 * s.draw;
+      s.hugA = 1; s.hugDraw = RM ? 1 : sm(1.6, 2.7, t); s.wob = 0.016; s.follow = 4;
+    } },
+    // off the shelf: a square closes on it; its corners are what the business
+    // never uses, and what it cuts off is what the business is missing
+    shelf: { kind: "shape", at: [0.7, 0.45, 0.95], cap: 1.2, state: function (s, l) {
+      s.ink = COLD; s.fill = COLD; s.fillA = 0.06; s.lw = 1.7;
+      s.sqA = sm(0, 0.14, l); s.sq = lerp(1.45, 0.66, sm(0.06, 0.4, l)); s.ghost = sm(0.28, 0.5, l); s.lab = sm(0.42, 0.56, l); s.follow = 12;
+    } },
+    // the offer: built, then supported, then owned
+    offer: { kind: "shape", at: [0.7, 0.5, 1.05], state: function (s, l) {
+      var bld = sm(0.03, 0.26, l), sup = sm(0.3, 0.5, l), own = sm(0.58, 0.76, l);
+      s.ink = CREAM; s.inkA = 0.3 + 0.7 * bld; s.fill = EMB; s.fillA = 0.04 + 0.88 * own;
+      s.hugA = Math.min(1, sup * 4); s.hugDraw = sup;
+      s.glow = 4 + 16 * sup + 22 * own; s.wob = 0.01; s.follow = 8;
+      s.attract = sm(0, 0.06, l) * (1 - sm(0.2, 0.34, l)); s.heat = 0.25 * sup + 0.75 * own;
+    } },
+    // four questions, four stars, then the first version closes the shape
+    questions: { kind: "shape", at: [0.69, 0.5, 1.28], tall: [0.5, 0.27, 1.12], ext: [1.25, 1.0], state: function (s, l) {
+      s.inkA = 0; s.fill = STAR; s.fillA = 0.07 * sm(0.8, 0.92, l); s.constA = 1;
+      s.stars = STAR_AT.map(function (a) { return sm(a, a + 0.07, l); });
+      s.edges = sm(0.19, 0.26, l) + sm(0.33, 0.4, l) + sm(0.47, 0.54, l) + sm(0.64, 0.71, l) + sm(0.72, 0.8, l);
+      s.hugA = sm(0.8, 0.84, l); s.hugDraw = sm(0.81, 0.96, l); s.glow = 12 * s.hugDraw;
+    } },
+    // over time: the shape changes and the fit follows a beat behind
+    change: { kind: "shape", at: [0.7, 0.5, 1.02], cap: 1.45, state: function (s, l) {
+      s.geom = lerpG(lerpG(G.pent, G.tA, sm(0.14, 0.38, l)), G.tB, sm(0.46, 0.7, l));
+      s.ink = FOAM; s.fill = FOAM; s.fillA = 0.07;
+      s.hugA = 1; s.hugScale = 1.14; s.follow = 2.2; s.wob = 0.045; s.glow = 10;
+    } },
+    // coaching: software you build yourselves, drawn and fitted in the forge
+    build: { kind: "shape", at: [0.7, 0.5, 1.0], state: function (s, l) {
+      s.ink = CREAM; s.draw = sm(0.0, 0.3, l); s.fill = EMB; s.fillA = 0.04 + 0.86 * sm(0.55, 0.8, l);
+      s.hugA = 1; s.hugDraw = sm(0.25, 0.55, l); s.glow = 4 + 26 * sm(0.4, 0.8, l); s.wob = 0.01; s.follow = 8;
+      s.heat = sm(0.3, 0.8, l);
+    } },
+    // the shape curls into the mark, and the mark lights
+    mark: { kind: "shape", at: [0.5, 0.39, 0.46], tall: [0.5, 0.31, 0.58], ext: [2.4, 1.2], state: markState },
+    markhigh: { kind: "shape", at: [0.5, 0.25, 0.36], tall: [0.5, 0.24, 0.5], ext: [2.4, 1.2], state: markState },
+    // about: the mark was never a shape here, so it draws itself and lights
+    markring: { kind: "shape", at: [0.5, 0.33, 0.42], tall: [0.5, 0.3, 0.58], ext: [2.4, 1.2], state: function (s, l) {
+      s.geom = G.ring; s.cx -= 1.94 * s.R / 21;
+      s.ink = [255, 236, 220]; s.draw = sm(0, 0.16, l); s.fill = EMB; s.fillA = sm(0.12, 0.22, l);
+      s.mark = sm(0.2, 0.28, l); s.inkA = 1 - s.mark; s.fillA *= 1 - s.mark;
+      s.spark = sm(0.24, 0.36, l); s.glow = 16 + 22 * s.spark; s.flame = sm(0.26, 0.56, l); s.heat = 1;
+    } },
+
+    coil: { kind: "draw", at: [0.71, 0.5, 1.1], tall: [0.5, 0.27, 1.05], ext: [1.6, 1.05], parallax: true, draw: drawCoil },
+    curve: { kind: "draw", box: true, draw: drawCurve },
+    session: { kind: "draw", box: true, draw: drawSession },
+    releases: { kind: "draw", box: true, draw: drawReleases },
+    // Friends: the letters over the forge, with no figure
+    peer: {},
+    wheel: { kind: "draw", box: true, draw: drawWheel },
+    devices: { kind: "draw", box: true, draw: drawDevices },
+    keepers: { kind: "draw", at: [0.71, 0.5, 0.78], tall: [0.5, 0.26, 0.78], ext: [1.25, 1.25], parallax: true, draw: drawKeepers },
+    family: { kind: "draw", draw: drawFamily },
+    timeline: { kind: "draw", draw: drawTimeline }
+  };
+  function shapeState(scene, k, l, t) {
+    var s = shapeBase(layoutOf(scene, k));
+    scene.state(s, l, t);
+    return s;
+  }
+
+  function blend(a, b, t) {
+    var o = {};
+    for (var key in a) {
+      var va = a[key], vb = b[key];
+      if (key === "geom") continue;
+      if (typeof va === "number") o[key] = va + (vb - va) * t;
+      else o[key] = va.map(function (x, i) { return x + (vb[i] - x) * t; });
+    }
+    o.geom = lerpG(a.geom, b.geom, t);
+    // a colour fading out never tints the one fading in
+    [["fill", "fillA"], ["ink", "inkA"], ["hug", "hugA"]].forEach(function (k) {
+      var wa = a[k[1]] * (1 - t), wb = b[k[1]] * t, sum = wa + wb;
+      if (sum > 1e-4) o[k[0]] = a[k[0]].map(function (x, i) { return (x * wa + b[k[0]][i] * wb) / sum; });
+    });
+    return o;
+  }
+
+  // ---- drawing the shape -----------------------------------------------------------
+  var sp = new Float32Array(NP * 2), hugT = new Float32Array(NP * 2), hug = new Float32Array(NP * 2), hugReady = false;
+  var SA = 1;   // the whole shape's opacity, below 1 while it cross-fades with a figure
+
+  function points(s, t, dt) {
+    var g = s.geom, mx = 0, my = 0, i;
+    for (i = 0; i < NP; i++) { mx += g[2 * i]; my += g[2 * i + 1]; }
+    mx /= NP; my /= NP;
+    for (i = 0; i < NP; i++) {
+      var a = i / NP;
+      var wob = s.wob * (Math.sin(TAU * 2 * a + t * 0.9) * 0.6 + Math.sin(TAU * 3 * a - t * 0.7 + 1.3) * 0.4);
+      var dx = (g[2 * i] - mx) * (1 + wob), dy = (g[2 * i + 1] - my) * (1 + wob);
+      sp[2 * i] = s.cx + (mx + dx) * s.R;
+      sp[2 * i + 1] = s.cy + (my + dy) * s.R;
+      hugT[2 * i] = s.cx + (mx + dx * s.hugScale) * s.R;
+      hugT[2 * i + 1] = s.cy + (my + dy * s.hugScale) * s.R;
+    }
+    var k = hugReady ? 1 - Math.exp(-dt * s.follow) : 1;
+    for (i = 0; i < NP * 2; i++) hug[i] += (hugT[i] - hug[i]) * k;
+    hugReady = true;
+  }
+  function trace(p) {
+    ctx.beginPath();
+    addTrace(p);
+  }
+  function addTrace(p) {
+    ctx.moveTo(p[0], p[1]);
+    for (var i = 1; i < NP; i++) ctx.lineTo(p[2 * i], p[2 * i + 1]);
+    ctx.closePath();
+  }
+  function perim(p) {
+    var L = 0;
+    for (var i = 0; i < NP; i++) { var j = (i + 1) % NP; L += Math.hypot(p[2 * j] - p[2 * i], p[2 * j + 1] - p[2 * i + 1]); }
+    return L;
+  }
+  function drawShape(s, m) {
+    trace(sp);
+    if (s.fillA * m * SA > 0.002) {
+      ctx.globalAlpha = s.fillA * m * SA;
+      ctx.fillStyle = rgba(s.fill, 1);
+      if (s.glow > 0.5 && s.fillA > 0.3) { ctx.shadowColor = EMBER; ctx.shadowBlur = s.glow; }
+      ctx.fill("evenodd");
+      ctx.shadowBlur = 0;
+    }
+    if (s.inkA * m * SA > 0.002 && s.draw > 0.002) {
+      ctx.globalAlpha = s.inkA * m * SA;
+      ctx.strokeStyle = rgba(s.ink, 1);
+      ctx.lineWidth = s.lw;
+      if (s.draw < 0.999) { var L = perim(sp); ctx.setLineDash([L * s.draw, L + 10]); }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Once the square settles (ghost): its corners outside the shape are hatched
+  // and dashed blue, unused; the shape outside it turns dashed ember, missing.
+  function drawCropped(s) {
+    var h = s.sq * s.R, x0 = s.cx - h, y0 = s.cy - h, w = 2 * h, g = s.ghost, d;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0, y0, w, w); ctx.clip();
+    ctx.globalAlpha = 0.05 * s.sqA * SA; ctx.fillStyle = rgba(SHELF, 1); ctx.fillRect(x0, y0, w, w);
+    if (g > 0.001) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x0, y0, w, w); addTrace(sp); ctx.clip("evenodd");
+      ctx.beginPath();
+      for (d = -w; d < w; d += 5) { ctx.moveTo(x0 + d, y0 + w); ctx.lineTo(x0 + d + w, y0); }
+      ctx.globalAlpha = 0.45 * g * s.sqA * SA; ctx.strokeStyle = rgba(SHELF, 1); ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+    drawShape(s, 1);
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-20, -20, AW + 40, AH + 40); ctx.rect(x0, y0, w, w); ctx.clip("evenodd");
+    if (g < 0.999) drawShape(s, 1 - g);
+    if (g > 0.001) {
+      trace(sp);
+      ctx.globalAlpha = 0.1 * g * SA; ctx.fillStyle = rgba(EMB, 1); ctx.fill();
+      ctx.globalAlpha = 0.9 * g * SA; ctx.strokeStyle = rgba(EMB, 1); ctx.lineWidth = 1.3;
+      ctx.setLineDash([3, 5]); ctx.lineJoin = "round"; ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.restore();
+    if (s.sqA > 0.002) {
+      ctx.lineWidth = 1.5;
+      ctx.save(); trace(sp); ctx.clip();
+      ctx.globalAlpha = s.sqA * SA; ctx.strokeStyle = rgba(s.ink, 1); ctx.strokeRect(x0, y0, w, w);
+      ctx.restore();
+      ctx.save();
+      ctx.beginPath(); ctx.rect(-20, -20, AW + 40, AH + 40); addTrace(sp); ctx.clip("evenodd");
+      if (g < 0.999) { ctx.globalAlpha = (1 - g) * s.sqA * SA; ctx.strokeStyle = rgba(s.ink, 1); ctx.strokeRect(x0, y0, w, w); }
+      if (g > 0.001) {
+        ctx.globalAlpha = 0.9 * g * s.sqA * SA; ctx.strokeStyle = rgba(SHELF, 1); ctx.lineWidth = 1.3;
+        ctx.setLineDash([3, 5]); ctx.strokeRect(x0, y0, w, w); ctx.setLineDash([]);
+      }
+      ctx.restore();
+    }
+    if (s.lab * SA > 0.002) {
+      var R = s.R;
+      ctx.globalAlpha = s.lab * SA;
+      pointer(x0 + 0.09 * R, y0 + 0.12 * R, x0 - 0.24 * R, y0 - 0.12 * R, "UNUSED", SHELF, "right");
+      pointer(s.cx + 0.01 * R, s.cy - 0.84 * R, s.cx + 0.46 * R, s.cy - 1.04 * R, "MISSING", EMB, "left");
+    }
+    ctx.globalAlpha = 1;
+  }
+  function pointer(x1, y1, x2, y2, str, col, align) {
+    ctx.fillStyle = ctx.strokeStyle = rgba(col, 1);
+    ctx.beginPath(); ctx.arc(x1, y1, 2, 0, TAU); ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    label(ctx, str, x2 + (align === "right" ? -5 : 5), y2 + 4, 11, 700, rgba(col, 1), align, 1.3);
+  }
+  function drawHug(s) {
+    if (s.hugA * SA < 0.002 || s.hugDraw < 0.002) return;
+    trace(hug);
+    ctx.globalAlpha = s.hugA * SA;
+    ctx.strokeStyle = rgba(s.hug, 1);
+    ctx.lineWidth = s.lw + 0.3;
+    if (s.glow > 0.5) { ctx.shadowColor = EMBER; ctx.shadowBlur = s.glow; }
+    if (s.hugDraw < 0.999) { var L = perim(hug); ctx.setLineDash([L * s.hugDraw, L + 10]); }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+  }
+  function drawStar(c, x, y, p, ember, alpha, t, k) {
+    var sc = outBack(clamp(p)), tw = 0.8 + 0.2 * Math.sin(t * 2.3 + k * 1.7);
+    var r = (ember ? 5.5 : 4) * sc;
+    if (r <= 0.05 || alpha <= 0.002) return;
+    var col = ember ? "255,122,61" : "226,233,255";
+    var g = c.createRadialGradient(x, y, 0, x, y, r * 7);
+    g.addColorStop(0, "rgba(" + col + "," + (0.55 * alpha * p) + ")");
+    g.addColorStop(1, "rgba(" + col + ",0)");
+    c.globalAlpha = 1;
+    c.fillStyle = g;
+    c.beginPath(); c.arc(x, y, r * 7, 0, TAU); c.fill();
+    c.strokeStyle = "rgba(" + col + "," + (0.75 * alpha * p * tw) + ")";
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(x - r * 4.2, y); c.lineTo(x + r * 4.2, y);
+    c.moveTo(x, y - r * 4.2); c.lineTo(x, y + r * 4.2);
+    c.stroke();
+    c.fillStyle = "rgba(255,255,255," + (alpha * p) + ")";
+    c.beginPath(); c.arc(x, y, r * 0.55, 0, TAU); c.fill();
+  }
+  function drawConstellation(s, t) {
+    var A = s.constA * SA;
+    var V = PENT_V.map(function (v) { return [s.cx + v[0] * s.R, s.cy + v[1] * s.R]; });
+    var mx = 0, my = 0, k;
+    V.forEach(function (v) { mx += v[0] / 5; my += v[1] / 5; });
+    ctx.lineWidth = 1.2;
+    for (k = 0; k < 5; k++) {
+      var e = clamp(s.edges - k);
+      if (e <= 0) continue;
+      var a = V[k], b = V[(k + 1) % 5], x = a[0] + (b[0] - a[0]) * e, y = a[1] + (b[1] - a[1]) * e;
+      ctx.globalAlpha = A;
+      ctx.strokeStyle = k >= 3 ? "rgba(255,160,110,0.7)" : "rgba(214,222,255,0.6)";
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(x, y); ctx.stroke();
+      if (e < 1) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, 1.8, 0, TAU); ctx.fill(); }
+    }
+    ctx.globalAlpha = 1;
+    for (k = 0; k < 5; k++) if (s.stars[k] > 0.001) drawStar(ctx, V[k][0], V[k][1], s.stars[k], k === 4, A, t, k);
+    for (k = 0; k < 4; k++) {
+      var p = s.stars[k];
+      if (p < 0.01) continue;
+      var dx = V[k][0] - mx, dy = V[k][1] - my, d = Math.hypot(dx, dy) || 1;
+      label(ctx, String(k + 1), V[k][0] + dx / d * 24, V[k][1] + dy / d * 24 + 4, 11, 700, "rgba(255,176,122," + (0.9 * p * A) + ")", "center", 0);
+    }
+  }
+  function drawMark(s) {
+    var k = s.R / 21;
+    ctx.save();
+    ctx.translate(s.cx, s.cy);
+    ctx.scale(k, k);
+    ctx.translate(-28, -32);
+    ctx.shadowColor = EMBER;
+    ctx.shadowBlur = s.glow;
+    ctx.fillStyle = EMBER;
+    if (s.mark > 0.002) { ctx.globalAlpha = s.mark * SA; ctx.fill(RING); }
+    if (s.spark > 0.002) {
+      var e = outBack(s.spark);
+      ctx.globalAlpha = clamp(s.spark * 2) * SA;
+      ctx.translate(50, 31); ctx.scale(e, e); ctx.translate(-50, -31);
+      ctx.fill(SPARK);
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- drawing the coaching and about figures ---------------------------------------
+  function label(c, str, x, y, size, weight, color, align, spacing) {
+    c.font = weight + " " + size + "px " + FONT;
+    c.fillStyle = color;
+    c.textAlign = align || "center";
+    c.textBaseline = "alphabetic";
+    if ("letterSpacing" in c) c.letterSpacing = (spacing || 0) + "px";
+    c.fillText(str, x, y);
+    if ("letterSpacing" in c) c.letterSpacing = "0px";
+  }
+  // a label that clears what is drawn under it, as a chart's labels do
+  function clearLabel(c, str, x, y, size, weight, color, align, spacing, alpha) {
+    if (alpha <= 0) return;
+    c.save();
+    c.globalCompositeOperation = "destination-out";
+    c.globalAlpha = alpha;
+    c.lineWidth = 7;
+    c.lineJoin = "round";
+    c.font = weight + " " + size + "px " + FONT;
+    c.textAlign = align;
+    c.textBaseline = "alphabetic";
+    if ("letterSpacing" in c) c.letterSpacing = spacing + "px";
+    c.strokeText(str, x, y);
+    c.restore();
+    label(c, str, x, y, size, weight, color, align, spacing);
+  }
+  function strokePart(c, pts, f) {
+    var n = pts.length / 2, total = 0, i;
+    for (i = 1; i < n; i++) total += Math.hypot(pts[2 * i] - pts[2 * i - 2], pts[2 * i + 1] - pts[2 * i - 1]);
+    var want = total * clamp(f), acc = 0, hx = pts[0], hy = pts[1];
+    c.beginPath();
+    c.moveTo(hx, hy);
+    for (i = 1; i < n; i++) {
+      var dx = pts[2 * i] - pts[2 * i - 2], dy = pts[2 * i + 1] - pts[2 * i - 1], d = Math.hypot(dx, dy);
+      if (acc + d >= want) { var k = d ? (want - acc) / d : 0; hx = pts[2 * i - 2] + dx * k; hy = pts[2 * i - 1] + dy * k; c.lineTo(hx, hy); break; }
+      acc += d; hx = pts[2 * i]; hy = pts[2 * i + 1]; c.lineTo(hx, hy);
+    }
+    c.stroke();
+    return [hx, hy];
+  }
+  function strokeToX(c, pts, xm) {
+    var n = pts.length / 2, hx = pts[0], hy = pts[1];
+    c.beginPath();
+    c.moveTo(hx, hy);
+    for (var i = 1; i < n; i++) {
+      var x0 = pts[2 * i - 2], y0 = pts[2 * i - 1], x1 = pts[2 * i], y1 = pts[2 * i + 1];
+      if (x1 <= xm) { c.lineTo(x1, y1); hx = x1; hy = y1; continue; }
+      if (x0 < xm) { var k = (xm - x0) / (x1 - x0); hx = x0 + (x1 - x0) * k; hy = y0 + (y1 - y0) * k; c.lineTo(hx, hy); }
+      break;
+    }
+    c.stroke();
+    return [hx, hy];
+  }
+  function glowDot(c, x, y, r, col, a) {
+    var g = c.createRadialGradient(x, y, 0, x, y, r * 5);
+    g.addColorStop(0, rgba(col, 0.6 * a));
+    g.addColorStop(1, rgba(col, 0));
+    c.fillStyle = g;
+    c.beginPath(); c.arc(x, y, r * 5, 0, TAU); c.fill();
+    c.fillStyle = rgba([255, 244, 230], a);
+    c.beginPath(); c.arc(x, y, r * 0.6, 0, TAU); c.fill();
+  }
+  function arrow(c, x, y, dx, dy, size) {
+    var a = Math.atan2(dy, dx);
+    c.beginPath();
+    c.moveTo(x - size * Math.cos(a - 0.5), y - size * Math.sin(a - 0.5));
+    c.lineTo(x, y);
+    c.lineTo(x - size * Math.cos(a + 0.5), y - size * Math.sin(a + 0.5));
+    c.stroke();
+  }
+
+  // Coaching, the hero: a line loops upward in a widening coil, one loop a
+  // session, each wider and higher than the last; the top loop is ember and
+  // a faint line leaves it, heading up and out.
+  function drawCoil(c, l, t, L, a) {
+    var intro = RM ? 1 : sm(0.25, 3.2, t), turns = 5, steps = 320;
+    var n = Math.max(2, Math.round(steps * intro));
+    var rot = (RM ? 0.7 : t * 0.32) + l * 2.4;
+    var r0 = L.R * 0.26, r1 = L.R * 1.0, yb = L.cy + L.R * 0.95, yt = L.cy - L.R * 0.8, tilt = 0.3;
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    var front = null, ember = null, x = 0, y = 0;
+    function run() {
+      c.globalAlpha = (front ? 1 : 0.26) * a;
+      c.strokeStyle = ember ? EMBER : rgba(INK, 1);
+      c.lineWidth = ember ? 2.2 : 1.6;
+      if (ember && front) { c.shadowColor = EMBER; c.shadowBlur = 10; }
+      c.stroke();
+      c.shadowBlur = 0;
+    }
+    for (var k = 0; k <= n; k++) {
+      var f = k / steps, th = f * turns * TAU + rot, r = r0 + (r1 - r0) * f;
+      x = L.cx + r * Math.cos(th);
+      y = yb + (yt - yb) * f + r * Math.sin(th) * tilt;
+      var fr = Math.sin(th) > 0, em = f > (turns - 1) / turns;
+      if (k === 0) { front = fr; ember = em; c.beginPath(); c.moveTo(x, y); continue; }
+      c.lineTo(x, y);
+      if (fr !== front || em !== ember) { run(); c.beginPath(); c.moveTo(x, y); front = fr; ember = em; }
+    }
+    run();
+    var out = RM ? 1 : sm(3.1, 4.4, t);
+    if (out > 0) {
+      c.globalAlpha = 0.55 * a * out;
+      c.strokeStyle = EMBER;
+      c.lineWidth = 1.4;
+      c.setLineDash([3, 6]);
+      c.beginPath();
+      c.moveTo(x, y);
+      c.quadraticCurveTo(x + L.R * 0.5, y - L.R * 0.15, x + L.R * 0.75 * out, y - L.R * 0.8 * out);
+      c.stroke();
+      c.setLineDash([]);
+    }
+    c.globalAlpha = a;
+    glowDot(c, x, y, 4, EMB, a * (0.7 + 0.3 * Math.sin(t * 3)));
+    c.globalAlpha = 1;
+  }
+
+  // Coaching, the learning curve: chasing the tools gives the same short
+  // burst with every new capability, then drops back; growing with AI
+  // compounds past it and keeps climbing.
+  function drawCurve(c, l, t, L, a) {
+    var B = L.box, p = sm(0.06, 0.78, l);
+    var x0 = B.x + 46, x1 = B.x + B.w - 26, yA = B.y + B.h - 56, yT = B.y + 34;
+    c.globalAlpha = 0.62 * a;
+    c.fillStyle = "#f8fafc";
+    c.beginPath();
+    if (c.roundRect) c.roundRect(B.x, B.y, B.w, B.h, 14); else c.rect(B.x, B.y, B.w, B.h);
+    c.fill();
+    c.globalAlpha = 0.14 * a;
+    c.strokeStyle = rgba(COLD, 1);
+    c.lineWidth = 1;
+    c.stroke();
+    c.globalAlpha = a * sm(0, 0.1, l);
+    c.strokeStyle = rgba(COLD, 0.55);
+    c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(x0, yT - 8); c.lineTo(x0, yA); c.lineTo(x1 + 8, yA); c.stroke();
+    label(c, "WHAT YOU CAN DO", x0 - 6, yT - 16, 10, 700, rgba(COLD, 0.75), "left", 1.3);
+    label(c, "TIME", x1 + 8, yA + 18, 10, 700, rgba(COLD, 0.75), "right", 1.3);
+    var ticks = [0.12, 0.31, 0.5, 0.69, 0.88].map(function (f) { return x0 + (x1 - x0) * f; });
+    var base = yA - (yA - yT) * 0.1, burst = (yA - yT) * 0.3, W = x1 - x0;
+    var chase = [], grow = [];
+    for (var i = 0; i <= 160; i++) {
+      var x = x0 + W * i / 160, b = 0;
+      ticks.forEach(function (tx) { if (x >= tx) { var d = (x - tx) / W; b = Math.max(b, (1 - Math.exp(-d * 90)) * Math.exp(-d * 9)); } });
+      chase.push(x, base - burst * b);
+      var f = (x - x0) / W;
+      grow.push(x, base - (yA - yT) * 0.86 * Math.pow(f, 1.75));
+    }
+    c.globalAlpha = a;
+    ticks.forEach(function (tx, k) {
+      var on = sm(0, 0.02, p - (tx - x0) / W);
+      c.globalAlpha = a * (0.25 + 0.6 * on);
+      c.strokeStyle = rgba(COLD, 1);
+      c.lineWidth = 1.2;
+      c.beginPath(); c.moveTo(tx, yA); c.lineTo(tx, yA + 6); c.stroke();
+    });
+    var xm = x0 + W * p;
+    c.globalAlpha = a;
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    c.strokeStyle = rgba(COLD, 0.8);
+    c.lineWidth = 1.8;
+    var hc = strokeToX(c, chase, xm);
+    c.strokeStyle = EMBER;
+    c.lineWidth = 2.6;
+    c.shadowColor = EMBER;
+    c.shadowBlur = 10;
+    var hg = strokeToX(c, grow, xm);
+    c.shadowBlur = 0;
+    if (p > 0.001 && p < 0.999) { glowDot(c, hg[0], hg[1], 3.5, EMB, a); c.fillStyle = rgba(COLD, a); c.beginPath(); c.arc(hc[0], hc[1], 2.6, 0, TAU); c.fill(); }
+    var lab = sm(0.85, 1, p) * a;
+    // in a short box there is no room under the line before TIME, so the
+    // label rides above the bursts instead
+    var short = yA - yT < 150;
+    label(c, "CHASING", x1, short ? base - burst - 6 : chase[chase.length - 1] + 22, 11, 700, rgba(COLD, 0.85 * lab), "right", 1.4);
+    label(c, "GROWING", x1 - 4, grow[grow.length - 1] - 12, 11, 700, "rgba(244,88,31," + lab + ")", "right", 1.4);
+    var cap = sm(0.2, 0.5, p) * a, small = B.w < 440;
+    var q = "rgba(63,78,91," + cap + ")";
+    if (small) {
+      label(c, "each tick: a new capability arrives,", x0, yA + 36, 11, 400, q, "left", 0);
+      label(c, "the burst is the same", x0, yA + 50, 11, 400, q, "left", 0);
+    } else label(c, "each tick: a new capability arrives, the burst is the same", x0, yA + 38, 12, 400, q, "left", 0);
+    c.globalAlpha = 1;
+  }
+
+  // Coaching, a session: the line arrives tangled in loops, turns ember
+  // and circles the flame once, and leaves straight, with a direction.
+  function drawSession(c, l, t, L, a) {
+    var B = L.box, p = sm(0.03, 0.9, l);
+    var yc = B.y + B.h * 0.52, xs = B.x + B.w * 0.03, xe = B.x + B.w * 0.97, xc = B.x + B.w * 0.56;
+    var rho = Math.min(B.h * 0.2, B.w * 0.11);
+    var tangle = [], i;
+    for (i = 0; i <= 260; i++) {
+      var u = i / 260, th = u * TAU * 4.5 + Math.PI, fade = 1 - u;
+      var lr = B.h * 0.13 * Math.pow(fade, 0.55) * (0.75 + 0.25 * Math.sin(u * 13));
+      tangle.push(xs + (xc - rho - xs) * u + lr * Math.cos(th) - lr * Math.cos(Math.PI) * fade, yc + lr * Math.sin(th) * 1.15 + B.h * 0.07 * Math.sin(u * 7) * fade);
+    }
+    var circle = [];
+    for (i = 0; i <= 120; i++) { var an = Math.PI + (2.5 * Math.PI) * i / 120; circle.push(xc + rho * Math.cos(an), yc + rho * Math.sin(an)); }
+    var straight = [xc, yc - rho, xe, yc - rho];
+    var night = rgba(STAR, 0.78), pt = sm(0, 0.5, p), pc = sm(0.5, 0.74, p), ps = sm(0.74, 1, p);
+    c.globalAlpha = a;
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    // the flame it circles
+    var k = rho * 0.95 / 14, fl = 1 + (RM ? 0 : 0.05 * Math.sin(t * 7));
+    c.save();
+    c.translate(xc, yc);
+    c.scale(k * fl, k * fl);
+    c.translate(-49.6, -31.6);
+    c.shadowColor = EMBER;
+    c.shadowBlur = 18;
+    c.fillStyle = EMBER;
+    c.globalAlpha = a * (0.5 + 0.5 * sm(0, 0.15, l));
+    c.fill(SPARK);
+    c.restore();
+    c.globalAlpha = a;
+    c.strokeStyle = night;
+    c.lineWidth = 1.5;
+    var h = strokePart(c, tangle, pt);
+    if (pc > 0) {
+      c.strokeStyle = EMBER;
+      c.lineWidth = 2.2;
+      c.shadowColor = EMBER;
+      c.shadowBlur = 12;
+      h = strokePart(c, circle, pc);
+      if (ps > 0) { h = strokePart(c, straight, ps); if (ps > 0.98) arrow(c, xe, yc - rho, 1, 0, 11); }
+      c.shadowBlur = 0;
+    }
+    if (p > 0.001 && p < 0.999) glowDot(c, h[0], h[1], 3.4, pc > 0 ? EMB : STAR, a);
+    var la = sm(0.02, 0.12, p) * a, lb = sm(0.55, 0.7, p) * a, lc = sm(0.9, 1, p) * a;
+    var small = B.w < 440, fs = small ? 10 : 11;
+    label(c, "YOU ARRIVE", xs + (small ? 0 : 10), yc + B.h * 0.36, fs, 700, rgba([238, 240, 255], la), "left", 1.4);
+    label(c, "unsure what is possible", xs + (small ? 0 : 10), yc + B.h * 0.36 + 16, fs + 1, 400, rgba([170, 176, 214], la), "left", 0);
+    label(c, "A SESSION", xc, yc - rho - 18, fs, 700, "rgba(255,176,122," + lb + ")", "center", 1.4);
+    label(c, "YOU LEAVE", xe, yc - rho + 26, fs, 700, rgba([238, 240, 255], lc), "right", 1.4);
+    label(c, "with a direction", xe, yc - rho + 42, fs + 1, 400, rgba([170, 176, 214], lc), "right", 0);
+    c.globalAlpha = 1;
+  }
+
+  // Coaching, the model releases: after each new model a trained team
+  // climbs a step; a team with the same habits falls into a pit at each
+  // one and climbs out a little lower. The gap grows with every model.
+  function drawReleases(c, l, t, L, a) {
+    var B = L.box, p = sm(0.04, 0.88, l);
+    var small = B.w < 520, x0 = B.x + B.w * 0.02, x1 = B.x + B.w * (small ? 0.8 : 0.88), yb = B.y + B.h * 0.6, step = B.h * 0.1, pit = B.h * 0.2, drop = B.h * 0.035;
+    var W = x1 - x0, models = [0.14, 0.36, 0.58, 0.8].map(function (f) { return x0 + W * f; });
+    var team = [x0, yb], same = [x0, yb], lt = yb, ls = yb;
+    models.forEach(function (mx) {
+      team.push(mx, lt); lt -= step; team.push(mx + W * 0.045, lt);
+      same.push(mx, ls, mx + W * 0.035, ls + pit); ls += drop; same.push(mx + W * 0.085, ls);
+    });
+    team.push(x1, lt);
+    same.push(x1, ls);
+    var xm = x0 + W * p, foam = [226, 245, 240];
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    // time, and a mark for each new model
+    c.globalAlpha = a * sm(0, 0.1, l);
+    c.strokeStyle = rgba(foam, 0.4);
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(x0, B.y + B.h * 0.95); c.lineTo(B.x + B.w, B.y + B.h * 0.95); c.stroke();
+    label(c, "TIME", B.x + B.w, B.y + B.h * 0.95 + 16, 10, 700, rgba(foam, 0.7), "right", 1.3);
+    models.forEach(function (mx, k) {
+      var on = sm(mx - 2, mx + 2, xm);
+      c.globalAlpha = a * (0.18 + 0.5 * on);
+      c.setLineDash([2, 5]);
+      c.strokeStyle = rgba(foam, 1);
+      c.beginPath(); c.moveTo(mx, B.y + B.h * 0.08); c.lineTo(mx, B.y + B.h * 0.95); c.stroke();
+      c.setLineDash([]);
+      if (on > 0) {
+        var age = clamp((xm - mx) / (W * 0.12));
+        c.globalAlpha = a * (1 - age) * 0.8;
+        c.beginPath(); c.arc(mx, B.y + B.h * 0.08, 4 + age * 26, 0, TAU); c.stroke();
+        c.globalAlpha = a;
+        c.fillStyle = rgba(foam, 0.9);
+        c.beginPath(); c.arc(mx, B.y + B.h * 0.08, 3, 0, TAU); c.fill();
+      }
+      if (k === 0) label(c, "a new model arrives", mx - 4, B.y + B.h * 0.08 - 12, 11, 400, rgba(foam, 0.75 * a * on), "left", 0);
+    });
+    c.globalAlpha = a;
+    c.strokeStyle = rgba(foam, 0.75);
+    c.lineWidth = 1.8;
+    var hs = strokeToX(c, same, xm);
+    // a cross at the bottom of every pit it has reached
+    models.forEach(function (mx, k) {
+      var px = mx + W * 0.035, py = same[5 + k * 6];
+      if (xm < px) return;
+      c.strokeStyle = rgba(foam, 0.85);
+      c.lineWidth = 1.4;
+      c.beginPath(); c.moveTo(px - 4, py + 4); c.lineTo(px + 4, py + 12); c.moveTo(px + 4, py + 4); c.lineTo(px - 4, py + 12); c.stroke();
+    });
+    c.strokeStyle = EMBER;
+    c.lineWidth = 2.6;
+    c.shadowColor = EMBER;
+    c.shadowBlur = 10;
+    var ht = strokeToX(c, team, xm);
+    c.shadowBlur = 0;
+    if (p > 0.001 && p < 0.999) { glowDot(c, ht[0], ht[1], 3.4, EMB, a); c.fillStyle = rgba(foam, a); c.beginPath(); c.arc(hs[0], hs[1], 2.6, 0, TAU); c.fill(); }
+    var end = sm(0.9, 1, p) * a, gx = x1 + Math.min(18, B.w * 0.04);
+    clearLabel(c, "A TRAINED TEAM", x1, lt - 12, 11, 700, "rgba(255,148,102," + end + ")", "right", 1.4, end);
+    clearLabel(c, "SAME HABITS", x1, ls - 9, 11, 700, rgba(foam, 0.85 * end), "right", 1.4, end);
+    if (end > 0) {
+      c.globalAlpha = end;
+      c.strokeStyle = "rgba(255,148,102,0.9)";
+      c.lineWidth = 1.3;
+      c.beginPath(); c.moveTo(gx - 4, lt + 3); c.lineTo(gx, lt + 3); c.lineTo(gx, ls - 3); c.lineTo(gx - 4, ls - 3); c.stroke();
+      label(c, "THE GAP", gx + 6, (lt + ls) / 2 + 4, 10, 700, "rgba(255,148,102," + end + ")", "left", 1.2);
+    }
+    c.globalAlpha = 1;
+  }
+
+  // About, the hero: the mark draws itself in ink, the spark is lit, and
+  // two lights circle it, the two of us who keep it lit.
+  function orbitLights(c, cx, cy, rx, ry, tilt, t, a, count, sizes) {
+    for (var i = 0; i < count; i++) {
+      var ph = t * 0.55 + (i === 2 ? Math.PI * 0.5 : i * Math.PI);
+      for (var j = 16; j >= 0; j--) {
+        var f = ph - j * 0.045, ex = rx * Math.cos(f), ey = ry * Math.sin(f);
+        var x = cx + ex * Math.cos(tilt) - ey * Math.sin(tilt), y = cy + ex * Math.sin(tilt) + ey * Math.cos(tilt);
+        if (j === 0) glowDot(c, x, y, sizes[i], EMB, a);
+        else { c.globalAlpha = a * (1 - j / 17) * 0.35; c.fillStyle = EMBER; c.beginPath(); c.arc(x, y, sizes[i] * 0.35, 0, TAU); c.fill(); }
+      }
+    }
+    c.globalAlpha = 1;
+  }
+  function drawKeepers(c, l, t, L, a) {
+    var k = L.R / 21, intro = RM ? 1 : sm(0.2, 2.2, t), lit = RM ? 1 : sm(2.0, 2.8, t);
+    c.save();
+    c.translate(L.cx - 1.94 * k, L.cy);
+    c.scale(k, k);
+    c.translate(-28, -32);
+    c.globalAlpha = a;
+    c.lineJoin = "round";
+    c.strokeStyle = rgba(INK, 1);
+    c.lineWidth = 1.6 / k;
+    c.setLineDash([intro * 200, 400]);
+    c.stroke(RING);
+    c.setLineDash([sm(0.7, 1, intro) * 60, 120]);
+    c.stroke(SPARK);
+    c.setLineDash([]);
+    if (lit > 0) { c.globalAlpha = a * lit; c.fillStyle = EMBER; c.shadowColor = EMBER; c.shadowBlur = 14; c.fill(SPARK); }
+    c.restore();
+    var la = a * (RM ? 1 : sm(1.4, 2.6, t));
+    if (la > 0.01) orbitLights(c, L.cx, L.cy, L.R * 1.65, L.R * 0.55, -0.28, RM ? 1 : t, la, 2, [4.2, 4.2]);
+  }
+
+  // Clients: every business a different shape. A client in focus on the wheel
+  // stands on a plate cut to one of these (WHEEL_SHAPES below).
+  var KIN = [
+    { at: [-0.5, -0.22], r: 0.5, pts: [0, -1, 0.82, -0.42, 0.62, 0.74, -0.38, 0.92, -0.95, 0.1] },
+    { at: [0.56, -0.5], r: 0.36, pts: [-0.55, -0.95, 0.9, -0.5, 0.6, 0.95, -0.95, 0.55] },
+    { at: [0.3, 0.52], r: 0.44, pts: [-1, 0.05, -0.55, -0.75, 0.35, -0.85, 1, -0.15, 0.7, 0.7, -0.4, 0.8] }
+  ];
+
+  // Clients: a wheel of their logos that turns as the page
+  // scrolls. The client in focus sits big at the point nearest the words, on
+  // a plate cut to their own shape and fitted with an ember outline; the
+  // rest wait round the ring on small round plates. Their words change with
+  // the wheel. On a wide screen the ring runs off the right edge and the
+  // client in focus sits at its left; on a phone it hangs from the top and
+  // the client in focus sits at its bottom, above the words.
+  var WHEEL_SHAPES = KIN.map(function (f) { return f.pts; }).concat([
+    [-0.9, -0.6, 0.2, -1, 1, -0.3, 0.75, 0.8, -0.5, 0.95],
+    [-0.7, -0.9, 0.95, -0.75, 0.6, 0.3, 0.9, 0.95, -0.95, 0.7],
+    [0, -1, 1, 0, 0.1, 0.95, -0.95, 0.2]
+  ]);
+  function wheelOf(sec) {
+    if (!sec._wheel) {
+      sec._wheel = {
+        spokes: [].slice.call(sec.querySelectorAll(".spoke")),
+        turns: [].slice.call(sec.querySelectorAll(".turn")),
+        count: sec.querySelector("[data-wheel-count]"),
+        on: -2
+      };
+    }
+    return sec._wheel;
+  }
+  // The wheel stands upright and is seen from a little to its right: the
+  // client in focus on its near side, at the left, nearest the words and
+  // largest; the one opposite on its far side, at the right, smallest and
+  // furthest. Clients come up from below, pass the front and go over the top.
+  function wheelGeom(P, n, B) {
+    var step = TAU / Math.max(n, 3);
+    if (P) {
+      // on a phone the wheel stands in the room above the words: the plate in
+      // focus fits it, and the far side of the ring stays inside it
+      var bigP = Math.min(AW * 0.44, AH * 0.19, B.h * 0.9);
+      return { cx: AW * 0.6, cy: B.y + B.h / 2, rx: AW * 0.145, ry: Math.max(0, Math.min(AH * 0.128, B.h / 2 - bigP * 0.16)), big: bigP, far: 0.28, step: step };
+    }
+    var bigW = Math.min(AH * 0.33, SW * 0.23);
+    return { cx: sx(0.68), cy: AH * 0.53, rx: SW * 0.11, ry: AH * 0.31, big: bigW, far: 0.26, step: step };
+  }
+  // where along the wheel the page is: first the introduction, the wheel
+  // turning in with no one in focus; then each client holds and the wheel turns
+  // the last place holds still for a while before the next world arrives
+  var WHEEL_HOLD = 0.12;
+  function wheelIntro(n) { return 1.1 / (0.95 * n + 1.1); }
+  function wheelPos(l, n) {
+    var a = wheelIntro(n);
+    // the wheel is not there at first: it fades in over the introduction
+    if (l < a) { var k = l / a; return { p: -0.9 * (1 - k), lit: sm(0.72, 1, k), show: sm(0.12, 0.78, k), k: k }; }
+    if (n < 2) return { p: 0, lit: 1, show: 1, k: 1 };
+    var q = clamp((l - a) / ((1 - a) * (1 - WHEEL_HOLD))) * (n - 1), f = Math.min(Math.floor(q), n - 2);
+    return { p: f + sm(0.3, 0.7, q - f), lit: 1, show: 1, k: 1 };
+  }
+  // a style is written only when its value changes, so a still wheel writes
+  // nothing and a turning one restyles only what moved
+  function put(el, prop, v) {
+    var k = el._put || (el._put = {});
+    if (k[prop] !== v) { k[prop] = v; el.style[prop] = v; }
+  }
+  // takes back everything put() wrote
+  function unput(el) {
+    if (!el || !el._put) return;
+    for (var prop in el._put) el.style[prop] = "";
+    el._put = null;
+  }
+  function drawWheel(c, l, t, L, a) {
+    var W = wheelOf(L.sec), n = W.spokes.length;
+    if (!n) return;
+    // the logos ride the pin as the next world arrives, the outline with
+    // them, and fade as it leaves (ex). The sticky pin's top, from where
+    // measure() found it.
+    var dy = Math.min(0, pinEnd[sections.indexOf(L.sec)] - sy);
+    var G = wheelGeom(L.portrait, n, L.box), wp = wheelPos(l, n), p = wp.p, on = wp.lit < 0.5 ? -1 : Math.round(p);
+    var ex = L.exit === undefined ? 1 : L.exit;
+    var place = [];
+    for (var i = 0; i < n; i++) {
+      var d = i - p;
+      d -= Math.round(d / n) * n;
+      var th = d * G.step, z = Math.cos(th), near = (z + 1) / 2;
+      var x = G.cx - Math.cos(th) * G.rx, y = G.cy + Math.sin(th) * G.ry;
+      var focus = clamp(1 - Math.abs(d)) * wp.lit, e = focus * focus * (3 - 2 * focus);
+      // the front is big because it is in focus; the rest shrink fast with distance
+      var sc = G.far + (0.52 - G.far) * near * near + (1 - 0.52) * e;
+      place.push({ x: x, y: y, sc: sc, near: near, e: e });
+      var sp = W.spokes[i], img = sp._img || (sp._img = sp.querySelector("img, .spoke-mark")), plate = sp._plate || (sp._plate = sp.querySelector(".spoke-plate"));
+      put(sp, "width", G.big + "px");
+      put(sp, "height", G.big + "px");
+      // turned a little away on the far side, as a thing on a wheel would be
+      var turn = (1 - near) * 38;
+      put(sp, "transform", "translate(" + (x - G.big / 2).toFixed(1) + "px," + (y - G.big / 2).toFixed(1) + "px) scale(" + sc.toFixed(4) + ") perspective(" + (G.big * 3).toFixed(0) + "px) rotateY(" + turn.toFixed(1) + "deg)");
+      put(sp, "zIndex", String(Math.round(near * 100) + (focus > 0.5 ? 100 : 0)));
+      put(sp, "opacity", (wp.show * ex).toFixed(3));
+      put(sp, "visibility", wp.show * ex > 0.01 ? "visible" : "hidden");
+      // the rest are only their logos: further back, smaller, dimmer, darker, softer
+      var dim = 1 - e;
+      put(img, "opacity", (e + dim * (0.2 + 0.62 * near * near)).toFixed(3));
+      put(img, "filter", dim > 0.01 ? "grayscale(" + (0.55 * dim).toFixed(2) + ") brightness(" + (1 - 0.3 * dim).toFixed(2) + ") blur(" + ((1 - near) * 1.1 * dim).toFixed(2) + "px)" : "none");
+      put(plate, "opacity", sm(0.6, 1, focus).toFixed(3));
+      put(img, "transform", "scale(" + (1 + 0.25 * dim).toFixed(3) + ")");
+      if (sp._focus !== focus > 0.5) { sp._focus = focus > 0.5; sp.classList.toggle("focus", sp._focus); }
+    }
+    if (wp.k < 1) drawIntroShapes(c, t, L, a, W, G, place, wp.k);
+    if (on !== W.on) {
+      W.on = on;
+      W.turns.forEach(function (tn) { var me = +tn.getAttribute("data-i") === on; tn.classList.toggle("on", me); tn.setAttribute("aria-hidden", me ? "false" : "true"); });
+      if (W.count) W.count.textContent = on + 1;
+    }
+    // the client in focus: the ember fit drawn round its plate
+    var best = -1, bf = 0;
+    for (var m = 0; m < n; m++) if (place[m].e > bf) { bf = place[m].e; best = m; }
+    if (best < 0 || bf < 0.6) return;
+    var f = place[best], shape = WHEEL_SHAPES[(+W.spokes[best].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length], half = G.big * f.sc / 2;
+    var out = [];
+    for (var j = 0; j <= shape.length; j += 2) { var qq = j % shape.length; out.push(f.x + shape[qq] * half * 1.12, f.y + dy + shape[qq + 1] * half * 1.12); }
+    c.save();
+    c.lineJoin = "round";
+    c.lineCap = "round";
+    c.globalAlpha = a * ex * (RM ? 1 : sm(0.6, 0.95, bf));
+    // the open place, for the next client: no plate yet, only its outline in dashes
+    if (W.spokes[best].classList.contains("spoke-open")) c.setLineDash([7, 7]);
+    c.strokeStyle = EMBER;
+    c.lineWidth = 2;
+    c.shadowColor = EMBER;
+    c.shadowBlur = 10;
+    strokePart(c, out, 1);
+    c.restore();
+  }
+  // Before the wheel: every business a different shape. One shape for each
+  // client draws itself in ink in the empty space and is fitted with its
+  // ember outline; as the introduction scrolls, each flies to its client's
+  // place on the wheel and shrinks into it while the logos fade in, so the
+  // shapes become the clients.
+  var INTRO_AT = [[-0.55, -0.28, 0.5], [0.55, -0.55, 0.36], [0.32, 0.5, 0.44], [-0.62, 0.62, 0.3], [0.95, 0.25, 0.28], [-0.1, -0.95, 0.26]];
+  function drawIntroShapes(c, t, L, a, W, G, place, k) {
+    var P = L.portrait, n = W.spokes.length;
+    // on a phone the shapes gather in the room between the header (still
+    // full height before the first scroll) and the opening words
+    var B = L.box, by = P && !document.documentElement.classList.contains("head-compact") ? B.y + liftPx : B.y, bh = B.y + B.h - by;
+    var hx = P ? AW / 2 : sx(0.66), hy = P ? by + bh / 2 : AH * 0.5, R0 = P ? Math.min(AW * 0.27, AH * 0.15, bh * 0.4) : Math.min(SW * 0.16, AH * 0.27);
+    var fly = sm(0.08, 0.82, k), fade = 1 - sm(0.42, 0.86, k);
+    if (fade <= 0.002) return;
+    c.save();
+    c.lineJoin = "round";
+    c.lineCap = "round";
+    for (var i = 0; i < n; i++) {
+      var at = INTRO_AT[i % INTRO_AT.length], d0 = 0.2 + 0.45 * i;
+      var drawn = RM ? 1 : sm(d0, d0 + 1.1, t), hug = RM ? 1 : sm(d0 + 1.0, d0 + 1.8, t);
+      if (drawn <= 0) continue;
+      var drift = RM ? 0 : 0.02 * Math.sin(t * 0.45 + i * 1.7);
+      var x0 = hx + (at[0] + drift) * R0, y0 = hy + (at[1] - drift) * R0, r0 = at[2] * R0;
+      var q = place[i], r1 = G.big * q.sc / 2;
+      var x = x0 + (q.x - x0) * fly, y = y0 + (q.y - y0) * fly, r = r0 + (r1 - r0) * fly;
+      var shape = WHEEL_SHAPES[(+W.spokes[i].getAttribute("data-shape") || 0) % WHEEL_SHAPES.length];
+      var spin = RM ? 0 : (1 - fly) * 0.12 * Math.sin(t * 0.3 + i);
+      var cs = Math.cos(spin), sn = Math.sin(spin);
+      var outline = function (g) {
+        var o = [];
+        for (var j = 0; j <= shape.length; j += 2) {
+          var qq = j % shape.length, ux = shape[qq] * r * g, uy = shape[qq + 1] * r * g;
+          o.push(x + ux * cs - uy * sn, y + ux * sn + uy * cs);
+        }
+        return o;
+      };
+      var pts = outline(1);
+      c.globalAlpha = a * fade * 0.07 * drawn;
+      c.fillStyle = rgba(COLD, 1);
+      c.beginPath(); c.moveTo(pts[0], pts[1]);
+      for (var m = 2; m < pts.length; m += 2) c.lineTo(pts[m], pts[m + 1]);
+      c.fill();
+      c.globalAlpha = a * fade;
+      c.strokeStyle = rgba(COLD, 0.9);
+      c.lineWidth = 1.6;
+      strokePart(c, pts, drawn);
+      if (hug > 0) {
+        c.strokeStyle = EMBER;
+        c.lineWidth = 1.8;
+        c.shadowColor = EMBER;
+        c.shadowBlur = 8;
+        strokePart(c, outline(1.16), hug);
+        c.shadowBlur = 0;
+      }
+    }
+    c.restore();
+    c.globalAlpha = 1;
+  }
+
+  // the scroll position at which a client is in focus
+  function wheelY(el) {
+    var sec = el.closest(".world"), k = sections.indexOf(sec);
+    if (k < 0 || !pinned) return null;
+    var n = wheelOf(sec).spokes.length, i = +el.getAttribute("data-i") || 0, a = wheelIntro(n);
+    return tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (1 - WHEEL_HOLD) * (n > 1 ? i / (n - 1) : 0));
+  }
+
+  // ---- /built: a laptop and a phone, and what we made on their screens -----
+  // One .made for each thing: its words, and a .rig holding its two
+  // screens, each a tall picture of the real page. The devices hold still
+  // while the page scrolls: within a thing's stretch its pictures scroll
+  // inside the screens, and at the end the next thing's rig fades in over it
+  // and the words change. The opening words stand beside the first thing's
+  // devices. The stretches are the --h on the section: 90
+  // for the opening and 135 for each thing, after the 100 of the pin.
+  var DEV_OPEN = 90, DEV_EACH = 135;
+  function devicesOf(sec) {
+    if (sec._dev) return sec._dev;
+    var items = [].slice.call(sec.querySelectorAll(".made"));
+    var D = (sec._dev = {
+      stage: sec.querySelector(".made-stage"), open: sec.querySelector(".made-open"), items: items,
+      // the <noscript> copies are real elements after the router parses a page, so only the screen's own picture
+      shots: items.map(function (it) { return [].slice.call(it.querySelectorAll(".screen > img")); }),
+      ticks: [].slice.call(sec.querySelectorAll(".made-ticks a")), bar: sec.querySelector(".made-ticks"),
+      rooms: [], words: -2, rig: -1, was: -1, wasAt: 0, fitted: ""
+    });
+    D.shots.forEach(function (pair, i) { pair.forEach(function (img) { img.addEventListener("load", function () { D.rooms[i] = null; }); }); });
+    return D;
+  }
+  function devicesIntro(n) { return DEV_OPEN / (DEV_OPEN + DEV_EACH * n); }
+  // a picture is fetched when its thing is next, so a long page costs a
+  // visitor only what they scroll to. The things either side wait until the
+  // one on the screens has arrived, so they never compete with it.
+  function devicesLoad(D, i) {
+    devicesFetch(D.shots[i]);
+    if (!D.shots[i].every(function (img) { return img.complete; })) return;
+    if (i > 0) devicesFetch(D.shots[i - 1]);
+    if (i < D.items.length - 1) devicesFetch(D.shots[i + 1]);
+  }
+  // sizes in the markup cannot know the phone's --fit, so each picture is
+  // chosen for its screen's measured width, kept as a share of the window so
+  // a resize still picks again
+  function devicesFetch(pair, lazy) {
+    pair.forEach(function (img) {
+      var src = img.getAttribute("data-src");
+      if (!src) return;
+      if (lazy) img.loading = "lazy";
+      if (img.offsetWidth) img.sizes = (img.offsetWidth * 101 / innerWidth).toFixed(1) + "vw";
+      img.srcset = img.getAttribute("data-srcset");
+      img.src = src;
+      img.removeAttribute("data-src");
+    });
+  }
+  // where the words sit under the devices (a phone), the devices are one
+  // size for every thing: as large as leaves the longest words clear of the
+  // progress bar, and the opening words clear of the first thing's devices
+  // while the header still has its lockup row. Measured in layout boxes, so
+  // the words' own slide does not count.
+  function devicesFit(D, P) {
+    var key = AW + "x" + AH + P;
+    if (D.fitted === key) return;
+    D.fitted = key;
+    D.rooms = [];
+    var rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
+    var words = D.items.map(function (it) { return it.querySelector(".made-words"); }), lift = P ? headLift() : 0;
+    // the sizes run from 1 down in steps of 0.04 to 0.52, and each try is a
+    // layout, so the largest that fits is found by halving, in four tries
+    function fits(n) {
+      D.stage.style.setProperty("--fit", (1 - 0.04 * n).toFixed(2));
+      if (!P) return true;
+      var floor = D.bar.offsetTop - 12;
+      for (var i = 0; i < words.length; i++) if (words[i].offsetTop + words[i].offsetHeight > floor) return false;
+      return !lead || rig0.offsetTop + rig0.offsetHeight + lift + 12 <= lead.offsetTop;
+    }
+    if (fits(0) || !fits(12)) return;
+    var lo = 0, hi = 12;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (fits(mid)) hi = mid; else lo = mid; }
+    D.stage.style.setProperty("--fit", (1 - 0.04 * hi).toFixed(2));
+  }
+  function drawDevices(c, l, t, L) {
+    var D = devicesOf(L.sec), n = D.items.length;
+    if (!n || !D.stage) return;
+    devicesFit(D, L.portrait);
+    // the stage (devices and words) and the bar dissolve as the world
+    // leaves, most of the way in the first half, so the dark devices do not
+    // hang over the light grid as a grey slab. Written here, only when it
+    // changes, rather than from --u in CSS, which would restyle everything
+    // inside them every frame.
+    var ex = L.exit === undefined ? 1 : L.exit, gone = (ex * ex).toFixed(3);
+    put(D.stage, "opacity", gone);
+    // drifting up a little as it goes, as the words do (.r in worlds.css)
+    put(D.stage, "translate", ex < 1 ? "0 " + (-(1 - ex) * 16).toFixed(1) + "px" : "");
+    if (D.bar) put(D.bar, "opacity", gone);
+    var a = devicesIntro(n), opening = l < a;
+    var q = opening ? 0 : clamp((l - a) / (1 - a)) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
+    devicesLoad(D, i);
+    if (i !== D.rig) {
+      if (D.was >= 0) D.items[D.was].classList.remove("rig-was");
+      if (D.rig >= 0) { D.items[D.rig].classList.remove("rig-on"); D.items[D.rig].classList.add("rig-was"); }
+      D.was = D.rig;
+      D.wasAt = t;
+      D.rig = i;
+      D.items[i].classList.remove("rig-was");
+      D.items[i].classList.add("rig-on");
+    }
+    // the one before goes once the new one has faded in over it
+    if (D.was >= 0 && (RM || t - D.wasAt > 0.45)) { D.items[D.was].classList.remove("rig-was"); D.was = -1; }
+    var words = opening ? -1 : i;
+    if (words !== D.words) {
+      D.words = words;
+      // the things not showing are out of the tab order; the progress bar's
+      // links reach each one
+      D.items.forEach(function (it, j) { it.classList.toggle("on", j === words); it.inert = j !== words; });
+      if (D.open) { D.open.classList.toggle("on", words < 0); D.open.inert = words >= 0; }
+      D.ticks.forEach(function (b, j) { if (j === words) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current"); });
+    }
+    // how far each picture can scroll inside its screen, read once per size
+    var room = D.rooms[i] || (D.rooms[i] = D.shots[i].map(function (img) { return Math.max(0, img.offsetHeight - img.parentNode.clientHeight); }));
+    var k = sections.indexOf(L.sec), s = RM ? 0 : i < n - 1 ? sm(0.08, 0.9, f) : devicesLast(f, room[0], holdLen(k) * (1 - a) / n);
+    D.shots[i].forEach(function (img, j) { img.style.transform = "translate3d(0," + (-room[j] * s).toFixed(1) + "px,0)"; });
+    D.ticks.forEach(function (b, j) { b.style.setProperty("--t", opening || j > i ? 0 : j < i ? 1 : f.toFixed(3)); });
+  }
+  // The last thing's pictures move until the pin lets go, and the laptop's
+  // reaches the page's own speed as it does, so its picture runs on up the
+  // screen with the devices: one motion, with no stretch of scroll where
+  // nothing answers. A Hermite curve from rest whose end slope is the
+  // thing's scroll over the picture's room, so at the end a pixel of scroll
+  // moves the picture a pixel; capped at 3, past which it would run backwards.
+  function devicesLast(f, room, span) {
+    var g = clamp((f - 0.08) / 0.92), v = room > 0 ? Math.min(3, 0.92 * span / room) : 3;
+    return g * g * (3 - v + (v - 2) * g);
+  }
+  // the scroll position at which a thing on /built is on the screens
+  function devicesY(el) {
+    var sec = el.closest(".world"), k = sections.indexOf(sec);
+    if (k < 0 || !pinned) return null;
+    var items = devicesOf(sec).items, n = items.length, i = items.indexOf(el), a = devicesIntro(n);
+    return i < 0 ? null : tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (i + 0.25) / n);
+  }
+  // an anchor inside a pinned world is reached by scrolling to where it is
+  // in focus, not to the element, which stays in its sticky pin. In one
+  // column there is no such place (null), and the anchor is where it is.
+  function pinnedY(el) {
+    if (el.classList.contains("turn")) return wheelY(el);
+    if (el.classList.contains("made")) return devicesY(el);
+    return null;
+  }
+  // where a link to an anchor lands: below the anchor's scroll-margin, or
+  // where it is in focus in its pin
+  function anchorY(el) {
+    var y = pinnedY(el);
+    return y !== null ? y : el.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0);
+  }
+
+  // In one column nothing is pinned: every thing on /built and every client
+  // on /clients is on the page at once, so none is inert or hidden, no
+  // picture keeps the scroll it had inside its screen, and every picture
+  // loads as it nears the screen (at once, for print). Back in the pinned
+  // layout the frame loop applies its state again from scratch.
+  function layFlat() {
+    sections.forEach(function (sec) {
+      var lay = pinned ? "pinned" : printing ? "print" : "flat";
+      if (sec._lay === lay) return;
+      sec._lay = lay;
+      if (sec.classList.contains("devices-world")) {
+        var D = devicesOf(sec);
+        D.words = -2; D.rig = -1; D.was = -1; D.fitted = "";
+        if (pinned) return;
+        D.items.forEach(function (it) { it.inert = false; it.classList.remove("on", "rig-on", "rig-was"); });
+        if (D.open) D.open.inert = false;
+        D.ticks.forEach(function (b) { b.removeAttribute("aria-current"); });
+        if (D.stage) { put(D.stage, "opacity", ""); put(D.stage, "translate", ""); }
+        if (D.bar) put(D.bar, "opacity", "");
+        D.shots.forEach(function (pair) {
+          pair.forEach(function (img) { img.style.transform = ""; if (printing) img.loading = "eager"; });
+          devicesFetch(pair, !printing);
+        });
+      }
+      if (sec.classList.contains("wheel-world")) {
+        var W = wheelOf(sec);
+        W.on = -2;
+        // the spokes lie flat in their rows; back on the wheel the loop
+        // places them again from scratch
+        W.spokes.forEach(function (sp) {
+          [sp, sp._img, sp._plate].forEach(unput);
+          sp._focus = undefined;
+          sp.classList.remove("focus");
+        });
+        if (!pinned) W.turns.forEach(function (tn) { tn.removeAttribute("aria-hidden"); });
+      }
+    });
+  }
+
+  // About us: the two lights circle the family's photograph, and a third,
+  // smaller one joins them.
+  function drawFamily(c, l, t, L, a) {
+    var card = L.sec.querySelector(".card");
+    if (!card) return;
+    var r = card.getBoundingClientRect();
+    if (r.width < 2) return;
+    var third = sm(0.12, 0.3, l), n = third > 0.01 ? 3 : 2;
+    var la = a * sm(-0.2, 0.1, l + (RM ? 1 : 0));
+    orbitLights(c, r.left + r.width / 2, r.top + r.height / 2, r.width * 0.78, r.height * 0.64, -0.12, RM ? 1 : t * 0.9, la, n, [4.2, 4.2, 2.8 * third]);
+  }
+
+  // About, the founder: a timeline from 2016 to now. Software engineer
+  // until 2023; from 2023 the line turns ember and glows, nearly all of
+  // his work; past now, a dashed ember line keeps going.
+  function drawTimeline(c, l, t, L, a) {
+    var P = L.portrait, p = P ? sm(0.42, 0.92, l) : sm(0.1, 0.72, l);
+    var x0, x1, y;
+    if (P) { x0 = 34; x1 = AW - 30; y = L.top + Math.max(L.h - 34, 96); }
+    else { x0 = sx(0.5); x1 = sx(0.9); y = AH * 0.8; }
+    var xNow = x0 + (x1 - x0) * 0.86, step = (xNow - x0) / 10, x23 = x0 + step * 7;
+    var silver = [214, 222, 255], show = a * (P ? sm(0.36, 0.44, l) : 1);
+    if (show < 0.01) return;
+    c.lineCap = "round";
+    c.globalAlpha = show * 0.3;
+    c.strokeStyle = rgba(silver, 1);
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(x0 - 10, y); c.lineTo(x1, y); c.stroke();
+    for (var yr = 0; yr <= 10; yr++) { c.beginPath(); c.moveTo(x0 + step * yr, y); c.lineTo(x0 + step * yr, y + 5); c.stroke(); }
+    var ps = sm(0, 0.55, p), pe = sm(0.55, 0.9, p), pd = sm(0.9, 1, p);
+    c.globalAlpha = show;
+    c.strokeStyle = rgba(silver, 0.95);
+    c.lineWidth = 2;
+    c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + (x23 - x0) * ps, y); c.stroke();
+    if (pe > 0) {
+      c.strokeStyle = EMBER;
+      c.lineWidth = 3;
+      c.shadowColor = EMBER;
+      c.shadowBlur = 14;
+      c.beginPath(); c.moveTo(x23, y); c.lineTo(x23 + (xNow - x23) * pe, y); c.stroke();
+      c.shadowBlur = 0;
+    }
+    if (pd > 0) {
+      c.globalAlpha = show * 0.55 * pd;
+      c.strokeStyle = EMBER;
+      c.lineWidth = 1.4;
+      c.setLineDash([2, 4]);
+      c.beginPath(); c.moveTo(xNow, y); c.lineTo(xNow + (x1 - xNow) * pd, y); c.stroke();
+      c.setLineDash([]);
+      if (pd > 0.98) arrow(c, x1, y, 1, 0, 6);
+    }
+    c.globalAlpha = show;
+    c.fillStyle = rgba(silver, 1);
+    c.beginPath(); c.arc(x0, y, 3.5 * sm(0, 0.05, p), 0, TAU); c.fill();
+    if (pe > 0) glowDot(c, x23 + (xNow - x23) * pe, y, pe < 1 ? 4.5 : 5.5, EMB, show);
+    var fs = P ? 10 : 11;
+    label(c, "SOFTWARE ENGINEER", P ? x0 : (x0 + x23) / 2, y - 16, fs, 700, rgba(silver, 0.9 * show * sm(0.3, 0.55, p)), P ? "left" : "center", 1.4);
+    var la = show * sm(0.75, 0.95, p), right = Math.min((x23 + xNow) / 2 + 120, x1 + 20), cx = P ? x1 : right - 120, al = P ? "right" : "center", up = P ? 18 : 0;
+    label(c, "NEARLY ALL OF HIS WORK", cx, y - 54 - up, fs, 700, "rgba(255,148,102," + la + ")", al, 1.4);
+    label(c, "learning what the most capable AI can do,", cx, y - 38 - up, fs, 400, rgba([170, 176, 214], la), al, 0);
+    label(c, "applying it, teaching it, keeping pace", cx, y - 24 - up, fs, 400, rgba([170, 176, 214], la), al, 0);
+    label(c, "2016", x0, y + 22, 11, 400, rgba(silver, 0.6 * show), "center", 0);
+    label(c, "2023", x23, y + 22, 11, 400, "rgba(255,148,102," + show * sm(0.5, 0.6, p) + ")", "center", 0);
+    label(c, "NOW", xNow, y + 22, 11, 700, "rgba(255,148,102," + show * sm(0.88, 0.95, p) + ")", "center", 1.2);
+    c.globalAlpha = 1;
+  }
+
+  // ---- particles: one population, six temperaments ---------------------------------
+  var parts = [], DV = [0, 0];
+  var PAL = [
+    { op: "source-over", c: ["rgb(20,20,18)"] },
+    { op: "source-over", c: ["rgb(18,32,46)", "rgb(43,108,155)"] },
+    { op: "lighter", c: ["rgb(244,88,31)", "rgb(255,138,61)", "rgb(255,190,110)", "rgb(255,226,172)"] },
+    { op: "lighter", c: ["rgb(190,205,255)", "rgb(236,240,255)", "rgb(255,214,180)"] },
+    { op: "source-over", c: ["rgb(214,246,238)", "rgb(160,226,214)"] },
+    { op: "lighter", c: ["rgb(244,88,31)", "rgb(255,138,61)", "rgb(255,190,110)", "rgb(255,226,172)"] }
+  ];
+  function seedParticles() {
+    var n = RM ? 0 : (AW < 760 ? 80 : 170);
+    parts = [];
+    for (var i = 0; i < n; i++) parts.push({ x: Math.random() * AW, y: Math.random() * AH, vx: 0, vy: 0, s: Math.random(), s2: Math.random(), idx: (Math.random() * NP) | 0 });
+  }
+  function desired(w, p, t) {
+    if (w === 0) { DV[0] = Math.sin(p.y * 0.006 + t * 0.25 + p.s * 6) * 9; DV[1] = -5 + Math.cos(p.x * 0.005 + t * 0.2 + p.s * 5) * 7; }
+    else if (w === 1) {
+      var v = 26 + p.s * 44, dir = p.s < 0.5 ? -1 : 1;
+      if (p.s2 < 0.5) { DV[0] = dir * v; DV[1] = (Math.round(p.y / 48) * 48 - p.y) * 4; }
+      else { DV[0] = (Math.round(p.x / 48) * 48 - p.x) * 4; DV[1] = dir * v * 0.6; }
+    }
+    else if (w === 2) { DV[0] = Math.sin(t * 1.3 + p.s * 20) * 14; DV[1] = -(30 + p.s * 70); }
+    else if (w === 3) { DV[0] = 5 + p.s * 5; DV[1] = -1.5 - p.s2; }
+    else if (w === 4) { DV[0] = 16 + Math.sin(p.y * 0.008 + t * 0.35 + p.s * 3) * 24; DV[1] = Math.cos(p.x * 0.006 - t * 0.3 + p.s2 * 3) * 16; }
+    else { DV[0] = Math.sin(t * 2 + p.s * 30) * 16; DV[1] = -(70 + p.s * 120); }
+  }
+  var ptr = { x: -9999, y: -9999, on: false, sx: 0, sy: 0 };
+  function updateParticles(dt, t, wA, wB, b, attract, focus) {
+    var wd = b < 0.5 ? wA : wB, kv = 1 - Math.exp(-dt * 2.5), M = 16;
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      desired(wA, p, t);
+      var dx = DV[0], dy = DV[1];
+      if (b > 0) { desired(wB, p, t); dx += (DV[0] - dx) * b; dy += (DV[1] - dy) * b; }
+      if (attract > 0.001) {
+        var tx = sp[2 * p.idx] + Math.sin(t * 3 + p.s * 40) * 3, ty = sp[2 * p.idx + 1] + Math.cos(t * 2.6 + p.s2 * 40) * 3;
+        dx += ((tx - p.x) * 3.2 - dx) * attract;
+        dy += ((ty - p.y) * 3.2 - dy) * attract;
+      }
+      if (ptr.on) {
+        var mx = p.x - ptr.x, my = p.y - ptr.y, d2 = mx * mx + my * my;
+        if (d2 < 14400) { var d = Math.sqrt(d2) + 1, f = (120 - d) / 120 * 170; dx += mx / d * f; dy += my / d * f; }
+      }
+      p.vx += (dx - p.vx) * kv;
+      p.vy += (dy - p.vy) * kv;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (wd === 2) {
+        if (p.y < -M) { p.y = AH + M; p.x = Math.random() * AW; p.vy = -40; }
+        if (p.x < -M) p.x = AW + M; else if (p.x > AW + M) p.x = -M;
+      } else if (wd === 5) {
+        if (p.y < -M || p.x < -M || p.x > AW + M || p.y > AH + M) {
+          if (p.s2 < 0.45) {
+            p.x = focus.cx + (Math.random() - 0.35) * focus.R * 1.7;
+            p.y = focus.cy - focus.R * 0.2 + (Math.random() - 0.5) * focus.R * 0.8;
+            p.vx = (Math.random() - 0.5) * 40; p.vy = -60 - Math.random() * 80;
+          } else { p.x = Math.random() * AW; p.y = AH + 12; p.vy = -60; }
+        }
+      } else {
+        if (p.x < -M) p.x += AW + 2 * M; else if (p.x > AW + M) p.x -= AW + 2 * M;
+        if (p.y < -M) p.y += AH + 2 * M; else if (p.y > AH + M) p.y -= AH + 2 * M;
+      }
+    }
+  }
+  function drawParticles(w, alpha, t) {
+    if (alpha < 0.01 || !parts.length) return;
+    var pal = PAL[w];
+    ctx.globalCompositeOperation = pal.op;
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i], a, r;
+      if (w === 0) {
+        ctx.globalAlpha = (0.1 + p.s2 * 0.16) * alpha;
+        ctx.fillStyle = pal.c[0];
+        ctx.beginPath(); ctx.arc(p.x, p.y, 0.6 + p.s * 1.3, 0, TAU); ctx.fill();
+      } else if (w === 1) {
+        var hi = p.s2 > 0.86, z = 2 + p.s * 2.4;
+        ctx.globalAlpha = (hi ? 0.75 : 0.3) * alpha;
+        ctx.fillStyle = pal.c[hi ? 1 : 0];
+        ctx.fillRect(p.x - z / 2, p.y - z / 2, z, z);
+      } else if (w === 2 || w === 5) {
+        a = alpha * (0.55 + 0.45 * Math.sin(t * 9 + p.s * 60)) * (0.45 + 0.55 * p.s2) * clamp((p.y + 40) / (AH * 0.85));
+        r = 0.7 + p.s * 1.9;
+        ctx.fillStyle = pal.c[(p.s2 * 4) | 0];
+        ctx.globalAlpha = a * 0.16;
+        ctx.beginPath(); ctx.arc(p.x, p.y, r * 3.4, 0, TAU); ctx.fill();
+        ctx.globalAlpha = a;
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.fill();
+      } else if (w === 3) {
+        ctx.globalAlpha = alpha * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(t * (1.5 + p.s * 3) + p.s2 * 40)));
+        ctx.fillStyle = pal.c[(p.s2 * 3) | 0];
+        ctx.beginPath(); ctx.arc(p.x, p.y, 0.5 + p.s * 0.9, 0, TAU); ctx.fill();
+      } else {
+        ctx.globalAlpha = alpha * 0.35;
+        ctx.strokeStyle = pal.c[p.s2 < 0.5 ? 0 : 1];
+        ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 1 + p.s * 2.6, 0, TAU); ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+  }
+  function burst(s) {
+    var k = s.R / 21, x = s.cx + 22 * k, y = s.cy - k;
+    for (var i = 0; i < Math.min(46, parts.length); i++) {
+      var p = parts[(Math.random() * parts.length) | 0], an = Math.random() * TAU, v = 60 + Math.random() * 220;
+      p.x = x; p.y = y; p.vx = Math.cos(an) * v; p.vy = Math.sin(an) * v - 60;
+    }
+  }
+
+  // ---- scroll ------------------------------------------------------------------------
+  // Where things are on the page, read once per layout rather than every
+  // frame: a read in the loop forces the browser to finish styling first.
+  // sy follows the scroll from its event, so a still page reads nothing.
+  var tops = [], hs = [], pins = [], pinEnd = [], sy = window.scrollY, gones = [], markG = 1e4;
+  var roomTop = 0, roomH = 0, footTop = 0, docH = 0, vh = 0, liftPx = 0;
+  function positions() {
+    if (room) { roomTop = room.getBoundingClientRect().top + sy; roomH = room.offsetHeight; }
+    if (footer) footTop = footer.getBoundingClientRect().top + sy;
+    docH = document.documentElement.scrollHeight;
+    vh = window.innerHeight;
+  }
+  // ---- leaving: what rides up with a pin is gone before it reaches anything ----
+  // A world's --u runs from 1 to 2 while its pin scrolls away. goneOf is how
+  // far, in pixels of scroll past the pin's release, the first thing riding
+  // up with it can go before it would reach the header or, for words under a
+  // figure on the fixed canvas, that figure; on a phone that is often a few
+  // pixels. So the fade ends there, but takes at least EXIT_MIN of the
+  // screen: where the room is short it begins in the last of the hold, and
+  // the words dissolve as they start to move rather than blink out. Captions
+  // sit inside their figure's reach and end their fade at once (CAP_GONE).
+  // setU writes what is left (exitOf) on each reader as --e.
+  var EXIT_MIN = 0.15, CAP_GONE = 12;
+  // the slide a .r element is given while it is hidden, which is not its place
+  function shiftOf(el) { if (!el.classList.contains("r")) return 0; var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
+  function goneOf(k) {
+    var sec = sections[k], pin = sec.firstElementChild, H = pins[k] || AH, S = stacks[k], P = portrait(), last = k === NW - 1;
+    var head = headBottom() - (P && (k > 0 || allScroll(sec)) ? headLift() - talkDrop(k) : 0) + 8, pt = pin.getBoundingClientRect().top, room = H;
+    function from(el, limit) {
+      if (!el || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return;
+      room = Math.min(room, el.getBoundingClientRect().top - shiftOf(el) - pt - limit);
+    }
+    // the last world's figure rises with its words, and a photograph is in the page
+    var still = S && !last && !allScroll(sec) && !sec.querySelector(".card");
+    from(sec.querySelector(".copy"), still ? S.top + S.h : head);
+    [].forEach.call(sec.querySelectorAll(".card"), function (el) { from(el, head); });
+    if (sec.classList.contains("wheel-world")) {
+      var G = wheelGeom(P, wheelOf(sec).spokes.length, layoutOf(scenes[k], k).box);
+      room = Math.min(room, G.cy - G.ry - G.big * 0.3 - head);
+    }
+    if (sec.classList.contains("devices-world")) {
+      var D = devicesOf(sec), it = D.items[D.items.length - 1];
+      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) room = Math.min(room, it.offsetTop + el.offsetTop - head); });
+    }
+    return Math.max(room, 10);
+  }
+  // the last world's figure rises with its words from above them, so it leaves first
+  function markGone() { var k = NW - 1, S = stacks[k]; return S ? Math.max(S.top - headBottom() + (portrait() ? headLift() : 0) - 8, 10) : 1e4; }
+  // A unit of --u is a screen of scroll once a pin has let go (the last
+  // world counts its tail in AH), and the hold's length before.
+  function pinLen(k) { return k === NW - 1 ? AH : pins[k] || AH; }
+  function holdLen(k) { return Math.max(1, hs[k] - pins[k]); }
+  function exitLen(gone) { return Math.max(Math.min(gone, AH), EXIT_MIN * AH); }
+  // Past the last world the page scrolls only as far as the footer. What
+  // that tail never carries into the header stays: with the floor, it would
+  // otherwise fade in place at the foot of the page.
+  function reach(k, gone) { return k === NW - 1 && docH - vh - (tops[k] + holdLen(k)) < gone ? 1e4 : gone; }
+  // how much of world k is left at --u = u, 0 to 1, for something gone
+  // `gone` pixels past the release
+  function exitOf(k, gone, u) {
+    if (gone === undefined) return 1;
+    return clamp((gone - Math.max(u - 1, 0) * pinLen(k) - Math.min(u - 1, 0) * holdLen(k)) / exitLen(gone));
+  }
+  // measure() writes a value only when it changes, so a measure that moves
+  // nothing leaves the layout it read clean for its second round of reads
+  function setVar(el, name, v) {
+    var k = el._vars || (el._vars = {});
+    if (k[name] === v) return;
+    k[name] = v;
+    if (v === "") el.style.removeProperty(name); else el.style.setProperty(name, v);
+  }
+  function measure() {
+    root.classList.toggle("foot-over", !room && !!footer);
+    // every read, then every write, so the page is laid out once
+    sy = window.scrollY;
+    tops = sections.map(function (s) { return s.getBoundingClientRect().top + sy; });
+    hs = sections.map(function (s) { return s.offsetHeight; });
+    pins = sections.map(function (s) { return s.firstElementChild.offsetHeight; });
+    // the scroll at which a sticky pin starts to leave, to the fraction of a pixel
+    pinEnd = sections.map(function (s) { return s.getBoundingClientRect().bottom + sy - s.firstElementChild.getBoundingClientRect().height; });
+    liftPx = headLift();
+    stacks = sections.map(function (s, k) { return stacked(k) ? stackOf(k) : null; });
+    var foot = footer ? footer.offsetHeight + "px" : "";
+    setVar(root, "--head-lift", liftPx + "px");
+    sections.forEach(function (s, k) {
+      var S = stacks[k];
+      setVar(s, "--copy-b", S ? Math.round(S.copyB) + "px" : "");
+      setVar(s, "--copy-t", S ? Math.round(S.copyT) + "px" : "");
+      setVar(s, "--fig-top", S ? Math.round(S.top) + "px" : "");
+      setVar(s, "--fig-h", S ? Math.round(S.h) + "px" : "");
+    });
+    if (footer) setVar(root, "--foot", foot);
+    // The exits are read where the writes above put things (the words under
+    // a stacked figure sit at --copy-b, --foot moves the room and the
+    // footer), so they are a second round of reads. When nothing above
+    // changed, that layout is the one already read and costs nothing.
+    positions();
+    gones = sections.map(function (s, k) { return reach(k, goneOf(k)); });
+    markG = reach(NW - 1, markGone());
+    if (nav) placeRail();
+    // the exits may have moved: the next frame writes every --u and --e again
+    lastU = [];
+  }
+  function scrollState() {
+    var y = sy, i = 0;
+    for (var k = 0; k < NW; k++) if (y >= tops[k] - 1) i = k;
+    var range = Math.max(1, hs[i] - pins[i]);
+    var l = clamp((y - tops[i]) / range), b = 0, tail = 0;
+    // in one column there is no pin: the fire line (-0.4 + 1.8 * b of the
+    // screen from the bottom, crossing() below) stands on the next
+    // section's top edge, rather than sweeping up through this one's words
+    if (i < NW - 1) b = pinned ? clamp((y - (tops[i] + range)) / Math.max(1, pins[i])) : clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
+    // past the last world the page scrolls on, and the figure rises with the words
+    else tail = Math.max(0, y - (tops[i] + range));
+    return [i, l, b, tail];
+  }
+  // --u is not inherited (worlds.css), so it is written on each element
+  // whose rules read it, and a scroll frame restyles those alone. The exit,
+  // --e, goes beside it, and is written only when it changes, which is
+  // while its world leaves; a caption's ends at once (CAP_GONE).
+  var U_READERS = ".pin-shade, .r, .ticks b, .qs li";
+  var lastU = [], readers = [], capOf = [], lastE = [];
+  function round3(v) { return Math.round(v * 1000) / 1000; }
+  function setU(i, l, b) {
+    for (var k = 0; k < NW; k++) {
+      var u = round3(k < i ? 2 : k > i + 1 ? -1 : k === i ? l + b : -1 + b);
+      if (u === lastU[k]) continue;
+      lastU[k] = u;
+      var e = round3(exitOf(k, gones[k], u)), ec = round3(exitOf(k, reach(k, CAP_GONE), u));
+      for (var j = 0; j < readers[k].length; j++) {
+        var el = readers[k][j], ej = capOf[k][j] ? ec : e;
+        el.style.setProperty("--u", u);
+        if (ej !== lastE[k][j]) { lastE[k][j] = ej; el.style.setProperty("--e", ej); }
+      }
+    }
+  }
+  function placeCaps() {
+    sections.forEach(function (sec, k) {
+      var cap = sec.querySelector(".cap");
+      if (!cap) return;
+      var L = layoutOf(scenes[k], k);
+      cap.style.left = L.cx + "px";
+      cap.style.top = (L.cy + L.R * (scenes[k].cap || 1.45)) + "px";
+    });
+  }
+
+  // ---- the index of worlds -------------------------------------------------------------
+  // A rail down the right edge whose fill follows the scroll, so a hold
+  // where nothing on the page moves still visibly does something. Each
+  // world's mark sits where it becomes current, halfway through its
+  // arrival, so the fill reaches a mark as its world takes over, and every
+  // mark behind the fill stays lit: the worlds already finished. On a
+  // phone the marks are ticks; elsewhere they are the dots, which take
+  // you to their world. Marks keep RAIL_GAP apart (the dots' labels), so
+  // the fill runs faster or slower between some of them, never stops.
+  var nav = null, fill = null, dots = [], ticks = [];
+  var RAIL_BOTTOM = 24, RAIL_BOTTOM_P = 12, RAIL_GAP = 28, RAIL_GAP_P = 8;
+  var railY = [], railD = [], railH = 1, maxS = 1, lastFill = -1, lastMark = -1;
+  function buildIndex() {
+  if (nav) nav.remove();
+  nav = document.createElement("div");
+  nav.className = "worlds";
+  fill = document.createElement("span");
+  fill.className = "rail-fill";
+  fill.setAttribute("aria-hidden", "true");
+  nav.appendChild(fill);
+  var ol = document.createElement("ol");
+  ol.setAttribute("aria-label", "Sections");
+  ticks = sections.map(function () {
+    var tick = document.createElement("i");
+    tick.className = "rail-mark";
+    tick.setAttribute("aria-hidden", "true");
+    nav.appendChild(tick);
+    return tick;
+  });
+  dots = sections.map(function (sec, k) {
+    var li = document.createElement("li"), btn = document.createElement("button"), span = document.createElement("span"), dot = document.createElement("i");
+    btn.type = "button";
+    span.textContent = sec.getAttribute("data-label") || "";
+    btn.appendChild(span);
+    btn.appendChild(dot);
+    btn.addEventListener("click", function () {
+      var target = sec.getAttribute("data-go") ? document.querySelector(sec.getAttribute("data-go")) : null;
+      var y = target ? target.getBoundingClientRect().top + window.scrollY : tops[k] + (k ? 2 : 0);
+      window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+    });
+    li.appendChild(btn);
+    ol.appendChild(li);
+    return btn;
+  });
+  nav.appendChild(ol);
+  document.body.appendChild(nav);
+  lastFill = -1; lastMark = -1;
+  }
+  // where on the scroll each world becomes current, and where its mark is
+  // drawn on the rail; read with the layout in measure()
+  function placeRail() {
+    var P = portrait(), gap = P ? RAIL_GAP_P : RAIL_GAP, top = Math.round(headBottom() + (P ? 8 : 16));
+    maxS = Math.max(1, docH - vh);
+    railH = Math.max(1, vh - top - (P ? RAIL_BOTTOM_P : RAIL_BOTTOM));
+    railY = sections.map(function (s, k) { return k ? Math.min(maxS, Math.max(0, tops[k] - pins[k - 1] / 2)) : 0; });
+    railD = railY.map(function (y) { return y / maxS * railH; });
+    for (var k = 1; k < NW; k++) railD[k] = Math.max(railD[k], railD[k - 1] + gap);
+    for (k = NW - 1; k > 0; k--) railD[k] = Math.min(railD[k], railH - (NW - 1 - k) * gap);
+    setVar(nav, "--rail-top", top + "px");
+    for (k = 0; k < NW; k++) {
+      var at = Math.round(railD[k]) + "px";
+      setVar(ticks[k], "--at", at);
+      setVar(dots[k].parentNode, "--at", at);
+    }
+    lastFill = -1;
+  }
+  function drawRail() {
+    if (railY.length !== NW) return;
+    var j = 0;
+    while (j < NW - 1 && sy >= railY[j + 1]) j++;
+    var y0 = railY[j], y1 = j < NW - 1 ? railY[j + 1] : maxS, d0 = railD[j], d1 = j < NW - 1 ? railD[j + 1] : railH;
+    var f = Math.round(Math.min(1, (d0 + (d1 - d0) * clamp((sy - y0) / Math.max(1, y1 - y0))) / railH) * 2000) / 2000;
+    if (f !== lastFill) { fill.style.transform = "scaleY(" + f + ")"; lastFill = f; }
+    if (j === lastMark) return;
+    for (var k = 0; k < NW; k++) {
+      ticks[k].classList.toggle("is-passed", k <= j);
+      ticks[k].classList.toggle("is-current", k === j);
+      dots[k].classList.toggle("is-passed", k <= j);
+      dots[k].setAttribute("aria-current", k === j ? "true" : "false");
+    }
+    lastMark = j;
+  }
+  var top = document.querySelector(".top");
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+
+  // ---- the loop --------------------------------------------------------------------------
+  var t0 = performance.now(), last = t0, ema = 16, frames = 0, lastSpark = 0, lastTheme = -1, lastDot = -1, lastRoom = false, lastEnd = false, lastCompact = false, lastPast = false, lastLast = false;
+  // tBind starts each page's own clock, so its figures draw themselves in
+  // when it arrives; the sky keeps one clock for the whole visit
+  var tBind = t0;
+
+  function bind() {
+    sections = [].slice.call(document.querySelectorAll(".world"));
+    NW = sections.length;
+    worldOf = sections.map(function (s) { return WORLD[s.getAttribute("data-world")] || 0; });
+    scenes = sections.map(function (s) { return SCENES[s.getAttribute("data-scene")] || SCENES.fit; });
+    // the shade behind the words: an element, not the pin's ::before, so
+    // the pin is not a reader of --u (worlds.css)
+    sections.forEach(function (s) {
+      var pin = s.firstElementChild;
+      if (pin.querySelector(":scope > .pin-shade")) return;
+      var shade = document.createElement("div");
+      shade.className = "pin-shade";
+      pin.insertBefore(shade, pin.firstChild);
+    });
+    readers = sections.map(function (s) { return [].slice.call(s.querySelectorAll(U_READERS)); });
+    capOf = readers.map(function (list) { return list.map(function (el) { return !!el.closest(".cap"); }); });
+    lastE = readers.map(function () { return []; });
+    room = document.querySelector(".flame-room");
+    footer = document.querySelector("body > footer");
+    tops = []; hs = []; pins = []; stacks = []; gones = []; lastU = [];
+    hugReady = false;
+    lastTheme = -1; lastDot = -1; lastRoom = false; lastEnd = false; lastCompact = false; lastPast = false; lastLast = false; lastSpark = 0;
+    root.classList.remove("in-room", "at-end", "head-compact", "past-hero", "last-world");
+    tBind = performance.now();
+    buildIndex();
+  }
+
+  function focusOf(scene, s, L) {
+    if (s) return { cx: s.cx, cy: s.cy, R: s.R, heat: s.heat, flame: s.flame };
+    return { cx: L.cx, cy: L.cy, R: L.R, heat: 0, flame: 0 };
+  }
+
+  // Ambient motion (the drift of the particles, the sky, a figure breathing)
+  // does not need a 120 Hz screen's every frame. Once the page has been
+  // still for STILL_MS, frames come at least AMBIENT_MS apart: every other
+  // one at 120 Hz, every one at 90 Hz and below. The first scroll, pointer
+  // move or page change brings back every frame.
+  var STILL_MS = 300, AMBIENT_MS = 10;
+  var stirAt = 0, stirY = -1, stirX = 0, stirP = 0;
+  function stirred(now) {
+    var moving = sy !== stirY || ptr.x !== stirX || ptr.y !== stirP || burnIn || leaveAt ||
+      Math.abs((ptr.on ? ptr.x : AW / 2) - ptr.sx) > 0.5 || Math.abs((ptr.on ? ptr.y : AH / 2) - ptr.sy) > 0.5;
+    stirY = sy; stirX = ptr.x; stirP = ptr.y;
+    if (moving) stirAt = now;
+    return now - stirAt < STILL_MS;
+  }
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!stirred(now) && now - last < AMBIENT_MS) return;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    var t = RM ? 24 : (now - t0) / 1000, ts = RM ? 24 : (now - tBind) / 1000;
+    var st = scrollState(), i = st[0], l = st[1], b = st[2];
+    // the last world keeps counting on past its end, so what rises with it
+    // can leave before it reaches the header
+    var u = l + (b || st[3] / AH);
+    // in one column the words stand still (worlds.css), so --u has no readers
+    if (pinned) setU(i, l, b || st[3] / AH);
+    var pass = crossing(b);
+
+    var inRoom = false, hidden = false;
+    if (room) {
+      var rt = roomTop - sy;
+      // at the very end of the page the room is the screen, even where a
+      // phone's toolbars leave it short of the top
+      inRoom = (rt < 80 && rt + roomH > 80) || sy + vh >= docH - 2;
+      hidden = rt <= 0;
+      if (inRoom !== lastRoom) { root.classList.toggle("in-room", inRoom); lastRoom = inRoom; }
+    }
+    // once the footer is on screen its nav is the one to use
+    var atEnd = !!footer && footTop - sy < AH - 8;
+    if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
+    var compact = portrait() && (i > 0 || b > 0.5 || (allScroll(sections[i]) && l > 0.02));
+    if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
+    // the header's "Talk to us" fades in as the hero's own button fades out
+    // (the hero's words go between 0.55 and 0.7 of a screen down), and gives
+    // way to the last world's (worlds.css)
+    var pastHero = i > 0 || sy > AH * 0.64, lastWorld = i >= NW - 1;
+    if (pastHero !== lastPast) { root.classList.toggle("past-hero", pastHero); lastPast = pastHero; }
+    if (lastWorld !== lastLast) { root.classList.toggle("last-world", lastWorld); lastLast = lastWorld; }
+
+    var wt = b < 0.8 ? i : i + 1, wd = inRoom ? NW - 1 : b < 0.5 ? i : i + 1;
+    // arriving from another page, the header keeps the old world's colours
+    // until the fire has passed it
+    var tw = pass && pass.mix < 0.8 ? pass.from : worldOf[wt];
+    if (tw !== lastTheme) {
+      if (top) top.setAttribute("data-theme", THEME[tw]);
+      if (themeMeta) themeMeta.setAttribute("content", BG[tw]);
+      if (!GL) document.body.style.background = BG[tw];
+      lastTheme = tw;
+    }
+    if (wd !== lastDot) {
+      nav.setAttribute("data-theme", THEME[worldOf[wd]]);
+      lastDot = wd;
+    }
+    if (pinned) drawRail();
+    if (hidden) return;
+
+    var eb = b * b * (3 - 2 * b);
+    var A = scenes[i], B = b > 0 ? scenes[i + 1] : null;
+    var LA = layoutOf(A, i), LB = B ? layoutOf(B, i + 1) : null;
+    LA.exit = exitOf(i, gones[i], u);
+    // the last world's mark and its flame rise above the words, and leave before them
+    var lastOut = i === NW - 1 ? exitOf(i, markG, u) : 1;
+    ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));
+    ptr.sy += ((ptr.on ? ptr.y : AH / 2) - ptr.sy) * (1 - Math.exp(-dt * 4));
+    var px = (ptr.sx - AW / 2) * 0.012, py = (ptr.sy - AH / 2) * 0.012 - st[3];
+    [[A, LA], [B, LB]].forEach(function (pair) {
+      if (pair[0] && (pair[0].kind === "shape" || pair[0].parallax)) { pair[1].cx += px; pair[1].cy += py; }
+    });
+
+    var sA = A.kind === "shape" ? shapeState(A, i, l, ts) : null;
+    var sB = B && B.kind === "shape" ? shapeState(B, i + 1, 0, ts) : null;
+    if (sA) { sA.cx += px; sA.cy += py; }
+    if (sB) { sB.cx += px; sB.cy += py; }
+    var shape = null;
+    SA = 1;
+    if (sA && sB) shape = blend(sA, sB, eb);
+    else if (sA) { shape = sA; SA = B ? 1 - eb : 1; }
+    else if (sB) { shape = sB; SA = eb; }
+
+    var fA = focusOf(A, sA, LA), fB = B ? focusOf(B, sB, LB) : fA;
+    if (sA && sB) fA = fB = focusOf(A, shape, LA);
+    var focus = { cx: lerp(fA.cx, fB.cx, eb), cy: lerp(fA.cy, fB.cy, eb), R: lerp(fA.R, fB.R, eb), heat: lerp(fA.heat, fB.heat, eb), flame: lerp(fA.flame, fB.flame, eb) };
+
+    if (GL) {
+      var gl = GL.gl, U = GL.U;
+      gl.uniform2f(U.uRes, sky.width, sky.height);
+      gl.uniform1f(U.uTime, t);
+      gl.uniform1f(U.uWorldA, pass ? pass.from : worldOf[i]);
+      gl.uniform1f(U.uWorldB, pass ? worldOf[i] : worldOf[Math.min(i + 1, NW - 1)]);
+      gl.uniform1f(U.uMix, pass ? pass.mix : b);
+      gl.uniform1f(U.uLocal, l);
+      gl.uniform2f(U.uMouse, (ptr.sx - AW / 2) / AH, (AH / 2 - ptr.sy) / AH);
+      gl.uniform2f(U.uFocus, (focus.cx - AW / 2) / AH, (AH / 2 - focus.cy) / AH);
+      gl.uniform1f(U.uFocusR, focus.R / AH);
+      gl.uniform1f(U.uFlame, focus.flame * lastOut);
+      gl.uniform1f(U.uHeat, focus.heat * lastOut);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    // in one column the figures are left out (their canvas is hidden)
+    if (!pinned) return;
+
+    ctx.setTransform(ADPR, 0, 0, ADPR, 0, 0);
+    ctx.clearRect(0, 0, AW, AH);
+    if (shape) points(shape, t, dt);
+    if (shape && shape.spark > 0.12 && lastSpark <= 0.12) burst(shape);
+    lastSpark = shape ? shape.spark : 0;
+    updateParticles(dt, t, worldOf[i], worldOf[Math.min(i + 1, NW - 1)], b, shape ? shape.attract * SA : 0, focus);
+    drawParticles(worldOf[i], 1 - b, t);
+    if (b > 0) drawParticles(worldOf[i + 1], b, t);
+
+    if (A.kind === "draw") A.draw(ctx, l, ts, LA, B ? 1 - eb : 1);
+    if (B && B.kind === "draw") B.draw(ctx, 0, ts, LB, eb);
+    if (shape) {
+      if (shape.sqA > 0.002 || shape.ghost > 0.002) drawCropped(shape); else drawShape(shape, 1);
+      drawHug(shape);
+      if (shape.constA > 0.002) drawConstellation(shape, t);
+      if (shape.mark > 0.002 || shape.spark > 0.002) drawMark(shape);
+    }
+    ctx.globalAlpha = 1;
+    // the figures fade with the words when the page changes (here, not in
+    // CSS: an opacity on the canvas costs a phone a frame it cannot spare)
+    var fa = figureAlpha() * lastOut;
+    if (fa < 1 || pass) {
+      ctx.globalCompositeOperation = "destination-in";
+      if (pass) {
+        // arriving, the figure shows behind the fire line, like the words
+        var w = -0.4 + 1.8 * pass.mix, g = ctx.createLinearGradient(0, AH * (1 - w), 0, AH * (1.16 - w));
+        g.addColorStop(0, "rgba(0,0,0,0)");
+        g.addColorStop(1, "rgba(0,0,0," + fa.toFixed(3) + ")");
+        ctx.fillStyle = g;
+      } else ctx.fillStyle = "rgba(0,0,0," + fa.toFixed(3) + ")";
+      ctx.fillRect(0, 0, AW, AH);
+      ctx.globalCompositeOperation = "source-over";
+    }
+
+    // a slow machine gets a softer sky rather than a stuttering one
+    ema = ema * 0.95 + dt * 1000 * 0.05;
+    if (++frames % 90 === 0 && ema > 24 && quality > 0.5) { quality *= 0.8; sizeSky(); }
+  }
+
+  function resize() {
+    pinnable();
+    layFlat();
+    sizeActors();
+    sizeSky();
+    measure();
+    placeCaps();
+    placeSwitches(true);
+    stirAt = performance.now();
+  }
+  var queued = false;
+  window.addEventListener("resize", function () {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; resize(); });
+  });
+  window.addEventListener("scroll", function () { sy = window.scrollY; }, { passive: true });
+  window.addEventListener("load", function () { measure(); placeCaps(); });
+  window.addEventListener("beforeprint", function () { printing = true; pinnable(); layFlat(); });
+  window.addEventListener("afterprint", function () { printing = false; resize(); });
+  // the room and the footer are found from measure(), not read each frame,
+  // so anything that lengthens the page (a late picture) measures again
+  if (window.ResizeObserver) new ResizeObserver(function () {
+    if (document.documentElement.scrollHeight !== docH) { measure(); placeCaps(); }
+  }).observe(document.body);
+  window.addEventListener("pointermove", function (e) { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = e.pointerType === "mouse"; }, { passive: true });
+  document.addEventListener("pointerleave", function () { ptr.on = false; });
+  window.addEventListener("blur", function () { ptr.on = false; });
+
+  // ---- the switch: one thumb that slides between Software and Coaching ------------
+  // Each .offer-switch gets a thumb that sits under the current page's link
+  // (worlds.css fills the link itself when there is no JavaScript). When the
+  // page changes, the thumb first stretches to cover both links, then lets
+  // go of the old one and settles on the new.
+  function thumbOf(sw) {
+    var th = sw.querySelector(".thumb");
+    if (!th) {
+      th = document.createElement("i");
+      th.className = "thumb";
+      th.setAttribute("aria-hidden", "true");
+      th.appendChild(document.createElement("span")).className = "thumb-ink";
+      sw.insertBefore(th, sw.firstChild);
+    }
+    // The thumb carries a copy of the labels in the inverse colour, held
+    // still while the thumb moves under it, so each label turns over
+    // exactly where the thumb is and never fades out on the way.
+    var ink = th.firstChild;
+    ink.textContent = "";
+    [].forEach.call(sw.querySelectorAll(".nav-link"), function (a) {
+      var c = ink.appendChild(document.createElement("span"));
+      c.className = a.className;
+      c.setAttribute("data-href", a.getAttribute("href"));
+      if (a.hasAttribute("aria-current")) c.setAttribute("data-current", "");
+      c.textContent = a.textContent;
+    });
+    return th;
+  }
+  function placeThumb(sw, from) {
+    thumbOf(sw);
+    var cur = sw.querySelector('.nav-link[aria-current="page"]');
+    if (!cur) { sw.classList.remove("has-thumb"); return; }
+    var x = cur.offsetLeft, w = cur.offsetWidth;
+    clearTimeout(sw._settle);
+    if (from && !RM && (from.x !== x || from.w !== w)) {
+      var x0 = Math.min(x, from.x), x1 = Math.max(x + w, from.x + from.w);
+      sw.classList.add("stretch");
+      sw.style.setProperty("--tx", x0 + "px");
+      sw.style.setProperty("--tw", (x1 - x0) + "px");
+      sw._settle = setTimeout(function () {
+        sw.classList.remove("stretch");
+        sw.style.setProperty("--tx", x + "px");
+        sw.style.setProperty("--tw", w + "px");
+      }, 160);
+    } else {
+      sw.style.setProperty("--tx", x + "px");
+      sw.style.setProperty("--tw", w + "px");
+    }
+    sw.classList.add("has-thumb");
+  }
+  function placeSwitches(still) {
+    [].forEach.call(document.querySelectorAll(".offer-switch"), function (sw) {
+      if (still || !sw.classList.contains("has-thumb")) sw.classList.add("still");
+      placeThumb(sw, null);
+      void sw.offsetWidth;
+      requestAnimationFrame(function () { sw.classList.remove("still"); });
+    });
+  }
+  function setCurrent(path) {
+    [].forEach.call(document.querySelectorAll("[data-site-nav] .nav-link"), function (a) {
+      if (pathOf(new URL(a.href, location.href)) === path) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+    [].forEach.call(document.querySelectorAll(".offer-switch"), function (sw) {
+      var from = sw.classList.contains("has-thumb") ? { x: parseFloat(sw.style.getPropertyValue("--tx")) || 0, w: parseFloat(sw.style.getPropertyValue("--tw")) || 0 } : null;
+      placeThumb(sw, from);
+    });
+  }
+
+  // ---- low motion ----------------------------------------------------------------------
+  // Every way into the low motion version remembers the choice (the check
+  // at the top of each animated page honours it on the next visit). The
+  // header's switch flips before it goes, so the reader sees it take.
+  function rememberMotion(v) { try { window.localStorage.setItem("chama-motion", v); } catch (e) {} }
+
+  // ---- the router: the five pages without leaving the page -----------------------
+  // Software, Coaching, Built, Clients and About are one place. A link between them does not
+  // load a new document: the words in view lift away, the new page is
+  // fetched (usually already, on hover or when the browser is idle) and put
+  // in place, and the sky burns from the world that was on screen into the
+  // new page's first world while the new words rise behind the fire. Any
+  // other link (the flame's own page, privacy, the Hearth, the low motion
+  // version) is an ordinary navigation.
+  var PAGES = { "/original": 1, "/original/coaching": 1, "/original/about": 1, "/original/clients": 1, "/original/built": 1 };
+  var cache = {}, navSeq = 0, burnIn = null, keptRoom = null, leaveAt = 0;
+  function pathOf(u) {
+    var p = u.pathname.replace(/\/index(\.html)?$/, "/").replace(/\.html$/, "");
+    return p.length > 1 ? p.replace(/\/$/, "") : p;
+  }
+  var here = pathOf(location);
+
+  // a fetch that hangs rather than fails gives up, and the visitor gets an
+  // ordinary navigation instead of an empty sky
+  var GIVE_UP = 8000;
+  function fetchPage(path) {
+    if (!cache[path]) {
+      var opts = { credentials: "same-origin" };
+      if (window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(GIVE_UP);
+      cache[path] = fetch(path, opts).then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.text();
+      });
+      cache[path].catch(function () { delete cache[path]; });
+    }
+    return cache[path];
+  }
+
+  // the burn from the old page's world into the new one, read by the loop.
+  // The shader's fire line stands at -0.4 + 1.8 * mix of the screen's
+  // height from the bottom, and its flames reach about 0.3 above the line,
+  // so the burn starts where they first touch the screen, not below it. It
+  // answers a tap, so it eases out: fast through the words, slowing as it
+  // passes the header.
+  var BURN = 850, MIX_FROM = 0.06;
+  // The new words show just behind the fire line: --wipe is written on the
+  // arriving page's pins, the only thing that reads it, and is registered
+  // not to inherit (worlds.css), so each frame restyles those pins alone.
+  // On <html> it restyled the whole document, about 10ms a frame on a phone.
+  var wiped = [];
+  function wipe(m) {
+    var v = m === null ? null : ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%";
+    wiped.forEach(function (pin) {
+      if (v === null) pin.style.removeProperty("--wipe");
+      else pin.style.setProperty("--wipe", v);
+    });
+    if (v === null) wiped = [];
+  }
+  function endBurn() {
+    burnIn = null;
+    root.classList.remove("nav-enter");
+    wipe(null);
+  }
+  function crossing(b) {
+    if (!burnIn) return null;
+    var p = clamp((performance.now() - burnIn.start) / burnIn.dur);
+    var m = MIX_FROM + (1 - MIX_FROM) * (1 - Math.pow(1 - p, 3));
+    if (p >= 1) { endBurn(); return null; }
+    wipe(m);
+    return b > 0.001 ? null : { from: burnIn.from, mix: m };
+  }
+
+  function figureAlpha() {
+    var now = performance.now();
+    if (leaveAt) return 1 - clamp((now - leaveAt) / LIFT);
+    if (burnIn) return sm(0, 1, (now - burnIn.start) / 300);
+    return 1;
+  }
+
+  function needCss(href) {
+    if (document.querySelector('link[rel="stylesheet"][href="' + href + '"]')) return Promise.resolve();
+    return new Promise(function (res) {
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = href;
+      l.onload = l.onerror = function () { res(); };
+      document.head.appendChild(l);
+    });
+  }
+  function needScript(src, ready) {
+    if (ready()) return Promise.resolve();
+    return new Promise(function (res, rej) {
+      var el = document.querySelector('script[src="' + src + '"]');
+      if (!el) {
+        el = document.createElement("script");
+        el.src = src;
+        el.async = false;
+        document.head.appendChild(el);
+      }
+      el.addEventListener("load", function () { res(); });
+      el.addEventListener("error", rej);
+    });
+  }
+  // The flame room is mounted once a visit. Leaving the home page keeps it
+  // (and any conversation in it) aside, and coming back puts it back.
+  var AGENT_CSS = "/original/assets/agent.css", FLAME_JS = "/original/assets/flame.js", AGENT_JS = "/original/assets/agent.js";
+  function mountRoom(slot) {
+    var host = slot.querySelector("#agent-embed");
+    if (!host) return;
+    Promise.all([
+      needCss(AGENT_CSS),
+      needScript(FLAME_JS, function () { return window.ChamaFlame; })
+        .then(function () { return needScript(AGENT_JS, function () { return window.ChamaAgent; }); })
+    ]).then(function () {
+      if (host.isConnected && !host.firstChild && window.ChamaAgent) {
+        window.ChamaAgent.mount(host, { mode: "embed" });
+        measure();
+      }
+    }, function () {});
+  }
+
+  // Every address is versioned (scripts/stamp.js), so a page whose scripts
+  // or stylesheets this one does not already hold comes from another deploy
+  // (or another version of this engine) and gets a full load instead.
+  function sameDeploy(doc) {
+    return [].every.call(doc.head.querySelectorAll("script[src], link[rel=\"stylesheet\"]"), function (n) {
+      var u = n.getAttribute("src") || n.getAttribute("href");
+      return u === AGENT_CSS || u === FLAME_JS || u === AGENT_JS ||
+        !!document.querySelector('script[src="' + u + '"], link[rel="stylesheet"][href="' + u + '"]');
+    });
+  }
+
+  var HEAD = 'meta[name="description"], meta[name="author"], meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"][hreflang], script[type="application/ld+json"]';
+  function swap(doc) {
+    document.title = doc.title;
+    [].forEach.call(document.head.querySelectorAll(HEAD), function (n) { n.remove(); });
+    [].forEach.call(doc.head.querySelectorAll(HEAD), function (n) { document.head.appendChild(document.importNode(n, true)); });
+    // a parsed document runs no scripts, so its <noscript> is ordinary markup
+    [].forEach.call(doc.querySelectorAll("noscript"), function (n) { n.remove(); });
+
+    // the header stays (its switch is mid-slide); only what differs changes
+    var top0 = document.querySelector(".top"), top1 = doc.querySelector(".top");
+    if (top0 && top1) {
+      var m0 = top0.querySelector(".worlds-members"), m1 = top1.querySelector(".worlds-members");
+      if (m0 && !m1) m0.remove();
+      if (m1 && !m0) {
+        var m = document.importNode(m1, true);
+        m.classList.add("arrive");
+        top0.insertBefore(m, top0.querySelector(".site-nav"));
+      }
+      [".motion-toggle", ".nav-talk"].forEach(function (sel) {
+        var a0 = top0.querySelector(sel), a1 = top1.querySelector(sel);
+        if (a0 && a1) a0.setAttribute("href", a1.getAttribute("href"));
+      });
+    }
+
+    var main0 = document.querySelector("main"), main1 = document.importNode(doc.querySelector("main"), true);
+    var room0 = main0.querySelector(".flame-room");
+    if (room0 && room0.querySelector("#agent-embed > *")) keptRoom = room0;
+    main0.replaceWith(main1);
+    var slot = main1.querySelector(".flame-room");
+    if (slot) {
+      if (keptRoom) slot.replaceWith(keptRoom);
+      else mountRoom(slot);
+    }
+    var foot0 = document.querySelector("body > footer"), foot1 = doc.querySelector("body > footer");
+    if (foot0 && foot1) foot0.replaceWith(document.importNode(foot1, true));
+    root.classList.remove("room-pinned");
+  }
+
+  // A second tap never makes the wait longer: the same link again is
+  // ignored, another link keeps the lift already under way, and the page
+  // in view cancels the change. A fetch still out when the words have gone
+  // marks the header as waiting (.nav-wait), so the tap visibly took.
+  var LIFT = 200, going = null, waitT = 0;
+  function settleNav() {
+    going = null;
+    leaveAt = 0;
+    clearTimeout(waitT);
+    root.classList.remove("nav-leave", "nav-wait");
+  }
+  function stay() {
+    navSeq++;
+    settleNav();
+    setCurrent(here);
+  }
+  function go(u, push) {
+    var path = pathOf(u), seq = ++navSeq;
+    var from = lastTheme >= 0 ? lastTheme : worldOf[0];
+    if (push && !going) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
+    going = path;
+    setCurrent(path);
+    endBurn();
+    root.classList.add("nav-leave");
+    var now = performance.now();
+    if (!RM && !leaveAt) leaveAt = now;
+    var left = RM ? 0 : Math.max(0, LIFT - (now - leaveAt));
+    var lift = new Promise(function (res) { setTimeout(res, left); });
+    var page = fetchPage(path), ready = false;
+    page.then(function () { ready = true; }, function () {});
+    clearTimeout(waitT);
+    waitT = setTimeout(function () { if (seq === navSeq && !ready) root.classList.add("nav-wait"); }, left);
+    Promise.all([page, lift]).then(function (r) {
+      if (seq !== navSeq) return;
+      var doc = new DOMParser().parseFromString(r[0], "text/html");
+      var main = doc.querySelector("main");
+      if (!main || !main.querySelector(".world")) throw new Error("not an animated page");
+      if (!sameDeploy(doc)) throw new Error("another deploy");
+      if (push) history.pushState({ y: 0 }, "", u.pathname + u.search + u.hash);
+      swap(doc);
+      root.classList.add("routed");
+      here = path;
+      // .nav-leave lifts main by 2.5vh, so it goes before anything is measured
+      settleNav();
+      bind();
+      resize();
+      var y = push ? 0 : (history.state && history.state.y) || 0;
+      var target = u.hash && document.getElementById(u.hash.slice(1));
+      // pushState does not move :target, so mark it by hand
+      if (target) {
+        y = anchorY(target);
+        target.classList.add("is-target");
+      }
+      window.scrollTo({ top: y, behavior: "instant" });
+      if (!RM) {
+        wiped = [].slice.call(document.querySelectorAll("main .pin"));
+        wipe(MIX_FROM);
+        root.classList.add("nav-enter");
+        burnIn = { from: from, start: performance.now(), dur: BURN };
+      }
+      var h = document.querySelector("main h1");
+      if (h) {
+        h.setAttribute("tabindex", "-1");
+        try { h.focus({ preventScroll: true }); } catch (e) {}
+      }
+    }).catch(function () {
+      // Back and Forward have already moved the history to this entry
+      if (seq === navSeq) { if (push) location.assign(u.href); else location.replace(u.href); }
+    });
+  }
+
+  // Straight to the conversation from anywhere on the home page: a smooth
+  // scroll would fast-forward every world on the way, so it jumps, and the
+  // fire carries the reader into the room as it does between pages. With a
+  // mouse the message box takes the focus; on a touch screen that would pop
+  // the keyboard over the room before it is seen.
+  function toRoom() {
+    var from = lastTheme >= 0 ? lastTheme : worldOf[0];
+    endBurn();
+    window.scrollTo({ top: anchorY(room), behavior: "instant" });
+    if (!RM) {
+      wiped = [].slice.call(document.querySelectorAll("main .pin"));
+      wipe(MIX_FROM);
+      root.classList.add("nav-enter");
+      burnIn = { from: from, start: performance.now(), dur: BURN };
+    }
+    var box = room.querySelector("textarea"), h = room.querySelector("h2");
+    if (box && !window.matchMedia("(hover: hover) and (pointer: fine)").matches) box = null;
+    if (!box && h) h.setAttribute("tabindex", "-1");
+    try { (box || h).focus({ preventScroll: true }); } catch (e) {}
+  }
+
+  if (window.fetch && window.DOMParser && window.history && history.pushState) {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    document.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
+      if (a.hasAttribute("data-simple-version")) {
+        rememberMotion("low");
+        if (a.classList.contains("motion-toggle") && !RM) {
+          e.preventDefault();
+          a.classList.add("on");
+          setTimeout(function () { location.assign(a.href); }, 420);
+        }
+        return;
+      }
+      if (a.getAttribute("href") === "#talk" && room) {
+        e.preventDefault();
+        toRoom();
+        return;
+      }
+      if (a.getAttribute("href").charAt(0) === "#") return;
+      var u = new URL(a.href, location.href);
+      if (u.origin !== location.origin || !PAGES[pathOf(u)]) return;
+      e.preventDefault();
+      if (going) {
+        if (pathOf(u) === here) stay();
+        else if (pathOf(u) !== going) go(u, true);
+        return;
+      }
+      if (pathOf(u) === here) {
+        var t = u.hash && document.getElementById(u.hash.slice(1));
+        window.scrollTo({ top: t ? anchorY(t) : 0, behavior: RM ? "auto" : "smooth" });
+        return;
+      }
+      go(u, true);
+    });
+    // A page left by a full load (go's fallback) is kept in the
+    // back/forward cache as it was: words lifted away, the tapped link
+    // marked, the change still under way, or the motion switch flipped. Back
+    // must find it whole.
+    window.addEventListener("pageshow", function (e) {
+      if (!e.persisted) return;
+      stay();
+      endBurn();
+      placeSwitches(true);
+      // the motion switch flipped on its way to the low motion page
+      [].forEach.call(document.querySelectorAll(".motion-toggle.on"), function (t) { t.classList.remove("on"); });
+    });
+    window.addEventListener("popstate", function () {
+      var path = pathOf(location);
+      if (path === here) { if (going) stay(); }
+      else if (PAGES[path]) go(new URL(location.href), false);
+    });
+    // the next page is usually fetched before it is asked for
+    var warm = function (e) {
+      var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a) return;
+      var u = new URL(a.href, location.href);
+      if (u.origin === location.origin && PAGES[pathOf(u)] && pathOf(u) !== here) fetchPage(pathOf(u));
+    };
+    document.addEventListener("pointerover", warm, { passive: true });
+    document.addEventListener("touchstart", warm, { passive: true });
+    document.addEventListener("focusin", warm);
+    var save = navigator.connection && navigator.connection.saveData;
+    // the page in view too, so Back to the page the visit began on is warm
+    if (!save) setTimeout(function () { Object.keys(PAGES).forEach(fetchPage); }, 3000);
+  }
+
+  bind();
+  resize();
+  // a link straight to a client on the wheel (/clients#toraya-lisboa) turns
+  // the wheel to them, and one to a thing on /built (/built#shopintake) puts
+  // it on the screens, rather than the browser's jump to the top of the pin.
+  // In one column it lands on the entry, which pictures loading above it or
+  // the switch from the pinned layout may have moved since the browser's jump.
+  function toHashTurn(smooth) {
+    var t = location.hash && document.getElementById(location.hash.slice(1));
+    if (!t || !(t.classList.contains("turn") || t.classList.contains("made"))) return;
+    // the browser's own jump to the anchor scrolls the clipped pin itself,
+    // which lifts the logos off the outline drawn round them
+    var pin = t.closest(".pin");
+    if (pin) pin.scrollTop = 0;
+    measure();
+    window.scrollTo({ top: anchorY(t), behavior: smooth === true && !RM ? "smooth" : "instant" });
+  }
+  requestAnimationFrame(toHashTurn);
+  window.addEventListener("load", function () { requestAnimationFrame(toHashTurn); });
+  // Back and Forward between the things on /built (or clients on the wheel)
+  window.addEventListener("hashchange", function () { toHashTurn(true); });
+  // a small logo on the wheel turns the wheel to that client, and a bar of
+  // /built's progress bar puts its thing on the screens: the browser's own
+  // jump would find the anchor already "in view" in its sticky pin and not
+  // scroll at all
+  document.addEventListener("click", function (e) {
+    var sp = e.target.closest && e.target.closest(".spoke");
+    if (sp) {
+      var y = wheelY(sp);
+      if (y !== null) window.scrollTo({ top: y, behavior: RM ? "auto" : "smooth" });
+      return;
+    }
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    var t = a && document.getElementById(a.getAttribute("href").slice(1));
+    var ty = t ? pinnedY(t) : null;
+    if (ty === null) return;
+    e.preventDefault();
+    if (location.hash !== "#" + t.id) { try { history.pushState({ y: ty }, "", "#" + t.id); } catch (err) {} }
+    var pin = t.closest(".pin");
+    if (pin) pin.scrollTop = 0;
+    window.scrollTo({ top: ty, behavior: RM ? "auto" : "smooth" });
+  });
+  seedParticles();
+  ptr.sx = AW / 2;
+  ptr.sy = AH / 2;
+  requestAnimationFrame(frame);
+})();

@@ -1,0 +1,22 @@
+<!doctype html>
+<!-- Source of a link preview card. Render at 1200x630 with brand/og/render.sh.
+     No external requests: the site's own fonts, inline SVG. -->
+<html lang="en"><head><meta charset="utf-8"><style>
+@font-face { font-family: "Funnel Display"; src: url("../../assets/fonts/funnel-display-latin-wght.woff2") format("woff2"); font-weight: 300 800; }
+@font-face { font-family: "Funnel Sans"; src: url("../../assets/fonts/funnel-sans-latin-wght.woff2") format("woff2"); font-weight: 300 800; }
+html, body { margin: 0; }
+body { width: 1200px; height: 630px; overflow: hidden; background: #f3f0e8; color: #141412; position: relative; font-family: "Funnel Sans", Arial, sans-serif; }
+.copy { position: absolute; left: 84px; top: 92px; width: 760px; }
+h1 { margin: 0; font: 600 74px/1.02 "Funnel Display", Arial, sans-serif; letter-spacing: -0.03em; }
+h1 span { display: block; }
+h1 span + span { color: #57544d; margin-top: 8px; }
+p { margin: 28px 0 0; font-size: 28px; line-height: 1.35; color: #57544d; width: 640px; }
+.sig { position: absolute; left: 84px; bottom: 64px; display: flex; align-items: center; gap: 16px; font: 600 26px "Funnel Display", Arial, sans-serif; }
+.sig svg { width: 46px; height: 46px; }
+.sig small { font: 400 24px "Funnel Sans", Arial, sans-serif; color: #57544d; }
+.fig { position: absolute; right: 70px; top: 50%; transform: translateY(-50%); width: 330px; height: 330px; }
+</style></head><body>
+<div class="copy"><h1><span>What you have to do, made easier.</span><span>What you wish you could do, made possible.</span></h1></div>
+<svg class="fig" viewBox="-200 -170 400 340" aria-hidden="true"><ellipse cx="0" cy="0" rx="178" ry="150" fill="none" stroke="#141412" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="3 10" stroke-linecap="round"/><path d="M0 -104 L99 -32 L64 88 L-62 92 L-101 -30 Z" fill="none" stroke="#f4581f" stroke-width="4" stroke-linejoin="round" transform="rotate(4)"/><path d="M0 -80 L76 -25 L47 66 L-47 66 L-76 -25 Z" fill="#141412" fill-opacity="0.07" stroke="#141412" stroke-width="3" stroke-linejoin="round"/><circle cx="150" cy="-81" r="11" fill="#f4581f"/></svg>
+<div class="sig"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(2.06 0.06)" fill="#f4581f"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg><span>Chama Inteligente</span><small>Lisbon, working worldwide</small></div>
+</body></html>

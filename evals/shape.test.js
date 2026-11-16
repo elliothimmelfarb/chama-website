@@ -44,8 +44,8 @@ test("checkReplyLinks passes replies that link only to live pages", () => {
 });
 
 test("checkReplyLinks fails a link to a page that is not live and names it", () => {
-  const reason = checkReplyLinks(["It's all at https://chamainteligente.com/engineering-department."]);
-  assert.match(reason, /Reply 1 links to https:\/\/chamainteligente\.com\/engineering-department/);
+  const reason = checkReplyLinks(["It's all at https://chamainteligente.com/built."]);
+  assert.match(reason, /Reply 1 links to https:\/\/chamainteligente\.com\/built/);
 });
 
 test("checkReplyLinks fails a made-up address on our domain, with or without the scheme", () => {

@@ -34,9 +34,10 @@ export const versionOf = (text) => createHash("sha256").update(text).digest("hex
 
 // The files that ask for assets: every page, the assets themselves, and the
 // server code (none of which builds an address today). Tests are left out,
-// since they name assets as paths to read.
+// since they name assets as paths to read, and so is original/, the frozen
+// old site, whose own /original/assets/ addresses are revalidated instead.
 export function isReferrer(file) {
-  if (file.endsWith(".test.js") || file.startsWith("docs/") || file.startsWith("node_modules/")) return false;
+  if (file.endsWith(".test.js") || /^(docs|node_modules|original)\//.test(file)) return false;
   if (file.endsWith(".html")) return true;
   if (/^assets\/.+\.(js|css)$/.test(file)) return true;
   return /^(api|lib)\/.+\.js$/.test(file);

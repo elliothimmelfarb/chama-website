@@ -1,112 +1,63 @@
 /* ==========================================================================
-   Worlds: the public pages as one scroll through animated worlds.
+   Worlds: the public pages as one scroll through grounds.
 
-   The animated version of /, /coaching and /about, and the site's primary
-   one (the low motion version lives at /simple, /simple/coaching and
-   /simple/about). Same copy as the low motion pages, set as a sequence of
-   pinned worlds (paper, the grid, the forge, the night, the tides, the
-   flame) that burn into each other as the page scrolls. worlds.js paints
-   the worlds and the figures; this sheet sets the words over them.
+   Each <section class="world" data-world="paper|grid|tides|ember"> stands
+   on a ground that sky.js paints behind it (or var(--ground) where there
+   is no sky: no WebGL, low motion). A world is pinned unless it says
+   data-pin="off": it is var(--h) screens tall and its .pin sticks to the
+   viewport while the section passes. worlds.js writes three numbers on the
+   elements that read them:
+     --u  -1 while the world arrives, 0..1 while it is held, 2 once gone.
+          Every .r shows while --u sits between its own --in and --out, so
+          the choreography lives in the markup.
+     --e  what is left of the world as its pin leaves, 1 to 0.
+     --p  on [data-p], the world's progress through its hold, 0 to 1, or a
+          [data-stage]'s playhead. A figure draws itself from var(--p).
 
-   Each <section class="world"> is several screens tall and its .pin sticks
-   to the viewport while the section passes. worlds.js writes one number for
-   each section, --u: -1 while the world is arriving, 0..1 while it is held
-   on screen, 2 once it has gone. Every .r element shows while --u sits
-   between its own --in and --out, so the choreography lives in the markup.
+   All three are registered as not inherited, so a scroll frame restyles
+   only the elements that read them. A rule that reads --u or --e sits on
+   one of U_READERS in worlds.js, and one that reads --p on [data-p];
+   test/engine.test.js checks. Never make a container a reader (a pin, a
+   world, the words' box, a stage): Chrome restyles everything inside an
+   element whose custom property changes, inherited or not, so the shade
+   behind the words is an element of its own (.pin-shade), not the pin's
+   ::before.
 
-   --u is registered as not inherited, so a scroll frame restyles only the
-   elements that read it, not every node in the world. worlds.js writes it
-   on each of them (U_READERS there). A new rule that reads --u goes on one
-   of those, or joins the list (test/pages.test.js checks). Never on a
-   container (a pin, the words' box): Chrome restyles everything inside an
-   element whose --u changes, so the shade behind the words is an element
-   of its own (.pin-shade), not the pin's ::before. A browser without
-   @property inherits it as before, from .world, which starts every reader
-   at the same 0.5.
+   --p starts at 1, its registered initial value, so a figure written as
+   "complete at --p: 1" is drawn whole wherever nothing writes it: without
+   JavaScript, in one column, in low motion, in an unpinned world, and in
+   print. The pinned layout and a stage about to play set it to 0 before
+   the first paint (below), so they never flash the finished figure.
 
-   --e, what is left of a world as its pin leaves (1 to 0), is written the
-   same way, beside --u, by worlds.js (exitOf): worked out here, every
-   reader resolved the same sum on every frame.
+   The pinned layout is html.pin (see worlds.js for who sets it). Without
+   it (no JavaScript, short screens, print, low motion) the worlds are one
+   column of sections ("the worlds as one column" at the end).
+
+   This sheet is the engine's layout and motion only. Type, colour and the
+   page's chrome (header, menu, footer, buttons) are base.css's and
+   tokens.css's; nothing here sets a font size, a line height or a text
+   colour, and every colour it does use is a token.
    ========================================================================== */
 
 @property --u { syntax: "<number>"; inherits: false; initial-value: 0.5; }
 @property --e { syntax: "<number>"; inherits: false; initial-value: 1; }
+@property --p { syntax: "<number>"; inherits: false; initial-value: 1; }
 
 :root {
-  --ember: #f4581f;
-  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --pad: clamp(16px, 4.6vw, 4.5rem);
-  /* the release of a press (see "pressing") */
+  /* the release of a press */
   --press: scale 0.16s cubic-bezier(0.23, 1, 0.32, 1);
-  /* past 120rem the worlds' words, figures and header keep to a centred
-     stage, as /built's things keep to theirs; worlds.js places the drawn
-     figures on the same stage */
+  /* past 120rem the worlds' words and figures keep to a centred stage */
   --stage: min(100vw, 120rem);
   --side: calc((100vw - var(--stage)) / 2);
   --edge: calc(var(--side) + var(--pad));
 }
 
-[data-theme="paper"] { --fg: #141412; --fg2: #57544d; --accent: #f4581f; --scrim: rgba(243, 240, 232, 0); --bg: #f3f0e8; --track: rgba(20, 20, 18, 0.1); }
-[data-theme="grid"]  { --fg: #0f1b26; --fg2: #3f4e5b; --accent: #2b6c9b; --scrim: rgba(228, 233, 238, 0.82); --bg: #e3e8ec; --track: rgba(15, 27, 38, 0.1); }
-[data-theme="forge"] { --fg: #f6f0e6; --fg2: #c2b5a4; --accent: #ff7a3d; --scrim: rgba(14, 12, 10, 0.55); --bg: #0e0c0a; --track: rgba(246, 240, 230, 0.14); }
-[data-theme="night"] { --fg: #eff1ff; --fg2: #aab0d8; --accent: #ffb07a; --scrim: rgba(6, 7, 24, 0.5); --bg: #070a1f; --track: rgba(239, 241, 255, 0.14); }
-[data-theme="tides"] { --fg: #f2fcf9; --fg2: #b7ded6; --accent: #ff9466; --scrim: rgba(3, 32, 36, 0.62); --bg: #06343a; --track: rgba(242, 252, 249, 0.16); }
-[data-theme="flame"] { --fg: #fff5ea; --fg2: #cdb9a5; --accent: #ff7a3d; --scrim: rgba(8, 5, 3, 0.5); --bg: #0a0705; --track: rgba(255, 245, 234, 0.14); }
-
-* { box-sizing: border-box; }
-
-html {
-  background: #0a0705;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-  overflow-x: hidden;
-  background: #f3f0e8;
-  color: var(--fg);
-  font-family: var(--sans);
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
+body { overflow-x: hidden; }
 html.gl body { background: transparent; }
-html:not(.gl) .world { background: var(--bg); }
+html:not(.gl) .world { background: var(--ground, var(--bg)); }
 
-::selection { background: var(--ember); color: #fff; }
-
-/* one focus ring everywhere; components only move it */
-:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
-
-.skip-link {
-  position: fixed;
-  z-index: 20;
-  top: 0.75rem;
-  left: 0.75rem;
-  padding: 0.65rem 0.8rem;
-  transform: translateY(-180%);
-  background: #141412;
-  color: #fff;
-  font-size: 0.8rem;
-  text-decoration: none;
-}
-.skip-link:focus { transform: translateY(0); }
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* The two painted layers: the sky (WebGL) and the figures (2D) above it. */
+/* The painted layer: the sky (WebGL), fixed behind everything. */
 canvas.layer {
   position: fixed;
   left: 0;
@@ -118,308 +69,9 @@ canvas.layer {
   pointer-events: none;
 }
 #sky { z-index: 0; }
-#actors { z-index: 1; }
 html:not(.gl) #sky { display: none; }
 
-/* ---- the masthead: the lockup, the pages, and the world index ------- */
-/* One header carries the theme of the world on screen (worlds.js sets its
-   data-theme). On a wide screen it is one row: the lockup, then the switch
-   between the two offers, About, and on coaching the way into the Hearth.
-   On a phone the pages take a second row under the lockup. */
-.top {
-  position: fixed;
-  z-index: 6;
-  top: calc(16px + env(safe-area-inset-top));
-  left: var(--edge);
-  right: var(--edge);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--fg);
-  pointer-events: none;
-  transition: color 0.6s ease, opacity 0.4s ease;
-}
-.top > * { pointer-events: auto; }
-.worlds { transition: color 0.6s ease, background 0.6s ease, opacity 0.4s ease; }
-
-.mast {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-right: auto;
-  color: var(--fg);
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: var(--press);
-}
-.mast svg { width: 30px; height: 30px; flex: none; }
-.mast b { display: block; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.035em; line-height: 1; }
-.mast small { display: block; margin-top: 3px; color: var(--fg2); font-size: 0.66rem; letter-spacing: 0.02em; transition: color 0.6s ease; }
-
-/* Software and Coaching are the two offers, so they share one switch;
-   About stands beside it. Without JavaScript the current page's link is
-   filled; with it, worlds.js gives the switch a thumb that slides under
-   the current page, stretching across both links on its way (.stretch)
-   and landing with a little give. */
-.site-nav { display: flex; align-items: center; gap: 10px; }
-.offer-switch {
-  --spring: cubic-bezier(0.34, 1.45, 0.5, 1);
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 999px;
-  background: var(--track);
-  background: color-mix(in srgb, var(--bg) 62%, transparent);
-  box-shadow: inset 0 0 0 1px var(--track), 0 8px 28px -16px rgba(0, 0, 0, 0.45);
-  -webkit-backdrop-filter: blur(12px) saturate(1.3);
-  backdrop-filter: blur(12px) saturate(1.3);
-  transition: background 0.6s ease, transform 0.3s cubic-bezier(0.34, 1.45, 0.5, 1);
-}
-/* The thumb lies over the labels (it lets clicks through), so it hides
-   the label under it and shows its own inverse copy in its place. */
-.offer-switch .thumb {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  font-style: normal;
-  top: 3px;
-  bottom: 3px;
-  left: 0;
-  width: var(--tw, 0px);
-  border-radius: 999px;
-  background: var(--fg);
-  box-shadow: 0 3px 12px -3px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(244, 88, 31, 0);
-  overflow: hidden;
-  opacity: 0;
-  transform: translateX(var(--tx, 0px)) scale(0.6);
-  transition: transform 0.6s var(--spring), width 0.6s var(--spring), opacity 0.3s ease, background 0.6s ease, box-shadow 0.6s ease;
-}
-/* the labels again, in the inverse colour, held still against the thumb */
-.thumb-ink {
-  position: absolute;
-  top: -3px;
-  left: 0;
-  display: flex;
-  padding: 3px;
-  transform: translateX(calc(-1 * var(--tx, 0px)));
-  transition: transform 0.6s var(--spring);
-}
-.offer-switch .thumb-ink .nav-link { color: var(--bg); transition: none; }
-.offer-switch.has-thumb .thumb { opacity: 1; transform: translateX(var(--tx, 0px)); }
-/* the stretch: quick and straight, then the spring takes it home */
-.offer-switch.stretch .thumb {
-  box-shadow: 0 3px 16px -3px rgba(0, 0, 0, 0.35), 0 0 18px 2px rgba(244, 88, 31, 0.35);
-  transition: transform 0.16s cubic-bezier(0.5, 0, 0.6, 1), width 0.16s cubic-bezier(0.5, 0, 0.6, 1), opacity 0.3s ease, background 0.6s ease, box-shadow 0.16s ease;
-}
-.offer-switch.stretch .thumb-ink { transition: transform 0.16s cubic-bezier(0.5, 0, 0.6, 1); }
-.offer-switch.still .thumb,
-.offer-switch.still .thumb-ink { transition: none; }
-.nav-link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 0.85rem;
-  border-radius: 999px;
-  color: var(--fg);
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-.nav-link[aria-current="page"] { background: var(--fg); color: var(--bg); }
-.offer-switch.has-thumb .nav-link[aria-current="page"],
-.offer-switch.stretch .nav-link { background: none; color: var(--fg); }
-.offer-switch:active { transform: scale(0.97); }
-@media (hover: hover) { .offer-switch .nav-link:not([aria-current="page"]):hover { background: color-mix(in srgb, var(--fg) 9%, transparent); } }
-/* About is not one of the two offers, so it is marked, not filled: an
-   ember line draws itself in under it. */
-.nav-about {
-  background-image: linear-gradient(var(--ember), var(--ember));
-  background-repeat: no-repeat;
-  background-position: 50% calc(100% - 5px);
-  background-size: 0 2px;
-  transition: background-size 0.5s cubic-bezier(0.34, 1.45, 0.5, 1), color 0.3s ease, var(--press);
-}
-.nav-about[aria-current="page"] { background-color: transparent; color: var(--fg); background-size: calc(100% - 1.7rem) 2px; }
-/* Coaching is the offer a software visitor may not know about: an ember
-   dot draws the eye to it wherever it is not the page in view, and
-   breathes a few times when the page arrives. */
-.offer-switch [href="/coaching"]::before,
-.offer-switch [data-href="/coaching"]::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  margin-right: 0.45rem;
-  border-radius: 50%;
-  background: var(--ember);
-}
-.offer-switch [href="/coaching"][aria-current="page"]::before,
-.offer-switch [data-href="/coaching"][data-current]::before { display: none; }
-@media (prefers-reduced-motion: no-preference) {
-  .offer-switch a[href="/coaching"]:not([aria-current="page"])::before { animation: breathe 2.4s ease-in-out 1.2s 3; }
-}
-@keyframes breathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 88, 31, 0.55); }
-  50% { box-shadow: 0 0 0 5px rgba(244, 88, 31, 0); }
-}
-@media (hover: hover) { .nav-link:not([aria-current="page"]):hover { color: var(--ember); } }
-.nav-link:focus-visible { outline-offset: 2px; }
-
-/* The low motion version, one switch away at the top of every page. It
-   flips on (worlds.js adds .on) and the low motion page follows. */
-.motion-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 32px;
-  padding: 0 0.8rem 0 0.45rem;
-  border-radius: 999px;
-  color: var(--fg);
-  background: color-mix(in srgb, var(--bg) 62%, transparent);
-  box-shadow: inset 0 0 0 1px var(--track);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.6s ease, color 0.3s ease, var(--press);
-}
-.motion-track {
-  position: relative;
-  flex: none;
-  width: 28px;
-  height: 16px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--fg) 14%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 22%, transparent);
-  transition: background 0.3s ease;
-}
-.motion-track i {
-  font-style: normal;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--fg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease;
-}
-@media (hover: hover) {
-  .motion-toggle:hover { color: var(--ember); }
-  .motion-toggle:hover .motion-track i { transform: translateX(3px); }
-}
-.motion-toggle.on .motion-track { background: var(--ember); box-shadow: none; }
-.motion-toggle.on .motion-track i { transform: translateX(12px); background: #fff; }
-.motion-toggle:focus-visible { outline-offset: 2px; }
-/* the low motion pages carry the same switch, shown on (site.css); the
-   shared name carries it across when the reader crosses between them */
-.motion-toggle { view-transition-name: motion-toggle; }
-
-/* "Talk to us": the one ember fill in the header, ember on every world
-   (the grid's accent is blue). Only one way to the conversation shows at a
-   time: on the home page it waits until the hero's own button has gone
-   (.past-hero), and from the last world on, that world's own button or the
-   room itself takes over (.last-world). Hidden, it keeps its slot, so the
-   nav never moves. On a phone it is a disc at the end of the pages row,
-   which stays when the lockup row folds away. */
-.nav-talk {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  min-height: 32px;
-  margin-left: 2px;
-  padding: 0 0.95rem;
-  border-radius: 999px;
-  background: var(--ember);
-  color: #1a0a03;
-  box-shadow: 0 6px 20px -8px rgba(244, 88, 31, 0.6);
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1), translate 0.3s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease, var(--press);
-}
-.nav-talk::after { content: ""; position: absolute; inset: -7px 0; }
-.talk-glyph { display: none; width: 18px; height: 18px; flex: none; }
-/* where the header is short of room it is a disc with a speech bubble, its
-   words kept for screen readers, as the low motion switch keeps its knob */
-@media (max-width: 1099px) {
-  .nav-talk { width: 32px; margin-left: 0; padding: 0; }
-  .talk-glyph { display: block; }
-  .talk-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-}
-@media (hover: hover) { .nav-talk:hover { background: color-mix(in srgb, var(--ember) 88%, #fff); box-shadow: 0 0 0 4px rgba(244, 88, 31, 0.18), 0 6px 20px -8px rgba(244, 88, 31, 0.6); } }
-.nav-talk:focus-visible { outline-color: var(--fg); outline-offset: 2px; }
-html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, translate 0s linear 0.2s, visibility 0s linear 0.2s; }
-/* with reduced motion it fades and never travels (the hidden states' nudge
-   happens while it is invisible) */
-@media (prefers-reduced-motion: reduce) {
-  .top .nav-talk { transition: opacity 0.2s ease, visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease; }
-}
-
-/* the home hero's own way in, only on a screen tall enough for it: the
-   hero's words are centred, and below 880px the button pushes them into the
-   header and the "Start here" cue. On a phone each line under the words also
-   takes room from the figure. Where it does not show, the header's is there
-   from the start. */
-.hero-talk { display: none; margin: 1.6rem 0 0; }
-.hero-talk .cta:focus-visible { outline-color: var(--fg); }
-@media (min-width: 760px) and (min-aspect-ratio: 9/10) and (min-height: 880px) {
-  .hero-talk { display: block; }
-  html.js:not(.past-hero):has(main .hero-talk) .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, translate 0s linear 0.2s, visibility 0s linear 0.2s; }
-}
-
-/* The header's controls are drawn small to fit five pages on a phone; each
-   one's target reaches 7px past it, to 44px there. */
-.motion-toggle, .worlds-members { position: relative; }
-.nav-link::after,
-.motion-toggle::after,
-.worlds-members::after { content: ""; position: absolute; inset: -7px 0; }
-
-/* The way into the Hearth lives only beside the coaching, as on /coaching. */
-.worlds-members {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: 32px;
-  padding: 0 0.8rem;
-  border: 1px solid var(--track);
-  border-radius: 999px;
-  color: var(--fg);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: color 0.2s ease, var(--press);
-}
-.worlds-members::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ember); }
-@media (hover: hover) { .worlds-members:hover { color: var(--ember); } }
-.worlds-members:focus-visible { outline-offset: 2px; }
-
-/* The simple version, offered under each page's opening words. */
-.copy p.alt-version { max-width: none; margin-top: 1.1rem; font-size: 0.875rem; }
-.alt-version a { color: var(--fg); text-decoration-color: var(--accent); white-space: nowrap; }
-@media (prefers-reduced-motion: reduce) {
-  .alt-version a { font-weight: 600; }
-}
-
+/* ---- the rail ------------------------------------------------------------ */
 /* The index of worlds: a rail down the right edge, from under the header
    to near the bottom, that fills with the scroll. worlds.js builds it from
    the sections' data-label and puts each mark at --at, where its world
@@ -433,8 +85,8 @@ html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidd
   bottom: 24px;
   width: 2px;
   color: var(--fg);
-  /* firmer than --track, which nearly vanishes on paper at this width */
-  background: color-mix(in srgb, var(--fg) 18%, transparent);
+  background: var(--line-strong);
+  transition: opacity 0.4s ease;
 }
 .worlds ol { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
 /* only the dot takes the pointer: a hidden label would leave a strip of
@@ -445,7 +97,7 @@ html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidd
 .rail-fill {
   position: absolute;
   inset: 0;
-  background: var(--ember);
+  background: var(--accent);
   transform: scaleY(0);
   transform-origin: top;
 }
@@ -470,16 +122,14 @@ html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidd
   width: 7px;
   height: 7px;
   flex: none;
-  border: 1.5px solid color-mix(in srgb, var(--fg) 50%, transparent);
+  border: 1.5px solid var(--line-strong);
   border-radius: 50%;
   background: var(--bg);
   transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), background 200ms ease, border-color 200ms ease, var(--press);
 }
+/* the label takes the rail's label style from base.css's type scale */
 .worlds button span {
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: var(--t-label);
   white-space: nowrap;
   opacity: 0;
   transform: translateX(6px);
@@ -487,24 +137,13 @@ html.last-world .top .nav-talk { opacity: 0; translate: 0 -4px; visibility: hidd
 }
 .worlds button:focus-visible span { opacity: 0.85; transform: none; }
 @media (hover: hover) { .worlds:has(button i:hover) button span { opacity: 0.85; transform: none; } }
-.worlds button[aria-current="true"] span { color: var(--ember); }
-.worlds button.is-passed i { background: var(--ember); border-color: var(--ember); }
+.worlds button.is-passed i { background: var(--accent); border-color: var(--accent); }
 .worlds button[aria-current="true"] i { transform: scale(1.35); }
 .worlds button:focus-visible { outline-offset: 2px; border-radius: 4px; }
-
-/* Inside the flame room the room's own bar takes the top of the screen. */
-/* Hidden things also leave the tab order, once they have faded. */
-html.in-room .top,
-html.in-room .worlds {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+.worlds button:active i { scale: 0.7; opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .worlds button:not(.is-passed):hover i { border-color: var(--fg); }
 }
-html.in-room .top > * { pointer-events: none; }
-/* At the bottom of the page the footer's nav takes over from the header's. */
-.top .site-nav { transition: opacity 0.3s ease; }
-html.at-end .top .site-nav { position: absolute; right: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
 
 /* ---- the worlds ------------------------------------------------------ */
 main { position: relative; z-index: 2; }
@@ -512,11 +151,15 @@ main { position: relative; z-index: 2; }
 .world {
   --u: 0.5;
   position: relative;
-  height: calc(var(--h) * 1vh);
+  /* a pinned world without --h still holds long enough to read its words
+     (test/engine.test.js asks every built page to set it) */
+  height: calc(var(--h, 150) * 1vh);
+  /* each ground sets --fg in tokens.css; this is what makes it the text's */
   color: var(--fg);
 }
 
-.pin {
+/* .world > .pin, never a bare .pin: <html> carries the class pin too */
+.world > .pin {
   position: sticky;
   top: 0;
   height: 100vh;
@@ -532,6 +175,7 @@ main { position: relative; z-index: 2; }
   bottom: -10%;
   left: -25%;
   width: 85%;
+  --scrim: color-mix(in srgb, var(--ground, var(--bg)) 60%, transparent);
   background: radial-gradient(closest-side, var(--scrim), transparent);
   opacity: calc(clamp(0, (var(--u) + 0.45) * 4, 1) * var(--e));
   pointer-events: none;
@@ -546,8 +190,11 @@ main { position: relative; z-index: 2; }
   opacity: calc(var(--a) * var(--b));
   transform: translate3d(0, calc((1 - var(--a)) * 26px - (1 - var(--b)) * 16px), 0);
 }
-html:not(.js) .r { opacity: 1; transform: none; }
+html:not(.pin) .r,
+.world[data-pin="off"] .r { opacity: 1; transform: none; }
 
+/* where the words stand in a pin; their type is base.css's (a page places
+   its own figure box) */
 .copy {
   position: absolute;
   left: var(--edge);
@@ -555,277 +202,36 @@ html:not(.js) .r { opacity: 1; transform: none; }
   width: min(40vw, 35rem);
   transform: translateY(-50%);
 }
-.hero .copy { width: min(52vw, 46rem); }
 
-h1, h2, .lead {
-  margin: 0 0 0.4em;
-  font-weight: 500;
-  letter-spacing: -0.05em;
-  line-height: 0.94;
-  text-wrap: balance;
-}
-h1 { max-width: 11ch; font-size: clamp(2.8rem, 6.6vw, 6.7rem); }
-h1 span { display: block; }
-h2, .copy .lead { max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); }
-.copy .lead { max-width: 15ch; margin-bottom: 0.45em; color: var(--fg); line-height: 0.94; }
-.copy .h2-long { max-width: 19ch; font-size: clamp(1.9rem, 3.2vw, 3.3rem); }
-.copy p { max-width: 35ch; margin: 0 0 0.85em; color: var(--fg2); font-size: clamp(1.02rem, 1.22vw, 1.24rem); line-height: 1.45; }
-.copy p.deck { max-width: 38ch; font-size: clamp(1.08rem, 1.45vw, 1.42rem); }
-.copy a { color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.18em; }
-@media (hover: hover) { .copy a:hover { color: var(--accent); } }
-.kicker {
-  max-width: none !important;
-  margin: 0 0 1.2rem !important;
-  color: var(--accent) !important;
-  font-size: 0.72rem !important;
-  font-weight: 700;
-  letter-spacing: 0.17em;
-  line-height: 1.3 !important;
-  text-transform: uppercase;
-  text-wrap: balance;
-}
-.accent { color: var(--accent); }
-
-.hero .copy { animation: hero-arrive 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
-@keyframes hero-arrive { from { opacity: 0.01; filter: blur(6px); } to { opacity: 1; filter: none; } }
-
-.cue {
-  position: absolute;
-  left: var(--edge);
-  bottom: calc(26px + env(safe-area-inset-bottom));
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  color: var(--fg2);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-}
-.cue i { position: relative; display: block; width: 1px; height: 44px; background: currentColor; opacity: 0.45; }
-.cue i::after {
-  content: "";
-  position: absolute;
-  left: -2.5px;
-  top: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ember);
-  animation: drip 2.2s cubic-bezier(0.5, 0, 0.3, 1) infinite;
-}
-@keyframes drip { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(40px); opacity: 0; } }
-
-/* Captions under a figure; worlds.js places them at the figure. */
-.cap {
-  position: absolute;
-  left: 0;
-  top: 0;
-  margin: 0;
-  transform: translateX(-50%);
-  text-align: center;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.cap .r { display: block; }
-.cap-stack { display: grid; }
-.cap-stack > * { grid-area: 1 / 1; }
-.cap strong { display: block; color: var(--fg); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-.cap em { display: block; margin-top: 4px; color: var(--fg2); font-size: 0.82rem; font-style: normal; }
-.cap .ember strong { color: var(--accent); }
-
-/* Several paragraphs that take turns in one place, with a tick for each. */
-.beats { margin-top: 1.4rem; }
-.ticks { display: flex; gap: 6px; margin-bottom: 1.1rem; }
+/* Several paragraphs that take turns in one place, with a tick for each,
+   and a list whose items light in turn. Both read --u (U_READERS). */
+.ticks { display: flex; gap: 6px; }
 .ticks b {
   --t: clamp(0, (var(--u) - var(--at)) * 9, 1);
   position: relative;
   width: 44px;
   height: 3px;
   border-radius: 2px;
-  background: var(--track);
+  background: var(--line);
   overflow: hidden;
 }
-.ticks b::after { content: ""; position: absolute; inset: 0; background: var(--ember); transform-origin: left; transform: scaleX(var(--t)); }
+.ticks b::after { content: ""; position: absolute; inset: 0; background: var(--accent); transform-origin: left; transform: scaleX(var(--t)); }
 .slot { display: grid; }
 .slot > * { grid-area: 1 / 1; }
-.beat h3 { margin: 0 0 0.45rem; color: var(--fg); font-size: clamp(1.25rem, 1.8vw, 1.7rem); font-weight: 600; letter-spacing: -0.03em; }
-html:not(.js) .slot { display: block; }
-
-/* How it starts: four questions, one star each. */
-.qs { margin: 0.2rem 0 1.1rem; padding: 0; list-style: none; counter-reset: q; }
+html:not(.pin) .slot,
+.world[data-pin="off"] .slot { display: block; }
 .qs li {
   --t: clamp(0, (var(--u) - var(--at)) * 12, 1);
-  position: relative;
-  padding: 0.28rem 0 0.28rem 2rem;
-  color: var(--fg);
-  font-size: clamp(1.02rem, 1.3vw, 1.3rem);
-  letter-spacing: -0.015em;
   opacity: calc(0.22 + var(--t) * 0.78);
   transform: translateX(calc((1 - var(--t)) * 8px));
-  counter-increment: q;
-}
-.qs li::before {
-  content: counter(q);
-  position: absolute;
-  left: 0;
-  top: 0.42rem;
-  color: var(--accent);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-/* Photographs, set into a world like prints. */
-.card {
-  position: absolute;
-  margin: 0;
-  padding: 8px 8px 8px;
-  background: #fbf8f2;
-  border-radius: 3px;
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  rotate: var(--tilt, -2deg);
-}
-.card img { display: block; width: 100%; height: auto; border-radius: 1px; }
-.card-family { --tilt: 2.2deg; right: calc(var(--side) + var(--stage) * 0.13); top: 50%; width: min(24vw, 21rem); translate: 0 -50%; }
-.card-founder { --tilt: -2.4deg; right: calc(var(--side) + var(--stage) * 0.17); top: 12vh; width: min(17vw, 14.5rem); }
-
-/* The founder's identity, as on /about. */
-.role { margin-top: -0.4rem !important; color: var(--fg) !important; }
-.links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.2rem; }
-.links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.42rem 0.8rem;
-  border: 1px solid var(--track);
-  border-radius: 999px;
-  color: var(--fg);
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-@media (hover: hover) { .links a:hover { border-color: var(--accent); color: var(--accent); } }
-.links svg { width: 14px; height: 14px; fill: currentColor; }
-
-/* ---- the last world: the mark lit, the words under it ---------------- */
-.flame .copy {
-  left: 50%;
-  top: var(--copy-t, 57%);
-  width: min(94vw, 62rem);
-  transform: translateX(-50%);
-  text-align: center;
-}
-.flame.tall .copy { top: var(--copy-t, 46%); }
-.flame .copy p,
-.flame .copy h2 { margin-inline: auto; }
-.flame .copy p { max-width: 44rem; }
-.flame .kicker { margin-inline: auto !important; }
-.flame .copy h2 { max-width: 20ch; font-size: clamp(1.9rem, 3.4vw, 3.4rem); }
-.badge { margin: 0 auto 0.9rem !important; color: var(--accent) !important; font-size: 0.78rem !important; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
-.equation {
-  margin: 0 auto 1.4rem !important;
-  max-width: none !important;
-  color: var(--fg) !important;
-  font-size: clamp(1.9rem, 3.7vw, 3.7rem) !important;
-  font-weight: 500;
-  letter-spacing: -0.05em;
-  line-height: 0.98 !important;
-}
-.equation > span { display: block; text-wrap: balance; }
-.equation em { color: var(--accent); font-style: normal; }
-.equation .op { color: var(--accent); }
-.cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.95rem 1.5rem;
-  border-radius: 999px;
-  background: var(--ember);
-  color: #1a0a03 !important;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-  text-align: left;
-  text-decoration: none;
-  box-shadow: 0 10px 40px -8px rgba(244, 88, 31, 0.7);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, var(--press);
-}
-@media (hover: hover) { .cta:hover { transform: translateY(-2px); box-shadow: 0 0 0 6px rgba(244, 88, 31, 0.18), 0 16px 50px -8px rgba(244, 88, 31, 0.85); } }
-.cta:focus-visible { outline-color: #fff; }
-.cta svg { width: 16px; height: 16px; flex: none; }
-.cta { text-wrap: balance; }
-
-/* ---- the flame room, after the last world of the home page ----------- */
-.flame-room {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  /* the room and the footer under it fill the last screen together */
-  height: max(32rem, calc(100svh - var(--foot, 0px)));
-  background: #0e0c0a;
-  overflow: hidden;
-}
-/* the fire's last world darkens into the room instead of meeting it at an
-   edge; under the pin, so the words stay clear of it */
-.world:has(+ .flame-room)::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 28svh;
-  background: linear-gradient(rgba(14, 12, 10, 0), #0e0c0a);
-  pointer-events: none;
-}
-html.room-pinned { overflow: hidden; overscroll-behavior: none; }
-/* the room's sheet (agent.js, kb-pin) is fixed to the screen, but its z-index
-   counts inside main's stacking context, which sits under the footer: the
-   footer's pages covered the composer's fine print */
-html.room-pinned main { z-index: 60; }
-.flame-noscript { margin: 0; padding: clamp(2rem, 6vw, 4rem); color: #ece7dc; font-size: 1.05rem; line-height: 1.5; }
-
-/* The footer: the same pages again, then the small print. Every page ends
-   in a dark world, so it always wears the flame theme. */
-footer {
-  position: relative;
-  z-index: 3;
-  padding: 14px var(--edge) max(16px, calc(env(safe-area-inset-bottom) + 10px));
-  color: var(--fg2);
-  font-size: 0.78rem;
-  background: #0e0c0a;
-  box-shadow: 0 -28px 28px -4px #0e0c0a;
-}
-.end-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
-.end-small { display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px; margin: 6px 0 0; }
-.end-small a { display: inline-flex; align-items: center; min-height: 36px; }
-.end-small span { display: inline-flex; align-items: center; gap: 0.45rem; }
-.end-small svg { width: 16px; height: 16px; }
-.end-small a { color: var(--fg); text-decoration: none; white-space: nowrap; }
-@media (hover: hover) { .end-small a:hover { color: var(--ember); } }
-.end-small a:focus-visible { outline-offset: 2px; }
-/* After the last world the footer lies over the bottom of it (worlds.js
-   measures it as --foot), so the page ends on that world, not one footer
-   past it. */
-html.foot-over body > footer {
-  margin-top: calc(-1 * var(--foot, 0px));
-  padding-top: 30px;
-  background: linear-gradient(to top, rgba(10, 7, 5, 0.92) 50%, rgba(10, 7, 5, 0));
-  box-shadow: none;
-}
-@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
-  footer { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
-  .end-small { margin: 0; }
 }
 
 /* ---- moving between pages ---------------------------------------------- */
-/* worlds.js moves between Software, Coaching and About without loading a
-   new document. First the page in view lifts away (.nav-leave); then the
-   new page is in place and the sky burns up into it from below while its
-   words rise just behind the fire (.nav-enter, with --wipe tracking the
-   fire line). The swap waits only for the words to have gone (LIFT in
+/* worlds.js moves between the router's pages without loading a new
+   document. First the page in view lifts away (.nav-leave); then the new
+   page is in place and the sky burns up into it from below while its words
+   rise just behind the fire (.nav-enter, with --wipe tracking the fire
+   line). The swap waits only for the words to have gone (LIFT in
    worlds.js, 0.2s) and the burn takes 0.85s (BURN), so everything here
    ends inside 0.8s of the swap. */
 html.nav-leave main,
@@ -837,476 +243,45 @@ html.nav-leave .worlds {
   transition: opacity 0.18s ease, translate 0.2s cubic-bezier(0.5, 0, 0.75, 0);
 }
 @property --wipe { syntax: "<percentage>"; inherits: false; initial-value: 140%; }
-html.nav-enter .pin {
-  -webkit-mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
-  mask-image: linear-gradient(to top, #000 calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
+html.nav-enter .world > .pin {
+  -webkit-mask-image: linear-gradient(to top, var(--ink) calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
+  mask-image: linear-gradient(to top, var(--ink) calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
 }
-html.nav-enter .pin .copy > *,
-html.nav-enter .pin .cap { animation: rise 0.55s cubic-bezier(0.23, 1, 0.32, 1) 0.1s backwards; }
-html.nav-enter .pin .copy > :nth-child(2) { animation-delay: 0.15s; }
-html.nav-enter .pin .copy > :nth-child(3) { animation-delay: 0.2s; }
-html.nav-enter .pin .copy > :nth-child(n+4) { animation-delay: 0.25s; }
-/* a hero brought in by the router rises with its words, not with the slow
-   fade it has on a fresh load */
-html.routed .hero .copy { animation: none; }
+html.nav-enter .world .copy > * { animation: rise 0.55s cubic-bezier(0.23, 1, 0.32, 1) 0.1s backwards; }
+html.nav-enter .world .copy > :nth-child(2) { animation-delay: 0.15s; }
+html.nav-enter .world .copy > :nth-child(3) { animation-delay: 0.2s; }
+html.nav-enter .world .copy > :nth-child(n+4) { animation-delay: 0.25s; }
 html.nav-enter .worlds { animation: arrive 0.4s ease 0.4s backwards; }
 html.nav-enter body > footer { animation: arrive 0.35s ease 0.4s backwards; }
-.worlds-members.arrive { animation: pop 0.5s cubic-bezier(0.34, 1.45, 0.5, 1) both; }
 @keyframes rise { from { opacity: 0; translate: 0 20px; filter: blur(4px); } }
-/* a page slow to come: the mark on the link that was tapped (the thumb, or
-   About's ember line) breathes until it does. worlds.js adds .nav-wait once
-   the words have gone; the delay keeps a fetch that is only a little late
-   from flashing it. */
-html.nav-wait { cursor: progress; }
-html.nav-wait .top .offer-switch .thumb { animation: wait 1.1s ease-in-out 0.15s infinite; }
-html.nav-wait .top .nav-about[aria-current="page"] { animation: wait-line 1.1s ease-in-out 0.15s infinite; }
-@keyframes wait {
-  0%, 100% { box-shadow: 0 3px 12px -3px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(244, 88, 31, 0); }
-  50% { box-shadow: 0 3px 12px -3px rgba(0, 0, 0, 0.35), 0 0 16px 3px rgba(244, 88, 31, 0.6); }
-}
-@keyframes wait-line { 50% { background-size: 0.6rem 2px; } }
-@media (prefers-reduced-motion: reduce) {
-  html.nav-wait .top .offer-switch .thumb { animation: none; box-shadow: 0 0 0 2px var(--ember); }
-  html.nav-wait .top .nav-about[aria-current="page"] { animation: none; }
-}
-
 @keyframes arrive { from { opacity: 0.01; } }
-@keyframes pop { from { opacity: 0; transform: scale(0.7); } }
-main h1:focus,
-.flame-room h2:focus { outline: none; }
-
-/* ---- pressing ------------------------------------------------------------ */
-/* One press language for every control: what is touched sinks the moment
-   it is pressed and comes back quickly on release (--press). A pill or a
-   button sinks to 0.96 or 0.97, a small mark further, a progress bar
-   thickens, and a link in the words dims. It uses `scale`, not `transform`,
-   so it adds to whatever transform the control already has (the wheel sets
-   the spokes' every frame). No control shows the browser's own tap box. */
-.mast:active,
-.nav-about:active,
-.motion-toggle:active,
-.worlds-members:active { scale: 0.96; }
-.cta:active,
-.nav-talk:active { scale: 0.97; }
-.worlds button:active i { scale: 0.7; opacity: 1; }
-.spoke { -webkit-tap-highlight-color: transparent; }
-.spoke-plate, .spoke img, .spoke-mark { transition: var(--press); }
-.spoke:active .spoke-plate,
-.spoke:active img,
-.spoke:active .spoke-mark { scale: 0.94; }
-.made-ticks a:active::before { background: var(--fg2); }
-.made-ticks a:active::before,
-.made-ticks a:active::after { scale: 1 1.8; }
-:is(main, body > footer) a:not(.chama-agent a) { -webkit-tap-highlight-color: transparent; }
-:is(main, body > footer) a:not(.cta, .nav-link, .made-ticks a, .chama-agent a):active { opacity: 0.6; }
-@media (hover: hover) and (pointer: fine) {
-  .worlds button:not(.is-passed):hover i { border-color: var(--fg); }
-}
-
-/* ---- clients in the hero ---------------------------------------------- */
-/* A quiet row of the clients' marks under the opening words, in ink, not
-   their colours: each opens its entry on /clients, where the marks are shown
-   as they are. Colour comes back under the pointer or focus. */
-.clients { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.6rem; margin: 1.9rem 0 0; }
-.clients-all { flex-basis: 100%; color: var(--fg2) !important; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; text-decoration: none; }
-@media (hover: hover) { .clients-all:hover { color: var(--accent) !important; } }
-.clients a { display: inline-flex; align-items: center; min-height: 44px; border-radius: 6px; }
-.clients img { display: block; width: auto; height: 26px; filter: grayscale(1) brightness(0.62) contrast(1.5); opacity: 0.62; mix-blend-mode: multiply; transition: filter 0.3s ease, opacity 0.3s ease; }
-.clients img.round { height: 44px; }
-.clients img.tall { height: 36px; }
-.clients a:focus-visible img { filter: none; opacity: 1; }
-@media (hover: hover) { .clients a:hover img { filter: none; opacity: 1; } }
-.clients a:focus-visible { outline-offset: 4px; }
-/* the clients and our friends, one line each: a label, then their marks */
-.worked { display: grid; gap: 0.7rem; margin: 1.9rem 0 0; }
-.worked .clients { display: grid; grid-template-columns: 16rem; grid-auto-flow: column; justify-content: start; align-items: center; gap: 0 1.6rem; margin: 0; }
-.clients img.mark-wide { height: 30px; }
-
-/* ---- /clients: the wheel of clients ------------------------------------- */
-/* A ring of the clients' logos standing upright, seen from a little to its
-   right. worlds.js places every .spoke round it by depth and dims the ones
-   further back; only the client in focus stands on a plate cut to
-   their shape. Their words are the one .turn marked .on. */
-.wheel { position: absolute; inset: 0; pointer-events: none; }
-.spoke {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 10rem;
-  height: 10rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  display: grid;
-  place-items: center;
-  background: none;
-  transform-origin: 50% 50%;
-  /* only the logo takes a tap: on a phone the square round the client in
-     front covers the small logos behind it */
-  pointer-events: none;
-  cursor: pointer;
-  opacity: 0;
-  will-change: transform, opacity;
-}
-.spoke-plate { position: absolute; inset: 0; background: #faf8f3; opacity: 0; box-shadow: inset 0 0 0 1px rgba(15, 27, 38, 0.06); }
-.spoke img { position: relative; display: block; pointer-events: auto; width: 58%; height: 46%; object-fit: contain; will-change: opacity, filter; }
-.spoke img.round { width: 52%; height: 54%; }
-.spoke img.wide { width: 66%; }
-/* the open place on the wheel, for the next client: no logo and no plate */
-.spoke-open .spoke-plate { background: rgba(250, 248, 243, 0.5); box-shadow: none; }
-.spoke-mark { position: relative; pointer-events: auto; color: var(--fg); font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 500; letter-spacing: -0.04em; will-change: opacity, filter; }
-.turns .turn .accent { color: var(--accent); }
-.copy .turn-cta { margin-top: 1.5rem; }
-.copy .turn-more { margin-top: 1rem; font-size: 0.9rem; color: var(--fg2); }
-.spoke:focus-visible { outline-offset: 4px; }
-.wheel-world .copy { width: min(40vw, 35rem); }
-.copy .turn-count { margin: 0 0 0.5rem; color: var(--fg2); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
-.turn-intro h1 { margin-bottom: 0.4em; }
-.turns { display: grid; }
-.turns .turn {
-  grid-area: 1 / 1;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(16px);
-  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
-}
-.turns .turn.on { opacity: 1; visibility: visible; transform: none; transition: opacity 0.5s ease 0.2s, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s, visibility 0s 0.2s; }
-.copy .turn-kind { margin: 0 0 0.9rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
-.turns .turn h3 { margin: 0 0 0.45em; max-width: 13ch; font-size: clamp(2.1rem, 4.3vw, 4.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 0.94; text-wrap: balance; }
-html:not(.js) .turns .turn { grid-area: auto; grid-column: 2; opacity: 1; visibility: visible; transform: none; margin-bottom: 2rem; scroll-margin-top: 1.5rem; }
-@media (prefers-reduced-motion: reduce) {
-  .turns .turn, .turns .turn.on { transition: none; transform: none; }
-}
-
-/* ---- /clients ----------------------------------------------------------- */
-.copy .visit { margin-top: 1.2rem; }
-.copy .visit a { font-weight: 600; }
-.peer-name { color: var(--fg); font-weight: 600; }
-/* a link to #tlc-automation lands once the friends' words are in */
-.peers { scroll-margin-top: -30vh; }
-.copy p.permission { max-width: 40ch; margin-top: 1.4rem; font-size: 0.82rem; }
-
-/* The logo row in the heroes catches like embers, one mark after another,
-   then settles into ink. */
-@media (prefers-reduced-motion: no-preference) {
-  .clients img { animation: catch 2.4s cubic-bezier(0.3, 0.7, 0.3, 1) 0.7s backwards; }
-  .clients a:nth-of-type(3) img { animation-delay: 1.05s; }
-  .clients a:nth-of-type(4) img { animation-delay: 1.4s; }
-  .clients a:nth-of-type(5) img { animation-delay: 1.75s; }
-  .clients a:nth-of-type(6) img { animation-delay: 2.1s; }
-  .clients.friends a:nth-of-type(2) img { animation-delay: 1.05s; }
-}
-@keyframes catch {
-  0% { opacity: 0.01; filter: grayscale(1) brightness(0.62) contrast(1.5); }
-  18% { opacity: 1; filter: drop-shadow(0 0 12px rgba(244, 88, 31, 0.8)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 4px rgba(244, 88, 31, 0.35)); }
-  100% { opacity: 0.62; filter: grayscale(1) brightness(0.62) contrast(1.5); }
-}
-
-/* ---- /about: the friends directory ------------------------------------ */
-/* Friends is a world without a pinned scene: its pin is empty and pulls the
-   page back up over itself, so the directory scrolls over the forge in
-   ordinary flow while worlds.js still counts the forge as on screen. The
-   flame world arrives as the directory's last screen leaves, as it would
-   after any world. */
-.world.directory { height: auto; }
-.directory > .pin { margin-bottom: -100vh; margin-bottom: -100svh; }
-.dir {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: clamp(2.5rem, 6vw, 6rem);
-  grid-template-rows: auto auto;
-  row-gap: clamp(1.5rem, 4vh, 2.5rem);
-  align-items: center;
-  width: min(100%, 78rem);
-  min-height: 100vh;
-  min-height: 100svh;
-  margin-inline: auto;
-  padding: clamp(6.5rem, 13vh, 8.5rem) var(--pad) clamp(3rem, 8vh, 5rem);
-}
-html:not(.gl) .directory { background: var(--bg); }
-/* the directory scrolls under the fixed header, so while the forge is the
-   header's world it stands on a strip of forge that fades into the page */
-html:has(main .directory) .top[data-theme="forge"]::before {
-  content: "";
-  position: fixed;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(env(safe-area-inset-top) + 104px);
-  background: linear-gradient(var(--bg) 70%, color-mix(in srgb, var(--bg) 0%, transparent));
-  pointer-events: none;
-}
-.dir-head h2 { max-width: 14ch; margin-bottom: 0.45em; font-size: clamp(2.2rem, 4.2vw, 3.9rem); }
-.dir-deck { max-width: 40ch; margin: 0; color: var(--fg2); font-size: clamp(1.02rem, 1.3vw, 1.25rem); line-height: 1.45; }
-.dir-head { align-self: end; }
-.dir-list { grid-column: 2; grid-row: 1 / span 2; display: grid; gap: 1.25rem; }
-
-/* a letter of introduction: who they are, then why we send people to
-   them, set big, then what they do */
-.letter {
-  padding: clamp(1.4rem, 2.6vw, 2.25rem);
-  border-top: 2px solid var(--ember);
-  border-radius: 0 0 6px 6px;
-  background: linear-gradient(rgba(36, 29, 23, 0.78), rgba(20, 16, 13, 0.6));
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  scroll-margin-top: 7rem;
-}
-.letter-who { display: flex; gap: 1.1rem; align-items: center; margin-bottom: clamp(1.25rem, 3vh, 1.75rem); }
-/* padding in rem: a percentage would be of the row, not the plate */
-.letter .letter-plate { flex: none; width: clamp(8rem, 12vw, 11rem); aspect-ratio: 5 / 2; padding: 0.55rem 0.8rem; }
-.letter-who h3 { margin: 0 0 0.25rem; font-size: clamp(1.3rem, 1.8vw, 1.65rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; transition: color 0.3s ease; }
-.letter:target .letter-who h3, .letter.is-target .letter-who h3 { color: var(--accent); }
-.letter-place { margin: 0 0 0.15rem; color: var(--fg2); font-size: 0.92rem; line-height: 1.45; }
-.letter-link { margin: 0; font-size: 0.92rem; }
-.letter a:not(.plate), .dir-note a { color: var(--fg); font-weight: 600; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
-@media (hover: hover) { .letter a:not(.plate):hover { color: var(--accent); } }
-.letter-quote { margin: 0 0 clamp(1rem, 2.5vh, 1.5rem); }
-.letter-quote figcaption { margin-bottom: 0.7rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
-.letter-quote blockquote { margin: 0; }
-.letter-quote blockquote p {
-  margin: 0;
-  max-width: 32ch;
-  color: var(--fg);
-  font-size: clamp(1.2rem, 1.75vw, 1.6rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-  text-wrap: pretty;
-}
-.letter-quote blockquote p::before { content: "\201C"; margin-left: -0.45em; color: var(--ember); }
-.letter-quote blockquote p::after { content: "\201D"; color: var(--ember); }
-.letter-what { max-width: 56ch; margin: 0 0 1rem; color: var(--fg2); font-size: 0.98rem; line-height: 1.5; }
-.tags { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
-.tags li { padding: 0.32rem 0.7rem; border: 1px solid var(--track); border-radius: 999px; color: var(--fg); font-size: 0.8rem; line-height: 1.2; }
-
-/* how we introduce people, and the way in for the next friend: one quiet
-   line under the deck, and under the letters on a phone */
-.dir-note { grid-column: 1; grid-row: 2; align-self: start; max-width: 46ch; margin: 0; padding-top: 1rem; border-top: 1px solid var(--track); color: var(--fg2); font-size: 0.92rem; line-height: 1.55; }
-@media (hover: hover) { .dir-note a:hover { color: var(--accent); } }
-
-/* each part settles in as it scrolls into view, where the browser can tie
-   it to the scroll; reduced motion keeps it still */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .dir > * { animation: settle linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
-  }
-}
-@keyframes settle { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
-
-/* ---- /clients: the ledger ---------------------------------------------- */
-/* After its one world, /clients holds still on paper: each entry is a client's
-   mark on its own plate, in its own colours, with what we did beside it. */
-.ledger {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  gap: clamp(3.5rem, 8vw, 6rem);
-  padding: clamp(3rem, 7vw, 5.5rem) var(--edge) clamp(7rem, 12vw, 9rem);
-  color: var(--fg);
-}
-html:not(.gl) .ledger { background: var(--bg); }
-/* The ledger scrolls under the fixed header, so on /clients the header stands
-   on a strip of paper that fades into the page. */
-html:has(main .ledger) .top::before {
-  content: "";
-  position: fixed;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(env(safe-area-inset-top) + 84px);
-  background: linear-gradient(var(--bg) 62%, color-mix(in srgb, var(--bg) 0%, transparent));
-  pointer-events: none;
-}
-.ledger-group { display: grid; grid-template-columns: minmax(9rem, 15rem) minmax(0, 1fr); gap: 1.5rem clamp(1.5rem, 4vw, 4rem); }
-.ledger-side h2 { margin: 0 0 0.35rem; max-width: none; font-size: 1.05rem; letter-spacing: -0.01em; line-height: 1.2; }
-.ledger-side p { margin: 0; max-width: 20ch; color: var(--fg2); font-size: 0.9rem; line-height: 1.45; }
-.ledger-list { display: grid; }
-.entry {
-  display: grid;
-  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
-  gap: clamp(1.25rem, 3vw, 2.75rem);
-  align-items: start;
-  padding-block: clamp(1.75rem, 3vw, 2.5rem);
-  border-top: 1px solid var(--track);
-  scroll-margin-top: 7rem;
-}
-.entry:last-child { border-bottom: 1px solid var(--track); }
-.entry:target .entry-text h3, .entry.is-target .entry-text h3 { color: var(--accent); }
-.plate {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 4 / 3;
-  padding: 12% 14%;
-  background: #faf8f3;
-  border: 1px solid rgba(20, 20, 18, 0.08);
-  border-radius: 4px;
-  box-shadow: 0 1px 0 rgba(20, 20, 18, 0.04), 0 18px 40px -26px rgba(20, 20, 18, 0.35);
-}
-.plate img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.peer .plate { aspect-ratio: 2 / 1; padding: 9% 12%; }
-.entry-text { min-width: 0; max-width: 34rem; padding-top: 0.2rem; }
-.entry-text p { margin: 0 0 0.8em; color: var(--fg2); font-size: 1rem; line-height: 1.55; }
-.entry-text .entry-kind { margin-bottom: 0.6rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
-.entry-text h3 { margin: 0 0 0.2rem; font-size: clamp(1.35rem, 2vw, 1.7rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; transition: color 0.3s ease; }
-.entry-text .entry-place { margin-bottom: 1rem; font-size: 0.9rem; }
-.entry-text .entry-link { margin: 0; }
-.entry-text a, .ledger-note a { color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
-@media (hover: hover) { .entry-text a:hover { color: var(--accent); } }
-.ledger-end { display: grid; grid-template-columns: minmax(9rem, 15rem) minmax(0, 1fr) auto; gap: 1.5rem clamp(1.5rem, 4vw, 4rem); align-items: center; }
-.ledger-note { grid-column: 2; margin: 0; max-width: 46ch; color: var(--fg2); font-size: 0.9rem; line-height: 1.5; }
-.ledger-end p:last-child { margin: 0; }
-
-/* a narrow wide screen (a phone held sideways, a small window) has one row
-   for the lockup, Members, five pages and the switch: the switch keeps its
-   knob and drops its words, as on a phone, so the lockup never wraps */
-.mast b, .mast small { white-space: nowrap; }
-@media (min-width: 760px) and (max-width: 899px) and (min-aspect-ratio: 9/10) {
-  .mast span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-}
-@media (max-width: 979px), (max-aspect-ratio: 9/10) {
-  .motion-toggle { padding: 0 0.4rem; }
-  .motion-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-}
+/* a page slow to come: worlds.js adds .nav-wait once the words have gone */
+html.nav-wait { cursor: progress; }
+main h1:focus { outline: none; }
 
 /* ---- phones and portrait screens -------------------------------------- */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  /* a thin rail at the very edge, its marks as ticks, and nothing to press */
-  /* clear of the browser's own scroll indicator */
+  /* a thin rail at the very edge, its marks as ticks, and nothing to press,
+     clear of the browser's own scroll indicator */
   .worlds { right: calc(4px + env(safe-area-inset-right)); bottom: 12px; pointer-events: none; }
   .worlds ol { display: none; }
-  .rail-mark { display: block; position: absolute; right: 0; top: var(--at, 0); width: 6px; height: 2px; margin-top: -1px; background: var(--track); transition: background 200ms ease; }
-  .rail-mark.is-passed { background: var(--ember); }
+  .rail-mark { display: block; position: absolute; right: 0; top: var(--at, 0); width: 6px; height: 2px; margin-top: -1px; background: var(--line); transition: background 200ms ease; }
+  .rail-mark.is-passed { background: var(--accent); }
   .rail-mark.is-current { width: 10px; }
-  /* /built counts its things in its own bar */
+  /* /build counts its things in its own bar */
   html:has(.devices-world) .worlds { display: none; }
-  /* two rows at most: the lockup with Members and the low motion switch,
-     then the pages. A grid, so a long lockup shrinks instead of pushing the
-     switch onto a row of its own. */
-  .top { top: calc(12px + env(safe-area-inset-top)); left: 16px; right: 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 10px; }
-  .top:has(.worlds-members) { grid-template-columns: minmax(0, 1fr) auto auto; }
-  .top .mast { grid-row: 1; grid-column: 1; min-width: 0; margin-right: 0; }
-  .mast span { min-width: 0; }
-  .mast b, .mast small { overflow: hidden; text-overflow: ellipsis; }
-  .worlds-members { grid-row: 1; }
-  .top .site-nav { grid-row: 2; grid-column: 1 / -1; }
-  .nav-link { min-height: 34px; padding: 0 0.65rem; font-size: 0.8125rem; }
-  /* the pages fill their row, so the disc sits at the end of the lockup row,
-     and when that row folds away it drops to just under the pages as they
-     rise: the two rows trade places (the pages row is 40px tall) */
-  .top .site-nav { position: relative; }
-  .top:has(.nav-talk) .motion-toggle { margin-right: 38px; }
-  .top .nav-talk { position: absolute; top: calc(2px - var(--head-lift, 43px)); right: 0; width: 30px; min-height: 30px; height: 30px; transition: opacity 0.3s ease, translate 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease, var(--press); }
-  html.head-compact .top .nav-talk,
-  html.head-compact.last-world .top .nav-talk { translate: 0 calc(var(--head-lift, 43px) + 46px); }
-  .worlds-members { min-height: 30px; padding: 0 0.65rem; font-size: 0.75rem; }
-  /* on a phone the low motion switch keeps its knob and drops its words
-     (the hero offers the same in a sentence) */
-  .motion-toggle { grid-row: 1; grid-column: -2; min-height: 30px; }
-  .mast b { font-size: 0.98rem; }
-  /* past the opening world the lockup row folds away and the pages rise to
-     the top, so each world's figure gets that row's height (worlds.js sets
-     .head-compact and --head-lift, and lays the figures out to match) */
-  .top .site-nav { transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
-  .top .mast, .top .worlds-members, .top .motion-toggle { transition: opacity 0.3s ease, visibility 0s linear 0s, background 0.6s ease, color 0.3s ease, var(--press); }
-  html.head-compact .top .site-nav { transform: translateY(calc(-1 * var(--head-lift, 0px))); }
-  html.head-compact .top .mast,
-  html.head-compact .top .worlds-members,
-  html.head-compact .top .motion-toggle { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0s linear 0.25s; }
-  .copy p.alt-version { margin-top: 0.8rem; font-size: 0.875rem; }
   .pin-shade { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
-  .copy,
-  .hero .copy {
+  .copy {
     left: 16px;
     right: 16px;
     top: auto;
-    bottom: calc(var(--copy-b, 22px) + env(safe-area-inset-bottom));
+    bottom: calc(22px + env(safe-area-inset-bottom));
     width: auto;
     transform: none;
   }
-  h1 { max-width: 13ch; font-size: clamp(2.35rem, 11vw, 3.6rem); }
-  h2, .copy .lead { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
-  .copy .lead { max-width: 14ch; }
-  .copy .h2-long { font-size: clamp(1.55rem, 6.6vw, 2.2rem); }
-  .copy p, .copy p.deck { font-size: 1rem; }
-  .kicker { margin-bottom: 0.8rem !important; }
-  .cue { display: none; }
-  .clients { gap: 0.4rem 0.9rem; margin-top: 1.1rem; }
-  .clients img { height: 18px; }
-  .clients img.round { height: 32px; }
-  .clients img.tall { height: 26px; }
-  .clients img.mark-wide { height: 22px; }
-  /* the hero's figure stands in the room the words leave above them, so on
-     a phone the marks sit close: short labels, and the friends on one line */
-  .worked { margin-top: 1.1rem; gap: 0.35rem; }
-  .worked .clients { display: flex; flex-wrap: wrap; gap: 0 0.9rem; }
-  .worked .clients a { min-height: 36px; }
-  .worked .clients a.clients-all { min-height: 24px; }
-  .worked .friends .clients-all { flex-basis: auto; }
-  .ledger-group, .ledger-end { grid-template-columns: minmax(0, 1fr); }
-  .ledger-note { grid-column: auto; }
-  .entry { grid-template-columns: minmax(0, 1fr); }
-  .plate { max-width: 26rem; }
-  .dir { padding-top: calc(env(safe-area-inset-top) + 9.5rem); }
-  /* on a phone the nav wraps to a second row, so the strip stays solid past it */
-  html:has(main .directory) .top[data-theme="forge"]::before { height: calc(env(safe-area-inset-top) + 150px); background: linear-gradient(var(--bg) 78%, color-mix(in srgb, var(--bg) 0%, transparent)); }
-  html.head-compact:has(main .directory) .top[data-theme="forge"]::before { height: calc(env(safe-area-inset-top) + 150px - var(--head-lift, 0px)); }
-  .dir { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; align-items: start; gap: 1.15rem; padding-bottom: 3rem; }
-  .dir-list, .dir-note { grid-column: auto; grid-row: auto; }
-  .dir-head h2 { font-size: clamp(1.9rem, 8.6vw, 2.5rem); }
-  .dir-deck { font-size: 0.96rem; }
-  .letter { padding: 1.15rem 1.05rem 1.25rem; }
-  .letter-who { gap: 0.85rem; margin-bottom: 1rem; }
-  .letter .letter-plate { width: 7rem; padding: 0.4rem 0.55rem; }
-  .letter-who h3 { font-size: 1.2rem; }
-  .letter-place { font-size: 0.85rem; }
-  .letter-quote blockquote p { font-size: 1.12rem; }
-  .letter-quote blockquote p::before { margin-left: 0; }
-  .letter-what { font-size: 0.92rem; }
-  .copy p.permission { font-size: 0.78rem; }
-  .turns .turn h3 { font-size: clamp(1.85rem, 8.4vw, 2.8rem); }
-  .copy .turn-kind { margin-bottom: 0.6rem; }
-  html:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px); }
-  html.head-compact:has(main .ledger) .top::before { height: calc(env(safe-area-inset-top) + 124px - var(--head-lift, 0px)); }
-  .beats { margin-top: 0.9rem; }
-  .ticks { margin-bottom: 0.7rem; }
-  .qs li { padding-block: 0.16rem; font-size: 1rem; }
-  .qs li::before { top: 0.28rem; }
-  .flame .copy,
-  .flame.tall .copy { left: 16px; right: 16px; top: auto; bottom: calc(var(--copy-b, 26px) + env(safe-area-inset-bottom)); width: auto; transform: none; }
-  .equation { font-size: clamp(1.7rem, 7.6vw, 2.4rem) !important; }
-  .flame .copy h2 { font-size: clamp(1.6rem, 7vw, 2.2rem); }
-  .cta { padding: 0.85rem 1.2rem; font-size: 0.95rem; }
-  .cap strong { font-size: 0.7rem; }
-  .cap em { font-size: 0.74rem; }
-  /* each print is 3:4 inside 5px of border, and no taller than the room
-     worlds.js gives it above the words (--fig-h) */
-  .card-family { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(46vw, 13rem, calc((var(--fig-h, 999px) - 10px) * 0.75 + 10px)); translate: -50% 0; }
-  .card-founder { right: auto; left: 50%; top: var(--fig-top, calc(104px + env(safe-area-inset-top))); width: min(36vw, 9.5rem, calc((var(--fig-h, 999px) - 10px) * 0.75 + 10px)); translate: -50% 0; }
-  .card { padding: 5px; }
-  /* On a phone the founder's photograph and the timeline share the top
-     of the screen, one after the other. */
-  .card-founder.r { --out: 0.42; }
-}
-@media ((max-width: 759px) or (max-aspect-ratio: 9/10)) and (prefers-reduced-motion: reduce) {
-  .top .nav-talk { transition: opacity 0.2s ease, visibility 0s linear 0s, background 0.2s ease, box-shadow 0.2s ease; }
 }
 
-@media (max-height: 700px) and (max-width: 759px) {
-  h1 { font-size: 2.2rem; }
-  h2, .copy .lead { font-size: 1.7rem; }
-  .copy .h2-long { font-size: 1.45rem; }
-  .copy p, .copy p.deck { font-size: 0.92rem; margin-bottom: 0.6em; }
-  .qs li { font-size: 0.92rem; }
-  .card-family { width: min(38vw, 10rem); }
-}
-
-/* ---- /built: a laptop and a phone, and what we made on their screens ---- */
+/* ---- /build: a laptop and a phone, and what we made on their screens ---- */
 /* Each .made is one thing: its words, and a .rig of two devices whose
    screens hold a tall picture of the real page. worlds.js (drawDevices)
    marks the thing whose words show (.on) and whose devices show (.rig-on,
@@ -1320,15 +295,15 @@ html:has(main .ledger) .top::before {
   position: relative;
   padding: 2.1% 2.1% 2.6%;
   border-radius: clamp(8px, 1.1vw, 16px) clamp(8px, 1.1vw, 16px) 3px 3px;
-  background: #17181a;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), 0 40px 70px -34px rgba(15, 27, 38, 0.55);
+  background: var(--ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper) 9%, transparent), 0 40px 70px -34px color-mix(in srgb, var(--ink) 55%, transparent);
 }
-.rig .lid::before { content: ""; position: absolute; top: 0.85%; left: 50%; width: 0.8%; aspect-ratio: 1; border-radius: 50%; background: #2c2f33; transform: translateX(-50%); }
-.rig .screen { position: relative; overflow: hidden; background: #fff; }
+.rig .lid::before { content: ""; position: absolute; top: 0.85%; left: 50%; width: 0.8%; aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, var(--ink) 80%, var(--paper)); transform: translateX(-50%); }
+.rig .screen { position: relative; overflow: hidden; background: var(--paper); }
 .rig .laptop .screen { aspect-ratio: 16 / 10; border-radius: 2px; }
 .rig .screen img { position: absolute; left: 0; top: 0; display: block; width: 100%; height: auto; will-change: transform; }
-.rig .base { position: relative; height: clamp(9px, 1.25vw, 17px); margin: 0 -6.5%; border-radius: 2px 2px 50% 50% / 2px 2px 100% 100%; background: linear-gradient(#e3e6ea, #b9bec4 60%, #9da3a9); }
-.rig .base::before { content: ""; position: absolute; left: 50%; top: 0; width: 15%; height: 40%; border-radius: 0 0 8px 8px; background: #a7adb3; transform: translateX(-50%); }
+.rig .base { position: relative; height: clamp(9px, 1.25vw, 17px); margin: 0 -6.5%; border-radius: 2px 2px 50% 50% / 2px 2px 100% 100%; background: linear-gradient(color-mix(in srgb, var(--ink) 8%, var(--paper)), color-mix(in srgb, var(--ink) 26%, var(--paper)) 60%, color-mix(in srgb, var(--ink) 38%, var(--paper))); }
+.rig .base::before { content: ""; position: absolute; left: 50%; top: 0; width: 15%; height: 40%; border-radius: 0 0 8px 8px; background: color-mix(in srgb, var(--ink) 32%, var(--paper)); transform: translateX(-50%); }
 .rig .phone {
   position: absolute;
   right: 0;
@@ -1337,34 +312,16 @@ html:has(main .ledger) .top::before {
   aspect-ratio: 9 / 19.2;
   padding: 2.3%;
   border-radius: 17% / 8%;
-  background: #17181a;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 30px 50px -24px rgba(15, 27, 38, 0.6);
+  background: var(--ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper) 10%, transparent), 0 30px 50px -24px color-mix(in srgb, var(--ink) 60%, transparent);
 }
 .rig .phone .screen { height: 100%; border-radius: 13% / 6%; }
-.rig .phone::after { content: ""; position: absolute; z-index: 2; top: 4.4%; left: 50%; width: 30%; height: 3%; border-radius: 99px; background: #17181a; transform: translateX(-50%); }
-
-.made-open h1 { max-width: 9ch; font-size: clamp(2.6rem, 5.2vw, 5.2rem); }
-.made-open .deck { max-width: 30ch; margin: 0 0 1.1rem; color: var(--fg2); font-size: clamp(1.08rem, 1.45vw, 1.42rem); line-height: 1.4; }
-.made-open .alt-version { margin: 0; color: var(--fg2); font-size: 0.875rem; }
-.made-kind { margin: 0 0 0.9rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase; }
-.made-words h2 { max-width: none; margin: 0 0 0.3em; font-size: clamp(2.1rem, 3.4vw, 3.4rem); font-weight: 500; letter-spacing: -0.04em; line-height: 0.98; text-wrap: balance; }
-.made-what { max-width: 44ch; margin: 0 0 1.1rem; color: var(--fg2); font-size: clamp(1rem, 1.2vw, 1.2rem); line-height: 1.45; }
-.made-where { margin: 0 0 0.7rem; font-size: 1rem; font-weight: 600; }
-.made-where a { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
-@media (hover: hover) { .made-where a:hover { color: var(--accent); } }
-.made-words svg { flex: none; width: 1em; height: 1em; }
-.made-where.private { display: flex; align-items: flex-start; gap: 0.55rem; max-width: 34ch; color: var(--fg); font-weight: 500; line-height: 1.4; }
-.made-where.private svg { margin-top: 0.15em; color: var(--accent); }
-.made-want { margin: 0; }
-.made-want a { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--fg2); font-size: 0.95rem; font-weight: 600; text-decoration: none; }
-@media (hover: hover) { .made-want a:hover { color: var(--accent); } }
-.made-want svg { color: var(--accent); }
-.made-words a:focus-visible, .made-open a:focus-visible, .made-ticks a:focus-visible { border-radius: 2px; }
+.rig .phone::after { content: ""; position: absolute; z-index: 2; top: 4.4%; left: 50%; width: 30%; height: 3%; border-radius: 99px; background: var(--ink); transform: translateX(-50%); }
 .made-ticks { display: none; }
 
 /* without JavaScript: the things, one under another */
-html:not(.js) .devices-world { background: var(--bg); }
-html:not(.js) .devices-world .pin { position: static; padding: 0; }
+html:not(.pin) .devices-world { background: var(--ground, var(--bg)); }
+html:not(.pin) .devices-world > .pin { position: static; }
 .made-stage { width: min(100%, 84rem); margin-inline: auto; padding: clamp(6rem, 13vh, 8rem) var(--pad) clamp(4rem, 10vh, 6rem); }
 .made { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; margin-top: clamp(4rem, 12vh, 7rem); }
 .made .made-words { grid-column: 1; grid-row: 1; }
@@ -1372,8 +329,8 @@ html:not(.js) .devices-world .pin { position: static; padding: 0; }
 
 /* with it: one pair of devices holds still, and every thing's words start
    on the same line as the top of the laptop */
-html.js .made-stage { --made-top: clamp(6.5rem, 20svh, 13rem); position: absolute; inset: 0; width: auto; padding: 0; }
-html.js .made, html.js .made-open {
+html.pin .made-stage { --made-top: clamp(6.5rem, 20svh, 13rem); position: absolute; inset: 0; width: auto; padding: 0; }
+html.pin .made, html.pin .made-open {
   position: absolute;
   inset: 0;
   width: min(100%, 104rem);
@@ -1386,119 +343,121 @@ html.js .made, html.js .made-open {
   align-items: start;
   align-content: start;
 }
-html.js .made-open > * { grid-column: 1; }
-html.js .made-open { row-gap: 0; }
-html.js .made { pointer-events: none; }
-html.js .made.on { pointer-events: auto; }
-html.js .rig { max-width: calc((100svh - var(--made-top) - 5rem) * 1.6); justify-self: end; opacity: 0; visibility: hidden; }
-html.js .made.rig-on .rig { z-index: 2; opacity: 1; visibility: visible; transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1); }
-html.js .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
-html.js .made-words, html.js .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
-html.js .made.on .made-words, html.js .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
-/* each bar is a link to its thing, with a taller target than it looks */
-/* the stage and the bar leave with the world: worlds.js sets their opacity
+html.pin .made-open > * { grid-column: 1; }
+html.pin .made-open { row-gap: 0; }
+html.pin .made { pointer-events: none; }
+html.pin .made.on { pointer-events: auto; }
+html.pin .rig { max-width: calc((100svh - var(--made-top) - 5rem) * 1.6); justify-self: end; opacity: 0; visibility: hidden; }
+html.pin .made.rig-on .rig { z-index: 2; opacity: 1; visibility: visible; transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1); }
+html.pin .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
+html.pin .made-words, html.pin .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
+html.pin .made.on .made-words, html.pin .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
+/* each bar is a link to its thing, with a taller target than it looks; the
+   stage and the bar leave with the world: worlds.js sets their opacity
    (drawDevices) */
-html.js .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw - 104rem) / 2) + var(--pad)); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
-.made-ticks a { position: relative; flex: 1; height: 27px; }
+html.pin .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100vw - 104rem) / 2) + var(--pad)); bottom: clamp(0.9rem, 4vh, 2.3rem); display: flex; gap: 6px; width: min(26rem, 34vw); }
+.made-ticks a { position: relative; flex: 1; height: 27px; -webkit-tap-highlight-color: transparent; }
 .made-ticks a::before, .made-ticks a::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; border-radius: 2px; transition: var(--press); }
-.made-ticks a::before { background: var(--track); }
-.made-ticks a::after { background: var(--ember); transform-origin: left; transform: scaleX(var(--t, 0)); }
-@media (hover: hover) { .made-ticks a:hover::before { background: var(--fg2); } }
+.made-ticks a::before { background: var(--line); }
+.made-ticks a::after { background: var(--accent); transform-origin: left; transform: scaleX(var(--t, 0)); }
+.made-ticks a:active::before { background: var(--line-strong); }
+.made-ticks a:active::before,
+.made-ticks a:active::after { scale: 1 1.8; }
+@media (hover: hover) { .made-ticks a:hover::before { background: var(--line-strong); } }
 @media (prefers-reduced-motion: reduce) {
-  html.js .rig, html.js .made-words, html.js .made-open > *, html.js .made.on .made-words, html.js .made-open.on > *, html.js .made.rig-on .rig { transition: none; transform: none; }
+  html.pin .rig, html.pin .made-words, html.pin .made-open > *, html.pin .made.on .made-words, html.pin .made-open.on > *, html.pin .made.rig-on .rig { transition: none; transform: none; }
 }
 
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  /* five pages on the second row of the header */
-  .site-nav { gap: 2px; }
-  .nav-link { padding: 0 0.5rem; font-size: 0.78rem; }
   /* devices on top, words underneath; worlds.js sets --fit, one size for
      every thing */
   .made { grid-template-columns: minmax(0, 1fr); gap: 1.4rem; }
   .made .made-words, .made .rig { grid-column: 1; }
   .made .rig { grid-row: 1; }
   .made .made-words { grid-row: 2; }
-  html.js .made, html.js .made-open { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; padding: calc(env(safe-area-inset-top) + 3.9rem) 16px 2.4rem; }
-  html.js .made-open { align-content: end; padding-bottom: 3.4rem; }
-  html.js .rig { max-width: none; justify-self: center; width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1)); }
-  /* before the first scroll the header still has its lockup row, so the
-     devices stand that much lower until it folds away */
-  html.js .devices-world .rig { transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
-  html.js:not(.head-compact) .devices-world .rig { transform: translateY(var(--head-lift, 0px)); }
-  /* and rise into the lockup row only once it has faded */
-  html.js.head-compact .devices-world .rig { transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s; }
-  .made-open h1 { font-size: clamp(2.2rem, 10vw, 3rem); }
-  .made-open .deck { font-size: 1rem; }
-  .made-words h2 { font-size: 1.7rem; }
-  .made-kind { margin-bottom: 0.35rem; font-size: 0.66rem; }
-  .made-what { max-width: none; margin-bottom: 0.55rem; font-size: 0.86rem; line-height: 1.36; }
-  .made-where { margin-bottom: 0.35rem; font-size: 0.9rem; }
-  .made-where.private { max-width: none; font-size: 0.82rem; }
-  .made-want a { font-size: 0.84rem; }
-  html.js .made-ticks { left: 16px; right: 16px; bottom: 0.1rem; width: auto; }
+  html.pin .made, html.pin .made-open { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; padding: calc(env(safe-area-inset-top) + 3.9rem) 16px 2.4rem; }
+  html.pin .made-open { align-content: end; padding-bottom: 3.4rem; }
+  html.pin .rig { max-width: none; justify-self: center; width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1)); }
+  html.pin .made-ticks { left: 16px; right: 16px; bottom: 0.1rem; width: auto; }
 }
-@media (max-height: 700px) and (max-width: 759px) {
-  .made-open h1 { font-size: 2rem; }
-  .made-open .deck { margin-bottom: 0.6rem; font-size: 0.92rem; }
+
+/* ---- figures and stages ------------------------------------------------- */
+/* A figure is inline SVG whose parts draw themselves from var(--p), 0 to 1,
+   and are complete at 1: written on each [data-p] element (never on its
+   group or the svg, which would restyle everything inside it). Where
+   nothing writes --p it is 1, so the figure is whole. Where something will,
+   it starts at 0 from the first paint: a pinned world's figure (worlds.js
+   writes it as the world is held) and a stage about to play. html.pin is
+   the sign, set before the first paint, that worlds.js will run in full
+   motion; on a short screen a stage may show its last frame until then. */
+html.pin .world:not([data-pin="off"]) [data-p]:not([data-stage] [data-p]),
+html.pin [data-stage]:not([data-state]) [data-p] { --p: 0; }
+
+/* A stage's controls (worlds.js, "stages"): play shows while it is idle or
+   paused, pause while it plays, replay once it has ended. Without
+   JavaScript the stage has no state and no controls; in low motion it is a
+   stepper: its seek and step buttons and its count, no play or pause. */
+[data-stage]:not([data-state]) :is([data-stage-action], [data-stage-seek], [data-stage-step], [data-stage-count]),
+html:not([data-motion="low"]) [data-stage] :is([data-stage-step], [data-stage-count]),
+[data-stage][data-state="playing"] [data-stage-action]:not([data-stage-action="pause"]),
+[data-stage]:not([data-state="playing"]) [data-stage-action="pause"],
+[data-stage][data-state="ended"] [data-stage-action="play"],
+[data-stage]:not([data-state="ended"]) [data-stage-action="replay"],
+html[data-motion="low"] [data-stage-action] { display: none; }
+
+/* ---- the char line ------------------------------------------------------ */
+/* Where there is no sky to burn (low motion, no WebGL) and two different
+   grounds meet in one column, the burn's still frame: a 2px ember line with
+   a torn lower edge across the full width, 64px above the next section. */
+html:not(.gl):not(.pin) :is(
+  .world[data-world="paper"] + .world:not([data-world="paper"]),
+  .world[data-world="grid"] + .world:not([data-world="grid"]),
+  .world[data-world="tides"] + .world:not([data-world="tides"]),
+  .world[data-world="ember"] + .world:not([data-world="ember"]))::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: -64px;
+  height: 5px;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0H96V2L91 2.6 86 2.1 80 3.4 74 2.2 69 2.9 62 2.1 57 4.2 51 2.3 45 2.8 39 2.1 33 3.6 27 2.2 21 2.7 15 2.1 9 3.9 4 2.3 0 2.8Z'/%3E%3C/svg%3E") 0 0 / 96px 5px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0H96V2L91 2.6 86 2.1 80 3.4 74 2.2 69 2.9 62 2.1 57 4.2 51 2.3 45 2.8 39 2.1 33 3.6 27 2.2 21 2.7 15 2.1 9 3.9 4 2.3 0 2.8Z'/%3E%3C/svg%3E") 0 0 / 96px 5px repeat-x;
+  pointer-events: none;
 }
 
 /* ---- the worlds as one column ------------------------------------------ */
 /* Pinned worlds need the words to fit on one screen under the header. Where
    they cannot, they are a plain column of sections: without JavaScript,
-   on a screen too short to pin the words (worlds.js keeps html.js off below
-   500px of height: a phone held sideways, a laptop zoomed to 200%), and in
-   print. The sky still burns from world to world; the drawn figures, which
-   stand beside words that hold still, are left out. */
-html:not(.js) .top { position: absolute; }
-/* hidden, not removed: worlds.js sizes everything from this canvas */
-html:not(.js) #actors { visibility: hidden; }
-html:not(.js) .worlds,
-html:not(.js) .pin-shade,
-html:not(.js) .cap,
-html:not(.js) .cue,
-html:not(.js) .ticks,
-html:not(.js) .directory > .pin { display: none; }
-html:not(.js) .world { height: auto; }
-html:not(.js) .pin { position: relative; height: auto; overflow: visible; padding: clamp(3.5rem, 12vh, 7rem) var(--pad); }
-html:not(.js) main > :where(.world:first-child) .pin { padding-top: calc(env(safe-area-inset-top) + 8.5rem); }
+   in low motion, on a screen too short to pin the words (html.pin is off
+   at 500px of height and under: a phone held sideways, a laptop zoomed to 200%),
+   and in print. A world marked data-pin="off" is laid out the same way in
+   the pinned layout. The sky still burns from world to world, its fire on
+   each section's top edge. */
+html:not(.pin) .worlds,
+html:not(.pin) .pin-shade,
+:is(html:not(.pin) .world, .world[data-pin="off"]) .ticks { display: none; }
+:is(html:not(.pin) .world, .world[data-pin="off"]) { height: auto; }
+:is(html:not(.pin) .world, .world[data-pin="off"]) > .pin { position: relative; height: auto; overflow: visible; }
+/* the column's padding; a world that pads its own contents (/build's
+   devices) says data-pad="off" */
+:is(html:not(.pin) .world, .world[data-pin="off"]):not([data-pad="off"]) > .pin { padding: clamp(3.5rem, 12vh, 7rem) var(--pad); }
+:is(html:not(.pin) main > .world:first-child, main > .world[data-pin="off"]:first-child):not([data-pad="off"]) > .pin { padding-top: calc(env(safe-area-inset-top) + 8.5rem); }
 /* the sky's fire follows each section's lower edge, so the words end a
    fifth of a screen above it and the handoff burns in the gap */
-@media screen { html:not(.js) .pin { padding-bottom: calc(clamp(3.5rem, 12vh, 7rem) + 20vh); } }
-html:not(.js) .copy,
-html:not(.js) .flame .copy { position: static; width: auto; max-width: 46rem; transform: none; }
-html:not(.js) .flame .copy { margin-inline: auto; }
-html:not(.js) .qs li { opacity: 1; transform: none; }
-html:not(.js) .card { position: relative; inset: auto; translate: none; width: min(100%, 18rem); margin: 2.5rem 0 0; }
-html:not(.js) .flame-room:has(.flame-noscript) { height: auto; }
-html:not(.js) body > footer { margin-top: 0; }
-/* The wheel lies flat: each client's logo stands on its plate, cut to their
-   shape, beside their words, as the client in focus does on the wheel (light
-   plates on the light grid, so dark marks stay legible). The words and the
-   spokes become the grid's own items (display: contents), and dense placement
-   puts each spoke in the first free row of the first column: its client's. */
-html:not(.js) .wheel-world .pin { display: grid; grid-template-columns: clamp(5.5rem, 26vw, 9rem) minmax(0, 36rem); grid-auto-flow: dense; column-gap: clamp(1.25rem, 4vw, 3rem); align-items: start; }
-html:not(.js) .wheel-world :is(.copy, .turns, .wheel) { display: contents; }
-html:not(.js) .turns .turn-intro { grid-column: 1 / -1; }
-html:not(.js) .spoke { position: relative; grid-column: 1; width: 100%; height: auto; aspect-ratio: 1; opacity: 1; will-change: auto; }
-/* a flat logo is a picture, not a way to turn the wheel */
-html:not(.js) .spoke :is(img, .spoke-mark) { pointer-events: none; }
-html:not(.js) .spoke img { will-change: auto; }
-html:not(.js) .spoke-plate { opacity: 1; }
-html:not(.js) .spoke-mark { font-size: clamp(0.95rem, 3.6vw, 1.6rem); }
+@media screen { :is(html:not(.pin) .world, .world[data-pin="off"]):not([data-pad="off"]) > .pin { padding-bottom: calc(clamp(3.5rem, 12vh, 7rem) + 20vh); } }
+:is(html:not(.pin) .world, .world[data-pin="off"]) .copy { position: static; width: auto; max-width: 46rem; transform: none; }
+:is(html:not(.pin) .world, .world[data-pin="off"]) .qs li { opacity: 1; transform: none; }
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  html:not(.js) .pin { padding-inline: 16px; }
+  :is(html:not(.pin) .world, .world[data-pin="off"]):not([data-pad="off"]) > .pin { padding-inline: 16px; }
 }
 
 @media print {
-  [data-theme] { --fg: #141412; --fg2: #57544d; --accent: #b8400f; --track: rgba(20, 20, 18, 0.14); }
   /* ink on paper whether or not the reader prints background graphics */
-  html, body, .world, .pin { background: #fff !important; }
-  canvas.layer, .skip-link, .worlds, .top .site-nav, .motion-toggle, .worlds-members, .flame-room, .top::before { display: none !important; }
+  html, body, .world, .world > .pin { background: var(--paper) !important; }
+  canvas.layer, .worlds { display: none !important; }
   .world, .made { break-inside: avoid; }
-  body > footer { background: none !important; box-shadow: none; }
-  .dir > * { animation: none; }
-  /* the client's shape, even where background graphics are off */
-  .spoke-plate { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   /* a picture not fetched yet would print as an empty screen */
   .rig:has(.screen > img[data-src]) { display: none; }
 }
