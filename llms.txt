@@ -6,7 +6,7 @@
 
 ## Pages
 
-- [Home](https://chamainteligente.com/): A small, family-owned, AI-native business in Lisbon. You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem. Custom software, websites and apps, and AI fluency coaching.
+- [Home](https://chamainteligente.com/): A small, family-owned, AI-native business in Lisbon, working worldwide. We can solve any software problem, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.
 - [Your own engineering department](https://chamainteligente.com/engineering-department): Software that fits how your business works and changes when you do. Tell us what you need and it gets built: most changes are live in under an hour. You own the code. From a small, family-owned, AI-native business in Lisbon.
 - [AI fluency coaching and training](https://chamainteligente.com/coaching): AI fluency coaching for individuals, executive teams and whole companies, and agentic engineering training for engineering teams, on site or remote. Time with someone who knows AI deeply and makes it simple. Elliot Himmelfarb, Lisbon.
 - [Websites, apps and products](https://chamainteligente.com/build): Websites built to be found, apps for one business, and products built with founders. If it can be solved with something on a phone, a computer or in the cloud, we can do it. Chama Inteligente, Lisbon.

@@ -4,14 +4,17 @@
 // (--t) and draws its own beat from that, so seeking, pausing and the low
 // motion stills all come from the one clock. Low motion is the engine's
 // stepper over the same eight points, each shown at its data-stage-still.
+// The actors are drawn in the figure language (kit.js, worlds.css): the
+// business on its floor with a lit body, the queue on one shadow, the
+// software company as a block, the AI system as a ring on a platform.
 import { html, raw } from "../html.js";
 import { GLYPHS } from "./glyphs.js";
-import { poly, ngon, grow } from "./kit.js";
+import { poly, pent, grow, FIT_GAP } from "./kit.js";
 
 const T = 28;
 
 // The words come from site/content/en/home.js (stageBeats). Each beat is a
-// sentence cut into the phrases the stage says one after another.
+// sentence cut into the phrases it says one after another.
 
 // When each phrase starts being said, in seconds. The picture's timings
 // below are written against these.
@@ -31,13 +34,23 @@ const STILLS = [2.6, 6.9, 10.2, 11.8, 17.3, 18.6, 24.2, T];
 const STATIONS = ["Tell us", "It gets built", "You use it", "What's next"];
 
 // ---- geometry, in the viewBox's units ------------------------------------
-const VW = 400, VH = 190, RX = 125, RY = 58;
+const VW = 400, VH = 260, RX = 160, RY = 74;
 const f = (n) => +n.toFixed(2);
-const PENT = ngon(40);
-// the sixth corner grows out of the upper right edge
+const R = 44;
+const PENT = pent(R);
+const BOTTOM = Math.max(...PENT.map((p) => p[1]));
+// the sixth corner grows out of the upper right edge, along its normal
 const MID = [(PENT[0][0] + PENT[1][0]) / 2, (PENT[0][1] + PENT[1][1]) / 2];
-const CORNER = [MID[0] + 15 * 0.588, MID[1] - 15 * 0.809];
+const EDGE = [PENT[1][0] - PENT[0][0], PENT[1][1] - PENT[0][1]];
+const EL = Math.hypot(...EDGE);
+const CORNER = [MID[0] + (16 * EDGE[1]) / EL, MID[1] - (16 * EDGE[0]) / EL];
+const TILT = f((Math.atan2(EDGE[1], EDGE[0]) * 180) / Math.PI);
 const HEX = [PENT[0], CORNER, ...PENT.slice(1)];
+const GAP = FIT_GAP * R;
+// the queue, standing on the software company's ground line
+const Q = 13, QY = 22, QPENT = poly(pent(Q));
+// the learner, up and to the right of the ring
+const LR = 18, LRN = pent(LR), LRN_FIT = poly(grow(LRN, 4)), LRN_AT = [150, -88];
 const ELLIPSE = (rx, ry) => `M0 ${-ry} A${rx} ${ry} 0 1 1 0 ${ry} A${rx} ${ry} 0 1 1 0 ${-ry}`;
 const RING = ELLIPSE(RX, RY);
 const rrect = (x, y, w, h, r) => `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + h - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + h} H${x + r} A${r} ${r} 0 0 1 ${x} ${y + h - r} V${y + r} A${r} ${r} 0 0 1 ${x + r} ${y} Z`;
@@ -48,49 +61,72 @@ const rrect = (x, y, w, h, r) => `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 
 const w = (a, b) => `clamp(0, (var(--t) - ${a}) / ${f(b - a)}, 1)`;
 const k = (name, a, b) => `--k${name}: ${w(a, b)}; --e${name}: calc(var(--k${name}) * var(--k${name}) * (3 - 2 * var(--k${name})));`;
 const e = (name) => `var(--e${name})`;
+// The loop collapses into the first door's glyph at the end (26.0 to 26.7s).
+// Each of its parts moves on its own (--eL, --lo), never the loop as a group:
+// a group whose transform changes restyles everything inside it each frame
+// (pages.md, frame cost). After the catch the loop stays as a still at 40%.
+const LOOP = `${k("L", 26.0, 26.7)} --lo: calc(1 - ${w(26.2, 26.7)});`;
+const LOOPT = `translate(calc(-110px * var(--eL)), 0) scale(calc(1 - 0.81 * var(--eL)))`;
 // draw, then optionally erase and draw again, a path with pathLength 1 and dasharray "1 1"
 // (an undrawn path still paints its round cap, so it also hides while nothing of it shows)
-const strokeRule = (cls, d1, u1, d2) => `.stage .${cls} { ${k("d", ...d1)} ${u1 ? k("u", ...u1) : ""} ${d2 ? k("r", ...d2) : ""}
+const strokeRule = (cls, d1, u1, d2, extra) => `.stage .${cls} { ${k("d", ...d1)} ${u1 ? k("u", ...u1) : ""} ${d2 ? k("r", ...d2) : ""} ${LOOP}
   --v: calc(${e("d")}${u1 ? ` - ${e("u")}` : ""}${d2 ? ` + ${e("r")}` : ""});
-  stroke-dashoffset: calc(1 - ${e("d")}${u1 ? ` - ${e("u")}` : ""}${d2 ? ` - ${e("r")}` : ""}); opacity: clamp(0, var(--v) * 50, 1); }`;
+  stroke-dashoffset: calc(1 - ${e("d")}${u1 ? ` - ${e("u")}` : ""}${d2 ? ` - ${e("r")}` : ""}); opacity: calc(clamp(0, var(--v) * 50, 1) * var(--lo)); ${extra ?? `transform: ${LOOPT};`} }`;
+// The business, and what follows it (its floor, its fit): out of the queue
+// to the centre at the old site's scale (1.9) for the turn, then to its
+// place in the ring, a little smaller while the outline draws the devices.
+const YOU = `${k(1, 1.6, 2.3)} ${k(2, 3.7, 4.2)} ${k(3, 4.2, 5.2)} ${k(6, 7.0, 7.8)} ${k(4, 17.5, 17.9)} ${k(5, 20.2, 20.6)}
+  --z: calc(0.3 + 1.6 * ${e(3)} - 0.9 * ${e(6)} - 0.15 * ${e(4)} + 0.15 * ${e(5)});`;
+const YOUT = `translate(calc(-8px + 30px * ${e(1)} - 22px * ${e(3)}), calc((${QY}px + 24px * ${e(2)}) * (1 - ${e(3)}))) scale(var(--z))`;
+// the fit lands 3.5% large and settles in
+const settle = (a, b) => `scale(calc(1.035 - 0.035 * ${w(a, b)}))`;
+const LRN_ON = `${w(22.4, 22.9)} * (1 - ${w(26.2, 26.6)})`;
+const LRN_MOVE = `${k(1, 22.4, 23)} ${k(2, 26.0, 26.7)}
+  translate: calc(${LRN_AT[0]}px * (1 - ${e(2)})) calc(${LRN_AT[1]}px * (1 - ${e(2)})); scale: calc((0.6 + 0.4 * ${e(1)}) * (1 - 0.5 * ${e(2)}));`;
+// a station, or its label, is lit while the marker passes it
+const ON = `--on: calc(clamp(0, (var(--t) - var(--a)) / 0.12 + 1, 1) * (1 - clamp(0, (var(--t) - var(--a) - 0.875) / 0.12 + 1, 1)));`;
 
 const scene = `
 .stage [data-p], .stage-words { --t: calc(var(--p) * ${T}); }
-.stage-sq, .stage-qr { opacity: calc(1 - 0.9 * ${w(3.6, 4.2)} - 0.1 * ${w(7.0, 7.4)}); }
-.stage-qr { ${k(1, 1.6, 2.3)} transform: translate(calc(30px * ${e(1)}), 0); }
-.stage-qf { ${k(1, 1.6, 2.3)} transform: translate(calc(82px + 61px * ${e(1)}), 0) scale(calc(1 - 0.5 * ${e(1)})); opacity: calc(1 - ${w(1.9, 2.3)}); }
-.stage-you { ${k(1, 1.6, 2.3)} ${k(2, 3.7, 4.2)} ${k(3, 4.2, 5.2)} ${k(4, 17.5, 17.9)} ${k(5, 20.2, 20.6)}
-  --z: calc(0.25 + 0.75 * ${e(3)} - 0.15 * ${e(4)} + 0.15 * ${e(5)});
-  transform: translate(calc(-8px + 30px * ${e(1)} - 22px * ${e(3)}), calc(24px * ${e(2)} * (1 - ${e(3)}))) scale(var(--z)); }
+.stage-sq, .stage-qr, .stage-qfloor { opacity: calc(1 - 0.9 * ${w(3.6, 4.2)} - 0.1 * ${w(7.0, 7.4)}); }
+.stage-sq { translate: 0 calc(8px * (1 - ${w(0, 0.6)})); }
+.stage-qr { ${k(1, 1.6, 2.3)} transform: translate(calc(30px * ${e(1)}), ${QY}px); }
+.stage-qf { ${k(1, 1.6, 2.3)} transform: translate(calc(82px + 42px * ${e(1)}), ${QY}px) scale(calc(1 - 0.5 * ${e(1)})); opacity: calc(1 - ${w(1.9, 2.3)}); }
+.stage-you, .stage-yf { ${YOU} ${LOOP} transform: ${LOOPT} ${YOUT}; opacity: var(--lo); }
 /* the business keeps its line weight at every size it takes */
 .stage-you .stage-ink { stroke-width: calc(1.5 * var(--sw) / var(--z)); }
 .stage-pent { opacity: calc(1 - ${w(15.6, 15.8)}); }
 .stage-hex { opacity: ${w(15.6, 15.8)}; }
 .stage-wedge { ${k(1, 15.0, 15.6)} opacity: calc(1 - ${w(15.6, 15.8)});
-  transform: translate(${f(MID[0])}px, ${f(MID[1])}px) rotate(36deg) scale(1, calc(0.001 + ${e(1)})) rotate(-36deg) translate(${f(-MID[0])}px, ${f(-MID[1])}px); }
-${strokeRule("stage-outp", [5.2, 6.4], [16.0, 16.4])}
-${strokeRule("stage-outh", [16.3, 17.2], [17.5, 17.9], [20.4, 20.9])}
+  transform: translate(${f(MID[0])}px, ${f(MID[1])}px) rotate(${TILT}deg) scale(1, calc(0.001 + ${e(1)})) rotate(${-TILT}deg) translate(${f(-MID[0])}px, ${f(-MID[1])}px); }
+${strokeRule("stage-outp", [5.2, 6.4], [16.0, 16.4], null, `${YOU} transform: ${LOOPT} ${YOUT} ${settle(6.4, 6.9)}; stroke-width: calc(2.5 * var(--sw) / var(--z));`)}
+${strokeRule("stage-outh", [16.3, 17.2], [17.5, 17.9], [20.4, 20.9], `${YOU} transform: ${LOOPT} ${YOUT} ${settle(17.0, 17.4)}; stroke-width: calc(2.5 * var(--sw) / var(--z));`)}
 ${strokeRule("stage-phone", [18.1, 18.45], [18.85, 19.05])}
 ${strokeRule("stage-laptop", [18.85, 19.2], [19.6, 19.8])}
-${strokeRule("stage-cloud", [19.6, 19.95], [20.35, 20.55])}
-.stage-people { ${k(1, 7.2, 7.7)} opacity: ${w(7.2, 7.7)}; transform: translate(-82px, 0) scale(calc(0.6 + 0.4 * ${e(1)})); }
+${strokeRule("stage-cloud", [19.6, 19.95], [20.35, 20.55], null, `transform: ${LOOPT} scale(1.15);`)}
+/* the devices fill with the software's tint as their outline closes */
+.stage-dev { fill: var(--fx-tint); fill-opacity: clamp(0, var(--v) * 1.5 - 0.5, 1); }
+.stage-people { ${k(1, 7.2, 7.7)} ${LOOP} opacity: calc(${w(7.2, 7.7)} * var(--lo)); transform: ${LOOPT} translate(-100px, 0) scale(calc(0.6 + 0.4 * ${e(1)})); }
 ${strokeRule("stage-link", [7.8, 8.4])}
-${strokeRule("stage-ringm", [8.6, 9.8])}
+${strokeRule("stage-ringm", [8.6, 9.8], null, null, "")}
+.stage-ringg, .stage-plat { ${LOOP} transform: ${LOOPT}; opacity: var(--lo); }
+.stage-plat { opacity: calc(${w(8.6, 9.8)} * var(--lo)); }
 .stage-ticks { ${k(1, 24.5, 26)} opacity: ${w(9.3, 9.9)}; stroke-dashoffset: calc(-0.04 * min(var(--t), 24.5) - 0.03 * ${e(1)}); }
-.stage-stations circle { opacity: ${w(10.5, 10.9)}; }
-.stage-mk { ${k(1, 15.6, 16.6)} --s: calc(${w(10.5, 14)} + ${e(1)}); opacity: calc(${w(10.5, 10.8)} * (1 - ${w(17.4, 17.8)})); }
+.stage-st { ${LOOP} ${ON} opacity: calc(${w(10.5, 10.9)} * var(--lo)); transform: ${LOOPT};
+  fill: color-mix(in srgb, var(--accent) calc(var(--on) * 100%), var(--fx-halo)); }
+.stage-mk { ${k(1, 15.6, 16.6)} ${LOOP} --s: calc(${w(10.5, 14)} + ${e(1)}); opacity: calc(${w(10.5, 10.8)} * (1 - ${w(17.4, 17.8)}) * var(--lo)); transform: ${LOOPT}; }
 .stage-head { stroke-dashoffset: calc(-1 * var(--s)); }
 .stage-tail { stroke-dashoffset: calc(0.05 - var(--s)); }
-.stage-trail { stroke-dashoffset: calc(0.11 - var(--s)); }
-.stage-lrn { ${k(1, 22.4, 23)} ${k(2, 26.0, 26.7)} opacity: calc(${w(22.4, 22.9)} * (1 - ${w(26.2, 26.6)}));
-  transform: translate(calc(165px * (1 - ${e(2)})), calc(-60px * (1 - ${e(2)}))) scale(calc((0.6 + 0.4 * ${e(1)}) * (1 - 0.5 * ${e(2)}))); }
-${strokeRule("stage-lrnm", [22.9, 24.0])}
-.stage-loop { ${k(1, 26.0, 26.7)} opacity: calc(1 - ${w(26.2, 26.7)}); transform: translate(calc(-110px * ${e(1)}), 0) scale(calc(1 - 0.81 * ${e(1)})); }
+.stage-lrn { ${LRN_MOVE} opacity: calc(${LRN_ON}); }
+${strokeRule("stage-lrnm", [22.9, 24.0], null, null, "")}
+/* the learner's own marker draws its own fit, then rests on it */
+.stage-lrnfit { ${k("d", 23.0, 24.2)} ${LRN_MOVE} stroke-dashoffset: calc(1 - ${e("d")}); opacity: calc(clamp(0, ${e("d")} * 50, 1) * ${LRN_ON}); }
+.stage-lrnmk { ${k("d", 23.0, 24.2)} ${LRN_MOVE} offset-distance: calc(${e("d")} * 100%); opacity: calc(${w(22.9, 23.1)} * ${LRN_ON}); }
 .stage-gl { --x: 0px; --a: 26.35; --k1: clamp(0, (var(--t) - var(--a)) / 0.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1)));
   opacity: var(--k1); transform: translate(var(--x), 0) scale(calc(1.25 - 0.25 * ${e(1)})); }
 .stage-gl1 { --x: -110px; }
 .stage-gl3 { --x: 110px; --a: 26.5; }
-.stage-lb { --on: calc(clamp(0, (var(--t) - var(--a)) / 0.12 + 1, 1) * (1 - clamp(0, (var(--t) - var(--a) - 0.875) / 0.12 + 1, 1)));
+.stage-lb { ${ON}
   opacity: calc(${w(10.5, 10.9)} * (1 - ${w(26.0, 26.4)})); color: color-mix(in srgb, var(--fg) calc(var(--on) * 100%), var(--fg-2)); }
 .stage-say { opacity: calc(clamp(0, (var(--t) - var(--s)) * 100 + 1, 1) * (1 - clamp(0, (var(--t) - var(--e)) / 0.25 + 1, 1))); }
 .stage-ph { --in: clamp(0, (var(--t) - var(--r)) / 0.35, 1);
@@ -101,7 +137,7 @@ ${strokeRule("stage-lrnm", [22.9, 24.0])}
 `;
 
 const CSS = `
-.stage { position: relative; margin: var(--s5) 0 0; height: clamp(14rem, 40svh, 22rem); display: flex; flex-direction: column; gap: var(--s2); }
+.stage { position: relative; margin: var(--s5) 0 0; height: clamp(16rem, 46svh, 24rem); display: flex; flex-direction: column; gap: var(--s2); }
 .stage-words { display: grid; margin: 0; font: 500 var(--t-stage)/1.3 var(--display); letter-spacing: -0.01em; color: var(--fg-2); max-width: 32ch; }
 .stage-say { grid-area: 1 / 1; margin: 0; }
 .stage-ph { display: inline-grid; }
@@ -109,34 +145,39 @@ const CSS = `
 /* each phrase keeps the width of its bold self, so lighting it never rewraps the line */
 .stage-ph::after { content: attr(data-t); font-weight: 600; visibility: hidden; }
 .stage-pic { flex: 1; min-height: 0; container-type: size; display: grid; place-items: center; }
-.stage-box { position: relative; width: min(82cqw, 100cqh * ${VW} / ${VH}); aspect-ratio: ${VW} / ${VH}; container: stage-box / inline-size; }
+.stage-box { position: relative; width: min(100cqw, 100cqh * ${VW} / ${VH}); aspect-ratio: ${VW} / ${VH}; container: stage-box / inline-size; }
+.stage-fx { width: 100%; height: 100%; }
 /* Strokes scale with the picture, because Chrome misplaces pathLength dashes
    under vector-effect: non-scaling-stroke. --sw holds them near their pixel
    widths at each size of the box. */
-.stage-fig { --sw: 1.67; position: static; translate: none; display: block; width: 100%; height: 100%; overflow: visible; }
-@container stage-box (min-width: 280px) { .stage-fig { --sw: 1.33; } }
+.stage-fig { --sw: 1.3; position: static; translate: none; display: block; width: 100%; height: 100%; overflow: visible; }
 @container stage-box (min-width: 360px) { .stage-fig { --sw: 1.05; } }
-@container stage-box (min-width: 440px) { .stage-fig { --sw: 0.9; } }
-.stage-ink { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: calc(1.5 * var(--sw)); stroke-linejoin: round; }
-.stage-sq { fill: color-mix(in srgb, var(--fg-2) 10%, transparent); stroke: var(--fg-2); stroke-width: calc(1.5 * var(--sw)); }
-.stage-hot { fill: none; stroke: var(--accent); stroke-width: calc(2 * var(--sw)); stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1 1; }
-.stage-ring { fill: none; stroke: var(--fg); stroke-opacity: 0.4; stroke-width: calc(1.25 * var(--sw)); stroke-dasharray: 2 6; stroke-linecap: round; }
-.stage-ticks { fill: none; stroke: var(--fg); stroke-width: calc(2.5 * var(--sw)); stroke-linecap: round; stroke-dasharray: 0.012 0.113; }
+@container stage-box (min-width: 440px) { .stage-fig { --sw: 0.85; } }
+@container stage-box (min-width: 560px) { .stage-fig { --sw: 0.66; } }
+.stage-ink { fill: url(#stage-body); stroke: var(--fx-ink); stroke-width: calc(1.5 * var(--sw)); stroke-linejoin: round; }
+.stage-sq { fill: var(--fx-old); }
+.stage-sq .stage-top { fill: color-mix(in srgb, var(--fg-2) 22%, var(--fx-halo)); }
+.stage-sq .stage-door { fill: color-mix(in srgb, var(--fx-ink) 70%, transparent); }
+.stage-hot { fill: none; stroke: var(--accent); stroke-width: calc(2.5 * var(--sw)); stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1 1; }
+.stage-ring { fill: none; stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1.25 * var(--sw)); stroke-dasharray: 2 6; stroke-linecap: round; }
+.stage-ticks { fill: none; stroke: var(--fx-ink); stroke-width: calc(2.5 * var(--sw)); stroke-linecap: round; stroke-dasharray: 0.012 0.113; }
 .stage-mask { fill: none; stroke: var(--fg); stroke-width: 16; stroke-dasharray: 1 1; }
-.stage-people { fill: var(--fg); }
-.stage-stations circle { fill: var(--bg); stroke: var(--fg); stroke-width: calc(1.5 * var(--sw)); }
-.stage-link { fill: none; stroke: var(--fg); stroke-width: calc(1.25 * var(--sw)); stroke-dasharray: 1 1; }
+.stage-people { fill: var(--fx-ink); }
+.stage-st { stroke: var(--fx-ink); stroke-width: calc(1.5 * var(--sw)); }
+.stage-link { fill: none; stroke: var(--fx-ink); stroke-width: calc(1.25 * var(--sw)); stroke-dasharray: 1 1; }
 .stage-mk { fill: none; stroke: var(--accent); stroke-linecap: round; }
-.stage-head { stroke-width: calc(7 * var(--sw)); stroke-dasharray: 0.001 0.999; }
+.stage-head { stroke-width: calc(8 * var(--sw)); stroke-dasharray: 0.001 0.999; }
 .stage-tail { stroke-width: calc(3 * var(--sw)); stroke-dasharray: 0.05 0.95; }
-.stage-trail { stroke-width: calc(3 * var(--sw)); stroke-dasharray: 0.11 0.89; stroke-opacity: 0.35; }
+.stage-lrnfit { fill: none; stroke: var(--accent); stroke-width: calc(2 * var(--sw)); stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1 1; }
+.stage-lrnmk { fill: var(--accent); stroke: var(--fx-halo); stroke-width: calc(2 * var(--sw)); paint-order: stroke; offset-rotate: 0deg; }
 .stage-gl { color: var(--fg); }
 .stage-lb { position: absolute; font: 600 var(--t-label)/1.2 var(--text); letter-spacing: 0.01em; white-space: nowrap; }
-.stage-lb0 { left: 50%; bottom: calc(50% + ${f((RY / VH) * 100)}% + 8px); translate: -50% 0; }
-.stage-lb1 { left: calc(50% + ${f((RX / VW) * 100)}% + 10px); top: 50%; translate: 0 -50%; }
-.stage-lb2 { left: 50%; top: calc(50% + ${f((RY / VH) * 100)}% + 8px); translate: -50% 0; }
-.stage-lb3 { right: calc(50% + ${f((RX / VW) * 100)}% + 10px); top: 50%; translate: 0 -50%; }
-
+.stage-lb0 { left: 50%; bottom: calc(50% + ${f((RY / VH) * 100)}% + 10px); translate: -50% 0; }
+/* the side stations' labels stand above them, inside the picture's width,
+   on a knockout of the ground so the ring's line never crosses a word */
+.stage-lb1, .stage-lb3 { bottom: calc(50% + 12px); translate: -50% 0; text-shadow: 0 0 2px var(--ground, var(--bg)), 0 0 6px var(--ground, var(--bg)); }
+.stage-lb1 { left: calc(50% + ${f((RX / VW) * 100)}%); }
+.stage-lb3 { left: calc(50% - ${f((RX / VW) * 100)}%); }
 .stage-ctl, .stage-step { flex: none; display: flex; align-items: center; gap: var(--s3); height: 44px; }
 .stage-btn { flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-pill); background: var(--surface); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line-strong); cursor: pointer; transition: box-shadow var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
 .stage-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
@@ -168,12 +209,12 @@ html[data-motion="low"] .stage-ph { --in: 1; }
 /* After the catch the glyphs live in the doors, and the stage keeps the loop
    as a quiet still behind Replay. */
 .stage[data-caught] .stage-gl { opacity: 0 !important; }
-.stage[data-caught] .stage-loop { opacity: 0.4 !important; transform: none !important; transition: opacity 600ms var(--ease-out); }
+.stage[data-caught] :is(.stage-ringg, .stage-plat, .stage-st, .stage-people, .stage-link, .stage-you, .stage-yf) { --lo: 0.4 !important; --eL: 0 !important; transition: opacity 600ms var(--ease-out); }
 
 @media (min-width: 1100px) {
-  .stage { grid-column: 8 / span 5; margin: 0; height: auto; gap: var(--s4); container-type: inline-size; }
-  .stage-pic { flex: none; height: calc(100cqw * ${VH} / ${VW}); }
-  .stage-box { width: 100cqw; }
+  .stage { grid-column: 7 / span 6; margin: 0; height: auto; gap: var(--s4); container-type: inline-size; }
+  .stage-pic { flex: none; height: min(56svh, 100cqw * ${VH} / ${VW}); }
+  .stage-box { width: min(100cqw, 56svh * ${VW} / ${VH}); }
 }
 ${scene}
 `;
@@ -245,35 +286,39 @@ const glyph = (id, n) =>
 
 const FIG = `<svg class="stage-fig" viewBox="${-VW / 2} ${-VH / 2} ${VW} ${VH}" aria-hidden="true" focusable="false">
   <defs>
-    <mask id="stage-ring-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-200" y="-100" width="400" height="200"><path class="stage-mask stage-ringm" data-p pathLength="1" d="${RING}"/></mask>
-    <mask id="stage-lrn-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-40" y="-25" width="80" height="50"><path class="stage-mask stage-lrnm" data-p pathLength="1" d="${ELLIPSE(27, 14)}"/></mask>
+    <radialGradient id="stage-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
+    <radialGradient id="stage-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+    <mask id="stage-ring-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-200" y="-130" width="400" height="260"><path class="stage-mask stage-ringm" data-p pathLength="1" d="${RING}"/></mask>
+    <mask id="stage-lrn-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-60" y="-35" width="120" height="70"><path class="stage-mask stage-lrnm" data-p pathLength="1" d="${ELLIPSE(40, 18)}"/></mask>
   </defs>
-  <rect class="stage-sq" data-p x="110" y="-33" width="66" height="66" rx="3"/>
-  <path class="stage-ink stage-qf" data-p d="${poly(ngon(10))}"/>
-  <g class="stage-qr" data-p>${[52, 22, -38].map((x) => `<path class="stage-ink" transform="translate(${x} 0)" d="${poly(ngon(10))}"/>`).join("")}</g>
-  <g class="stage-loop" data-p>
-    <g mask="url(#stage-ring-m)"><path class="stage-ring" d="${RING}"/><path class="stage-ticks" data-p pathLength="1" d="${RING}"/></g>
-    <g class="stage-stations">${[[0, -RY], [RX, 0], [0, RY], [-RX, 0]].map(([x, y]) => `<circle data-p cx="${x}" cy="${y}" r="4.5"/>`).join("")}</g>
-    <g class="stage-people" data-p><circle cy="-14" r="3.5"/><circle r="3.5"/><circle cy="14" r="3.5"/></g>
-    <path class="stage-link" data-p pathLength="1" d="M-78 -1 L-39 -11"/>
-    <g class="stage-you" data-p>
-      <path class="stage-ink stage-pent" data-p d="${poly(PENT)}"/>
-      <path class="stage-ink stage-hex" data-p d="${poly(HEX)}"/>
-      <path class="stage-ink stage-wedge" data-p d="M${f(PENT[0][0])} ${f(PENT[0][1])} L${f(CORNER[0])} ${f(CORNER[1])} L${f(PENT[1][0])} ${f(PENT[1][1])}"/>
-    </g>
-    <path class="stage-hot stage-outp" data-p pathLength="1" d="${poly(grow(PENT, 9))}"/>
-    <path class="stage-hot stage-outh" data-p pathLength="1" d="${poly(grow(HEX, 9))}"/>
-    <path class="stage-hot stage-phone" data-p pathLength="1" d="${rrect(-34, -48, 68, 94, 10)} M-8 37 H8"/>
-    <path class="stage-hot stage-laptop" data-p pathLength="1" d="${rrect(-56, -46, 112, 76, 5)} M-68 38 H68"/>
-    <path class="stage-hot stage-cloud" data-p pathLength="1" transform="scale(1.15)" d="M-50 34 H48 C66 34 74 18 70 4 C66 -10 52 -14 42 -10 C40 -30 22 -42 2 -40 C-18 -38 -28 -24 -30 -14 C-46 -20 -66 -8 -64 10 C-62 26 -56 34 -50 34 Z"/>
-    <path class="stage-mk stage-trail" data-p pathLength="1" d="${RING}"/>
-    <path class="stage-mk stage-tail" data-p pathLength="1" d="${RING}"/>
-    <path class="stage-mk stage-head" data-p pathLength="1" d="${RING}"/>
+  <g class="stage-sq" data-p><path class="stage-top" d="M110 -33 L124 -47 H190 L176 -33 Z"/><rect x="110" y="-33" width="66" height="66" rx="2"/><rect class="stage-door" x="116" y="7" width="16" height="26" rx="1"/></g>
+  <ellipse class="stage-qfloor" data-p fill="url(#stage-floor)" cx="22" cy="${f(QY + 12)}" rx="120" ry="6"/>
+  <path class="stage-ink stage-qf" data-p d="${QPENT}"/>
+  <g class="stage-qr" data-p>${[52, 22, -38].map((x) => `<path class="stage-ink" transform="translate(${x} 0)" d="${QPENT}"/>`).join("")}</g>
+  <ellipse class="fx-plat stage-plat" data-p rx="${RX}" ry="${RY}"/>
+  <g class="stage-ringg" data-p mask="url(#stage-ring-m)"><path class="stage-ring" d="${RING}"/><path class="stage-ticks" data-p pathLength="1" d="${RING}"/></g>
+  ${[[0, -RY], [RX, 0], [0, RY], [-RX, 0]].map(([x, y], i) => `<circle class="stage-st" data-p cx="${x}" cy="${y}" r="5.5" style="--a:${SAID[3][i]}"/>`).join("")}
+  <g class="stage-people" data-p><circle cy="-15" r="4"/><circle r="4"/><circle cy="15" r="4"/></g>
+  <path class="stage-link" data-p pathLength="1" d="M-94 -1 L${f(PENT[4][0] - GAP - 2)} ${f(PENT[4][1] + 4)}"/>
+  <ellipse class="stage-yf" data-p fill="url(#stage-floor)" cy="${f(BOTTOM + 0.08 * R)}" rx="${f(1.15 * R)}" ry="${f(0.2 * R)}"/>
+  <g class="stage-you" data-p>
+    <path class="stage-ink stage-pent" data-p d="${poly(PENT)}"/>
+    <path class="stage-ink stage-hex" data-p d="${poly(HEX)}"/>
+    <path class="stage-ink stage-wedge" data-p d="M${f(PENT[0][0])} ${f(PENT[0][1])} L${f(CORNER[0])} ${f(CORNER[1])} L${f(PENT[1][0])} ${f(PENT[1][1])}"/>
   </g>
+  <path class="stage-hot stage-yf stage-outp" data-p pathLength="1" d="${poly(grow(PENT, GAP))}"/>
+  <path class="stage-hot stage-yf stage-outh" data-p pathLength="1" d="${poly(grow(HEX, GAP))}"/>
+  <path class="stage-hot stage-dev stage-phone" data-p pathLength="1" d="${rrect(-34, -48, 68, 94, 10)} M-8 37 H8"/>
+  <path class="stage-hot stage-dev stage-laptop" data-p pathLength="1" d="${rrect(-56, -46, 112, 76, 5)} M-68 38 H68"/>
+  <path class="stage-hot stage-dev stage-cloud" data-p pathLength="1" d="M-50 34 H48 C66 34 74 18 70 4 C66 -10 52 -14 42 -10 C40 -30 22 -42 2 -40 C-18 -38 -28 -24 -30 -14 C-46 -20 -66 -8 -64 10 C-62 26 -56 34 -50 34 Z"/>
+  <path class="stage-mk stage-tail" data-p pathLength="1" d="${RING}"/>
+  <path class="stage-mk stage-head" data-p pathLength="1" d="${RING}"/>
   <g class="stage-lrn" data-p>
-    <path class="stage-ink" d="${poly(ngon(12))}"/>
-    <path class="stage-ring" mask="url(#stage-lrn-m)" d="${ELLIPSE(27, 14)}" style="stroke-dasharray: 1.5 4"/>
+    <path class="stage-ink" d="${poly(LRN)}"/>
+    <path class="stage-ring" mask="url(#stage-lrn-m)" d="${ELLIPSE(40, 18)}" style="stroke-dasharray: 1.5 4"/>
   </g>
+  <path class="stage-lrnfit" data-p pathLength="1" d="${LRN_FIT}"/>
+  <circle class="stage-lrnmk" data-p r="3.5" style="offset-path: path('${LRN_FIT}')"/>
   ${glyph("engineering-department", 1)}${glyph("coaching", 2)}${glyph("build", 3)}
 </svg>`;
 
@@ -294,7 +339,7 @@ export function stage({ label, beats }) {
   <style>${raw(CSS)}</style>
   <div class="stage-words" data-p>${words}</div>
   <div class="stage-pic"><div class="stage-box">
-    ${raw(FIG)}
+    <div class="fx stage-fx">${raw(FIG)}</div>
     ${STATIONS.map((s, i) => html`<span class="stage-lb stage-lb${i}" data-p style="--a:${SAID[3][i]}" aria-hidden="true">${s}</span>`)}
   </div></div>
   <div class="stage-ctl">

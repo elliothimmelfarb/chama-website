@@ -2,9 +2,10 @@ import { html, raw } from "../html.js";
 import { SITE, pageById } from "../site.js";
 import { page, talkField, talkClose, ARROW } from "../parts/chrome.js";
 import { home as t } from "../content/en/home.js";
+import { common } from "../content/en/common.js";
 import { GLYPHS } from "../figures/glyphs.js";
 import { stage } from "../figures/stage.js";
-import { proofChart } from "../figures/proof.js";
+import { beliefFigure, canDoFigure, approachFigure, beliefPhrases, reasonStyle, homeFigureStyle } from "../figures/home-figures.js";
 import { logoStrip, CLIENTS } from "../parts/logos.js";
 
 const doors = () => html`<ul class="doors" data-doors>
@@ -13,69 +14,79 @@ const doors = () => html`<ul class="doors" data-doors>
   )}
 </ul>`;
 
-const photo = (alt) => html`<img class="photo" data-p src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 40vw, 100vw" width="2048" height="1804" alt="${alt}" loading="lazy" decoding="async">`;
+const photo = (alt) => html`<img class="photo" data-p src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 50vw, 100vw" width="2048" height="1804" alt="${alt}" loading="lazy" decoding="async">`;
 
-// Home's own section styles. The pinned worlds put their words in the
-// engine's .copy and their figure in a .figure-box placed here.
+// the goals under Elliot's sentence, each reason lit as its side is drawn
+const goals = () => beliefPhrases(t.belief.line).map((p) => (p.k === undefined ? p.text : html`<span data-p style="${reasonStyle(p.k)}">${p.text}</span>`));
+
+const plant = SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line;
+
+// Home's own section styles. Every pinned world is a .frame (worlds.css);
+// what is here sizes home's words and figures inside it.
 const STYLE = `
 .home-sub { margin-top: var(--s4); }
-.home-sub + .home-sub { margin-top: 0; }
-@media (min-width: 1100px) { .home-sub:not(.home-sub + .home-sub) { margin-top: var(--s5); } }
+@media (min-width: 1100px) {
+  .home-sub { margin-top: var(--s5); }
+  .first-words { grid-column: 1 / span 6; }
+}
 .home-doors { margin-top: var(--s5); padding-bottom: var(--s7); }
 .home-also { margin-top: var(--s4); }
-
-/* the grid's horizon is 60% down the screen, and the words and chart stay above it */
-.home-proof .copy { top: 40%; }
-.home-proof .figure-box { position: absolute; right: var(--edge); top: max(104px, calc(55% - 22rem)); bottom: auto; width: min(44vw, 38rem); }
-.home-photo { margin: 0; position: absolute; right: var(--edge); top: calc(50% + 36px); translate: 0 -50%;
-  width: min(42vw, 36rem, (100svh - 72px - 150px) * 8 / 7); }
-.home-photo figcaption { margin-top: var(--s3); }
-/* the photo settles as the world is held (docs/DESIGN.md, home row 4) */
+.home-frame .words .lead { margin-top: var(--s4); }
+/* the belief's sentence is long, so its heading is a size under the others */
+.home-belief h2 { font-size: min(var(--t-h2), 2.5rem); }
+/* the two beats of what we can do stand in one place, in turn */
+.home-cando .slot > div > .lead { margin-top: var(--s4); }
+/* who we have worked with: the plant line is the way to the engineering page */
+.home-plant { display: inline; color: var(--fg); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
+.home-plant .arr { display: inline-block; width: 18px; height: 18px; margin-left: 4px; vertical-align: -3px; color: var(--accent-text); }
+@media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
+.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s7) var(--s8); }
+.home-clients .logo { width: calc(var(--lw) * 1.15px); height: calc(var(--lh) * 1.15px); }
+.home-clients .more { margin-top: var(--s6); }
+/* on desktop the clients are a list beside the words, one to a row, at
+   twice the strip's size, so the section holds its frame */
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
+  .home-clients .logos { flex-direction: column; align-items: stretch; gap: 0; padding: 0; }
+  .home-clients .logos li { padding: var(--s6) 0; border-top: 1px solid var(--line); }
+  .home-clients .logos li:last-child { border-bottom: 1px solid var(--line); }
+  .home-clients .logo { width: calc(var(--lw) * 2px); height: calc(var(--lh) * 2px); }
+}
+/* A world whose words arrive under a figure's top stands them at its top:
+   centred, they would still be below the screen as the world before
+   leaves, and the scroll between them would be bare. */
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
+  :is(.home-cando, .home-approach, .home-people) .frame > .words { align-self: start; margin-top: 6svh; }
+}
+/* the photo settles as the world is held (docs/DESIGN.md, home) */
+.home-photo { margin: 0; }
 .home-photo-crop { border-radius: var(--r-surface); overflow: hidden; }
 .home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }
-/* the client logos arrive after the bars, under the words and the chart */
-.home-logos { position: absolute; left: var(--edge); right: calc(var(--edge) + 40px); bottom: var(--s6); }
-.home-logos .logos { padding: 0; }
-.home-belief .copy { width: min(56vw, 46rem); }
-.home-belief-line { font: 600 var(--t-h2)/1.12 var(--display); letter-spacing: -0.025em; max-width: 24ch; text-wrap: balance; }
-.home-belief-line + .home-belief-line { margin-top: var(--s6); color: var(--fg-2); }
+.home-photo figcaption { margin-top: var(--s3); }
+.home-people .frame { --ar: 1.05; }
 
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  /* words in the upper part of the screen: above the grid's horizon, and in
-     the upper 60% of the ember (docs/DESIGN.md section 4) */
-  /* the words and their figure as one group, centred, a fixed gap apart, so
-     a tall phone has no hole between them */
-  html.pin :is(.home-proof, .home-people) > .pin { display: flex; flex-direction: column; justify-content: safe center; gap: var(--s6);
-    padding: calc(56px + env(safe-area-inset-top) + 20px) 16px calc(20px + env(safe-area-inset-bottom)); }
-  html.pin :is(.home-proof, .home-people) :is(.copy, .figure-box) { position: relative; inset: auto; width: auto; translate: none; }
-  html.pin :is(.home-proof, .home-people) .copy { transform: none; }
-  html.pin .home-proof > .pin { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
-  .home-proof .bars-list { gap: var(--s3); }
-  .home-proof .bars figcaption { margin-top: var(--s3); }
+  /* the words each world's figure leaves room for, measured at 364x610 with 17px text */
+  .home-belief .frame { --words-h: 21rem; }
+  .home-cando .frame { --words-h: 12rem; }
+  .home-approach .frame { --words-h: 14rem; }
+  .home-belief h2 { font-size: 1.5rem; }
   /* on a phone the photo is the width of the column, cropped to the faces */
-  .home-photo-crop { aspect-ratio: 16 / 10; max-height: calc(100svh - 56px - 20px - 360px); }
+  .home-people .frame { --ar: 1.6; }
+  .home-photo-crop { aspect-ratio: 16 / 10; }
   .home-photo .photo { height: 100%; object-fit: cover; object-position: 50% 30%; }
-  /* there is no room for the caption and the logos at once: the logos take
-     the caption's place once the bars are whole and it has been read */
-  .home-logos { left: 16px; right: 28px; bottom: calc(24px + env(safe-area-inset-bottom)); }
-  .home-logos .logos { gap: var(--s4) var(--s5); }
-  .home-caption { --out: 0.5; }
-  .home-proof .bars-axis { display: none; }
 }
-/* one column: the figures follow their words */
-html:not(.pin) :is(.home-proof .figure-box, .home-photo, .home-logos) { position: static; translate: none; width: min(100%, 36rem); margin-top: var(--s6); }
-`;
+${homeFigureStyle}`;
 
 export function render(p) {
   const main = html`
 <style>${raw(STYLE)}</style>
-<section class="world first" data-world="paper" data-pin="off">
+<section class="world first" data-world="paper" data-pin="off" data-fill>
   <div class="first-grid wrap">
     <div class="first-words">
       <p class="thanks" id="thanks" role="status">${t.thanks}</p>
       <p class="descriptor">${t.descriptor}</p>
       <h1><span class="half">${t.h1[0]}</span> <span class="half">${t.h1[1]}</span></h1>
-      ${t.sub.map((l) => html`<p class="lead home-sub">${l}</p>`)}
+      <p class="lead home-sub">${t.sub}</p>
       ${talkField({ id: "ask-home" })}
     </div>
     ${stage({ label: t.stageLabel, beats: t.stageBeats })}
@@ -86,42 +97,74 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world home-proof" data-world="grid" style="--h:210">
+<section class="world home-belief" data-world="tides" style="--h:180" data-label="${t.belief.label}" data-fill>
   <div class="pin">
-    <div class="copy">
-      <h2 class="r">${t.proof.h2}</h2>
-      <p class="lead r">${SITE.laMetalNamed ? t.proof.leadNamed : t.proof.lead}</p>
-      <a class="more r" href="${t.proof.cta.href}">${t.proof.cta.text}${ARROW}</a>
-    </div>
-    <div class="figure-box r fig"><div class="backed">${proofChart({ caption: t.proof.caption, captionClass: "r home-caption" })}</div></div>
-    <div class="home-logos r" style="--in:0.5">
-      <h2 class="sr-only">${t.proof.clientsLabel}</h2>
-      ${logoStrip(CLIENTS)}
+    <div class="frame home-frame" data-layout="split">
+      <div class="words">
+        <h2 class="r">${t.belief.h2}</h2>
+        <p class="lead r">${goals()}</p>
+      </div>
+      <div class="fig r">${beliefFigure(t.belief.reasons)}</div>
     </div>
   </div>
 </section>
 
-<section class="world home-people" data-world="ember" style="--h:160">
+<section class="world home-cando" data-world="grid" style="--h:220" data-label="${t.cando.label}" data-fill>
   <div class="pin">
-    <div class="copy">
-      <h2 class="r">${t.people.h2}</h2>
-      <p class="lead r">${t.people.lead}</p>
-      <p class="lead r">${t.people.more}</p>
-      <a class="more r" href="${t.people.cta.href}">${t.people.cta.text}${ARROW}</a>
-    </div>
-    <figure class="figure-box home-photo r fig"><div class="home-photo-crop">${photo(t.people.photoAlt)}</div><figcaption class="small">${t.people.caption}</figcaption></figure>
-  </div>
-</section>
-
-<section class="world home-belief" data-world="tides" style="--h:170" data-label="What we believe">
-  <div class="pin">
-    <div class="copy">
-      ${t.belief.lines.map((l, i) => html`<p class="home-belief-line r"${i ? raw(' style="--in:0.3"') : ""}>${l}</p>`)}
+    <div class="frame home-frame" data-layout="split">
+      <div class="words slot">
+        <div>
+          <h2 class="r" style="--out:0.5">${t.cando.h2}</h2>
+          <p class="lead r" style="--out:0.5">${t.cando.line}</p>
+        </div>
+        <div>
+          <h2 class="r" style="--in:0.5">${t.dayOne.h2}</h2>
+          <p class="lead r" style="--in:0.5">${t.dayOne.line}</p>
+        </div>
+      </div>
+      <div class="fig r">${canDoFigure({ fresh: t.cando.fig, dayOne: t.dayOne.fig })}</div>
     </div>
   </div>
 </section>
 
-<section class="world end" data-world="tides" data-pin="off" data-label="Talk to us">
+<section class="world home-clients" data-world="grid" data-pin="off" data-label="${t.clients.h2}" data-fill>
+  <div class="pin">
+    <div class="frame home-frame" data-layout="split">
+      <div class="words backed">
+        <h2 class="r">${t.clients.h2}</h2>
+        <p class="lead r"><a class="home-plant" href="/engineering-department">${plant}${ARROW}</a></p>
+        <a class="more r" href="/work">${common.workLink}${ARROW}</a>
+      </div>
+      <div class="r backed">${logoStrip(CLIENTS)}</div>
+    </div>
+  </div>
+</section>
+
+<section class="world home-approach" data-world="ember" style="--h:180" data-label="${t.approach.label}" data-fill>
+  <div class="pin">
+    <div class="frame home-frame" data-layout="split">
+      <div class="words">
+        <h2 class="r">${t.approach.h2}</h2>
+        <p class="lead r">${t.approach.line}</p>
+      </div>
+      <div class="fig r">${approachFigure(t.approach.paths)}</div>
+    </div>
+  </div>
+</section>
+
+<section class="world home-people" data-world="ember" style="--h:140" data-label="${t.people.h2.replace(/\.$/, "")}" data-fill>
+  <div class="pin">
+    <div class="frame home-frame" data-layout="split" data-flip>
+      <div class="words">
+        <h2 class="r">${t.people.h2}</h2>
+        <a class="more r" href="${t.people.cta.href}">${t.people.cta.text}${ARROW}</a>
+      </div>
+      <div class="fig r"><figure class="fig-box home-photo"><div class="home-photo-crop">${photo(t.people.photoAlt)}</div><figcaption class="small">${t.people.caption}</figcaption></figure></div>
+    </div>
+  </div>
+</section>
+
+<section class="world end" data-world="ember" data-pin="off" data-label="Talk to us">
   ${talkClose(t.close)}
 </section>`;
   return page(p, t, main);
@@ -131,15 +174,21 @@ export function text() {
   return [
     t.descriptor,
     `# ${t.h1.join(" ")}`,
-    t.sub.join(" "),
+    t.sub,
+    `${t.stageLabel}:`,
+    ...t.stageBeats.map((b) => b.say.join(" ")),
     ...t.doors.map((d) => `- ${d.title}: ${d.line}`),
     t.also,
-    `## ${t.proof.h2}`,
-    SITE.laMetalNamed ? t.proof.leadNamed : t.proof.lead,
-    t.proof.caption,
+    `## ${t.belief.h2}`,
+    t.belief.line,
+    `## ${t.cando.h2}`,
+    t.cando.line,
+    `## ${t.dayOne.h2}`,
+    t.dayOne.line,
+    `## ${t.clients.h2}`,
+    plant,
+    `## ${t.approach.h2}`,
+    t.approach.line,
     `## ${t.people.h2}`,
-    t.people.lead,
-    t.people.more,
-    ...t.belief.lines,
   ].join("\n\n");
 }

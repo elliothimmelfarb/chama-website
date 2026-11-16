@@ -168,9 +168,7 @@ function svgParts(html) {
 // Groups that predate the rule, each with the rebuild that removes it.
 // Delete an entry when its figure is rebuilt; the test fails on an entry
 // that no page has any more.
-const KNOWN = {
-  "stage-loop": "the opening stage's loop moves as one picture into the doors; its rebuild (spec-diagrams H1) splits it",
-};
+const KNOWN = {};
 
 test("inside a figure, [data-p] is on a leaf or a group of at most three", () => {
   const files = PAGES.map((p) => p.file);
