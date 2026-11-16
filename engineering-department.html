@@ -22,14 +22,14 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <meta name="description" content="Software that fits how your business works and changes when you do. Tell us what you need and it gets built: most changes are live in under an hour. You own the code. From a small, family-owned, AI-native business in Lisbon.">
+  <meta name="description" content="Software that fits how your business works and changes when you do. Tell us what you need and it gets built. You own the code, and we manage it for you. From a small, family-owned, AI-native business in Lisbon.">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://chamainteligente.com/engineering-department">
   <link rel="alternate" hreflang="en" href="https://chamainteligente.com/engineering-department">
   <link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/engineering-department">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <meta property="og:title" content="Your own engineering department | Chama Inteligente">
-  <meta property="og:description" content="Software that fits how your business works and changes when you do. Tell us what you need and it gets built: most changes are live in under an hour. You own the code. From a small, family-owned, AI-native business in Lisbon.">
+  <meta property="og:description" content="Software that fits how your business works and changes when you do. Tell us what you need and it gets built. You own the code, and we manage it for you. From a small, family-owned, AI-native business in Lisbon.">
   <meta property="og:url" content="https://chamainteligente.com/engineering-department">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Chama Inteligente">
@@ -40,9 +40,9 @@
   <meta property="og:image:alt" content="Your own engineering department. Most changes are live in under an hour. Chama Inteligente.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Your own engineering department | Chama Inteligente">
-  <meta name="twitter:description" content="Software that fits how your business works and changes when you do. Tell us what you need and it gets built: most changes are live in under an hour. You own the code. From a small, family-owned, AI-native business in Lisbon.">
+  <meta name="twitter:description" content="Software that fits how your business works and changes when you do. Tell us what you need and it gets built. You own the code, and we manage it for you. From a small, family-owned, AI-native business in Lisbon.">
   <meta name="twitter:image" content="https://chamainteligente.com/og-ed-2026-11-16.png">
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"https://chamainteligente.com/#organization","name":"Chama Inteligente","alternateName":"Chama","legalName":"Chama Inteligente, Lda.","url":"https://chamainteligente.com/","logo":"https://chamainteligente.com/apple-touch-icon.png","image":"https://chamainteligente.com/og-2026-11-16.png","email":"info@chamainteligente.com","address":{"@type":"PostalAddress","addressLocality":"Lisbon","addressCountry":"PT"},"areaServed":"Worldwide","founder":{"@type":"Person","name":"Elliot Himmelfarb"}},{"@type":"WebSite","@id":"https://chamainteligente.com/#website","url":"https://chamainteligente.com/","name":"Chama Inteligente","publisher":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"},{"@type":"WebPage","@id":"https://chamainteligente.com/engineering-department#webpage","url":"https://chamainteligente.com/engineering-department","name":"Your own engineering department | Chama Inteligente","description":"Software that fits how your business works and changes when you do. Tell us what you need and it gets built: most changes are live in under an hour. You own the code. From a small, family-owned, AI-native business in Lisbon.","isPartOf":{"@id":"https://chamainteligente.com/#website"},"about":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"https://chamainteligente.com/#organization","name":"Chama Inteligente","alternateName":"Chama","legalName":"Chama Inteligente, Lda.","url":"https://chamainteligente.com/","logo":"https://chamainteligente.com/apple-touch-icon.png","image":"https://chamainteligente.com/og-2026-11-16.png","email":"info@chamainteligente.com","address":{"@type":"PostalAddress","addressLocality":"Lisbon","addressCountry":"PT"},"areaServed":"Worldwide","founder":{"@type":"Person","name":"Elliot Himmelfarb"}},{"@type":"WebSite","@id":"https://chamainteligente.com/#website","url":"https://chamainteligente.com/","name":"Chama Inteligente","publisher":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"},{"@type":"WebPage","@id":"https://chamainteligente.com/engineering-department#webpage","url":"https://chamainteligente.com/engineering-department","name":"Your own engineering department | Chama Inteligente","description":"Software that fits how your business works and changes when you do. Tell us what you need and it gets built. You own the code, and we manage it for you. From a small, family-owned, AI-native business in Lisbon.","isPartOf":{"@id":"https://chamainteligente.com/#website"},"about":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"}]}</script>
 </head>
 <body data-page="engineering-department">
 <canvas id="sky" class="layer" aria-hidden="true"></canvas>
@@ -97,101 +97,73 @@
 <main id="main">
 
 <style>
-/* /engineering-department. Type and colour from tokens.css and base.css. */
-.ed-first .wrap { padding-bottom: var(--s8); }
-.ed-first .lead { margin-top: var(--s4); }
-/* sized so the H1, not the lead, is the largest paint (the LCP) on a phone */
+/* /engineering-department. Type and colour from tokens.css and base.css,
+   the frame and the figure language from worlds.css. */
 .ed-first h1 { font-size: clamp(2.8rem, 1.6rem + 5vw, 4.5rem); }
+.ed-first .lead { margin-top: var(--s4); }
 .ed-first .talk-field { margin-top: var(--s5); }
+.ed-first > .pin > .frame { padding-top: calc(var(--head) + var(--s8)); padding-bottom: var(--s8); }
+.ed-first .fig { display: none; }
+.frame > .words > h2 + .lead { margin-top: var(--s3); }
+.frame > .words > .lead + .lead { margin-top: var(--s3); }
+[data-page="engineering-department"] main [id] { scroll-margin-top: 72px; }
 
-/* The words and figure of a pinned world, under the header. */
-.ed-hold { position: relative; height: 100%; max-width: var(--max); margin: 0 auto; padding: calc(56px + var(--s4)) var(--gutter) var(--s4); display: flex; flex-direction: column; justify-content: center; gap: var(--s5); }
-html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0; }
-.ed-words h2 + .lead { margin-top: var(--s3); }
-.ed-figbox { min-width: 0; }
+.fx.ed-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-/* The contrast */
-.cx { margin: 0; }
-.cx-svg { width: 100%; height: auto; overflow: visible; }
-.cx-co { fill: color-mix(in srgb, var(--fg) 6%, transparent); stroke: var(--fg-2); stroke-width: 1.5; }
-.cx-q { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; }
-.cx-rule { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 2 5; }
-.cx-you { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; }
-.cx-fit { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
-.cx-fit[pathLength] { stroke-dasharray: 1; }
-.cx-labels { display: grid; grid-template-columns: 290fr 170fr; margin-top: var(--s2); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg-2); }
-.cx-labels span { text-align: center; }
-.cx-labels span:first-child { padding-left: 12%; }
+/* viewBox units per CSS pixel at each figure width (worlds.css, figures) */
+.cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 330); }
+.pl-svg { --sw: calc(440 / 330); }
+@container fx (min-width: 480px) { .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 520); } .pl-svg { --sw: calc(440 / 520); } }
+@container fx (min-width: 600px) { .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 700); } .pl-svg { --sw: calc(440 / 660); } }
+
+/* The contrast: the company, grey and seen from a little above, and its queue */
+.cx-co, .cx-co-top { stroke: var(--fx-ink-2); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
+.cx-co { fill: var(--fx-old); fill-rule: evenodd; }
+.cx-co-top { fill: color-mix(in srgb, var(--fg-2) 24%, var(--ground, var(--bg))); }
+.cx-q { fill: url(#cx-q-body); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 
 /* The loop */
-.ed-loop h2 { max-width: 20ch; }
-.loop-fig { position: relative; width: 100%; margin: 0 auto; }
-.loop-svg { width: 100%; height: auto; overflow: visible; }
-.loop-ring { fill: none; stroke: var(--fg); stroke-opacity: 0.45; stroke-width: 1.25; stroke-dasharray: 1.5 6; stroke-linecap: round; transform-origin: 0 0; }
-.loop-you { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; stroke-dasharray: 1; }
-.loop-pulse { fill: var(--fg); stroke: none; }
-.loop-svg .loop-you + .loop-pulse { fill-opacity: 0.16; }
-.loop-fit { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-dasharray: 1; }
-.loop-export { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; }
-.loop-stations circle { fill: var(--ground, var(--bg)); stroke: var(--fg); stroke-width: 1.5; }
-.loop-tail { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
-.loop-marker { fill: var(--accent); }
-.loop-you-label, .loop-stops li { position: absolute; font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); white-space: nowrap; }
-.loop-you-label { translate: -50% -50%; color: var(--fg-2); }
-.loop-stops { list-style: none; margin: 0; padding: 0; }
-.loop-stops .at-top { translate: -50% calc(-100% - 12px); }
-.loop-stops .at-bottom { translate: -50% 12px; }
-.loop-stops .at-right { translate: calc(-100% - 10px) calc(-100% - 14px); }
-.loop-stops .at-left { translate: 10px calc(-100% - 14px); }
-.loop-notes { position: absolute; }
-.loop-note { position: absolute; left: 0; top: 0; translate: -50% -50%; white-space: nowrap; padding: 5px 10px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
-.loop-ledger { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: var(--t-small); }
-.loop-ledger li { display: flex; justify-content: space-between; gap: var(--s2); padding-top: 4px; border-top: 1px solid var(--line); white-space: nowrap; }
+/* Where the software's outline moves on its own (the loop's refits, the
+   flight in "You own it"), the business arrives drawn but without its
+   static fit, which would stay behind where the moving one has left. */
+.fit-moves .fx-fit, .fit-moves .fx-halo { display: none; }
+.loop-export { fill: var(--fx-light); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
+.loop-station { fill: var(--fx-halo); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); }
+.loop-tail { fill: none; stroke: var(--accent); stroke-width: calc(4px * var(--sw)); stroke-linecap: round; }
+.loop-stops { position: absolute; inset: 0; list-style: none; margin: 0; padding: 0; }
+.loop-stops .at-top { --ty: calc(-100% - 12px); }
+.loop-stops .at-bottom { --ty: 12px; }
+.loop-stops .at-right { --tx: calc(-100% - 10px); --ty: calc(-100% - 14px); }
+.loop-stops .at-left { --tx: 10px; --ty: calc(-100% - 14px); }
+.loop-notes { position: absolute; left: var(--x); top: var(--y); }
+.loop-note { position: absolute; left: 0; top: 0; translate: -50% -50%; white-space: nowrap; margin: 0; padding: 5px 10px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
+.loop-ledger { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: var(--t-small); max-width: 22rem; }
+.loop-ledger li { display: flex; justify-content: space-between; gap: var(--s2); padding-top: 6px; border-top: 1px solid var(--line); white-space: nowrap; }
 .loop-ledger .num { font-weight: 600; color: var(--accent-text); }
 .loop-ledger span:first-child { color: var(--fg-2); }
-.ed-after { font: 600 var(--t-h3)/1.2 var(--display); letter-spacing: -0.015em; }
-/* the closing line arrives late in the loop's hold, whole by 70% */
-.ed-after[data-p] { --t: clamp(0, (var(--p) - 0.62) / 0.08, 1); --a: calc(var(--t) * (2 - var(--t))); opacity: max(0.01, var(--a)); translate: 0 calc((1 - var(--a)) * var(--rise)); }
-.ed-loop .more { margin-top: var(--s2); }
+.ed-loop .words { display: grid; gap: var(--s5); justify-items: start; }
 
-/* The numbers */
-.ed-more-wrap, .ed-rec-wrap, .ed-flow { padding-top: var(--s7); padding-bottom: var(--s7); }
-.ed-more .lead { max-width: 46ch; }
-.ed-week { margin-top: var(--s5); font: 600 var(--t-h3)/1.3 var(--display); letter-spacing: -0.015em; color: var(--fg-2); max-width: 30ch; }
+/* The numbers: every request, on one sheet */
+.sum-box { position: relative; }
+.sum-sheet { fill: var(--fx-light); stroke: var(--line); stroke-width: calc(1px * var(--sw)); }
+.sum-in { fill: var(--accent); }
+.sum-later { fill: var(--fx-ink-2); fill-opacity: 0.6; }
+.sum-caption { margin-top: var(--s4); max-width: 46ch; }
+
+/* The plant: before and after, beside the week */
+.pl-old, .pl-bar, .pl-sheet { stroke: var(--fx-ink-2); stroke-width: calc(1.25px * var(--sw)); stroke-linejoin: round; }
+.pl-old { fill: var(--fx-old); }
+.pl-bar { fill: var(--fx-body); }
+.pl-sheet { fill: var(--fx-light); }
+.pl-grid { fill: none; stroke: var(--fx-ink-2); stroke-opacity: 0.45; stroke-width: calc(1px * var(--sw)); }
+.pl-gather { stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: 2 5; stroke-linecap: round; }
+.pl-head { fill: var(--accent); }
+.ed-week { font: 600 var(--t-h3)/1.3 var(--display); letter-spacing: -0.015em; color: var(--fg-2); max-width: 30ch; }
 .ed-week b { color: var(--fg); font-weight: 600; white-space: nowrap; }
-.ed-finds { margin-top: var(--s5); max-width: 46ch; }
-
-/* Before and after, beside the plant's numbers */
-.pl-fig { margin: var(--s6) 0 0; max-width: 30rem; }
-.pl-fig svg { width: 100%; height: auto; overflow: visible; }
-.pl-o, .pl-l, .pl-gather, .pl-biz, .pl-fit { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.pl-o { stroke: var(--fg-2); stroke-width: 1.5; fill: var(--ground, var(--bg)); }
-.pl-l { stroke: var(--fg-2); stroke-width: 1; stroke-opacity: 0.6; }
-.pl-gather { stroke: var(--line-strong); stroke-width: 1.25; stroke-dasharray: 2 5; }
-.pl-biz { stroke: var(--fg); stroke-width: 1.5; fill: color-mix(in srgb, var(--fg) 7%, var(--ground, var(--bg))); }
-.pl-fit { stroke: var(--accent); stroke-width: 2.5; }
-.pl-labels { display: grid; grid-template-columns: 11fr 7fr; gap: var(--s4); margin-top: var(--s3); font: 600 var(--t-label)/1.3 var(--text); color: var(--fg-2); }
-.pl-labels span:last-child { text-align: center; color: var(--fg); }
-
-/* The first screen: the loop's finished picture beside the words */
-.ed-first-fig { display: none; }
-
-/* The price, with how it starts drawn beside it */
-.pr-fig { position: relative; margin: var(--s8) 0 0; max-width: 34rem; }
-.pr-fig svg { width: 100%; height: auto; overflow: visible; }
-.pr-axis { stroke: var(--line-strong); stroke-width: 1.5; }
-.pr-step { fill: var(--ground, var(--bg)); stroke: var(--fg); stroke-width: 1.5; }
-.pr-step.pr-hot { fill: var(--accent); stroke: var(--accent); }
-.pr-due { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
-.pr-tick { stroke: var(--fg-2); stroke-width: 1.5; stroke-linecap: round; }
-.pr-labels { position: relative; list-style: none; margin: var(--s2) 0 0; padding: 0; height: 3.4em; font: 600 var(--t-label)/1.25 var(--text); color: var(--fg-2); }
-.pr-labels li { position: absolute; left: var(--x); top: 0; translate: -50% 0; max-width: 7.5em; text-align: center; }
-.pr-labels li:first-child { translate: -8px 0; text-align: left; }
-.pr-setup { position: absolute; left: 43.2%; top: 0; translate: -50% -60%; font: 600 var(--t-label)/1.25 var(--text); color: var(--accent-text); white-space: nowrap; }
-.pr-labels .pr-monthly { translate: 0 0; text-align: left; max-width: 10em; }
+.ed-plant .words > * + * { margin-top: var(--s5); }
 
 /* The recording */
-.ed-rec { margin: var(--s5) 0 0; }
+.ed-rec { margin: 0; }
 .ed-rec-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-surface); overflow: hidden; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
 .ed-rec-frame img, .ed-rec-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ed-rec-under { display: grid; gap: var(--s4); margin-top: var(--s4); }
@@ -210,88 +182,96 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
 :root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); } }
-@media (max-width: 759px) {
-  .ed-rec-frame { aspect-ratio: 9 / 16; width: min(100%, calc(70svh * 9 / 16)); margin-inline: auto; }
-}
 
 /* You own it */
-.own-fig { margin: 0; }
-.own-svg { width: 100%; height: auto; overflow: visible; }
-.own-ours { fill: none; stroke: var(--fg); stroke-opacity: 0.45; stroke-width: 1.25; stroke-dasharray: 1.5 6; stroke-linecap: round; }
-.own-yours { fill: none; stroke: var(--fg); stroke-width: 1.5; }
-.own-biz { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; }
-.own-fit { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
-.own-labels { display: grid; grid-template-columns: 1fr 1fr; margin-top: var(--s2); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg-2); text-align: center; }
-.ed-own .lead + .lead { margin-top: var(--s3); }
+.own-plat { stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: 1.5 6; stroke-linecap: round; }
+.own-plat.is-yours { stroke-opacity: 0.8; stroke-dasharray: none; }
+.own-ghost { stroke: var(--fx-ink-2); stroke-width: calc(1.25px * var(--sw)); stroke-linejoin: round; }
 
-/* Price and the guarantee, set large */
+/* Price and the guarantee, set large, then how it starts under them */
 .ed-price-shape { font: 600 var(--t-h2)/1.12 var(--display); letter-spacing: -0.025em; max-width: 24ch; text-wrap: balance; }
 .ed-guarantee { margin-top: var(--s5); font: 600 var(--t-h2)/1.12 var(--display); letter-spacing: -0.025em; max-width: 24ch; color: var(--accent-text); text-wrap: balance; }
+/* HTML, not an .fx: its sentences are words, so it paints with the
+   semantic tokens rather than the figure tokens */
+.pr-fig { margin: 0; --pr-ground: var(--ground, var(--bg)); }
+.pr-line { --axis: 64px; --dot: 18px; position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr 1fr 1.1fr; }
+.pr-line::before { content: ""; position: absolute; left: 0; right: 0; top: var(--axis); height: 1.5px; translate: 0 -50%; background: var(--line-strong); }
+.pr-line li { position: relative; padding: calc(var(--axis) + var(--dot)) var(--s6) 0 0; }
+.pr-text { display: block; max-width: 24ch; font-size: var(--t-lead); line-height: 1.4; color: var(--fg); text-wrap: pretty; }
+.pr-month .pr-text { color: var(--fg-2); }
+.pr-step::before { content: ""; position: absolute; z-index: 1; left: 0; top: var(--axis); width: var(--dot); height: var(--dot); translate: 0 -50%; box-sizing: border-box; border-radius: 50%; background: var(--pr-ground); border: 1.75px solid var(--fg); }
+.pr-step.is-due::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--pr-ground); }
+/* your old system runs above the axis until you switch it off */
+.pr-old { position: absolute; left: calc(var(--dot) / 2); right: calc(var(--dot) / -2); top: calc(var(--axis) - 26px); height: 16px; background: repeating-linear-gradient(45deg, var(--line-strong) 0 1px, transparent 1px 6px), color-mix(in srgb, var(--fg-2) 14%, var(--pr-ground)); }
+.pr-old span, .pr-tag { position: absolute; bottom: calc(100% + 8px); font: 600 var(--t-label)/1.2 var(--text); white-space: nowrap; }
+.pr-old span { left: 0; color: var(--fg-2); }
+.pr-tag { left: calc(var(--dot) / 2 - 1px); bottom: calc(100% - var(--axis) + var(--dot) / 2 + 8px + 16px); padding-left: 10px; color: var(--accent-text); }
+.pr-tag::before { content: ""; position: absolute; left: 0; top: 0.1em; height: calc(16px + 8px + 1.2em); width: 2px; border-radius: 1px; background: var(--accent); }
+@media (min-width: 1100px) { .pr-old span, .pr-tag { font-size: var(--t-small); } }
+/* then the monthly fee: even ticks on a band that runs on, fading */
+.pr-run { position: absolute; left: 0; right: 0; top: var(--axis); height: 14px; translate: 0 -50%; background: repeating-linear-gradient(90deg, var(--fg-2) 0 3px, transparent 3px 26px), linear-gradient(var(--line), var(--line)) 0 50% / 100% 6px no-repeat; -webkit-mask-image: linear-gradient(90deg, var(--fg) 30%, transparent); mask-image: linear-gradient(90deg, var(--fg) 30%, transparent); }
 
 /* Questions */
 .ed-qs h2 { margin-bottom: var(--s5); }
 .ed-qs .qa h3 { font-size: var(--t-h3); }
-.ed-qs .qa summary { min-height: 56px; }
+.ed-qs .qa summary { min-height: 64px; }
 @media (prefers-reduced-motion: no-preference) {
   :root:not([data-motion="low"]) .ed-qs { interpolate-size: allow-keywords; }
   :root:not([data-motion="low"]) .ed-qs .qa::details-content { block-size: 0; opacity: 0; overflow: clip; transition: block-size var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out), content-visibility var(--dur-base) allow-discrete; }
   :root:not([data-motion="low"]) .ed-qs .qa[open]::details-content { block-size: auto; opacity: 1; }
 }
 
-/* How it starts */
-.ed-steps { list-style: none; counter-reset: step; margin: var(--s5) 0 0; padding: 0; display: grid; gap: var(--s4); max-width: 40rem; }
-.ed-steps li { counter-increment: step; display: grid; grid-template-columns: 2rem 1fr; gap: var(--s3); font-size: var(--t-lead); line-height: 1.45; color: var(--fg-2); }
-.ed-steps li::before { content: counter(step); font: 600 var(--t-lead)/1.45 var(--display); color: var(--fg); font-variant-numeric: tabular-nums; }
-.ed-starts .talk-close { padding-top: var(--s7); }
-.ed-starts .ed-flow { padding-bottom: 0; }
-
-[data-page="engineering-department"] main [id] { scroll-margin-top: 72px; }
+/* The close: the blend into tides stands on its top edge */
+.ed-close > .pin > .frame { padding-top: calc(20vh + var(--s7)); }
+.ed-close .talk-close { padding: 0; margin: 0; }
 
 @media (min-width: 1100px) {
-  /* the next section's heading peeks over the fold */
-  .ed-first .wrap { min-height: calc(88svh - 72px); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-bottom: var(--s8); }
-  .ed-first-words { grid-column: 1 / span 6; }
+  .ed-first > .pin > .frame { min-height: calc(88svh); }
+  .ed-first .words { grid-column: 1 / span 6; }
   .ed-first h1 { max-width: 12ch; }
-  .ed-first-fig { display: block; grid-column: 8 / span 5; max-width: 30rem; justify-self: end; width: 100%; }
-  .ed-first-fig .loop-fig { width: 100%; }
-  .ed-more-wrap > .pl-fig { grid-column: 8 / span 5; grid-row: 1 / span 3; align-self: center; margin: 0; max-width: none; }
-  .ed-price .ed-flow:first-child { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; }
-  .ed-price-words { grid-column: 1 / span 7; }
-  .ed-price .pr-fig { grid-column: 8 / span 5; margin: 0; }
-  .ed-hold { padding-top: calc(72px + var(--s5)); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: center; }
-  .ed-hold > .ed-words { grid-column: 1 / span 5; }
-  /* on the grid the words stay above the horizon */
-  .ed-numbers .ed-hold { align-content: start; align-items: start; padding-top: calc(72px + 12svh); }
-  .ed-hold > .ed-figbox { grid-column: 7 / span 6; }
-  .ed-loop .ed-hold > .ed-words { grid-column: 1 / span 4; display: grid; gap: var(--s5); }
-  .ed-loop .ed-hold > .ed-figbox { grid-column: 6 / span 7; grid-row: 1; }
-  .ed-loop .loop-fig { max-width: calc((100svh - 220px) * 480 / 340); }
-  .loop-ledger { max-width: 20rem; gap: 6px; }
-  html:not(.pin) .ed-hold { max-width: var(--max); margin: 0 auto; }
-  .ed-more-wrap, .ed-rec-wrap, .ed-flow { padding-top: var(--s9); padding-bottom: var(--s9); }
-  .ed-more-wrap { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; }
-  .ed-more-wrap > * { grid-column: 1 / span 7; }
-  .ed-rec-wrap { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: start; }
-  .ed-rec-wrap > .ed-words { grid-column: 1 / span 4; }
-  .ed-rec-wrap > .ed-rec { grid-column: 5 / span 8; margin: 0; }
+  .ed-first .fig { display: block; grid-column: 7 / -1; }
+  .frame#recording > .words { grid-column: 1 / span 4; }
+  .frame#recording > .ed-rec { grid-column: 5 / -1; }
+  /* the price and its guarantee side by side, how it starts under both */
+  .frame#price > .words { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s5); align-items: start; }
+  .frame#price .ed-guarantee { margin-top: 0; }
 }
-@media (max-width: 1099px) {
-  .ed-loop .ed-hold { gap: var(--s3); justify-content: flex-start; }
-  .ed-loop h2 { font-size: clamp(1.375rem, 1rem + 2vw, 2rem); }
-  .ed-loop .ed-figbox { order: 1; }
-  .ed-loop .ed-words { display: contents; }
+@media (min-width: 760px) and (max-width: 1099px) {
+  .ed-first .words { grid-column: 1 / span 9; }
+}
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  .ed-contrast .frame { --words-h: 12rem; }
+  .ed-numbers .frame { --words-h: 15rem; }
+  .ed-own .frame { --words-h: 13rem; }
+  /* the loop: the heading, then the picture, then the ledger and the link */
+  .ed-loop .frame { --words-h: 17rem; row-gap: var(--s3); }
+  .ed-loop .words { display: contents; }
+  .ed-loop h2 { order: 0; font-size: clamp(1.25rem, 1rem + 2vw, 1.75rem); }
+  .ed-loop .fig { order: 1; }
   .ed-loop .loop-ledger-box { order: 2; }
-  .ed-loop .ed-close { order: 3; }
-  .ed-loop .ed-after { font-size: var(--t-lead); }
-
-  .loop-fig { width: min(100%, calc((100svh - 390px) * 480 / 340)); }
+  .ed-loop .more { order: 3; }
+  .loop-ledger { gap: 2px; max-width: none; }
+  .loop-ledger li { padding-top: 3px; }
   /* the ledger sits right under the ring here, so the ring's pill would say it twice */
   .loop-notes { display: none; }
+  .ed-rec-frame { aspect-ratio: 9 / 16; width: min(100%, calc(70svh * 9 / 16)); margin-inline: auto; }
+  /* how it starts runs down the column */
+  .pr-line { --axis: 9px; grid-template-columns: minmax(0, 1fr); }
+  .pr-line::before { left: var(--axis); right: auto; top: 0; bottom: 0; width: 1.5px; height: auto; translate: -50% 0; }
+  .pr-line li { padding: 0 0 var(--s6) 44px; }
+  .pr-step::before { left: 0; top: 0.7em; }
+  .pr-old { left: calc(var(--axis) - 8px); right: auto; width: 16px; top: 0.7em; bottom: -0.7em; height: auto; }
+  .pr-step:first-child { padding-top: 1.8em; }
+  .pr-step:first-child::before, .pr-step:first-child .pr-old { top: calc(1.8em + 0.7em); }
+  .pr-old span { left: 44px; top: -1.8em; bottom: auto; }
+  .pr-tag { position: static; display: block; margin-bottom: 4px; padding-left: 0; }
+  .pr-tag::before { display: none; }
+  .pr-run { left: calc(var(--axis) - 7px); right: auto; top: 0; bottom: 0; width: 14px; height: auto; translate: 0 0; background: repeating-linear-gradient(180deg, var(--fg-2) 0 3px, transparent 3px 22px) 50% 0 / 12px 100% no-repeat; -webkit-mask-image: linear-gradient(var(--fg) 30%, transparent); mask-image: linear-gradient(var(--fg) 30%, transparent); }
 }
 </style>
-<section class="world first ed-first" data-world="paper" data-pin="off" data-label="Your engineering department">
-  <div class="wrap">
-    <div class="ed-first-words">
+<section class="world first ed-first" data-world="paper" data-pin="off" data-pad="off" data-fill data-label="Your engineering department">
+  <div class="pin"><div class="frame">
+    <div class="words">
       <p class="descriptor">A small, family-owned, AI-native business in Lisbon, working worldwide.</p>
       <h1><span class="half">Your own engineering department.</span></h1>
       <p class="lead">Software that fits your process, and changes when you do. You talk to a person. AI does the heavy work behind us.</p>
@@ -300,137 +280,198 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   <div class="field"><input id="ask-ed" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
     </div>
-    <div class="ed-first-fig" aria-hidden="true"><div class="loop-fig">
-    <svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
-  <path class="loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0.03) / 0.03, 1);scale:calc(0.94 + 0.06 * clamp(0, (var(--p) - 0.03) / 0.03, 1))"/>
-  <path class="loop-you" data-p pathLength="1" d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0) / 0.03, 1))"/>
-  <path class="loop-pulse" data-p d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="opacity:calc(clamp(0, 1 - max((var(--p) - 0.175) / 0.02, (0.175 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.02, (0.365 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.02, (0.555 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.02, (0.7056 - var(--p)) / 0.02), 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.03) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-34 50 L-50 36 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L62 58 L-34 58 L-50 42 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -68 L48 -52 L84 -19 L92 14 L68 64 L-40 64 L-64 46 L-84 -19 L-46 -52 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.025, 1));opacity:calc(1 - 0)"/>
-  <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:clamp(0, (var(--p) - 0.5075) / 0.02, 1);translate:0 calc(6px - 6px * clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
-  <g class="loop-stations"><circle data-p cx="0" cy="-128" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/><circle data-p cx="200" cy="0" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/><circle data-p cx="0" cy="128" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/><circle data-p cx="-200" cy="0" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/></g>
-  <path class="loop-tail" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="stroke-dasharray:0.111 0.889;stroke-dashoffset:calc(0.111 - (clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))));opacity:calc(0.3 * clamp(0, (var(--p) - 0.05) / 0.02, 1) * (1 - clamp(0, (var(--p) - 0.8) / 0.04, 1)))"/>
-  <circle class="loop-marker" data-p r="7" style="offset-path:path('M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))) * 100%);opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/>
+    <div class="fig" style="--ar:1.4118" aria-hidden="true"><figure class="fx loop-fig">
+    <svg class="fx-svg loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
+  <ellipse class="fx-plat" rx="200" ry="128"/>
+  <path class="fx-ring loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0) / 0.05, 1);scale:calc(0.96 + 0.04 * clamp(0, (var(--p) - 0) / 0.05, 1))"/>
+  <g class="fit-moves"><defs>
+    <radialGradient id="loop-a-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient><radialGradient id="loop-a-owned" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-owned"/></radialGradient>
+    <radialGradient id="loop-a-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+  </defs>
+  <g transform="translate(0 0)">
+    <ellipse class="fx-floor" fill="url(#loop-a-floor)" cx="0" cy="51.1998" rx="75.9" ry="13.2"/>
+    <path class="fx-body" fill="url(#loop-a-body)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-body" data-p style="opacity:min(1, clamp(0, 1 - max((var(--p) - 0.175) / 0.03, (0.175 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.03, (0.365 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.03, (0.555 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.03, (0.7056 - var(--p)) / 0.03), 1) + clamp(0, (var(--p) - 0.78) / 0.06, 1))" fill="url(#loop-a-owned)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-ink" pathLength="1" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-halo" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
+    <path class="fx-fit" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
+  </g></g>
+  <path class="fx-fit loop-fit" data-p d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.1575) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L42.53 55.16 L-45.18 55.16 L-74.09 -21.36 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.3475) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L42.53 55.16 L-42.8 55.16 L-73.23 22.67 L-71.86 -22.76 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.5375) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L43.79 53.94 L0 69.74 L-44.02 53.86 L-73.23 22.67 L-71.86 -22.76 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.7055) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -66.18 L44.04 -57.4 L71.77 -20.98 L75.31 23.46 L43.79 53.94 L0 69.74 L-44.02 53.86 L-73.23 22.67 L-71.92 -20.78 L-44.04 -57.4 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.04, 1));"/>
+  <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:clamp(0, (var(--p) - 0.5075) / 0.05, 1);translate:0 calc(6px - 6px * clamp(0, (var(--p) - 0.5075) / 0.05, 1))"/>
+  <path class="loop-station" data-p d="M-5.5 -128a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0M194.5 0a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0M-5.5 128a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0M-205.5 0a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0" style="opacity:clamp(0, (var(--p) - 0.02) / 0.05, 1)"/>
+  <path class="loop-tail" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="stroke-dasharray:0.111 0.889;stroke-dashoffset:calc(0.111 - (clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))));opacity:calc(0.35 * clamp(0, (var(--p) - 0.03) / 0.05, 1) * (1 - clamp(0, (var(--p) - 0.8) / 0.04, 1)))"/>
+  <circle class="fx-mk loop-marker" data-p r="7.5" style="offset-path:path('M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))) * 100%);opacity:clamp(0, (var(--p) - 0.03) / 0.05, 1)"/>
 </svg>
-    <span class="loop-label loop-you-label" data-p style="left:50%;top:49.4118%;opacity:clamp(0, (var(--p) - 0.02) / 0.02, 1)" aria-hidden="true">You</span>
-    <ol class="loop-stops" data-p style="opacity:clamp(0, (var(--p) - 0.055) / 0.015, 1)" aria-label="Tell us, It gets built, You use it, What&#39;s next">
-      <li class="at-top" style="left:50%;top:12.3529%">Tell us</li>
-      <li class="at-right" style="left:91.6667%;top:50%">It gets built</li>
-      <li class="at-bottom" style="left:50%;top:87.6471%">You use it</li>
-      <li class="at-left" style="left:8.3333%;top:50%">What&#39;s next</li>
+    <span class="fx-lb is-live loop-you-label" aria-hidden="true" style="--x:50%;--y:48.8235%">You</span>
+    <ol class="loop-stops" data-p style="opacity:clamp(0, (var(--p) - 0.02) / 0.05, 1)" aria-label="Tell us, It gets built, You use it, What&#39;s next">
+      <li class="fx-lb is-live at-top" style="--x:50%;--y:12.3529%">Tell us</li>
+      <li class="fx-lb is-live at-right" style="--x:91.6667%;--y:50%">It gets built</li>
+      <li class="fx-lb is-live at-bottom" style="--x:50%;--y:87.6471%">You use it</li>
+      <li class="fx-lb is-live at-left" style="--x:8.3333%;--y:50%">What&#39;s next</li>
     </ol>
-    <div class="loop-notes" style="left:50%;top:21.7647%" aria-hidden="true"><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.085) / 0.015, 1) - clamp(0, (var(--p) - 0.25) / 0.02, 1))">A new filter</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.275) / 0.015, 1) - clamp(0, (var(--p) - 0.44) / 0.02, 1))">A fix</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.465) / 0.015, 1) - clamp(0, (var(--p) - 0.63) / 0.02, 1))">Download to Excel</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.655) / 0.015, 1) - clamp(0, (var(--p) - 0.8) / 0.02, 1))">A new report</p></div>
+    <div class="loop-notes" style="--x:50%;--y:22.9412%" aria-hidden="true"><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.085) / 0.045, 1) - clamp(0, (var(--p) - 0.22) / 0.05, 1))">A new filter</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.275) / 0.045, 1) - clamp(0, (var(--p) - 0.41) / 0.05, 1))">A fix</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.465) / 0.045, 1) - clamp(0, (var(--p) - 0.6) / 0.05, 1))">Download to Excel</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.655) / 0.045, 1) - clamp(0, (var(--p) - 0.77) / 0.05, 1))">A new report</p></div>
+  </figure></div>
   </div></div>
-  </div>
 </section>
 
-<section id="contrast" class="world ed-contrast" data-world="paper" style="--h:210" data-label="Only for you">
-  <div class="pin"><div class="ed-hold">
-    <div class="ed-words r">
-      <h2>Software companies have engineers, and their customers wait in line.</h2>
-      <p class="lead">Here the engineers work only for you. You get what a software company has, without becoming one.</p>
+<section id="contrast" class="world ed-contrast" data-world="paper" data-fill style="--h:190" data-label="Only for you">
+  <div class="pin"><svg class="fx ed-defs" aria-hidden="true" focusable="false"><defs><radialGradient id="cx-q-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
+  <radialGradient id="cx-team-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+    <radialGradient id="cx-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
+    <radialGradient id="cx-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+  </defs></svg><div class="frame">
+    <div class="words">
+      <h2 class="r">Software companies have engineers, and their customers wait in line.</h2>
+      <p class="lead r">Here the engineers work only for you. You get what a software company has, without becoming one.</p>
     </div>
-    <div class="ed-figbox r fig"><figure class="cx" role="group" aria-label="Software companies have engineers, and their customers wait in line.">
-  <svg class="cx-svg" viewBox="0 0 460 170" aria-hidden="true" focusable="false">
-  <rect class="cx-co" x="170" y="50" width="84" height="84"/>
-  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(138 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.14) / 0.12, 1));translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(108 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.38) / 0.12, 1));translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(78 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.62) / 0.12, 1));translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(48 92)" style="translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(18 92)" style="opacity:clamp(0, (var(--p) - 0.1) / 0.14, 1);translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(-12 92)" style="opacity:clamp(0, (var(--p) - 0.34) / 0.14, 1);translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(-42 92)" style="opacity:clamp(0, (var(--p) - 0.58) / 0.14, 1);translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
-  <path class="cx-rule" d="M290 24 V160"/>
-  <g transform="translate(378 92)">
-    <path class="cx-you" data-p d="M0 -36 L34.24 -11.12 L21.16 29.12 L-21.16 29.12 L-34.24 -11.12 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.2) / 0.05, 1))"/>
-    <path class="cx-you" data-p d="M0 -36 L25.35 -34.89 L34.24 -11.12 L21.16 29.12 L-21.16 29.12 L-34.24 -11.12 Z" style="opacity:clamp(0, (var(--p) - 0.2) / 0.05, 1)"/>
-    <path class="cx-fit" data-p d="M0 -47.12 L44.82 -14.56 L27.7 38.12 L-27.7 38.12 L-44.82 -14.56 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.29) / 0.03, 1))"/>
-    <path class="cx-fit" data-p pathLength="1" d="M-2.75 -45.13 L31.69 -43.62 L43.77 -11.33 L27.7 38.12 L-27.7 38.12 L-44.82 -14.56 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.23) / 0.09, 1))"/>
+    <div class="fig r" style="--ar:1.4118"><figure class="fx cx" role="group" aria-label="Software companies have engineers, and their customers wait in line.">
+  <svg class="fx-svg cx-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
+  
+  <ellipse class="fx-floor" data-p fill="url(#cx-team-floor)" cx="4" cy="53" rx="226" ry="12" style="opacity:(1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))))"/>
+  <path class="cx-co-top" data-p d="M56 -60 L176 -60 L196 -76 L76 -76 Z" style="opacity:(1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))))"/>
+  <path class="cx-co" data-p d="M56 -60 H176 V50 H56 Z M68 6 H90 V50 H68 Z" style="opacity:(1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))))"/>
+  <path class="cx-q" data-p d="M0 -40.45 L24.73 -25 L15.28 0 L-15.28 0 L-24.73 -25 Z" style="opacity:calc(1 * (1 - clamp(0, (var(--p) - 0.13) / 0.08, 1)) * (1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(30px + 50px * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))), 50px) scale(calc(1 + 0.0769 * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))))"/>
+  <path class="cx-q" data-p d="M0 -37.34 L22.83 -23.08 L14.11 0 L-14.11 0 L-22.83 -23.08 Z" style="opacity:calc(1 * (1 - clamp(0, (var(--p) - 0.27) / 0.08, 1)) * (1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(-20px + 50px * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))), 50px) scale(calc(1 + 0.0833 * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))))"/>
+  <path class="cx-q" data-p d="M0 -34.23 L20.92 -21.15 L12.93 0 L-12.93 0 L-20.92 -21.15 Z" style="opacity:calc(1 * (1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(-70px + 50px * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))), 50px) scale(calc(1 + 0.0909 * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))))"/>
+  <path class="cx-q" data-p d="M0 -31.12 L19.02 -19.23 L11.76 0 L-11.76 0 L-19.02 -19.23 Z" style="opacity:calc(1 * (1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(-120px + 50px * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))), 50px) scale(calc(1 + 0.1 * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))))"/>
+  <path class="cx-q" data-p d="M0 -28 L17.12 -17.31 L10.58 0 L-10.58 0 L-17.12 -17.31 Z" style="opacity:calc(1 * (1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(-170px + 50px * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))), 50px) scale(calc(1 + 0.1111 * ((clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1))) + (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1))))))"/>
+  <path class="cx-q" data-p d="M0 -28 L17.12 -17.31 L10.58 0 L-10.58 0 L-17.12 -17.31 Z" style="opacity:calc(clamp(0, (var(--p) - 0.12) / 0.06, 1) * (1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(-170px + 50px * (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1)))), 50px) scale(calc(1 + 0.1111 * (clamp(0, (var(--p) - 0.24) / 0.12, 1) * clamp(0, (var(--p) - 0.24) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.12, 1)))))"/>
+  <path class="cx-q" data-p d="M0 -28 L17.12 -17.31 L10.58 0 L-10.58 0 L-17.12 -17.31 Z" style="opacity:calc(clamp(0, (var(--p) - 0.26) / 0.06, 1) * (1 - 0.62 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-149px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-118px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.58 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(-170px + 50px * 0), 50px) scale(calc(1 + 0.1111 * 0))"/>
+  <ellipse class="fx-floor" data-p fill="url(#cx-team-floor)" cx="-128" cy="48" rx="34" ry="6" style="opacity:clamp(0, (var(--p) - 0.52) / 0.06, 1)"/><path class="fx-dot" data-p d="M-142 22a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-120 31a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-152 40a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.52) / 0.06, 1);transform-box:fill-box;transform-origin:center;scale:calc(0.9 + 0.1 * (1 - pow(1 - clamp(0, (var(--p) - 0.52) / 0.08, 1), 3)))"/>
+  <path class="fx-hair cx-talk" data-p pathLength="1" d="M-104 30 L-66 20" style="opacity:clamp(0, (var(--p) - 0.56) / 0.04, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.56) / 0.08, 1) * clamp(0, (var(--p) - 0.56) / 0.08, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.08, 1))))"/>
+  
+  <g transform="translate(0 0)">
+    <ellipse class="fx-floor" data-p style="opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.4) / 0.07, 1));transform-box:fill-box;transform-origin:center;scale:calc(0.7 + 0.3 * (1 - pow(1 - clamp(0, (var(--p) - 0.4) / 0.1, 1), 3)))" fill="url(#cx-floor)" cx="0" cy="51.1998" rx="75.9" ry="13.2"/>
+    <path class="fx-body" data-p style="opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.4) / 0.07, 1));transform-box:fill-box;transform-origin:center;scale:calc(0.94 + 0.06 * (1 - pow(1 - clamp(0, (var(--p) - 0.4) / 0.1, 1), 3)));translate:0 calc(12px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.4) / 0.1, 1), 3))))" fill="url(#cx-body)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    
+    <path class="fx-ink" data-p style="opacity:clamp(0, (var(--p) - 0.44) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.44) / 0.1, 1) * clamp(0, (var(--p) - 0.44) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.44) / 0.1, 1))))" pathLength="1" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-halo" data-p style="opacity:clamp(0, (var(--p) - 0.48) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.48) / 0.12, 1) * clamp(0, (var(--p) - 0.48) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.48) / 0.12, 1))));transform-box:fill-box;transform-origin:center;scale:calc(1.035 - 0.035 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
+    <path class="fx-fit" data-p style="opacity:clamp(0, (var(--p) - 0.48) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.48) / 0.12, 1) * clamp(0, (var(--p) - 0.48) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.48) / 0.12, 1))));transform-box:fill-box;transform-origin:center;scale:calc(1.035 - 0.035 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
   </g>
 </svg>
-  <figcaption class="cx-labels"><span>Off the shelf</span><span>Yours</span></figcaption>
+  <span class="fx-lb" data-p style="--x:19.1667%;--y:25.2941%;--ty:0%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.46) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.46) / 0.05, 1), 3))))">Off the shelf</span>
+  <span class="fx-lb is-live" data-p style="--x:50%;--y:72.6941%;--ty:0%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.58) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.58) / 0.05, 1), 3))))">Yours</span>
 </figure></div>
   </div></div>
 </section>
 
-<section id="loop" class="world ed-loop" data-world="ember" style="--h:460" data-label="The loop">
-  <div class="pin"><div class="ed-hold">
-    <div class="ed-words">
+<section id="loop" class="world ed-loop" data-world="ember" data-fill style="--h:400" data-label="The loop">
+  <div class="pin"><svg class="fx ed-defs" aria-hidden="true" focusable="false"><defs>
+    <radialGradient id="loop-b-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient><radialGradient id="loop-b-owned" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-owned"/></radialGradient>
+    <radialGradient id="loop-b-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+  </defs></svg><div class="frame">
+    <div class="words">
       <h2 class="r">Tell us what you need. It gets built. You use it. You find what&#39;s next.</h2>
       <div class="r loop-ledger-box"><ol class="loop-ledger" aria-label="Four real requests, from request to live">
-    <li data-p style="opacity:clamp(0, (var(--p) - 0.085) / 0.015, 1)"><span>A new filter</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.137) / 0.015, 1)">31 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.275) / 0.015, 1)"><span>A fix</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.327) / 0.015, 1)">14 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.465) / 0.015, 1)"><span>Download to Excel</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.517) / 0.015, 1)">42 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.655) / 0.015, 1)"><span>A new report</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.681) / 0.015, 1)">33 min</span></li>
+    <li data-p style="opacity:clamp(0, (var(--p) - 0.08) / 0.05, 1)"><span>A new filter</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.137) / 0.05, 1)">31 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.27) / 0.05, 1)"><span>A fix</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.327) / 0.05, 1)">14 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.46) / 0.05, 1)"><span>Download to Excel</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.517) / 0.05, 1)">42 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.65) / 0.05, 1)"><span>A new report</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.681) / 0.05, 1)">33 min</span></li>
   </ol></div>
-      <div class="r ed-close">
-        <p class="ed-after" data-p>Most changes are live in under an hour.</p>
-        <a class="more" href="/agent" data-talk>Tell us yours<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </div>
+      <a class="more r" href="/agent" data-talk>Tell us yours<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-    <div class="ed-figbox r fig"><div class="loop-fig">
-    <svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
-  <path class="loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0.03) / 0.03, 1);scale:calc(0.94 + 0.06 * clamp(0, (var(--p) - 0.03) / 0.03, 1))"/>
-  <path class="loop-you" data-p pathLength="1" d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0) / 0.03, 1))"/>
-  <path class="loop-pulse" data-p d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="opacity:calc(clamp(0, 1 - max((var(--p) - 0.175) / 0.02, (0.175 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.02, (0.365 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.02, (0.555 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.02, (0.7056 - var(--p)) / 0.02), 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.03) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-34 50 L-50 36 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L62 58 L-34 58 L-50 42 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -68 L48 -52 L84 -19 L92 14 L68 64 L-40 64 L-64 46 L-84 -19 L-46 -52 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.025, 1));opacity:calc(1 - 0)"/>
-  <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:clamp(0, (var(--p) - 0.5075) / 0.02, 1);translate:0 calc(6px - 6px * clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
-  <g class="loop-stations"><circle data-p cx="0" cy="-128" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/><circle data-p cx="200" cy="0" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/><circle data-p cx="0" cy="128" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/><circle data-p cx="-200" cy="0" r="5" style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/></g>
-  <path class="loop-tail" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="stroke-dasharray:0.111 0.889;stroke-dashoffset:calc(0.111 - (clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))));opacity:calc(0.3 * clamp(0, (var(--p) - 0.05) / 0.02, 1) * (1 - clamp(0, (var(--p) - 0.8) / 0.04, 1)))"/>
-  <circle class="loop-marker" data-p r="7" style="offset-path:path('M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))) * 100%);opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/>
+    <div class="fig r" style="--ar:1.4118"><figure class="fx loop-fig">
+    <svg class="fx-svg loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
+  <ellipse class="fx-plat" rx="200" ry="128"/>
+  <path class="fx-ring loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0) / 0.05, 1);scale:calc(0.96 + 0.04 * clamp(0, (var(--p) - 0) / 0.05, 1))"/>
+  <g class="fit-moves">
+  <g transform="translate(0 0)">
+    <ellipse class="fx-floor" fill="url(#loop-b-floor)" cx="0" cy="51.1998" rx="75.9" ry="13.2"/>
+    <path class="fx-body" fill="url(#loop-b-body)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-body" data-p style="opacity:min(1, clamp(0, 1 - max((var(--p) - 0.175) / 0.03, (0.175 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.03, (0.365 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.03, (0.555 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.03, (0.7056 - var(--p)) / 0.03), 1) + clamp(0, (var(--p) - 0.78) / 0.06, 1))" fill="url(#loop-b-owned)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-ink" pathLength="1" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-halo" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
+    <path class="fx-fit" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
+  </g></g>
+  <path class="fx-fit loop-fit" data-p d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.1575) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L42.53 55.16 L-45.18 55.16 L-74.09 -21.36 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.3475) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L42.53 55.16 L-42.8 55.16 L-73.23 22.67 L-71.86 -22.76 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.5375) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L43.79 53.94 L0 69.74 L-44.02 53.86 L-73.23 22.67 L-71.86 -22.76 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.7055) / 0.05, 1))"/>
+  <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -66.18 L44.04 -57.4 L71.77 -20.98 L75.31 23.46 L43.79 53.94 L0 69.74 L-44.02 53.86 L-73.23 22.67 L-71.92 -20.78 L-44.04 -57.4 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.04, 1));"/>
+  <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:clamp(0, (var(--p) - 0.5075) / 0.05, 1);translate:0 calc(6px - 6px * clamp(0, (var(--p) - 0.5075) / 0.05, 1))"/>
+  <path class="loop-station" data-p d="M-5.5 -128a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0M194.5 0a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0M-5.5 128a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0M-205.5 0a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0" style="opacity:clamp(0, (var(--p) - 0.02) / 0.05, 1)"/>
+  <path class="loop-tail" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="stroke-dasharray:0.111 0.889;stroke-dashoffset:calc(0.111 - (clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))));opacity:calc(0.35 * clamp(0, (var(--p) - 0.03) / 0.05, 1) * (1 - clamp(0, (var(--p) - 0.8) / 0.04, 1)))"/>
+  <circle class="fx-mk loop-marker" data-p r="7.5" style="offset-path:path('M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))) * 100%);opacity:clamp(0, (var(--p) - 0.03) / 0.05, 1)"/>
 </svg>
-    <span class="loop-label loop-you-label" data-p style="left:50%;top:49.4118%;opacity:clamp(0, (var(--p) - 0.02) / 0.02, 1)" aria-hidden="true">You</span>
-    <ol class="loop-stops" data-p style="opacity:clamp(0, (var(--p) - 0.055) / 0.015, 1)" aria-label="Tell us, It gets built, You use it, What&#39;s next">
-      <li class="at-top" style="left:50%;top:12.3529%">Tell us</li>
-      <li class="at-right" style="left:91.6667%;top:50%">It gets built</li>
-      <li class="at-bottom" style="left:50%;top:87.6471%">You use it</li>
-      <li class="at-left" style="left:8.3333%;top:50%">What&#39;s next</li>
+    <span class="fx-lb is-live loop-you-label" aria-hidden="true" style="--x:50%;--y:48.8235%">You</span>
+    <ol class="loop-stops" data-p style="opacity:clamp(0, (var(--p) - 0.02) / 0.05, 1)" aria-label="Tell us, It gets built, You use it, What&#39;s next">
+      <li class="fx-lb is-live at-top" style="--x:50%;--y:12.3529%">Tell us</li>
+      <li class="fx-lb is-live at-right" style="--x:91.6667%;--y:50%">It gets built</li>
+      <li class="fx-lb is-live at-bottom" style="--x:50%;--y:87.6471%">You use it</li>
+      <li class="fx-lb is-live at-left" style="--x:8.3333%;--y:50%">What&#39;s next</li>
     </ol>
-    <div class="loop-notes" style="left:50%;top:21.7647%" aria-hidden="true"><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.085) / 0.015, 1) - clamp(0, (var(--p) - 0.25) / 0.02, 1))">A new filter</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.275) / 0.015, 1) - clamp(0, (var(--p) - 0.44) / 0.02, 1))">A fix</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.465) / 0.015, 1) - clamp(0, (var(--p) - 0.63) / 0.02, 1))">Download to Excel</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.655) / 0.015, 1) - clamp(0, (var(--p) - 0.8) / 0.02, 1))">A new report</p></div>
-  </div></div>
+    <div class="loop-notes" style="--x:50%;--y:22.9412%" aria-hidden="true"><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.085) / 0.045, 1) - clamp(0, (var(--p) - 0.22) / 0.05, 1))">A new filter</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.275) / 0.045, 1) - clamp(0, (var(--p) - 0.41) / 0.05, 1))">A fix</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.465) / 0.045, 1) - clamp(0, (var(--p) - 0.6) / 0.05, 1))">Download to Excel</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.655) / 0.045, 1) - clamp(0, (var(--p) - 0.77) / 0.05, 1))">A new report</p></div>
+  </figure></div>
   </div></div>
 </section>
 
-<section id="numbers" class="world ed-numbers" data-world="grid" style="--h:200" data-label="The numbers">
-  <div class="pin"><div class="ed-hold">
-    <div class="ed-words r"><h2>Measured on real requests.</h2></div>
-    <div class="ed-figbox r fig"><div class="backed"><figure class="bars" aria-label="Time from request to live, in minutes">
-  <div class="bars-axis" aria-hidden="true"><span>0</span><span>15 min</span><span>30 min</span><span>45 min</span><span>1 hour</span></div>
-  <ol class="bars-list">
-    <li style="--v:0.23333333333333334;--i:0"><span class="bars-label">A fix</span><span class="bars-value num" data-p>14 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.5166666666666667;--i:1"><span class="bars-label">A new filter</span><span class="bars-value num" data-p>31 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.55;--i:2"><span class="bars-label">A new report</span><span class="bars-value num" data-p>33 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.7;--i:3"><span class="bars-label">Download to Excel</span><span class="bars-value num" data-p>42 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>
-  </ol>
-  <figcaption class="small">Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.</figcaption>
+<section id="numbers" class="world ed-numbers" data-world="grid" data-fill style="--h:170" data-label="The numbers">
+  <div class="pin"><svg class="fx ed-defs" aria-hidden="true" focusable="false"><defs><radialGradient id="sum-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs></svg><div class="frame">
+    <div class="words backed">
+      <h2 class="r">Most changes are live in under an hour.</h2>
+      <p class="lead r">Measured on the software we run for an 88-person metal stamping plant in Toronto.</p>
+      <p class="small r sum-caption">Median 30 minutes from request to live, across 123 requests since 2026-09-29.</p>
+    </div>
+    <div class="fig r" style="--ar:1.4118"><div class="backed"><figure class="fx sum" role="group" aria-label="Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.">
+  <div class="sum-box"><svg class="fx-svg sum-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
+  
+  <ellipse class="fx-floor" data-p fill="url(#sum-floor)" cx="0" cy="110" rx="250" ry="12" style="opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0) / 0.08, 1));transform-box:fill-box;transform-origin:center;scale:calc(0.7 + 0.3 * (1 - pow(1 - clamp(0, (var(--p) - 0) / 0.1, 1), 3)))"/>
+  <rect class="sum-sheet" data-p x="-226" y="-84" width="452" height="188" style="opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0) / 0.08, 1));transform-box:fill-box;transform-origin:center;scale:calc(0.94 + 0.06 * (1 - pow(1 - clamp(0, (var(--p) - 0) / 0.1, 1), 3)));translate:0 calc(12px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0) / 0.1, 1), 3))))"/>
+  <path class="sum-dot sum-in" data-p d="M-210 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-186 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-162 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-138 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-114 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-90 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-66 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-42 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-18 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M6 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M30 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M54 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M78 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M102 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M126 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M150 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M174 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M198 -62a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.1) / 0.06, 1);transform-origin:0px -128px;scale:calc(0.1 + 0.9 * (1 - pow(1 - clamp(0, (var(--p) - 0.1) / 0.12, 1), 3)))"/>
+  <path class="sum-dot sum-in" data-p d="M-210 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-186 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-162 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-138 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-114 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-90 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-66 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-42 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-18 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M6 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M30 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M54 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M78 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M102 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M126 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M150 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M174 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M198 -38a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.15) / 0.06, 1);transform-origin:0px -128px;scale:calc(0.1 + 0.9 * (1 - pow(1 - clamp(0, (var(--p) - 0.15) / 0.12, 1), 3)))"/>
+  <path class="sum-dot sum-in" data-p d="M-210 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-186 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-162 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-138 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-114 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-90 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-66 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-42 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-18 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M6 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M30 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M54 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M78 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M102 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M126 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M150 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M174 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M198 -14a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.2) / 0.06, 1);transform-origin:0px -128px;scale:calc(0.1 + 0.9 * (1 - pow(1 - clamp(0, (var(--p) - 0.2) / 0.12, 1), 3)))"/>
+  <path class="sum-dot sum-in" data-p d="M-210 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-186 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-162 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-138 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-114 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-90 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-66 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-42 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-18 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M6 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M30 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M54 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M78 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M102 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M126 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M150 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M174 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M198 10a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.25) / 0.06, 1);transform-origin:0px -128px;scale:calc(0.1 + 0.9 * (1 - pow(1 - clamp(0, (var(--p) - 0.25) / 0.12, 1), 3)))"/>
+  <path class="sum-dot sum-in" data-p d="M-210 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-186 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-162 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-138 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-114 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-90 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-66 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-42 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-18 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M6 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M30 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M54 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M78 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M102 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M126 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M150 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M174 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M198 34a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.3) / 0.06, 1);transform-origin:0px -128px;scale:calc(0.1 + 0.9 * (1 - pow(1 - clamp(0, (var(--p) - 0.3) / 0.12, 1), 3)))"/>
+  <path class="sum-dot sum-in" data-p d="M-210 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-186 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-162 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-138 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-114 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-90 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-66 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-42 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-18 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M6 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M30 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M54 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M78 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M102 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M126 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M150 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M174 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M198 58a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.35) / 0.06, 1);transform-origin:0px -128px;scale:calc(0.1 + 0.9 * (1 - pow(1 - clamp(0, (var(--p) - 0.35) / 0.12, 1), 3)))"/>
+  <path class="sum-dot sum-later" data-p d="M-210 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-186 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-162 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-138 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-114 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-90 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-66 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-42 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M-18 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M6 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M30 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M54 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M78 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M102 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0M126 82a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" style="opacity:clamp(0, (var(--p) - 0.4) / 0.06, 1);transform-origin:0px -128px;scale:calc(0.1 + 0.9 * (1 - pow(1 - clamp(0, (var(--p) - 0.4) / 0.12, 1), 3)))"/>
+  <circle class="fx-mk" data-p cx="0" cy="-128" r="7.5" style="opacity:calc(1 - clamp(0, (var(--p) - 0.1) / 0.06, 1))"/>
+</svg>
+  <span class="fx-lb is-hot sum-hour" data-p style="--x:2.9167%;--y:21.7647%;--tx:0%;--ty:-100%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.48) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.48) / 0.05, 1), 3))))">88% were live within the hour</span>
+  <span class="fx-lb sum-day" data-p style="--x:2.9167%;--y:85.2941%;--tx:0%;--ty:0%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.56) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.56) / 0.05, 1), 3))))">Every one the same day</span></div>
 </figure></div></div>
   </div></div>
 </section>
 
-<section class="world ed-more" data-world="grid" data-pin="off" data-label="The recording">
-  <div class="wrap ed-more-wrap">
-    <p class="lead backed">Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.</p>
-    <figure class="pl-fig backed" role="img" aria-label="Their old system, a second app and four spreadsheets, replaced by one system.">
-  <svg viewBox="0 0 400 150" aria-hidden="true" focusable="false">
-    <rect class="pl-o" x="8" y="14" width="78" height="52" rx="3"/><path class="pl-l" d="M8 26H86"/>
-    <rect class="pl-o" x="100" y="22" width="24" height="42" rx="4"/>
-    <g transform="translate(10 84)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g><g transform="translate(52 92)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g><g transform="translate(94 80)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g><g transform="translate(136 96)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g>
-    <path class="pl-gather" d="M176 40C220 40 240 70 270 74M176 74H270M176 112C220 112 240 78 270 74"/>
-    <path class="pl-biz" d="M330 44 L358.53 64.73 L347.63 98.27 L312.37 98.27 L301.47 64.73 Z"/>
-    <path class="pl-fit" d="M330 35 L367.09 61.95 L352.92 105.55 L307.08 105.55 L292.91 61.95 Z"/>
+<section class="world ed-more" data-world="grid" data-pin="off" data-pad="off" data-fill data-label="The recording">
+  <div class="pin">
+    <div class="frame ed-plant" data-flip>
+      <div class="words">
+        <p class="lead backed">It replaced their old system, a second app and four spreadsheets.</p>
+        <p class="ed-week backed"><b class="num">19</b> people use it every day, and <b class="num">about 15</b> changes go live in a typical week.</p>
+        <p class="lead backed">Ask it anything. Why don&#39;t these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.</p>
+      </div>
+      <div class="fig" style="--ar:1.3333333333333333"><div class="backed"><figure class="fx pl-fig" role="img" aria-label="Their old system, a second app and four spreadsheets, replaced by one system.">
+  <svg class="fx-svg pl-svg" viewBox="0 0 440 330" aria-hidden="true" focusable="false">
+    <defs><radialGradient id="pl-pile"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs>
+    <ellipse class="fx-floor" fill="url(#pl-pile)" cx="104" cy="292" rx="104" ry="13"/>
+    <rect class="pl-old" x="20" y="72" width="132" height="88"/><rect class="pl-bar" x="20" y="72" width="132" height="15"/>
+    <rect class="pl-old" x="168" y="96" width="38" height="66" rx="7"/>
+    <g transform="translate(22 176) rotate(-6 32 23)"><rect class="pl-sheet" width="64" height="46"/><path class="pl-grid" d="M0 12H64M0 23H64M0 34H64M21 0V46M42 0V46"/></g><g transform="translate(70 196) rotate(3 32 23)"><rect class="pl-sheet" width="64" height="46"/><path class="pl-grid" d="M0 12H64M0 23H64M0 34H64M21 0V46M42 0V46"/></g><g transform="translate(116 172) rotate(-2 32 23)"><rect class="pl-sheet" width="64" height="46"/><path class="pl-grid" d="M0 12H64M0 23H64M0 34H64M21 0V46M42 0V46"/></g><g transform="translate(64 236) rotate(5 32 23)"><rect class="pl-sheet" width="64" height="46"/><path class="pl-grid" d="M0 12H64M0 23H64M0 34H64M21 0V46M42 0V46"/></g>
+    <path class="fx-hair pl-gather" d="M156 116C196 116 208 150 238 166M212 166H238M186 236C212 236 216 182 238 166"/>
+    <path class="pl-head" d="M238 159L252 166L238 173Z"/>
+    <defs>
+    <radialGradient id="pl-owned" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-owned"/></radialGradient>
+    <radialGradient id="pl-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+  </defs>
+  <g transform="translate(346 168)">
+    <ellipse class="fx-floor" fill="url(#pl-floor)" cx="0" cy="49.6483" rx="73.6" ry="12.8"/>
+    <path class="fx-body" fill="url(#pl-owned)" d="M0 -55.04 L60.87 -17.01 L37.62 44.53 L-37.62 44.53 L-60.87 -17.01 Z"/>
+    
+    <path class="fx-ink" pathLength="1" d="M0 -55.04 L60.87 -17.01 L37.62 44.53 L-37.62 44.53 L-60.87 -17.01 Z"/>
+    <path class="fx-halo" pathLength="1" d="M0 -65.61 L71.85 -20.71 L43.81 53.49 L-43.81 53.49 L-71.85 -20.71 Z"/>
+    <path class="fx-fit" pathLength="1" d="M0 -65.61 L71.85 -20.71 L43.81 53.49 L-43.81 53.49 L-71.85 -20.71 Z"/>
+  </g>
   </svg>
-  <figcaption class="pl-labels" aria-hidden="true"><span>Their old system, a second app and four spreadsheets</span><span>One system</span></figcaption>
-</figure>
-    <p class="ed-week backed"><b class="num">19</b> people use it every day, and <b class="num">about 15</b> changes go live in a typical week.</p>
-    <p class="lead ed-finds backed">Ask it anything. Why don&#39;t these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.</p>
-  </div>
-  <div id="recording" class="wrap ed-rec-wrap">
-    <div class="ed-words">
-      <h2>A request, then the change.</h2>
-      <p class="lead">A real request and the change it became, recorded on the same app with demo data.</p>
+  <span class="fx-lb is-live" aria-hidden="true" style="--x:78.6364%;--y:73.4934%;--ty:0%">One system</span>
+</figure></div></div>
     </div>
-    <figure class="ed-rec" data-rec>
+    <div id="recording" class="frame">
+      <div class="words backed">
+        <h2>A request, then the change.</h2>
+        <p class="lead">A real request and the change it became, recorded on the same app with demo data.</p>
+      </div>
+      <figure class="ed-rec" data-rec>
   <div class="ed-rec-frame">
     <picture>
       <source media="(max-width: 759px)" srcset="/assets/media/note-to-change-2026-11-16-tall.webp" width="810" height="1440">
@@ -448,69 +489,81 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
     </ol>
   </figcaption>
 </figure>
+    </div>
   </div>
 </section>
 
-<section id="own" class="world ed-own" data-world="paper" style="--h:190" data-label="You own it">
-  <div class="pin"><div class="ed-hold">
-    <div class="ed-words r">
-      <h2>You own the IP.</h2>
-      <p class="lead">We manage it for you, and you can take it anywhere.</p>
-      <p class="lead">If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.</p>
+<section id="own" class="world ed-own" data-world="paper" data-fill style="--h:160" data-label="You own it">
+  <div class="pin"><svg class="fx ed-defs" aria-hidden="true" focusable="false"><defs><radialGradient id="own-ghost" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
+  <radialGradient id="own-air"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+    <radialGradient id="own-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient><radialGradient id="own-owned" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-owned"/></radialGradient>
+    <radialGradient id="own-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+  </defs></svg><div class="frame" data-flip>
+    <div class="words">
+      <h2 class="r">You own the IP.</h2>
+      <p class="lead r">We manage it for you, and you can take it anywhere.</p>
+      <p class="lead r">If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.</p>
     </div>
-    <div class="ed-figbox r fig"><figure class="own-fig">
-  <svg class="own-svg" viewBox="-210 -100 420 170" aria-hidden="true" focusable="false">
-  <ellipse class="own-ours" cx="-110" cy="0" rx="86" ry="50"/>
-  <ellipse class="own-yours" cx="110" cy="0" rx="86" ry="50"/>
-  <path class="own-biz" d="M0 -19.2 L22.8254 -5.9331 L14.1068 15.5331 L-14.1068 15.5331 L-22.8254 -5.9331 Z" transform="translate(110 0)"/>
-  <path class="own-fit" data-p d="M0 -27.2 L32.3359 -8.4053 L19.9847 22.0053 L-19.9847 22.0053 L-32.3359 -8.4053 Z" style="offset-path:path('M-110 0 C -70 -110 70 -110 110 0');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.15) / 0.6, 1) * clamp(0, (var(--p) - 0.15) / 0.6, 1) * (3 - 2 * clamp(0, (var(--p) - 0.15) / 0.6, 1))) * 100%)"/>
+    <div class="fig r" style="--ar:1.3333333333333333"><figure class="fx own-fig">
+  <svg class="fx-svg own-svg" viewBox="-240 -180 480 360" aria-hidden="true" focusable="false">
+  
+  <ellipse class="fx-plat own-plat" cx="-100" cy="-66" rx="116" ry="38"/>
+  <ellipse class="fx-floor" fill="url(#own-air)" cx="-100" cy="-57.8668" rx="50.6" ry="8.8"/>
+  <path class="own-ghost" fill="url(#own-ghost)" d="M0 -37.84 L41.85 -11.69 L25.86 30.61 L-25.86 30.61 L-41.85 -11.69 Z" transform="translate(-100 -92)"/>
+  <ellipse class="fx-plat own-plat is-yours" cx="70" cy="98" rx="158" ry="54"/>
+  <g class="fit-moves">
+  <g transform="translate(70 66)">
+    <ellipse class="fx-floor" fill="url(#own-floor)" cx="0" cy="54.3028" rx="80.5" ry="14"/>
+    <path class="fx-body" fill="url(#own-body)" d="M0 -60.2 L66.57 -18.6 L41.14 48.7 L-41.14 48.7 L-66.57 -18.6 Z"/>
+    <path class="fx-body" data-p style="opacity:clamp(0, (var(--p) - 0.62) / 0.08, 1)" fill="url(#own-owned)" d="M0 -60.2 L66.57 -18.6 L41.14 48.7 L-41.14 48.7 L-66.57 -18.6 Z"/>
+    <path class="fx-ink" pathLength="1" d="M0 -60.2 L66.57 -18.6 L41.14 48.7 L-41.14 48.7 L-66.57 -18.6 Z"/>
+    <path class="fx-halo" pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z"/>
+    <path class="fx-fit" pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z"/>
+  </g></g>
+  <ellipse class="fx-floor own-air" data-p fill="url(#own-air)" rx="80.5" ry="14" style="offset-path:path('M-100 -57.8668 L70 120.3028');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * 100%);transform:scale(calc((0.6286 + 0.3714 * (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))) * (1 - 2.2 * ((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * (1 - (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))))))));opacity:calc(clamp(0, (var(--p) - 0.3) / 0.05, 1) * (1 - clamp(0, (var(--p) - 0.55) / 0.05, 1)) * (1 - 1.6 * ((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * (1 - (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))))))"/>
+  <path class="fx-halo" data-p pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z" style="offset-path:path('M-100 -92 C -70 -176 40 -156 70 66');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * 100%);transform:scale(calc((0.6286 + 0.3714 * (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))) * (1.04 - 0.04 * (1 - pow(1 - clamp(0, (var(--p) - 0.6) / 0.1, 1), 3)))));stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.12) / 0.12, 1) * clamp(0, (var(--p) - 0.12) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.12) / 0.12, 1))))"/>
+  <path class="fx-fit" data-p pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z" style="offset-path:path('M-100 -92 C -70 -176 40 -156 70 66');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * 100%);transform:scale(calc((0.6286 + 0.3714 * (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))) * (1.04 - 0.04 * (1 - pow(1 - clamp(0, (var(--p) - 0.6) / 0.1, 1), 3)))));stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.12) / 0.12, 1) * clamp(0, (var(--p) - 0.12) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.12) / 0.12, 1))));opacity:clamp(0, (var(--p) - 0.12) / 0.05, 1)"/>
 </svg>
-  <figcaption class="own-labels"><span>We manage it</span><span>You own it</span></figcaption>
+  <span class="fx-lb" data-p style="--x:29.1667%;--y:45.5556%;--ty:0%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.1) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.1) / 0.05, 1), 3))))">We manage it</span>
+  <span class="fx-lb is-live" data-p style="--x:64.5833%;--y:95.5556%;--ty:0%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.64) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.64) / 0.05, 1), 3))))">You own it</span>
 </figure></div>
   </div></div>
 </section>
 
-<section class="world ed-price" data-world="paper" data-pin="off" data-label="Price">
-  <div id="price" class="wrap ed-flow">
-    <div class="ed-price-words">
-      <h2 class="ed-price-shape">A setup fee and a fixed monthly fee, quoted after a first conversation.</h2>
-      <p class="ed-guarantee">The setup fee is due only when you switch off your old system.</p>
-    </div>
-    <figure class="pr-fig" role="img" aria-label="A first conversation, then a first version, then the old system is switched off, which is when the setup fee is due. After that, the fixed monthly fee.">
-  <svg viewBox="0 0 500 70" aria-hidden="true" focusable="false">
-    <path class="pr-axis" d="M16 46H492"/>
-    <circle class="pr-step" cx="16" cy="46" r="8"/><circle class="pr-step" cx="116" cy="46" r="8"/><circle class="pr-step pr-hot" cx="216" cy="46" r="8"/>
-    <path class="pr-due" d="M216 30V14"/>
-    <path class="pr-tick" d="M266 40V52" style="opacity:1.00"/><path class="pr-tick" d="M292 40V52" style="opacity:0.90"/><path class="pr-tick" d="M318 40V52" style="opacity:0.80"/><path class="pr-tick" d="M344 40V52" style="opacity:0.70"/><path class="pr-tick" d="M370 40V52" style="opacity:0.60"/><path class="pr-tick" d="M396 40V52" style="opacity:0.50"/><path class="pr-tick" d="M422 40V52" style="opacity:0.40"/><path class="pr-tick" d="M448 40V52" style="opacity:0.30"/><path class="pr-tick" d="M474 40V52" style="opacity:0.20"/>
-  </svg>
-  <span class="pr-setup" aria-hidden="true">Setup fee</span>
-  <ol class="pr-labels" aria-hidden="true">
-    <li style="--x:3.2%">First conversation</li><li style="--x:23.2%">First version</li><li style="--x:43.2%">Old system off</li>
-    <li class="pr-monthly" style="--x:66%">Then the monthly fee</li>
+<section class="world ed-price" data-world="paper" data-pin="off" data-pad="off" data-fill data-label="Price">
+  <div class="pin">
+    <div id="price" class="frame" data-layout="wide">
+      <div class="words">
+        <h2 class="ed-price-shape">A setup fee and a fixed monthly fee, quoted after a first conversation.</h2>
+        <p class="ed-guarantee">The setup fee is due only when you switch off your old system.</p>
+      </div>
+      <figure class="pr-fig" role="img" aria-label="A first conversation, then a first version, then the old system is switched off, which is when the setup fee is due. After that, the fixed monthly fee.">
+  <ol class="pr-line" aria-hidden="true">
+    <li class="pr-step"><i class="pr-old"><span>Your old system</span></i><span class="pr-text">A first conversation about how your business works today.</span></li><li class="pr-step"><i class="pr-old"></i><span class="pr-text">A first version your team can use, usually within days.</span></li><li class="pr-step is-due"><b class="pr-tag">Setup fee</b><span class="pr-text">You switch off the old system when you&#39;re ready.</span></li>
+    <li class="pr-month"><i class="pr-run"></i><span class="pr-text">Then the monthly fee</span></li>
   </ol>
 </figure>
-  </div>
-  <div id="questions" class="wrap ed-flow ed-qs">
-    <h2>Questions owners ask</h2>
-    <div class="ed-qa-list">
-      <details class="qa"><summary><h3>What if you disappear?</h3></summary><div class="qa-a"><p>You own the code and the data. It runs on standard tools, it&#39;s backed up, and any engineer can take it over.</p></div></details><details class="qa"><summary><h3>How much of my time does it take?</h3></summary><div class="qa-a"><p>A few conversations at the start, so we understand how you work. After that, you ask for changes when you notice them, in a sentence.</p></div></details><details class="qa"><summary><h3>How soon is there a first version?</h3></summary><div class="qa-a"><p>Usually within days of those first conversations. Your team uses it alongside the old system until it has earned its place.</p></div></details><details class="qa"><summary><h3>Does it work with what we already use?</h3></summary><div class="qa-a"><p>Yes. It connects to the tools you keep, such as QuickBooks, and brings in what lives in your spreadsheets today.</p></div></details><details class="qa"><summary><h3>Where does our data live?</h3></summary><div class="qa-a"><p>In your own database, on standard cloud hosting, backed up every night. It&#39;s yours.</p></div></details><details class="qa"><summary><h3>Who checks the AI&#39;s work?</h3></summary><div class="qa-a"><p>Every change is written with its tests first and goes live only after the whole test suite passes and the change has been reviewed. Anything that touches money or another company&#39;s system waits for Elliot.</p></div></details>
+    </div>
+    <div id="questions" class="frame ed-qs" data-layout="pair">
+      <div class="words"><h2>Questions owners ask</h2></div>
+      <div class="ed-qa-list">
+        <details class="qa"><summary><h3>What if you disappear?</h3></summary><div class="qa-a"><p>You own the code and the data. It runs on standard tools, it&#39;s backed up, and any engineer can take it over.</p></div></details><details class="qa"><summary><h3>How much of my time does it take?</h3></summary><div class="qa-a"><p>A few conversations at the start, so we understand how you work. After that, you ask for changes when you notice them, in a sentence.</p></div></details><details class="qa"><summary><h3>How soon is there a first version?</h3></summary><div class="qa-a"><p>Usually within days of those first conversations. Your team uses it alongside the old system until it has earned its place.</p></div></details><details class="qa"><summary><h3>Does it work with what we already use?</h3></summary><div class="qa-a"><p>Yes. It connects to the tools you keep, such as QuickBooks, and brings in what lives in your spreadsheets today.</p></div></details><details class="qa"><summary><h3>Where does our data live?</h3></summary><div class="qa-a"><p>In your own database, on standard cloud hosting, backed up every night. It&#39;s yours.</p></div></details><details class="qa"><summary><h3>Who checks the AI&#39;s work?</h3></summary><div class="qa-a"><p>Every change is written with its tests first and goes live only after the whole test suite passes and the change has been reviewed. Anything that touches money or another company&#39;s system waits for Elliot.</p></div></details>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="starts" class="world ed-starts" data-world="tides" data-pin="off" data-label="How it starts">
-  <div class="wrap ed-flow">
-    <h2>How it starts</h2>
-    <ol class="ed-steps"><li>A first conversation about how your business works today.</li><li>A first version your team can use, usually within days.</li><li>You switch off the old system when you&#39;re ready. That&#39;s when the setup fee is due.</li></ol>
-  </div>
-  <section class="talk-close" aria-label="Talk to us">
+<section id="close" class="world ed-close" data-world="tides" data-pin="off" data-pad="off" data-fill data-label="Talk to us">
+  <div class="pin"><div class="frame" data-layout="statement">
+    <div class="words"><section class="talk-close" aria-label="Talk to us">
   <p class="talk-close-line">Tell us what gets in your way.</p>
   <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-1"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-1" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
   <a class="more talk-close-work" href="/work#engineering-department">Everything we&#39;ve built<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-</section>
+</section></div>
+  </div></div>
 </section>
 </main>
 <footer class="foot">

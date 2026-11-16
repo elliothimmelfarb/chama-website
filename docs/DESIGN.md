@@ -237,18 +237,18 @@ Test (from the architecture): after one viewport of scroll at 364x610 with 17px 
 
 Built to stand alone for a referral link: the first screen says what it is without the home page.
 
+"Most changes are live in under an hour." is said once on this page, as the numbers heading (`SITE.changeTime`), where the evidence for it stands. The contrast, the loop and the numbers share one figure box (480 by 340) in the same cell, so the business the contrast draws is the one the loop carries on, at the same size and place, and the numbers' dots pour out of where the loop's marker parked.
+
 | # | Section | Ground | What moves |
 |---|---|---|---|
-| 1 | One-line who-we-are, H1 "Your own engineering department.", the line from D.17, Talk to us field; from 1100px the loop's finished picture beside them | Paper | H1 arrives. The next heading peeks over the fold. |
-| 2 | The contrast with buying software: a software company's customers wait in line; here the engineers work only for you | Paper | Pinned. Left: a queue of small pentagons at one big square (the software company). It moves up three times (10 to 28%, 34 to 52%, 58 to 76% of the hold); each time the front one goes in and a new one joins at the back. Right: one pentagon with its own ember outline, which grows a sixth corner and refits between 20% and 32%. |
-| 3 | The loop (see section 12) | Ember | Pinned for about three screens, scroll-driven, four laps. |
-| 4 | The week in numbers and the measured change time: the four real examples as bars, the median, the 88% | Grid | The bars grow as on home. On this page they carry the full sentence: measured on 123 requests since 2026-09-29, median 30 minutes, 88% within an hour, all the same day. |
-| 5 | The recording: a feedback note becoming a live change (muted video, poster first) | Grid | The video plays muted when 60% in view, pauses out of view, has a play/pause control; captions are HTML under it. |
-| 5b | The plant's numbers in words, beside a before-and-after figure: the old system, a second app and four spreadsheets as outlines, gathered into one ember-outlined pentagon | Grid | Still. Text on the grid stands on a feathered patch of its ground (`.backed`). |
-| 6 | You own it: "You own the IP. We manage it for you, and you can take it anywhere." and "what if you disappear" | Paper | A small figure: the software outline lifts out of our ring and sets down in yours. |
-| 7 | Price shape and the guarantee, with a timeline beside them: the three steps of How it starts, the third in ember where the setup fee falls due, then the monthly fee as fading ticks | Paper | None. Two short lines, set large: the price shape, then the risk reversal in `--accent-text`. |
-| 8 | Objections, as a disclosure list (six questions, each a `<details>` row with an h3 question and a short answer) | Paper | Disclosure opens with a height and fade over `--dur-base`. |
-| 9 | How it starts, then Talk to us, with a link to this offer's group on /work | Tides | The cycling phrase. |
+| 1 | One-line who-we-are, H1 "Your own engineering department.", the line from D.17, Talk to us field; from 1100px the loop's finished picture beside them | Paper | H1 arrives. Not pinned. |
+| 2 | The contrast with buying software: a software company's customers wait in line; here the engineers work only for you | Paper | Pinned, `--h` 190, two acts. Act one, large: five customers queue at a grey block with a doorway; the line moves up twice (10 to 22%, 24 to 36%), the front one going in and a new one joining at the back. Then the camera moves on (36 to 46%): the block and its queue shrink into the top left corner and dim, and "Yours" arrives in the middle at full size (40 to 60%), drawn from nothing, with three engineers beside it and a line to the one you talk to. |
+| 3 | The loop (see section 12) | Ember | Pinned, `--h` 400, scroll-driven, four laps. The business arrives already drawn, where the contrast left it. |
+| 4 | "Most changes are live in under an hour.", the plant's lead, and the summary of every measured request: one dot per request on one sheet, in the order they went live, the 88% within the hour in ember, the rest of the same day in ink | Grid | Pinned, `--h` 170. The sheet arrives under the parked marker, and the rows pour out of it in turn, whole by 52%; the two labels (the caption's second sentence) follow, and the caption's first sentence stands under the figure. It does not repeat the loop's four requests. |
+| 5 | What the plant's software replaced and the plant's week, beside a before-and-after figure: an old system's window, a second app and four spreadsheets in a pile, gathered into one warm business. Then the recording: a feedback note becoming a live change (muted video, poster first) | Grid | Still, not pinned. The video plays muted when 60% in view, pauses out of view, has a play/pause control; captions are HTML under it. Text on the grid stands on `.backed`. |
+| 6 | You own it: "You own the IP. We manage it for you, and you can take it anywhere." and "what if you disappear" | Paper | Pinned, `--h` 160, figure on the left. The software's outline is drawn round the copy we run on our platform, behind, then lifts out and flies to your business on yours, in front, its shadow shrinking in the air; it lands at 60 to 70% and your business warms. |
+| 7 | Price shape and the guarantee, set large, then how it starts across the page: your old system as a hatched band until the third step, where you switch it off and the setup fee falls due (an ember tag), then the monthly fee as fading ticks. Then the objections, as a disclosure list beside their sticky heading | Paper | None. The timeline runs down the column on a phone. Disclosures open with a height and fade over `--dur-base`. |
+| 8 | Talk to us, with a link to this offer's group on /work | Tides | The cycling phrase. |
 
 ### `/coaching`
 
@@ -306,7 +306,7 @@ One scrolling index on paper, not pinned, no figures. Grouped under three h2s (t
 
 Proof is shown as measured data, not as a row of big numbers. The note-to-live chart is the centrepiece: four horizontal bars on an hour-long axis (0, 15, 30, 45 minutes, 1 hour), one per real example (a fix 14 min, a new filter 31 min, a new report 33 min, download to Excel 42 min), sorted shortest first, each labelled on the left and valued on the right in Funnel Sans 600 tabular figures. Bars are ember, 10px high on phone and 14px on desktop, square at the start and rounded at the end (5px). A caption under it gives the median and the sample in one sentence. The unnamed fallback is used until the `laMetalNamed` flag is on: "an 88-person metal stamping plant in Toronto". When it flips, the name appears in the caption and the heading does not change.
 
-The engineering department page adds the plant's week: 19 users and about 15 changes a week, set as one sentence with the figures in `--fg` and the rest in `--fg-2`, and a small before and after figure (the systems it replaced, drawn as four document outlines and two app outlines, collapsing into one ember outline). No card grid of stats, no icons beside numbers.
+The engineering department page does not repeat the bars: the loop's ledger shows its four requests, and the numbers section shows all of them as one dot each (see section 7). It adds the plant's week: 19 users and about 15 changes a week, set as one sentence with the figures in `--fg` and the rest in `--fg-2`, beside a before and after figure (an old system's window, a second app and four spreadsheets in a pile, gathered into one warm business). No card grid of stats, no icons beside numbers.
 
 ### Logos
 
@@ -398,23 +398,23 @@ Words are the lead's to finalise from `brand-language.md`; these are all approve
 
 ## 12. The loop figure, beat by beat
 
-`site/figures/loop.js`, on the ember ground of `/engineering-department`, pinned for about three screens and driven by `--p` from 0 to 1. Three rings drawn as concentric shapes seen slightly from above, so the whole reads as the torus Elliot described:
+`site/figures/loop.js`, on the ember ground of `/engineering-department`, held for three screens (`--h` 400) and driven by `--p` from 0 to 1. Three rings, seen slightly from above, so the whole reads as the torus Elliot described:
 
-- **Inner: you.** The business as the protagonist pentagon (section 14), labelled "You".
-- **Middle: the software.** An ember outline that fits the pentagon closely and refits on every lap.
-- **Outer: the AI system we run.** A dotted ellipse with eight small ticks drifting along it, and four stations at 12, 3, 6 and 9 o'clock: "Tell us", "It gets built", "You use it", "What's next".
-- **The marker:** an ember dot with a 40-degree fading tail, running the outer ring.
+- **Inner: you.** The business as the protagonist (section 14), labelled "You". It is the contrast's "Yours", carried on at the same size and place, so it arrives already drawn.
+- **Middle: the software.** An ember outline that fits the business and refits on every lap, each time adding a corner outside the one before, so it always fits.
+- **Outer: the AI system we run.** A platform with a dotted rim and four stations at 12, 3, 6 and 9 o'clock: "Tell us", "It gets built", "You use it", "What's next".
+- **The marker:** an ember dot on a ring of the ground's colour, with a 40-degree fading tail, running the rim.
 
 | `--p` | What happens |
 |---|---|
-| 0 to 0.1 | The rings draw in from the inside out (pentagon, outline, dotted ring), then the stations. The heading "Tell us what you need. It gets built. You use it. You find what's next." sits above at `--t-h2`. |
-| 0.1 to 0.32 | Lap 1. The marker leaves "Tell us"; a note appears beside the station in a small `--surface` pill: "A new filter". As it passes "It gets built" the outline refits (a new facet on the pentagon's right). At "You use it" the pentagon's fill pulses once. At "What's next" the lap's time appears under the pill: "31 min". |
-| 0.32 to 0.54 | Lap 2: "A fix", 14 min. The outline tightens a corner. |
-| 0.54 to 0.76 | Lap 3: "Download to Excel", 42 min. A small rectangle (the export) appears inside the outline. |
-| 0.76 to 0.92 | Lap 4: "A new report", 33 min. The outline grows to its fullest shape. The four laps' pills remain, stacked by the "What's next" station, as a short ledger. |
-| 0.92 to 1 | The marker slows and parks at "Tell us". The line "Most changes are live in under an hour." arrives under the figure. The pin releases and the page moves on to the grid. |
+| 0 to 0.08 | The business is already there. The rim fades in around it, then the stations and their names, then the marker. The heading sits beside it (above it on a phone), the ledger under the heading. |
+| 0.08 to 0.27 | Lap 1. The marker leaves "Tell us"; a note appears in a small `--surface` pill: "A new filter", and its ledger row. As it passes "It gets built" the outline refits with a new facet on the right. At "You use it" the business warms once. At "What's next" the lap's time appears in the ledger: "31 min". |
+| 0.27 to 0.46 | Lap 2: "A fix", 14 min. A facet at the lower left. |
+| 0.46 to 0.65 | Lap 3: "Download to Excel", 42 min. A small sheet (the export) appears inside the business, and the outline makes room at the bottom. |
+| 0.65 to 0.84 | Lap 4: "A new report", 33 min. The outline grows to its fullest shape. The marker slows and parks at "Tell us", and the business stays warm. |
+| 0.84 to 1 | Nothing moves: the finished picture and the ledger with all four laps stand while the pin lets go. The words end on "Tell us yours"; the next section's heading says the change-time line. |
 
-On the phone the figure fills the width minus gutters, station labels are HTML at `--t-label` placed over it, and the heading sits above the figure with the pills below it rather than beside the station. Transforms, opacity and dashoffset only. The four examples are the real, measured ones.
+On the phone the figure fills the column, station labels are HTML over it, and the ledger sits under the figure, so the pill is left out. Transforms, opacity and dashoffset only. The four examples are the real, measured ones.
 
 ---
 
