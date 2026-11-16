@@ -53,7 +53,7 @@ export function render(p) {
       <ul class="wk-list">
         ${g.items.map((it) => {
           const l = it.logo && logoOf(it.logo);
-          return html`<li class="wk-row" id="${it.id}"><a href="${it.href}"${external(it.href) ? raw(' rel="noopener"') : ""}><h3 class="wk-name">${nameOf(it)}</h3><p class="wk-line">${it.line}</p>${l ? html`<span class="wk-logo" aria-hidden="true">${logo(l)}</span>` : ""}${ARROW}</a></li>`;
+          return html`<li class="wk-row" id="${it.id}">${it.also ? html`<span id="${it.also}"></span>` : ""}<a href="${it.href}"${external(it.href) ? raw(' rel="noopener"') : ""}><h3 class="wk-name">${nameOf(it)}</h3><p class="wk-line">${it.line}</p>${l ? html`<span class="wk-logo" aria-hidden="true">${logo(l)}</span>` : ""}${ARROW}</a></li>`;
         })}
       </ul>
     </section>`,

@@ -1,0 +1,12 @@
+{
+  "name": "chama-website-shots",
+  "private": true,
+  "type": "module",
+  "description": "The headless check rig for the public pages. See README.md.",
+  "scripts": {
+    "shots": "node run.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

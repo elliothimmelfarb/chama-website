@@ -1,7 +1,7 @@
 /* The design tokens, in three layers: primitives, then the semantic colours
    for light and dark, then the ground each section sits on. docs/DESIGN.md
    gives every value's job and its measured contrast. No colour is written
-   anywhere else on the public pages (test/theme.test.js). */
+   anywhere else on the public pages (test/site.test.js). */
 
 @font-face {
   font-family: "Funnel Display";

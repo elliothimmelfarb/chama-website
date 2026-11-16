@@ -6,61 +6,83 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 
 | File | What it is |
 |---|---|
-| `index.html`, `coaching.html`, `built.html`, `clients.html`, `about.html` | The five public pages at `/`, `/coaching`, `/built`, `/clients` and `/about`, in the animated version. They carry the full search and sharing metadata (canonical, hreflang, Open Graph, JSON-LD) and are the URLs in the sitemap. The home page ends in the flame room. `/coaching` holds the Members link into the Hearth. |
-| `simple.html`, `simple/coaching.html`, `simple/built.html`, `simple/clients.html`, `simple/about.html` | The low motion version of the same five pages at `/simple/*`: the same copy as plain pages. They canonicalise to their animated counterparts and are not in the sitemap. |
-| `assets/worlds.css`, `assets/worlds.js`, `assets/sky.js` | The animated version's engine. Each `<section class="world">` names its ground (`data-world`) and figure (`data-scene`). `sky.js` paints the ground with one WebGL shader, `worlds.js` draws the figures and writes each section's `--u` on the elements in it that read it (it is not inherited), and every `.r` element reads it against its own `--in` and `--out`, so the choreography lives in the markup. Where the words cannot fit on one screen (under 500px of height), without JavaScript, and in print, the worlds are one column of sections instead. `worlds.js` also runs the site nav and moves between the five pages without a full load: the old words lift away (0.2s), the fetched page is swapped in, and the sky burns into it (0.85s) while its words rise. A fetch still out when the words have gone shows `.nav-wait` on the header, and one that hangs for 8s falls back to a full load. The animated pages' speculation rules fetch the plain public pages they link to (privacy, the flame's page, the media kit, the Hearth's door, the low motion version) on hover or press, and never the router's five or anything under `/api`. |
-| `assets/site.css` | The low motion pages' shared stylesheet. The footer is repeated in each low motion page and `privacy.html`; change all four together. |
-| `assets/figures.css`, `assets/figures.js` | The section figures' motion system for the low motion pages and `privacy.html`. Without JavaScript or under reduced motion every figure is drawn complete. |
-| `agent.html`, `assets/agent.js`, `assets/agent.css` | "Talk to us", the live chat agent and the only way to reach us from the site: full screen at `/agent`, embedded in the home page with `ChamaAgent.mount(root, { mode: "page" \| "embed" })`. Vanilla, no libraries. Every page's header has a "Talk to us" link to it (`.nav-talk`): the room (`#talk`) on `/` and `/simple`, `/agent` everywhere else. |
-| `assets/flame.js`, `assets/flame-worker.js` | The fire engine. On touch devices with OffscreenCanvas it runs in a Web Worker so it never shares a thread with scrolling or typing. |
-| `api/chat.js`, `api/chat-prompt.js` | The agent endpoint (same origin, SSE streaming, one tool: `send_note_to_elliot`, a visitor asking to be contacted) and its frozen system prompt, which is reviewed like copy. |
-| `lib/site-pages.js` | The site's pages as the agent knows them: path, title, what each covers, and whether it is live. The prompt lists the live ones, and the agent links only to those. |
-| `evals/` | The agent's evals: single replies against rubrics (`npm run evals`) and whole simulated conversations (`npm run evals:conversations`). Both spend API credit and are not part of `npm run check`. |
+| `site/site.js` | The one list of public pages (`PAGES`: path, file, nav label, whether the router swaps it, sitemap priority and `lastmod`, `noindex`) and the facts every page shares (`SITE`). |
+| `site/pages/<id>.js` | Each page as a function that returns the whole document. Small page-only styles sit in the page's own `<style>`. |
+| `site/content/en/<id>.js` | Each page's words, kept apart from its markup. `common.js` holds the header, menu, footer and Talk to us words; `talk.js` the chat widget's. |
+| `site/parts/` | What pages share: `chrome.js` (head, header, menu, Display popover, Talk to us field, footer, `page()`), `boot.js` (the snippet that sets theme and motion before the first paint), `logos.js` (client and partner logos). |
+| `site/figures/` | The inline SVG figures, drawn from `--p`. |
+| `site/html.js` | The `html` tag every page is written with. Copy is escaped; `inline()` allows only `*emphasis*` and `[links](/path)`. |
+| `site/machine.js` | `sitemap.xml`, `llms.txt` and `llms-full.txt`, built from the same pages and copy as the HTML, and the one-line company `SUMMARY` they open with. |
+| `scripts/build.js` | Writes the pages, sitemap and llms files from `site/`. |
+| `index.html`, `engineering-department.html`, `coaching.html`, `build.html`, `work.html`, `about.html`, `hearth-public.html`, `privacy.html`, `brand/index.html`, `agent.html`, `404.html` | The generated pages. Each starts with a comment naming its source. Never edit them by hand. |
+| `assets/tokens.css` | The design tokens: primitives, the light and dark colours, and each ground's `--ground`. No colour is written anywhere else on the public pages. |
+| `assets/base.css` | Type, buttons, the header with its menu and Display popover, the Talk to us field, the doors, the footer. |
+| `assets/worlds.css`, `assets/worlds.js`, `assets/sky.js` | The engine. Each `<section class="world">` stands on one of four grounds (`data-world`: paper, grid, tides, ember), which one WebGL sky paints in a light and a dark palette and burns into the next as the page scrolls. `worlds.js` pins worlds, writes `--u`, `--e` and `--p`, plays stages, and is the router that moves between the six main pages (`inRouter` in `site/site.js`) without a full load. The `chama-website-site` skill's `pages.md` has its API. |
+| `assets/chrome.js` | The Theme and Motion controls, the cycling Talk to us phrases, the header strip over scrolling sections (`data-strip`), and the recording player on `/engineering-department`. |
+| `assets/talk.js`, `assets/talk.css` | The Talk to us chat: a bottom sheet on phones, a panel beside the page from 1100px wide, and the whole page at `/agent`. Every "Talk to us" button and field on every page opens it. See [The chat agent](#the-chat-agent). |
+| `assets/fonts/` | Funnel Display and Funnel Sans, self-hosted, under the SIL Open Font License (`OFL.txt`). |
+| `assets/media/` | The recording on `/engineering-department`: a wide and a tall cut, their posters, and `captions.json`. |
+| `assets/work/` | Client and partner logos, drawn as one-colour masks so one file works on every ground in both themes. |
+| `assets/built/` | The device pictures on `/build`. |
+| `assets/flame.js`, `assets/figures.css` | Left from the old site. Only the Hearth room still loads them (`hearth-room.html`). |
+| `api/chat.js`, `api/chat-prompt.js` | The chat endpoint (same origin, SSE streaming, one tool: `send_note_to_elliot`, a visitor asking to be contacted) and its frozen system prompt, which is reviewed like copy. |
+| `lib/site-pages.js` | The site's pages as the chat agent knows them: path, title, what each covers, and whether it is live. |
+| `evals/` | The agent's evals (`npm run evals`, `npm run evals:conversations`). Both spend API credit and are not part of `npm run check`. |
 | `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
-| `api/watchdog.js` | The cron job that reviews conversations and can put the flame out. |
-| `lib/flame-health.js` | Run by the watchdog's cron: emails when the flame cannot reach its model. |
+| `api/watchdog.js`, `lib/flame-health.js` | The cron that reviews conversations and can take the chat offline, and the check that the chat can reach its model. |
 | `admin.html`, `assets/admin.*`, `api/admin-auth.js`, `api/admin-data.js` | The private, read-only admin area at `/admin`. |
-| `hearth-public.html`, `hearth-room.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform, and its public page. See [The Hearth](#the-hearth). |
-| `privacy.html` | The privacy notice. |
-| `404.html`, `assets/sparks.js` | The not-found page, with a small catch-the-sparks game. |
+| `hearth-room.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform. See [The Hearth](#the-hearth). |
+| `docs/DESIGN.md` | The design: type, colour, grounds, motion, each page's sections, the Talk to us sheet, low motion. |
 | `vercel.json` | Headers, redirects, rewrites and cron schedules. |
-| `robots.txt`, `sitemap.xml`, `llms.txt`, `llms-full.txt` | Crawler policy, the canonical URLs, and the site text for AI crawlers. |
+| `robots.txt` | Crawler policy. `sitemap.xml`, `llms.txt` and `llms-full.txt` are generated. |
 | `<64-hex>.txt` | The IndexNow key file. Do not rename or delete it. |
-| `assets/` images | Page images with resized `srcset` variants. Root-level images (`og-*.png`, favicons) stay at root because they are cached externally at those URLs. |
-| `assets/built/` | The pictures on `/built`: for each thing, a tall capture of its real pages at desktop width (`<id>-desktop.webp`, 1800 wide) and at phone width (`<id>-phone.webp`, 440 wide), smaller copies of each for phones, and the cropped thumbnails `/simple/built` shows. See Built below. |
-| `assets/work/` | The client and friends' logos for `/clients`, `/about` and the heroes' logo rows, self-hosted WebP. Clients and friends below says how to add one. |
-| `brand/index.html`, `brand/kit/` | The media kit at `/brand`: logo PNGs, the mark, avatars, a zip and `GUIDELINES.txt` for people linking to us. `llms.txt` links the files directly. Rebuild with `sh brand/kit/build.sh` after the mark changes. |
-| `brand/` | Logo sources and exports, banners, avatars. `brand/og/` renders the link preview card. See `brand/mark/README.md`. |
+| `og-*.png` | Sharing cards, at the root because messengers cache them at those URLs. The current ones are `og-2026-11-16.png` (every page) and `og-ed-2026-11-16.png` (`/engineering-department`), rendered from `brand/og/og-2026-11-16.html` and `og-ed-2026-11-16.html` with `sh brand/og/render.sh <out.png> <source.html>`; `/hearth` keeps `og-hearth-2026-10-22.png`. Older cards stay for links already sent. |
+| `brand/kit/` | The media kit's files, linked from `/brand` and `llms.txt`. Rebuild with `sh brand/kit/build.sh` after the mark changes. |
+| `brand/` | Logo sources and exports, banners, avatars. See `brand/mark/README.md`. |
 
-Every public page makes zero external requests. `test/pages.test.js` holds that rule, the navigation rules and the sitemap rules.
+## How the pages are made
 
-## Copy
+Vercel runs no build. `npm run build` writes every page, `sitemap.xml`, `llms.txt` and `llms-full.txt` from `site/`, then stamps them (see [Caching](#caching)), and the generated files are committed. `test/build.test.js` fails while any committed file differs from what the build makes, so what is committed is what is deployed. `node scripts/build.js --out <dir>` builds into another folder, unstamped, for a preview.
 
-Copy is written here. The brain keeps its history and the reasons for each change in `wiki/topics/website-content-chamainteligente-com.md`. These retired lines must not come back: "Your process, your words, your rules", "Your business, your rules", "whenever you ask", the export line, and the olden-days framing.
+To add a page: an entry in `PAGES` in `site/site.js`, its source in `site/pages/<id>.js` (export `render(page, site)`, and `text()` for its words in `llms-full.txt`), its copy in `site/content/en/<id>.js`, a line in `lib/site-pages.js` with `live: true`, then `npm run build`. A `nav` label puts it in the header, menu and footer, and `inRouter: true` lets the router swap it (add it to `PAGES` in `worlds.js` too; the test checks they agree). In the same change as any page's copy, bump its `lastmod`. A new page is a new public surface, so it is Elliot's call.
 
-## Clients and friends
+**Theme.** `html[data-theme="light"|"dark"]` when the visitor chose one, otherwise the system's. **Motion.** `html[data-motion="low"]` when the visitor chose low or the system asks for reduced motion and they have not chosen full. Low motion is the same page, designed in its own right (`docs/DESIGN.md` section 10): no pinning, no router, no autoplay, every figure complete, stages as steppers. `site/parts/boot.js` sets both before the first stylesheet, from `localStorage` (`chama-theme`, `chama-motion`), so the first paint is already right, and adds `html.pin` (the pinned layout) when there is room for it.
 
-`/clients` shows the clients we have built software for or coached as a wheel of their logos that turns as the page scrolls (`drawWheel` in `assets/worlds.js`). Each client's words are a `.turn` whose `id` is the anchor the logo rows on `/` and `/coaching` link to, and a link to it turns the wheel to that client. In one column (short screens, no JavaScript, print) the wheel lies flat, each logo on its plate beside its client's words. `/simple/clients` is the same content as a still ledger. The page was `/work` until 2026-10-26, and `vercel.json` redirects the old addresses.
+## Copy and brand
 
-Our friends, people we introduce someone to when they fit better than we do, are a section of `/about` (a directory of letters over the forge world), not of `/clients`, because they say what kind of company we are rather than prove what we have done. The friends row in the heroes links to them there.
+Copy is written in `site/content/en/`, in the approved brand language (the brain's `strategy/2026-11-16-brand-reframing/brand-language.md`). The brain keeps the history of the copy and the reasons for each change in `wiki/topics/website-content-chamainteligente-com.md`. Elliot decides what the site newly says and shows, including which clients are named and which logos appear.
 
-To add a client: its logo as `assets/work/<slug>.webp` (transparent, about 240px tall) and a copy three times as tall as the hero row shows it (`<slug>-<width>.webp`), offered in the `srcset` of every place the logo is shown (the hero rows, its spoke, its `/simple/clients` plate), so the browser picks the copy that fits and, where it is sharp enough, reuses one already fetched on another page (`test/pages.test.js` holds every picture with copies to offering them), a `.spoke` and a `.turn` in `clients.html` (raise the section's `--h` by 95 per client), an entry in `simple/clients.html` and `llms-full.txt`, and a logo in the four hero rows. To add a friend: a `.letter` in `about.html`, an entry in `simple/about.html` and `llms-full.txt`, and a logo in the four hero friends rows.
+`test/site.test.js` holds these on every built page:
 
-## Built
+- No em dash, no price, and no phone or WhatsApp link.
+- The only email address is `info@chamainteligente.com`, in the footer's legal line (and the JSON-LD), on `/privacy`, and in the chat as its last resort when even the plain form fails. The chat agent itself gives out none.
+- These retired lines never come back: "Your process, your words, your rules", "Your business, your rules", "whenever you ask", "intelligent flame is", "shrink-wrapped", "almost any".
+- "Shama" and Rozalie are named only on `/about`.
+- LA Metal is never named while `SITE.laMetalNamed` in `site/site.js` is `false`. Flipping it is Elliot's decision; `/`, `/engineering-department` and `/work` then switch to the name.
 
-`/built` shows what we have made: software for one business, our own products, and things that are free to use. A laptop and a phone hold still while each thing's real pages scroll inside them, and the words beside them change from one thing to the next (`drawDevices` in `assets/worlds.js`). On a phone the devices sit above the words. `/simple/built` is the same list as still pictures. A link to `/built#<id>` lands with that thing on the screens, and the progress bar's bars are those links.
+## Work, logos and /build
 
-A thing that is not public shows "This is private software, built for one business." where its link would be, and its pictures come from seeded demo data, never from real records.
+`/work` is one index of everything we have made, grouped by offer, in `site/content/en/work.js`. Logos are in `CLIENTS` and `PARTNERS` in `site/parts/logos.js`: a transparent image in `assets/work/` whose opaque pixels are the mark, with its natural width and height so every logo gets the same optical weight. `CLIENTS` is the strip on `/` and the logos on `/work`; `PARTNERS` are on `/about`.
 
-To add a thing: its two pictures in `assets/built/` and their copies, all WebP resized with Lanczos (Pillow; ffmpeg here has no WebP encoder): `<id>-desktop-{640,960,1200,1440}.webp` and `<id>-phone-{160,240,320}.webp` at quality 70, the masters' own (at 80 a copy came out nearly as heavy as its master, and a 320 copy of a 360-wide phone master heavier; leave out a copy within 15% of its master's width), and at quality 80 the top 16:10 of the desktop picture as `<id>-thumb-{320,640,1080}.webp` and the top 1:2 of the phone picture as `<id>-phone-thumb-{160,280}.webp`; an `article` of class `made` and a link in the progress bar in `built.html` (raise the section's `--h` by 135), the same entry in `simple/built.html`, and a paragraph in `llms-full.txt`. `test/pages.test.js` holds the two versions to the same list, the `--h` to the count, and every `srcset` width to its file's real width.
+`/build` shows each thing's real pages scrolling inside a laptop and a phone (`site/figures/devices.js`, `drawDevices` in `worlds.js`). Each picture is a tall capture in `assets/built/` (`<name>-desktop*.webp`, `<name>-phone*.webp`) with resized copies; `SHOTS` in `devices.js` lists each one's widths and full height, and `PICTURES` in `site/pages/build.js` maps a thing to its pictures. Private work shows seeded demo data, never real records.
 
-## The flame
+## Redirects
 
-The flame is the brand: the name, the logo and the Hearth. The chat agent is not a character; it is the "Talk to us" box, and its code, logs and watchdog still say "flame" in places.
+`/built`, `/clients` and every `/simple` address redirect to their new pages (`vercel.json`; `test/site.test.js` checks each lands on a real page in one step). They went live as temporary (307) on 2026-11-16, so a mistake could be undone without browsers remembering it. From 2026-11-23, if nothing needs undoing, make them permanent: set `"permanent": true` on every `/built*`, `/clients*` and `/simple*` entry (leave `/hearth-public`, which is temporary on purpose), merge, and check with `curl -sI https://chamainteligente.com/simple` that it answers `308`.
+
+## The chat agent
+
+The chat is the "Talk to us" sheet, not a character. Its code, logs and watchdog still say "flame" in places.
 
 ### What it is for, and how that is measured
 
-The site shows no email address or phone number: this chat is how people reach us. A conversation has gone well when every question the visitor asked got a straight answer, we know what they need, and, if they want to hear from us, they left a name and a way to be reached and confirmed it. The prompt (`api/chat-prompt.js`) speaks in the approved brand language (the brain's `strategy/2026-11-16-brand-reframing/brand-language.md`) and claims nothing that is not there or on the site. Its replies are sized to the visitor's last message.
+The chat is how people reach us. A conversation has gone well when every question the visitor asked got a straight answer, we know what they need, and, if they want to hear from us, they left a name and a way to be reached and confirmed it. The prompt (`api/chat-prompt.js`) speaks the brand language and claims nothing that is not there or on the site. Its replies are sized to the visitor's last message.
+
+### The widget
+
+`assets/talk.js` keeps one conversation per page load. The sheet lives outside the `<main>` the router swaps, so the conversation survives moving between pages. On a phone it is modal and sits above the keyboard; from 1100px wide it is a panel beside the page. Without JavaScript every "Talk to us" button is a link to `/agent` and every field a GET form to `/agent?q=`, which opens the chat with that message, and `/agent` has a `<noscript>` form that posts to `/api/intake`.
+
+`createChat()` holds every decision and knows nothing about the DOM, so `test/talk.test.js` drives it with a scripted `fetch`: reading the stream, retries, the details form, the fallback, and that the widget's words match `site/content/en/`. When a visitor leaves their details, they go to the agent as the visitor's own message ("Please get in touch. Name: ..."), the agent shows them back, and nothing is passed on until the visitor presses "Yes, send it". A failure the visitor can fix by sending again offers Try again and takes the message out of the history; once the note tool has run, nothing is ever resent. When the chat is offline or cannot be reached, the thread is swapped for a plain form to `/api/intake`, keeping what the visitor wrote, and only if that fails too does it show `info@chamainteligente.com`.
 
 ### Pages it links to
 
@@ -68,7 +90,7 @@ The site shows no email address or phone number: this chat is how people reach u
 
 ### How fast it answers
 
-The model reads the whole prompt before its first word, and the API caches what it read for five minutes. Visitors arrive further apart than that, so `assets/agent.js` sends `{ "warm": true }` to `/api/chat` when someone looks ready to talk (the composer gets focus, or `/agent` opens), at most once per 4.5 minutes, and a real message counts as one. A warm-up without an `Origin` header is refused, and each one logs its cache use as `Chat warm-up`. The server answers it with a `max_tokens: 0` request built from the same prefix as a real one (`warmRequest` and `chatRequest` in `api/chat.js`), so it costs one cache write and no output. Measured 2026-11-16: a first message on a cold cache started in about 1.8 s in production, on a warm one about 1.1 s. Sonnet 5 at low effort had the steadiest first word; Sonnet 5.5 and Haiku 5.5 were faster on short messages and slower on the slowest one in ten.
+The model reads the whole prompt before its first word, and the API caches what it read for five minutes. Visitors arrive further apart than that, so `assets/talk.js` sends `{ "warm": true }` to `/api/chat` when someone looks ready to talk (focus in a Talk to us field or the composer, the sheet opening, `/agent` loading), at most once per 4.5 minutes, and a real message counts as one. A warm-up without an `Origin` header is refused, and each one logs its cache use as `Chat warm-up`. The server answers it with a `max_tokens: 0` request built from the same prefix as a real one (`warmRequest` and `chatRequest` in `api/chat.js`), so it costs one cache write and no output. Measured 2026-11-16: a first message on a cold cache started in about 1.8 s in production, on a warm one about 1.1 s.
 
 Two runners measure it, both with tool execution stubbed so nothing is stored or emailed:
 
@@ -126,14 +148,14 @@ A cron calls `/api/watchdog` at `:05` and `:35` past each hour, authenticated wi
 
 The watchdog never logs visitor text.
 
-The same cron also checks that the flame can answer at all (`lib/flame-health.js`). It asks the Anthropic API for the flame's model with the flame's key, which costs nothing. A dead key, a key without access or a retired model emails "The flame is not answering" with the error and the fix, again once a day while it stays broken, and "The flame is answering again" when it recovers. Overloads and network blips are ignored. State lives in `ops/flame-health.json` in the blob store. It cannot see the API spend limit.
+The same cron also checks that the chat can answer at all (`lib/flame-health.js`). It asks the Anthropic API for the chat's model with the chat's key, which costs nothing. A dead key, a key without access or a retired model emails "The flame is not answering" with the error and the fix, again once a day while it stays broken, and "The flame is answering again" when it recovers. Overloads and network blips are ignored. State lives in `ops/flame-health.json` in the blob store. It cannot see the API spend limit.
 
-### Putting the flame out and relighting it
+### Taking the chat offline and back
 
-The flame goes out in three ways:
+The chat goes offline in three ways:
 
-- **The kill switch.** `api/chat.js` checks `ops/kill-switch.json` (cached 60 seconds, fails open) and answers with the offline message while it says `disabled`. A switch the watchdog threw expires 24 hours after its `at`. To relight sooner, delete `ops/kill-switch.json` from the blob store in the Vercel dashboard. The chat is back within a minute.
-- **`CHAT_DISABLED`.** Any value in the Vercel environment takes the flame offline on the next deploy. Only a person sets or clears it.
+- **The kill switch.** `api/chat.js` checks `ops/kill-switch.json` (cached 60 seconds, fails open) and answers with the offline message while it says `disabled`. A switch the watchdog threw expires 24 hours after its `at`. To bring it back sooner, delete `ops/kill-switch.json` from the blob store in the Vercel dashboard. The chat is back within a minute.
+- **`CHAT_DISABLED`.** Any value in the Vercel environment takes the chat offline on the next deploy. Only a person sets or clears it.
 - **The API spend limit.** When the Anthropic account hits its limit, the page shows the offline message. Raise the limit in the Anthropic Console. No deploy is needed.
 
 If every visitor gets "Something went wrong on our side", check the error logs first. `AuthenticationError status=401` means the Anthropic key is dead: create a new one in the Console (set it to never expire, Chama Inteligente workspace), replace `ANTHROPIC_API_KEY` in Vercel, and redeploy.
@@ -146,7 +168,7 @@ The agent's `send_note_to_elliot` tool and a direct POST to `/api/intake` both g
 
 ## Admin area
 
-`/admin` is behind Google sign-in and only reads: flame status, counts, a 30-day chart, full transcripts and contact requests. Every value reaches the page through `textContent`. It is `noindex` by meta tag, header and `robots.txt`, and only this path's CSP opens `accounts.google.com`.
+`/admin` is behind Google sign-in and only reads: chat status, counts, a 30-day chart, full transcripts and contact requests. Every value reaches the page through `textContent`. It is `noindex` by meta tag, header and `robots.txt`, and only this path's CSP opens `accounts.google.com`.
 
 Sign-in uses Google's ID token flow with no client secret. `/api/admin-auth` verifies the token's signature against Google's keys, issuer, audience, expiry, `email_verified` and the allowlist, then sets an HMAC-signed `chama_admin` cookie for seven days. Three environment variables, all required, all only in Vercel:
 
@@ -162,8 +184,8 @@ The members' room at `/hearth`: clients buy session packs, book against Elliot's
 
 | File | What it is |
 |---|---|
-| `hearth-public.html` | The public page at `/hearth` for anyone without a session cookie: what the room is, for prospective coaching clients. Indexable, with its own sharing card (`og-hearth-2026-10-22.png` from `brand/og/og-hearth.html`). Static: it loads nothing from the room and calls no endpoint. |
-| `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. It paints the bar at once and asks `/config` and `/me` from an inline script while `hearth.js` downloads. |
+| `hearth-public.html` | The public page at `/hearth` for anyone without a session cookie: what the room is, for prospective coaching clients. Generated from `site/pages/hearth-public.js` like every public page, indexable, with its own sharing card (`og-hearth-2026-10-22.png` from `brand/og/og-hearth.html`). It loads nothing from the room. |
+| `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. Hand-written, not generated, and still on the old look: it loads `assets/flame.js` (the fire in the room) and `assets/figures.css`. It paints the bar at once and asks `/config` and `/me` from an inline script while `hearth.js` downloads. |
 | `assets/hearth.js`, `assets/hearth.css` | The core app (router, sign-in, frame, account) and design. No `innerHTML` anywhere in the room. |
 | `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. `hearth.js` loads only the ones `/me` names for the member's permissions, from the list in `lib/hearth/modules.js`, at the versioned addresses written in `hearth-room.html`. A new file goes on that list and in that page, or `modules.test.js` fails. |
 | `api/hearth.js` | The router behind `/api/hearth/*`. The routes are in `lib/hearth/routes/`. |
@@ -257,9 +279,23 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 
 ## Checking and deploying
 
-`npm run stamp` puts each script and stylesheet's version into every address that asks for it (see Caching below). Run it before committing a change to `assets/` or a page; it rewrites nothing on a tree that is already right. `npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network, and fails while any address is unstamped or stale. `vercel dev --listen 4990` serves the site locally; without a database the Hearth API answers 503, which still proves the routing.
+`npm run build` after changing anything in `site/`, and `npm run stamp` after changing anything in `assets/` or a hand-written page (`npm run build` already stamps). Both rewrite nothing on a tree that is already right. `npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network, and fails while a generated file is out of date or any address is unstamped or stale. The tests that hold the public site:
 
-Merging to `main` deploys through Vercel's GitHub integration (project `chama-inteligente/chama-inteligente`), and PRs get preview URLs. Do not run `vercel deploy` by hand. `.vercelignore` keeps `docs/`, `evals/`, `scripts/` and `test/` out of every deploy, so internal reports live only on GitHub.
+| Test | What it holds |
+|---|---|
+| `test/build.test.js` | Every generated file is exactly what the build makes, and the build is deterministic. |
+| `test/site.test.js` | Every page exists and asks no other host for anything, sets theme and motion before any stylesheet, keeps the brand rules above, has its own title, description and canonical; the sitemap lists exactly the indexable pages; no colour outside `tokens.css`; every old address redirects to a real page in one step; `/hearth` routing; the media kit's files exist. |
+| `test/engine.test.js` | The engine's contracts (see `pages.md` in the skill). `test/fixtures/engine.html` exercises them in a browser. |
+| `test/talk.test.js` | The chat widget's decisions, and its words against `site/content/en/`. |
+| `test/html.test.js` | The `html` tag escapes copy and `inline()` links only to this site. |
+| `test/site-pages.test.js` | The chat's page list agrees with what is served. |
+| `test/stamp.test.js` | The stamp's rules (below). |
+
+`test/shots/` is the visual rig for the built pages, with its own dependencies; see `test/shots/README.md`.
+
+`vercel dev --listen 4990` serves the site locally; without a database the Hearth API answers 503, which still proves the routing.
+
+Merging to `main` deploys through Vercel's GitHub integration (project `chama-inteligente/chama-inteligente`), and PRs get preview URLs. Do not run `vercel deploy` by hand. `.vercelignore` keeps `docs/`, `evals/`, `scripts/`, `site/` and `test/` out of every deploy, so internal reports and page sources live only on GitHub.
 
 Storage and email are Vercel resources: the private Blob store `chama-inteligente-intake` in Paris (`BLOB_READ_WRITE_TOKEN`) and the Resend integration `chama-inteligente-email` (`RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`). Their values live only in Vercel. Crons: intake cleanup daily at 03:15 UTC, the watchdog at `:05` and `:35`, the Hearth at `:20`.
 
@@ -267,15 +303,17 @@ Storage and email are Vercel resources: the private Blob store `chama-inteligent
 
 Every script and stylesheet under `/assets` is asked for as `/assets/<file>?v=<first 10 hex of its sha256>`, and `vercel.json` serves an address as `public, max-age=31536000, immutable` only when its `v` is one of this deploy's versions (`npm run stamp` writes the list). A changed file gets a new address, so a browser fetches it once and never asks about an unchanged one again. The same path without `?v`, or with any other `v`, is `public, max-age=0, must-revalidate`: it still works, and the browser checks it every time. Vercel does not look at `v` when it picks the file, so without the list any `v` was cached for a year: since the repo is public, a version worked out from a commit before its deploy finished could pin the old body under the new address in a visitor's browser.
 
-Why this scheme: the HTML is always revalidated, and it names the exact bytes of everything it runs, so a page and its scripts always come from one deploy. Before this, a browser kept an asset for up to a day after a deploy (`stale-while-revalidate`) and paired new pages with old scripts. A content hash in the query needs no renamed files and no build: the committed files are the deployed files. Vercel ignores the query string when it caches a static file and keeps a separate cache per deployment (docs: CDN cache, cache keys), so the edge always answers with the deployment's own file and the version only steers the browser. A per-deploy version for all files would have been simpler, but every deploy would download every file again.
+Why this scheme: the HTML is always revalidated, and it names the exact bytes of everything it runs, so a page and its scripts always come from one deploy. A content hash in the query needs no renamed files and no build step on Vercel: the committed files are the deployed files. Vercel ignores the query string when it caches a static file and keeps a separate cache per deployment (docs: CDN cache, cache keys), so the edge always answers with the deployment's own file and the version only steers the browser. A per-deploy version for all files would have been simpler, but every deploy would download every file again.
+
+Images (and the recording's posters) are cached for a day in the browser and a week at the edge. Fonts and the recording's `.mp4` files carry no version and have no rule, so they get Vercel's default and are revalidated on each visit; a changed font or recording goes out under a new filename.
 
 The rules `scripts/stamp.js` keeps, and `test/stamp.test.js` enforces:
 
-- Every address is a whole quoted literal from the root: the pages' tags, the router's flame room addresses in `worlds.js`, the Worker in `agent.js`, `importScripts` in `flame-worker.js`, and the Hearth's parts in `hearth-room.html`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
-- A file's version covers the versions it carries, so changing `flame.js` re-versions `flame-worker.js`, `agent.js`, `worlds.js` and the pages. `npm run stamp` repeats until nothing moves.
+- Every address is a whole quoted literal from the root: the pages' tags, `talk.js` adding `talk.css`, and the Hearth's parts in `hearth-room.html`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
+- A file's version covers the versions it carries, so changing `talk.css` re-versions `talk.js` and the pages. `npm run stamp` repeats until nothing moves.
 - `vercel.json`'s three `/assets/(.*)\.(js|css)` header rules carry the tree's versions, and the check fails while they are stale.
 - The tree is what is added to git, symlinks left out: an address to an asset nobody has added fails the check rather than 404 in production, and the stamp never writes outside the repository.
-- The router only swaps in a page whose scripts and stylesheets the running page already has (or the flame room's three). Anything else is another deploy and gets a full load.
+- The router only swaps in a page whose scripts and stylesheets the running page already has. Anything else is another deploy and gets a full load.
 
 The list also closes the gap between a page and its scripts coming from two deploys: if production switches deploy between a browser getting the HTML and its scripts, the new deploy answers the old address with its new body, but not as cacheable, so nothing outlives that one view.
 
@@ -293,11 +331,12 @@ Namecheap is authoritative (PremiumDNS).
 
 ## Search
 
-- **Sitemap.** In the same PR as a content change, bump the `<lastmod>` of every page it touched.
+- **Sitemap.** Generated from `PAGES`. In the same change as a page's copy, bump that page's `lastmod` in `site/site.js`.
+- **Machine text.** `llms.txt` and `llms-full.txt` are generated from the same copy as the pages, so they cannot drift. Each page's `text()` decides what it contributes; the opening summary is `SUMMARY` in `site/machine.js` and must name both software and coaching.
 - **IndexNow.** After a change worth announcing, push it to Bing and the others. A `202` means accepted. Google does not take IndexNow; use Request indexing in Search Console (Domain property on `elliot@chamainteligente.com`).
 
 ```bash
 KEY=$(basename "$(ls [0-9a-f]*.txt)" .txt) && curl -s -o /dev/null -w "%{http_code}\n" -X POST https://api.indexnow.org/indexnow -H "Content-Type: application/json" -d "{\"host\":\"chamainteligente.com\",\"key\":\"$KEY\",\"keyLocation\":\"https://chamainteligente.com/$KEY.txt\",\"urlList\":[\"https://chamainteligente.com/\"]}"
 ```
 
-- **Structured data.** After a JSON-LD change, check each live URL at `validator.schema.org`.
+- **Structured data.** Every page carries the same JSON-LD graph (organisation, website, page) from `site/parts/chrome.js`. After a change to it, check a live URL at `validator.schema.org`.

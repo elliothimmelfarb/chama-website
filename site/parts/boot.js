@@ -1,6 +1,6 @@
 // The first script on every page, before any stylesheet, so the first paint
-// is already in the visitor's theme and motion mode. test/theme.test.js
-// holds it byte-identical on every page, hearth-room.html included.
+// is already in the visitor's theme and motion mode. test/site.test.js
+// holds it identical on every public page.
 //
 // data-theme: only set when the visitor chose light or dark; absent means
 // follow the system (tokens.css). data-motion="low": chosen, or the system

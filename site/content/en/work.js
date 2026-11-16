@@ -1,5 +1,6 @@
 // /work: a short index of everything we've made, grouped by offer. The
-// depth lives on the offering pages; /built and /clients redirect here.
+// depth lives on the offering pages; /built and /clients redirect here, so
+// the ids are their old anchors (also: a second old anchor for the same row).
 
 export const work = {
   title: "Work | Chama Inteligente",
@@ -22,14 +23,14 @@ export const work = {
       offer: "build",
       h2: "Websites, apps and products",
       items: [
-        { id: "toraya", name: "Toraya Lisboa", line: "Website and staff app for a Japanese deli in Rossio station. Changes live within the hour.", href: "/build#toraya", logo: "toraya-lisboa" },
-        { id: "alves-limited", name: "Alves Limited Group", line: "From an ad to a booked call: a landing page and an AI that asks each enquiry the team's questions.", href: "/build#vsf", logo: "alves-limited" },
+        { id: "toraya-lisboa", name: "Toraya Lisboa", line: "Website and staff app for a Japanese deli in Rossio station. Changes live within the hour.", href: "/build#toraya", logo: "toraya-lisboa" },
+        { id: "alves-limited-group", also: "vsf-lead-automation", name: "Alves Limited Group", line: "From an ad to a booked call: a landing page and an AI that asks each enquiry the team's questions.", href: "/build#vsf", logo: "alves-limited" },
         { id: "alves-teamwear", name: "Alves Teamwear", line: "Teams design their own kit and order it; the operators and supplier track everything.", href: "/build#alves" },
         { id: "shopintake", name: "ShopIntake", line: "Our own product. Reads emailed purchase orders so nobody types them into the ERP.", href: "/build#partnership" },
         { id: "view-the-place", name: "View the Place", line: "Our own product. Walk through a home for sale in 3D, on your phone, before you visit.", href: "https://viewtheplace.com" },
-        { id: "hearth", name: "The Hearth", line: "Our own platform for coaching: booking, session records and an MCP server.", href: "/hearth" },
-        { id: "aimade", name: "aimade.games", line: "Free to play. An arcade of browser games your AI agent can build and keep changing.", href: "https://aimade.games" },
-        { id: "mogadishu", name: "Battle of Mogadishu", line: "Free to explore. A full-scale 3D reconstruction from the historical record.", href: "https://battle-of-mogadishu.vercel.app" },
+        { id: "the-hearth", name: "The Hearth", line: "Our own platform for coaching: booking, session records and an MCP server.", href: "/hearth" },
+        { id: "aimade-games", name: "aimade.games", line: "Free to play. An arcade of browser games your AI agent can build and keep changing.", href: "https://aimade.games" },
+        { id: "battle-of-mogadishu", name: "Battle of Mogadishu", line: "Free to explore. A full-scale 3D reconstruction from the historical record.", href: "https://battle-of-mogadishu.vercel.app" },
       ],
     },
     {
