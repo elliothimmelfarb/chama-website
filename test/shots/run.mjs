@@ -389,6 +389,9 @@ async function sweepHeader(pg, state, page, dir, stem) {
 // does (under 12% for more than a quarter of a screen) is dead scroll: the
 // words of one world gone and the next not yet arrived (2026-11-16 review).
 // Anything at 35% opacity or more counts, so a cross-fade is not dead.
+// The same sweep fails anything still showing that its own pin's lower
+// edge cuts through as the pin leaves (a word that stands still must be
+// gone before that edge reaches it).
 const DEAD_COVER = 0.12, DEAD_RUN = 0.25;
 async function sweepDead(pg, state, page, dir, stem) {
   const { max, vh } = await page.evaluate(() => ({ max: document.documentElement.scrollHeight - innerHeight, vh: innerHeight }));
@@ -396,17 +399,32 @@ async function sweepDead(pg, state, page, dir, stem) {
   for (let y = 0; y <= max; y += step) {
     await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y);
     await page.waitForTimeout(160);
-    rows.push({ y, cover: await page.evaluate(() => {
+    const at = await page.evaluate(() => {
       const vh = innerHeight, vw = innerWidth, head = document.querySelector("[data-top]")?.offsetHeight || 0, bands = new Array(40).fill(0);
       const seen = (el) => { let o = 1; for (let e = el; e && e !== document.body; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.visibility === "hidden" || cs.display === "none") return 0; o *= +cs.opacity; } return o; };
+      // a pin clips what it holds, so only the part above its lower edge counts
+      const floor = (el) => { const pin = el.closest(".world > .pin"); return pin && getComputedStyle(pin).overflow !== "visible" ? pin.getBoundingClientRect().bottom : Infinity; };
       for (const el of document.querySelectorAll("main :is(h1, h2, h3, p, li, img, svg, video, a, summary, figcaption, input, .logo)")) {
-        const r = el.getBoundingClientRect();
-        if (r.width < 4 || r.height < 4 || r.bottom < head || r.top > vh || r.right < 0 || r.left > vw || seen(el) < 0.35) continue;
-        for (let i = Math.max(0, Math.floor(r.top / vh * 40)); i <= Math.min(39, Math.floor((r.bottom - 1) / vh * 40)); i++) bands[i] = 1;
+        const r = el.getBoundingClientRect(), bottom = Math.min(r.bottom, floor(el));
+        if (r.width < 4 || bottom - r.top < 4 || bottom < head || r.top > vh || r.right < 0 || r.left > vw || seen(el) < 0.35) continue;
+        for (let i = Math.max(0, Math.floor(r.top / vh * 40)); i <= Math.min(39, Math.floor((bottom - 1) / vh * 40)); i++) bands[i] = 1;
       }
-      for (const r of document.querySelectorAll("footer")) { const b = r.getBoundingClientRect(); if (b.top < vh) return 1; }
-      return bands.reduce((s, v) => s + v, 0) / 40;
-    }) });
+      // anything still showing that its own pin's lower edge cuts through
+      const cut = [];
+      for (const el of document.querySelectorAll("main .world > .pin .r")) {
+        const r = el.getBoundingClientRect(), f = floor(el);
+        if (r.height > 4 && r.top < f - 4 && r.bottom > f + 4 && f < vh - 4 && seen(el) > 0.05) cut.push(`${el.tagName.toLowerCase()}.${[...el.classList].join(".")} at ${Math.round(seen(el) * 100)}%`);
+      }
+      for (const r of document.querySelectorAll("footer")) { const b = r.getBoundingClientRect(); if (b.top < vh) return { cover: 1, cut }; }
+      return { cover: bands.reduce((s, v) => s + v, 0) / 40, cut };
+    });
+    rows.push({ y, cover: at.cover });
+    if (at.cut.length && !rows.cutSeen) {
+      rows.cutSeen = true;
+      const shot = path.join(dir, `${stem}-cut-${y}.png`);
+      await page.screenshot({ path: shot });
+      fail(pg, state, "cut by its pin", `at scrollY ${y}: ${at.cut.slice(0, 3).join("; ")}`, shot);
+    }
   }
   let start = null;
   for (const r of [...rows, { y: max + step, cover: 1 }]) {

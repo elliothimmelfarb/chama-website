@@ -44,7 +44,7 @@ export function effortFigure({ alt, rows, levels }) {
 // it, the latest record in ember. The words beside it say what it shows.
 export function hearthFigure({ sessions, records }) {
   const xs = [40, 110, 180, 250, 320];
-  return html`<figure class="hearth-fig">
+  return html`<figure class="hearth-fig" aria-hidden="true">
   ${raw(`<svg viewBox="0 0 360 170" focusable="false">
     <path class="hf-axis" d="M14 30H346"/>
     ${xs.map((x) => `<circle class="hf-dot" cx="${x}" cy="30" r="5"/>`).join("")}

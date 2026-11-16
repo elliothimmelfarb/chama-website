@@ -514,17 +514,22 @@
     var top = headBottom() + 8, pt = pin.getBoundingClientRect().top, room = pins[k] || AH;
     // everything that fades with the world, except what is gone before the
     // pin lets go (its --out is under 1)
+    var len = pins[k] || AH;
     var stay = [], own = readers[k].map(function (el, j) {
       stay[j] = 0;
       if (!el.classList.contains("r") || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return null;
-      var r = el.getBoundingClientRect(), y = r.top - shiftOf(el) - pt;
+      var r = el.getBoundingClientRect(), y = r.top - shiftOf(el) - pt, foot = (y + r.height) / len;
       room = Math.min(room, y - top);
-      if (!blend) return null;
+      // a .r inside another moves and fades with it (its own stand would
+      // add the pin's travel twice)
+      if (!blend || el.parentElement.closest(".world > .pin .r")) return null;
       // the share of the pin's exit before the next world's words, rising
-      // from below, would reach this one's foot
-      var x = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - (y + r.height) / AH - MEET_GAP));
+      // from below, would reach this one's foot, and never past the moment
+      // the pin's own bottom edge (it clips) would reach it: an element low
+      // in the pin starts to fade in the last of the hold instead
+      var x = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - foot - MEET_GAP), Math.max(0.02, 1 - foot));
       stay[j] = x;
-      return x * (pins[k] || AH);
+      return x * len;
     });
     var devices = 0;
     if (sec.classList.contains("devices-world")) {
@@ -534,10 +539,20 @@
       // and fades it as one, for the share of the exit in devStay
       own = own.map(function () { return null; });
       stay = stay.map(function () { return 0; });
-      // the devices' lower edge stands about three quarters down the stage
-      if (blend) devices = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - D.stage.offsetHeight / AH * 0.75 - MEET_GAP));
+      // the lowest of the last thing's devices and words, where the pin's edge would cut first
+      var dLow = 0;
+      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) dLow = Math.max(dLow, el.getBoundingClientRect().bottom - pt); });
+      var dFoot = (dLow || D.stage.offsetHeight * 0.75) / len;
+      if (blend) devices = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - dFoot - MEET_GAP), Math.max(0.02, 1 - dFoot));
     }
     room = Math.max(room, 10);
+    // a nested .r takes its outer .r's exit
+    own = own.map(function (r, j) {
+      if (r !== null) return r;
+      var outer = readers[k][j].parentElement && readers[k][j].parentElement.closest(".world > .pin .r");
+      var at = outer ? readers[k].indexOf(outer) : -1;
+      return at >= 0 && own[at] !== null ? own[at] : null;
+    });
     return { world: room, els: own.map(function (r) { return r === null ? room : r; }), stay: stay, devices: devices };
   }
   // A unit of --u is a screen of scroll once a pin has let go (the last
@@ -619,7 +634,7 @@
       // next section starts just below the fold it would otherwise tint the
       // page's first words (home's doors on a desktop). It rises in over the
       // first scroll.
-      if (i === 0 && !held[0]) b *= sm(0, 0.15 * AH, y);
+      if (i === 0 && !held[0] && tops[1] > 0.85 * AH) b *= sm(0, Math.min(0.15 * AH, Math.max(1, docH - vh)), y);
     } else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, a, b, tail];
   }
@@ -813,6 +828,8 @@
         drawDevices(sections[i], l, ts, exitOf(i, ds ? dPx : gones[i], u), ds ? Math.min(Math.max(u - 1, 0), ds) * (pins[i] || AH) : 0);
       }
       if (a > 0 && isDevices(i + 1) && held[i + 1]) drawDevices(sections[i + 1], 0, ts, 1);
+      // a jump past the devices leaves them as they were; settle them gone
+      if (i > 0 && isDevices(i - 1) && held[i - 1]) { var past = devicesOf(sections[i - 1]); if (past.stage) { put(past.stage, "opacity", "0"); put(past.stage, "translate", ""); } }
     }
 
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));

@@ -84,10 +84,10 @@ html:not(.pin) .coaching-in { height: auto; padding: 0; }
 .hf-rec { opacity: clamp(0.01, (var(--p) - var(--at)) * 6, 1); transform: translateY(calc((1 - clamp(0, (var(--p) - var(--at)) * 6, 1)) * 16px)); }
 
 @media (max-width: 1099px) {
-  .coaching-in { padding-top: calc(56px + var(--s5)); gap: var(--s6); align-content: center; }
+  .coaching-in { padding-top: calc(56px + var(--s5)); gap: var(--s6); align-content: safe center; }
 }
 @media (min-width: 1100px) {
-  .coaching-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: center; padding-top: calc(72px + var(--s5)); padding-bottom: var(--s7); }
+  .coaching-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: safe center; padding-top: calc(72px + var(--s5)); padding-bottom: var(--s7); }
   .coaching-in > :first-child { grid-column: 1 / span 5; }
   .coaching-in > :last-child { grid-column: 7 / span 6; }
   .coaching-first { padding-top: calc(72px + var(--s9)); }

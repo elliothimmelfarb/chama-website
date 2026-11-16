@@ -42,6 +42,10 @@
 @property --u { syntax: "<number>"; inherits: false; initial-value: 0.5; }
 @property --e { syntax: "<number>"; inherits: false; initial-value: 1; }
 @property --p { syntax: "<number>"; inherits: false; initial-value: 1; }
+/* a .r's stand as its pin leaves (worlds.js, measure): never inherited, or
+   a .r inside another would add the pin's travel twice */
+@property --sx { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --pl { syntax: "<length>"; inherits: false; initial-value: 0px; }
 
 :root {
   --pad: clamp(16px, 4.6vw, 4.5rem);

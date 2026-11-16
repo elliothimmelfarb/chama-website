@@ -291,3 +291,30 @@ test("if worlds.js never runs, the boot snippet takes html.pin back", () => {
   assert.ok(JS.indexOf('root.dataset.engine = "on"') < JS.indexOf("if (!document.querySelector(\".world\")) return;"));
 });
 
+test("a leaving world's words stand still, each gone before the next words or its pin's edge reach it", () => {
+  const r = RULES.find((x) => x.selectors.includes(".r") && /transform:/.test(x.body));
+  assert.ok(r, "worlds.css styles .r");
+  assert.match(r.body, /clamp\(0, var\(--u\) - 1, var\(--sx, 0\)\) \* var\(--pl, 0px\)/, "a .r gives back its pin's travel for the first --sx of the exit");
+  const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(gone, /1 \+ next - foot - MEET_GAP/, "a word stays only until the next world's first words would reach it");
+  assert.match(gone, /1 - foot\)/, "and never past the moment its own pin's clipping edge would reach it");
+  assert.match(gone, /closest\("\.world > \.pin \.r"\)/, "a .r inside another takes the outer one's exit and does not stand on its own");
+  assert.match(JS, /setVar\(el, "--sx"/, "measure() writes --sx");
+  for (const v of ["--sx", "--pl"]) assert.match(CSS, new RegExp(`@property ${v} \\{[^}]*inherits: false`), `${v} is registered not to inherit, or a nested .r would move twice`);
+  assert.match(JS, /setVar\(el, "--pl"/, "measure() writes --pl");
+});
+
+test("the new page's words have finished rising before .nav-enter comes off", () => {
+  const enter = +/var FADE = \d+, ENTER = (\d+)/.exec(JS)[1];
+  let longest = 0;
+  for (const { selectors, body } of RULES) {
+    if (!selectors.some((x) => x.startsWith("html.nav-enter"))) continue;
+    const a = /animation:\s*\w+\s+([\d.]+)s[^;]*?\s([\d.]+)s/.exec(body);
+    const d = /animation-delay:\s*([\d.]+)s/.exec(body);
+    if (a) longest = Math.max(longest, (+a[1] + +a[2]) * 1000);
+    if (d) longest = Math.max(longest, (+d[1] + 0.45) * 1000);
+  }
+  assert.ok(longest > 0, "the .nav-enter animations were found");
+  assert.ok(enter >= longest, `ENTER (${enter}ms) ends before the longest .nav-enter animation (${longest}ms)`);
+});
+

@@ -34,7 +34,7 @@ const STYLE = html`<style>
 html:not(.pin) .build-dev .made-stage { max-width: var(--max); padding: var(--s7) var(--gutter) calc(var(--s8) + 20vh); }
 html:not(.pin) .build-dev .made:first-of-type { margin-top: var(--s7); }
 
-.build-partner-in { display: grid; gap: var(--s6); align-content: center; height: 100%; padding-top: calc(56px + var(--s4)); padding-bottom: var(--s6); }
+.build-partner-in { display: grid; gap: var(--s6); align-content: safe center; height: 100%; padding-top: calc(56px + var(--s4)); padding-bottom: var(--s6); }
 html:not(.pin) .build-partner-in { height: auto; padding: 0; }
 .build-partner h2 { max-width: 20ch; }
 .build-partner .lead { margin-top: var(--s4); }
@@ -69,7 +69,9 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
 }
 @media (min-width: 1100px) {
   .build-first { padding-top: calc(72px + var(--s9)); }
-  .build-partner-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-top: 72px; }
+  /* in the upper part of the screen, so the words come into view as the
+     devices before them leave, with no bare ground between */
+  .build-partner-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: start; padding-top: calc(72px + 9svh); }
   .build-partner-in > :first-child { grid-column: 1 / span 5; }
   .build-partner-in > :last-child { grid-column: 7 / span 6; }
 }
