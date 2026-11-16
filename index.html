@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
   <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
   <script src="/assets/worlds.js?v=7fe9c3a6be" defer></script>
-  <script src="/assets/chrome.js?v=9913b6538c" defer></script>
+  <script src="/assets/chrome.js?v=c9dc4c4621" defer></script>
   <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
@@ -104,7 +104,7 @@
 
 /* the grid's horizon is 60% down the screen, and the words and chart stay above it */
 .home-proof .copy { top: 40%; }
-.home-proof .figure-box { position: absolute; right: var(--edge); top: auto; bottom: 45%; width: min(44vw, 38rem); }
+.home-proof .figure-box { position: absolute; right: var(--edge); top: max(104px, calc(55% - 22rem)); bottom: auto; width: min(44vw, 38rem); }
 .home-photo { margin: 0; position: absolute; right: var(--edge); top: calc(50% + 36px); translate: 0 -50%;
   width: min(42vw, 36rem, (100svh - 72px - 150px) * 8 / 7); }
 .home-photo figcaption { margin-top: var(--s3); }

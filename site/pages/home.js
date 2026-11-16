@@ -26,7 +26,7 @@ const STYLE = `
 
 /* the grid's horizon is 60% down the screen, and the words and chart stay above it */
 .home-proof .copy { top: 40%; }
-.home-proof .figure-box { position: absolute; right: var(--edge); top: auto; bottom: 45%; width: min(44vw, 38rem); }
+.home-proof .figure-box { position: absolute; right: var(--edge); top: max(104px, calc(55% - 22rem)); bottom: auto; width: min(44vw, 38rem); }
 .home-photo { margin: 0; position: absolute; right: var(--edge); top: calc(50% + 36px); translate: 0 -50%;
   width: min(42vw, 36rem, (100svh - 72px - 150px) * 8 / 7); }
 .home-photo figcaption { margin-top: var(--s3); }
