@@ -13,7 +13,7 @@ const doors = () => html`<ul class="doors" data-doors>
   )}
 </ul>`;
 
-const photo = (alt) => html`<img class="photo" src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 40vw, 70vw" width="2048" height="1804" alt="${alt}" loading="lazy" decoding="async">`;
+const photo = (alt) => html`<img class="photo" data-p src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 40vw, 100vw" width="2048" height="1804" alt="${alt}" loading="lazy" decoding="async">`;
 
 // Home's own section styles. The pinned worlds put their words in the
 // engine's .copy and their figure in a .figure-box placed here.
@@ -30,6 +30,12 @@ const STYLE = `
 .home-photo { margin: 0; position: absolute; right: var(--edge); top: calc(50% + 36px); translate: 0 -50%;
   width: min(42vw, 36rem, (100svh - 72px - 150px) * 8 / 7); }
 .home-photo figcaption { margin-top: var(--s3); }
+/* the photo settles as the world is held (docs/DESIGN.md, home row 4) */
+.home-photo-crop { border-radius: var(--r-surface); overflow: hidden; }
+.home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }
+/* the client logos arrive after the bars, under the words and the chart */
+.home-logos { position: absolute; left: var(--edge); right: calc(var(--edge) + 40px); bottom: var(--s6); }
+.home-logos .logos { padding: 0; }
 .home-belief .copy { width: min(56vw, 46rem); }
 .home-belief-line { font: 600 var(--t-h2)/1.12 var(--display); letter-spacing: -0.025em; max-width: 24ch; text-wrap: balance; }
 .home-belief-line + .home-belief-line { margin-top: var(--s6); color: var(--fg-2); }
@@ -37,15 +43,27 @@ const STYLE = `
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   /* words in the upper part of the screen: above the grid's horizon, and in
      the upper 60% of the ember (docs/DESIGN.md section 4) */
-  :is(.home-proof, .home-people) .copy { top: calc(56px + env(safe-area-inset-top) + 20px); bottom: auto; }
-  .home-proof .figure-box { left: 16px; right: 16px; top: auto; bottom: calc(20px + env(safe-area-inset-bottom)); width: auto; translate: none; }
+  /* the words and their figure as one group, centred, a fixed gap apart, so
+     a tall phone has no hole between them */
+  html.pin :is(.home-proof, .home-people) > .pin { display: flex; flex-direction: column; justify-content: safe center; gap: var(--s6);
+    padding: calc(56px + env(safe-area-inset-top) + 20px) 16px calc(20px + env(safe-area-inset-bottom)); }
+  html.pin :is(.home-proof, .home-people) :is(.copy, .figure-box) { position: relative; inset: auto; width: auto; translate: none; }
+  html.pin :is(.home-proof, .home-people) .copy { transform: none; }
+  html.pin .home-proof > .pin { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
   .home-proof .bars-list { gap: var(--s3); }
   .home-proof .bars figcaption { margin-top: var(--s3); }
-  .home-photo { left: 16px; right: auto; top: auto; bottom: calc(20px + env(safe-area-inset-bottom)); translate: none;
-    width: min(100vw - 32px, (100svh - 400px) * 8 / 7); }
+  /* on a phone the photo is the width of the column, cropped to the faces */
+  .home-photo-crop { aspect-ratio: 16 / 10; max-height: calc(100svh - 56px - 20px - 360px); }
+  .home-photo .photo { height: 100%; object-fit: cover; object-position: 50% 30%; }
+  /* there is no room for the caption and the logos at once: the logos take
+     the caption's place once the bars are whole and it has been read */
+  .home-logos { left: 16px; right: 28px; bottom: calc(24px + env(safe-area-inset-bottom)); --in: 0.62 !important; }
+  .home-logos .logos { gap: var(--s4) var(--s5); }
+  .home-caption { --out: 0.58; }
+  .home-proof .bars-axis { display: none; }
 }
 /* one column: the figures follow their words */
-html:not(.pin) :is(.home-proof .figure-box, .home-photo) { position: static; translate: none; width: min(100%, 36rem); margin-top: var(--s6); }
+html:not(.pin) :is(.home-proof .figure-box, .home-photo, .home-logos) { position: static; translate: none; width: min(100%, 36rem); margin-top: var(--s6); }
 `;
 
 export function render(p) {
@@ -68,25 +86,22 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world home-proof" data-world="grid" style="--h:180">
+<section class="world home-proof" data-world="grid" style="--h:210">
   <div class="pin">
     <div class="copy">
       <h2 class="r">${t.proof.h2}</h2>
       <p class="lead r">${SITE.laMetalNamed ? t.proof.leadNamed : t.proof.lead}</p>
       <a class="more r" href="${t.proof.cta.href}">${t.proof.cta.text}${ARROW}</a>
     </div>
-    <div class="figure-box r">${proofChart({ caption: t.proof.caption })}</div>
+    <div class="figure-box r"><div class="backed">${proofChart({ caption: t.proof.caption, captionClass: "r home-caption" })}</div></div>
+    <div class="home-logos r" style="--in:0.5">
+      <h2 class="sr-only">${t.proof.clientsLabel}</h2>
+      ${logoStrip(CLIENTS)}
+    </div>
   </div>
 </section>
 
-<section class="world clients" data-world="grid" data-pin="off">
-  <div class="wrap">
-    <h2 class="sr-only">${t.proof.clientsLabel}</h2>
-    ${logoStrip(CLIENTS)}
-  </div>
-</section>
-
-<section class="world home-people" data-world="ember" style="--h:170">
+<section class="world home-people" data-world="ember" style="--h:160">
   <div class="pin">
     <div class="copy">
       <h2 class="r">${t.people.h2}</h2>
@@ -94,14 +109,14 @@ export function render(p) {
       <p class="lead r">${t.people.more}</p>
       <a class="more r" href="${t.people.cta.href}">${t.people.cta.text}${ARROW}</a>
     </div>
-    <figure class="figure-box home-photo r">${photo(t.people.photoAlt)}<figcaption class="small">${t.people.caption}</figcaption></figure>
+    <figure class="figure-box home-photo r"><div class="home-photo-crop">${photo(t.people.photoAlt)}</div><figcaption class="small">${t.people.caption}</figcaption></figure>
   </div>
 </section>
 
 <section class="world home-belief" data-world="tides" style="--h:170" data-label="What we believe">
   <div class="pin">
     <div class="copy">
-      ${t.belief.lines.map((l, i) => html`<p class="home-belief-line r" style="--in:${i ? 0.15 : -0.3}">${l}</p>`)}
+      ${t.belief.lines.map((l, i) => html`<p class="home-belief-line r"${i ? raw(' style="--in:0.3;--k:4"') : ""}>${l}</p>`)}
     </div>
   </div>
 </section>

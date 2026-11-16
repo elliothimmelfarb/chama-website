@@ -38,6 +38,8 @@ export const ed = {
     ],
     caption:
       SITE.changeCaption,
+    // the before and after figure: its labels restate the lead
+    figure: { before: "Their old system, a second app and four spreadsheets", after: "One system", label: "Their old system, a second app and four spreadsheets, replaced by one system." },
     finds: "Ask it anything. Why don't these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.",
   },
 
@@ -60,6 +62,13 @@ export const ed = {
   price: {
     h2: "A setup fee and a fixed monthly fee, quoted after a first conversation.",
     guarantee: "The setup fee is due only when you switch off your old system.",
+    // the timeline beside it: the three steps of How it starts, in a word or two
+    line: {
+      steps: ["First conversation", "First version", "Old system off"],
+      setup: "Setup fee",
+      monthly: "Then the monthly fee",
+      label: "A first conversation, then a first version, then the old system is switched off, which is when the setup fee is due. After that, the fixed monthly fee.",
+    },
   },
 
   objections: {

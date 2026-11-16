@@ -1,14 +1,11 @@
 import { html, raw } from "../html.js";
-import { page, talkField, talkClose } from "../parts/chrome.js";
+import { page, talkField, talkClose, OUT } from "../parts/chrome.js";
 import { build as t } from "../content/en/build.js";
 import { rig, SHOPINTAKE_TOP } from "../figures/devices.js";
 
 // Which pictures in assets/built/ show each thing.
 const PICTURES = { toraya: "toraya-lisboa", original: "original-site", vsf: "vsf-lead-automation", alves: "alves-teamwear" };
 
-const OUT = raw(
-  `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-);
 const LOCK = raw(
   `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3.2" y="7" width="9.6" height="6.8" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
 );
@@ -37,7 +34,7 @@ const STYLE = html`<style>
 html:not(.pin) .build-dev .made-stage { max-width: var(--max); padding: var(--s7) var(--gutter) calc(var(--s8) + 20vh); }
 html:not(.pin) .build-dev .made:first-of-type { margin-top: var(--s7); }
 
-.build-partner-in { display: grid; gap: var(--s6); align-content: center; height: 100%; padding-top: calc(56px + var(--s4)); padding-bottom: var(--s6); }
+.build-partner-in { display: grid; gap: var(--s6); align-content: safe center; height: 100%; padding-top: calc(56px + var(--s4)); padding-bottom: var(--s6); }
 html:not(.pin) .build-partner-in { height: auto; padding: 0; }
 .build-partner h2 { max-width: 20ch; }
 .build-partner .lead { margin-top: var(--s4); }
@@ -72,7 +69,9 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
 }
 @media (min-width: 1100px) {
   .build-first { padding-top: calc(72px + var(--s9)); }
-  .build-partner-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-top: 72px; }
+  /* in the upper part of the screen, so the words come into view as the
+     devices before them leave, with no bare ground between */
+  .build-partner-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: start; padding-top: calc(72px + 9svh); }
   .build-partner-in > :first-child { grid-column: 1 / span 5; }
   .build-partner-in > :last-child { grid-column: 7 / span 6; }
 }
@@ -131,7 +130,7 @@ export function render(p) {
 </section>
 
 <section class="world end" data-world="ember" data-pin="off" data-label="${t.close}">
-  ${talkClose(t.close)}
+  ${talkClose(t.close, { work: "build" })}
 </section>`;
   return page(p, t, main);
 }

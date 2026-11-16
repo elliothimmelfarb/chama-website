@@ -20,22 +20,22 @@ const SAID = [
   [7.0, 8.6],
   [10.5, 11.375, 12.25, 13.125],
   [14.0, 15.0],
-  [17.5, 17.9, 18.7, 19.5, 20.3],
+  [17.5, 18.1, 18.85, 19.6, 20.35],
   [21.0, 22.4],
   [24.5, 25.6],
 ];
 // The moment each low motion still shows: late in its beat, with the
 // picture finished and the phrase that matches it lit.
-const STILLS = [2.6, 6.9, 10.2, 11.8, 17.3, 18.4, 24.2, T];
+const STILLS = [2.6, 6.9, 10.2, 11.8, 17.3, 18.6, 24.2, T];
 const STATIONS = ["Tell us", "It gets built", "You use it", "What's next"];
 
 // ---- geometry, in the viewBox's units ------------------------------------
 const VW = 400, VH = 190, RX = 125, RY = 58;
 const f = (n) => +n.toFixed(2);
-const poly = (pts) => "M" + pts.map(([x, y]) => `${f(x)} ${f(y)}`).join(" L") + " Z";
-const ngon = (r) => [0, 1, 2, 3, 4].map((i) => [r * Math.cos(((i * 72 - 90) * Math.PI) / 180), r * Math.sin(((i * 72 - 90) * Math.PI) / 180)]);
+export const poly = (pts) => "M" + pts.map(([x, y]) => `${f(x)} ${f(y)}`).join(" L") + " Z";
+export const ngon = (r) => [0, 1, 2, 3, 4].map((i) => [r * Math.cos(((i * 72 - 90) * Math.PI) / 180), r * Math.sin(((i * 72 - 90) * Math.PI) / 180)]);
 // The outline sits a constant distance outside the shape, mitred at the corners.
-function grow(pts, d) {
+export function grow(pts, d) {
   const n = pts.length, norm = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); return [dy / l, -dx / l]; };
   return pts.map((v, i) => {
     const n1 = norm(pts[(i - 1 + n) % n], v), n2 = norm(v, pts[(i + 1) % n]), k = d / (1 + n1[0] * n2[0] + n1[1] * n2[1]);
@@ -78,10 +78,10 @@ const scene = `
 .stage-wedge { ${k(1, 15.0, 15.6)} opacity: calc(1 - ${w(15.6, 15.8)});
   transform: translate(${f(MID[0])}px, ${f(MID[1])}px) rotate(36deg) scale(1, calc(0.001 + ${e(1)})) rotate(-36deg) translate(${f(-MID[0])}px, ${f(-MID[1])}px); }
 ${strokeRule("stage-outp", [5.2, 6.4], [16.0, 16.4])}
-${strokeRule("stage-outh", [16.3, 17.2], [17.5, 17.9], [20.3, 20.9])}
-${strokeRule("stage-phone", [17.8, 18.3], [18.55, 18.85])}
-${strokeRule("stage-laptop", [18.6, 19.1], [19.35, 19.65])}
-${strokeRule("stage-cloud", [19.4, 19.9], [20.15, 20.45])}
+${strokeRule("stage-outh", [16.3, 17.2], [17.5, 17.9], [20.4, 20.9])}
+${strokeRule("stage-phone", [18.1, 18.45], [18.85, 19.05])}
+${strokeRule("stage-laptop", [18.85, 19.2], [19.6, 19.8])}
+${strokeRule("stage-cloud", [19.6, 19.95], [20.35, 20.55])}
 .stage-people { ${k(1, 7.2, 7.7)} opacity: ${w(7.2, 7.7)}; transform: translate(-82px, 0) scale(calc(0.6 + 0.4 * ${e(1)})); }
 ${strokeRule("stage-link", [7.8, 8.4])}
 ${strokeRule("stage-ringm", [8.6, 9.8])}

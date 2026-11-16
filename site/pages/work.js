@@ -1,6 +1,7 @@
 import { html, raw } from "../html.js";
-import { SITE } from "../site.js";
-import { page, talkClose, ARROW } from "../parts/chrome.js";
+import { SITE, pageById } from "../site.js";
+import { page, talkClose, ARROW, OUT } from "../parts/chrome.js";
+import { GLYPHS } from "../figures/glyphs.js";
 import { work as t } from "../content/en/work.js";
 import { logo, CLIENTS } from "../parts/logos.js";
 
@@ -13,6 +14,9 @@ const STYLE = raw(`<style>
 .wk-head .lead { margin-top: var(--s4); }
 .wk-group { margin-top: var(--s8); scroll-margin-top: 88px; }
 .wk-group h2 { font-size: var(--t-h2); margin-bottom: var(--s5); max-width: 20ch; }
+.wk-offer { display: grid; justify-items: start; gap: var(--s3); text-decoration: none; }
+.wk-offer .g { width: 36px; height: 36px; }
+@media (hover: hover) { .wk-offer { transition: color var(--dur-quick) var(--ease-out); } .wk-offer:hover { color: var(--accent-text); } }
 .wk-list { list-style: none; margin: 0; padding: 0; }
 .wk-row a { display: grid; grid-template-columns: minmax(0, 1fr) 20px; grid-template-areas: "name arr" "line arr" "logo arr"; column-gap: var(--s4); align-items: center; padding: var(--s4) 0; border-top: 1px solid var(--line); text-decoration: none; scroll-margin-top: 88px; }
 .wk-row:last-child a { border-bottom: 1px solid var(--line); }
@@ -26,6 +30,7 @@ const STYLE = raw(`<style>
   .wk-row a { transition: background-color var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
   .wk-row a:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
   .wk-row a:hover .arr { translate: 3px 0; }
+  .wk-row a:hover .arr-out { translate: 2px -2px; }
   .wk-row a:hover .logo { background: var(--fg); }
 }
 @media (min-width: 1100px) {
@@ -49,11 +54,11 @@ export function render(p) {
     </div>
     ${t.groups.map(
       (g) => html`<section class="wk-group" id="${g.offer}" aria-labelledby="wk-${g.offer}">
-      <h2 id="wk-${g.offer}">${g.h2}</h2>
+      <h2 id="wk-${g.offer}"><a class="wk-offer" href="${pageById(g.offer).path}">${GLYPHS[g.offer]}<span>${g.h2}</span></a></h2>
       <ul class="wk-list">
         ${g.items.map((it) => {
           const l = it.logo && logoOf(it.logo);
-          return html`<li class="wk-row" id="${it.id}">${it.also ? html`<span id="${it.also}"></span>` : ""}<a href="${it.href}"${external(it.href) ? raw(' rel="noopener"') : ""}><h3 class="wk-name">${nameOf(it)}</h3><p class="wk-line">${it.line}</p>${l ? html`<span class="wk-logo" aria-hidden="true">${logo(l)}</span>` : ""}${ARROW}</a></li>`;
+          return html`<li class="wk-row" id="${it.id}">${it.also ? html`<span id="${it.also}"></span>` : ""}<a href="${it.href}"${external(it.href) ? raw(' rel="noopener"') : ""}><h3 class="wk-name">${nameOf(it)}</h3><p class="wk-line">${it.line}</p>${l ? html`<span class="wk-logo" aria-hidden="true">${logo(l)}</span>` : ""}${external(it.href) ? OUT : ARROW}</a></li>`;
         })}
       </ul>
     </section>`,

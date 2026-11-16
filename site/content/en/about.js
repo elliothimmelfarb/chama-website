@@ -26,6 +26,13 @@ export const about = {
       "Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.",
       "Engineers who learned the craft before AI, weren't afraid of it, and mastered it, can now build anything, fast. Every new AI capability is ours on day one. AI is levelling up fast. We level up with it, and we help you level up too.",
     ],
+    // the timeline beside the paragraph: its own facts, in a few words each
+    timeline: [
+      { when: "2016", what: "Software engineer" },
+      { when: "Campminder", what: "Led AI enablement for two and a half years" },
+      { when: "Then", what: "Built AI platforms as an engineer" },
+      { when: "Since 2023", what: "Putting the most capable AI systems to work" },
+    ],
   },
 
   partners: {

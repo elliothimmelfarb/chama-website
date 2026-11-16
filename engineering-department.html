@@ -9,12 +9,12 @@
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
-  <link rel="stylesheet" href="/assets/base.css?v=10fdbe416d">
-  <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
+  <link rel="stylesheet" href="/assets/base.css?v=2f1034c928">
+  <link rel="stylesheet" href="/assets/worlds.css?v=ed8e5a0e90">
   <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
-  <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
-  <script src="/assets/worlds.js?v=7fe9c3a6be" defer></script>
-  <script src="/assets/chrome.js?v=c9dc4c4621" defer></script>
+  <script src="/assets/sky.js?v=f524e540c3" defer></script>
+  <script src="/assets/worlds.js?v=5d7842046a" defer></script>
+  <script src="/assets/chrome.js?v=18940e8963" defer></script>
   <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
@@ -77,6 +77,7 @@
       <button class="btn btn-quiet icon-btn" type="button" popovertarget="menu" popovertargetaction="hide" aria-label="Close"><svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path d="M4 4l10 10M14 4 4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     </div>
     <ul class="menu-pages">
+      <li class="menu-home"><a href="/"><span class="menu-name">Home</span></a></li>
       <li><a href="/engineering-department" aria-current="page"><span class="menu-name">Engineering department</span><span class="menu-line">Software that changes when you do</span></a></li><li><a href="/coaching"><span class="menu-name">Coaching</span><span class="menu-line">AI fluency coaching and training</span></a></li><li><a href="/build"><span class="menu-name">Websites &amp; apps</span><span class="menu-line">Websites, apps and products</span></a></li><li><a href="/work"><span class="menu-name">Work</span><span class="menu-line">Everything we&#39;ve built</span></a></li><li><a href="/about"><span class="menu-name">About</span><span class="menu-line">The family behind Chama</span></a></li>
     </ul>
     
@@ -127,7 +128,6 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .loop-fig { position: relative; width: 100%; margin: 0 auto; }
 .loop-svg { width: 100%; height: auto; overflow: visible; }
 .loop-ring { fill: none; stroke: var(--fg); stroke-opacity: 0.45; stroke-width: 1.25; stroke-dasharray: 1.5 6; stroke-linecap: round; transform-origin: 0 0; }
-.loop-ticks { fill: none; stroke: var(--fg-2); stroke-width: 5; stroke-dasharray: 0.006 0.119; }
 .loop-you { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; stroke-dasharray: 1; }
 .loop-pulse { fill: var(--fg); stroke: none; }
 .loop-svg .loop-you + .loop-pulse { fill-opacity: 0.16; }
@@ -141,11 +141,10 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .loop-stops { list-style: none; margin: 0; padding: 0; }
 .loop-stops .at-top { translate: -50% calc(-100% - 12px); }
 .loop-stops .at-bottom { translate: -50% 12px; }
-.loop-stops .at-right { translate: calc(-100% - 4px) calc(-100% - 14px); }
-.loop-stops .at-left { translate: 4px calc(-100% - 14px); }
+.loop-stops .at-right { translate: calc(-100% - 10px) calc(-100% - 14px); }
+.loop-stops .at-left { translate: 10px calc(-100% - 14px); }
 .loop-notes { position: absolute; }
 .loop-note { position: absolute; left: 0; top: 0; translate: -50% -50%; white-space: nowrap; padding: 5px 10px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
-.loop-time { color: var(--accent-text); margin-left: 4px; }
 .loop-ledger { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: var(--t-small); }
 .loop-ledger li { display: flex; justify-content: space-between; gap: var(--s2); padding-top: 4px; border-top: 1px solid var(--line); white-space: nowrap; }
 .loop-ledger .num { font-weight: 600; color: var(--accent-text); }
@@ -154,12 +153,40 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .ed-loop .more { margin-top: var(--s2); }
 
 /* The numbers */
-.ed-numbers .bars-bar[data-p] { scale: clamp(0, (var(--p) - 0.1 - var(--i) * 0.12) / 0.24, 1) 1; }
 .ed-more-wrap, .ed-rec-wrap, .ed-flow { padding-top: var(--s7); padding-bottom: var(--s7); }
 .ed-more .lead { max-width: 46ch; }
 .ed-week { margin-top: var(--s5); font: 600 var(--t-h3)/1.3 var(--display); letter-spacing: -0.015em; color: var(--fg-2); max-width: 30ch; }
-.ed-week b { color: var(--fg); font-weight: 600; }
+.ed-week b { color: var(--fg); font-weight: 600; white-space: nowrap; }
 .ed-finds { margin-top: var(--s5); max-width: 46ch; }
+
+/* Before and after, beside the plant's numbers */
+.pl-fig { margin: var(--s6) 0 0; max-width: 30rem; }
+.pl-fig svg { width: 100%; height: auto; overflow: visible; }
+.pl-o, .pl-l, .pl-gather, .pl-biz, .pl-fit { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.pl-o { stroke: var(--fg-2); stroke-width: 1.5; fill: var(--ground, var(--bg)); }
+.pl-l { stroke: var(--fg-2); stroke-width: 1; stroke-opacity: 0.6; }
+.pl-gather { stroke: var(--line-strong); stroke-width: 1.25; stroke-dasharray: 2 5; }
+.pl-biz { stroke: var(--fg); stroke-width: 1.5; fill: color-mix(in srgb, var(--fg) 7%, var(--ground, var(--bg))); }
+.pl-fit { stroke: var(--accent); stroke-width: 2.5; }
+.pl-labels { display: grid; grid-template-columns: 11fr 7fr; gap: var(--s4); margin-top: var(--s3); font: 600 var(--t-label)/1.3 var(--text); color: var(--fg-2); }
+.pl-labels span:last-child { text-align: center; color: var(--fg); }
+
+/* The first screen: the loop's finished picture beside the words */
+.ed-first-fig { display: none; }
+
+/* The price, with how it starts drawn beside it */
+.pr-fig { position: relative; margin: var(--s8) 0 0; max-width: 34rem; }
+.pr-fig svg { width: 100%; height: auto; overflow: visible; }
+.pr-axis { stroke: var(--line-strong); stroke-width: 1.5; }
+.pr-step { fill: var(--ground, var(--bg)); stroke: var(--fg); stroke-width: 1.5; }
+.pr-step.pr-hot { fill: var(--accent); stroke: var(--accent); }
+.pr-due { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
+.pr-tick { stroke: var(--fg-2); stroke-width: 1.5; stroke-linecap: round; }
+.pr-labels { position: relative; list-style: none; margin: var(--s2) 0 0; padding: 0; height: 3.4em; font: 600 var(--t-label)/1.25 var(--text); color: var(--fg-2); }
+.pr-labels li { position: absolute; left: var(--x); top: 0; translate: -50% 0; max-width: 7.5em; text-align: center; }
+.pr-labels li:first-child { translate: -8px 0; text-align: left; }
+.pr-setup { position: absolute; left: 43.2%; top: 0; translate: -50% -60%; font: 600 var(--t-label)/1.25 var(--text); color: var(--accent-text); white-space: nowrap; }
+.pr-labels .pr-monthly { translate: 0 0; text-align: left; max-width: 10em; }
 
 /* The recording */
 .ed-rec { margin: var(--s5) 0 0; }
@@ -179,6 +206,8 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines { list-style: none; padding-left: 0; min-height: 3em; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li:not([data-now]) { display: none; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
+:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); } }
 @media (max-width: 759px) {
   .ed-rec-frame { aspect-ratio: 9 / 16; width: min(100%, calc(70svh * 9 / 16)); margin-inline: auto; }
 }
@@ -217,8 +246,16 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 [data-page="engineering-department"] main [id] { scroll-margin-top: 72px; }
 
 @media (min-width: 1100px) {
-  .ed-first .wrap { min-height: calc(100svh - 72px); display: flex; flex-direction: column; justify-content: center; padding-bottom: var(--s9); }
+  /* the next section's heading peeks over the fold */
+  .ed-first .wrap { min-height: calc(88svh - 72px); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-bottom: var(--s8); }
+  .ed-first-words { grid-column: 1 / span 6; }
   .ed-first h1 { max-width: 12ch; }
+  .ed-first-fig { display: block; grid-column: 8 / span 5; max-width: 30rem; justify-self: end; width: 100%; }
+  .ed-first-fig .loop-fig { width: 100%; }
+  .ed-more-wrap > .pl-fig { grid-column: 8 / span 5; grid-row: 1 / span 3; align-self: center; margin: 0; max-width: none; }
+  .ed-price .ed-flow:first-child { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; }
+  .ed-price-words { grid-column: 1 / span 7; }
+  .ed-price .pr-fig { grid-column: 8 / span 5; margin: 0; }
   .ed-hold { padding-top: calc(72px + var(--s5)); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: center; }
   .ed-hold > .ed-words { grid-column: 1 / span 5; }
   /* on the grid the words stay above the horizon */
@@ -246,21 +283,49 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   .ed-loop .ed-after { font-size: var(--t-lead); }
 
   .loop-fig { width: min(100%, calc((100svh - 390px) * 480 / 340)); }
+  /* the ledger sits right under the ring here, so the ring's pill would say it twice */
+  .loop-notes { display: none; }
 }
 </style>
 <section class="world first ed-first" data-world="paper" data-pin="off" data-label="Your engineering department">
   <div class="wrap">
-    <p class="descriptor">A small, family-owned, AI-native business in Lisbon, working worldwide.</p>
-    <h1><span class="half">Your own engineering department.</span></h1>
-    <p class="lead">Software that fits your process, and changes when you do. You talk to a person. AI does the heavy work behind us.</p>
-    <form class="talk-field" action="/agent" method="get" data-talk-form>
+    <div class="ed-first-words">
+      <p class="descriptor">A small, family-owned, AI-native business in Lisbon, working worldwide.</p>
+      <h1><span class="half">Your own engineering department.</span></h1>
+      <p class="lead">Software that fits your process, and changes when you do. You talk to a person. AI does the heavy work behind us.</p>
+      <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-ed"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-ed" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
+    </div>
+    <div class="ed-first-fig" aria-hidden="true"><div class="loop-fig">
+    <svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
+  <path class="loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0.03) / 0.03, 1);scale:calc(0.94 + 0.06 * clamp(0, (var(--p) - 0.03) / 0.03, 1))"/>
+  <path class="loop-you" data-p pathLength="1" d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0) / 0.03, 1))"/>
+  <path class="loop-pulse" data-p d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="opacity:calc(clamp(0, 1 - max((var(--p) - 0.175) / 0.02, (0.175 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.02, (0.365 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.02, (0.555 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.02, (0.7056 - var(--p)) / 0.02), 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.03) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-34 50 L-50 36 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L62 58 L-34 58 L-50 42 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -68 L48 -52 L84 -19 L92 14 L68 64 L-40 64 L-64 46 L-84 -19 L-46 -52 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.025, 1));opacity:calc(1 - 0)"/>
+  <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:clamp(0, (var(--p) - 0.5075) / 0.02, 1);translate:0 calc(6px - 6px * clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
+  <g class="loop-stations" data-p style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"><circle cx="0" cy="-128" r="5"/><circle cx="200" cy="0" r="5"/><circle cx="0" cy="128" r="5"/><circle cx="-200" cy="0" r="5"/></g>
+  <path class="loop-tail" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="stroke-dasharray:0.111 0.889;stroke-dashoffset:calc(0.111 - (clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))));opacity:calc(0.3 * clamp(0, (var(--p) - 0.05) / 0.02, 1) * (1 - clamp(0, (var(--p) - 0.8) / 0.04, 1)))"/>
+  <circle class="loop-marker" data-p r="7" style="offset-path:path('M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))) * 100%);opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/>
+</svg>
+    <span class="loop-label loop-you-label" data-p style="left:50%;top:49.4118%;opacity:clamp(0, (var(--p) - 0.02) / 0.02, 1)" aria-hidden="true">You</span>
+    <ol class="loop-stops" data-p style="opacity:clamp(0, (var(--p) - 0.055) / 0.015, 1)" aria-label="Tell us, It gets built, You use it, What&#39;s next">
+      <li class="at-top" style="left:50%;top:12.3529%">Tell us</li>
+      <li class="at-right" style="left:91.6667%;top:50%">It gets built</li>
+      <li class="at-bottom" style="left:50%;top:87.6471%">You use it</li>
+      <li class="at-left" style="left:8.3333%;top:50%">What&#39;s next</li>
+    </ol>
+    <div class="loop-notes" style="left:50%;top:21.7647%" aria-hidden="true"><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.085) / 0.015, 1) - clamp(0, (var(--p) - 0.25) / 0.02, 1))">A new filter</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.275) / 0.015, 1) - clamp(0, (var(--p) - 0.44) / 0.02, 1))">A fix</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.465) / 0.015, 1) - clamp(0, (var(--p) - 0.63) / 0.02, 1))">Download to Excel</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.655) / 0.015, 1) - clamp(0, (var(--p) - 0.8) / 0.02, 1))">A new report</p></div>
+  </div></div>
   </div>
 </section>
 
-<section id="contrast" class="world ed-contrast" data-world="paper" style="--h:230" data-label="Only for you">
+<section id="contrast" class="world ed-contrast" data-world="paper" style="--h:210" data-label="Only for you">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r">
       <h2>Software companies have engineers, and their customers wait in line.</h2>
@@ -269,17 +334,19 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
     <div class="ed-figbox r"><figure class="cx" role="group" aria-label="Software companies have engineers, and their customers wait in line.">
   <svg class="cx-svg" viewBox="0 0 460 170" aria-hidden="true" focusable="false">
   <rect class="cx-co" x="170" y="50" width="84" height="84"/>
-  <path class="cx-q" data-p d="M0 -10 L9.5106 -3.0902 L5.8779 8.0902 L-5.8779 8.0902 L-9.5106 -3.0902 Z" transform="translate(138 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.3) / 0.12, 1));translate:calc((clamp(0, (var(--p) - 0.25) / 0.35, 1) * clamp(0, (var(--p) - 0.25) / 0.35, 1) * (3 - 2 * clamp(0, (var(--p) - 0.25) / 0.35, 1))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.5106 -3.0902 L5.8779 8.0902 L-5.8779 8.0902 L-9.5106 -3.0902 Z" transform="translate(108 92)" style="translate:calc((clamp(0, (var(--p) - 0.25) / 0.35, 1) * clamp(0, (var(--p) - 0.25) / 0.35, 1) * (3 - 2 * clamp(0, (var(--p) - 0.25) / 0.35, 1))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.5106 -3.0902 L5.8779 8.0902 L-5.8779 8.0902 L-9.5106 -3.0902 Z" transform="translate(78 92)" style="translate:calc((clamp(0, (var(--p) - 0.25) / 0.35, 1) * clamp(0, (var(--p) - 0.25) / 0.35, 1) * (3 - 2 * clamp(0, (var(--p) - 0.25) / 0.35, 1))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.5106 -3.0902 L5.8779 8.0902 L-5.8779 8.0902 L-9.5106 -3.0902 Z" transform="translate(48 92)" style="translate:calc((clamp(0, (var(--p) - 0.25) / 0.35, 1) * clamp(0, (var(--p) - 0.25) / 0.35, 1) * (3 - 2 * clamp(0, (var(--p) - 0.25) / 0.35, 1))) * 30px) 0"/>
-  <path class="cx-q" data-p d="M0 -10 L9.5106 -3.0902 L5.8779 8.0902 L-5.8779 8.0902 L-9.5106 -3.0902 Z" transform="translate(18 92)" style="opacity:clamp(0, (var(--p) - 0.3) / 0.25, 1);translate:calc((clamp(0, (var(--p) - 0.25) / 0.35, 1) * clamp(0, (var(--p) - 0.25) / 0.35, 1) * (3 - 2 * clamp(0, (var(--p) - 0.25) / 0.35, 1))) * 30px) 0"/>
+  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(138 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.14) / 0.12, 1));translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
+  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(108 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.38) / 0.12, 1));translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
+  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(78 92)" style="opacity:calc(1 - clamp(0, (var(--p) - 0.62) / 0.12, 1));translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
+  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(48 92)" style="translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
+  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(18 92)" style="opacity:clamp(0, (var(--p) - 0.1) / 0.14, 1);translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
+  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(-12 92)" style="opacity:clamp(0, (var(--p) - 0.34) / 0.14, 1);translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
+  <path class="cx-q" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z" transform="translate(-42 92)" style="opacity:clamp(0, (var(--p) - 0.58) / 0.14, 1);translate:calc(((clamp(0, (var(--p) - 0.1) / 0.18, 1) * clamp(0, (var(--p) - 0.1) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.18, 1))) + (clamp(0, (var(--p) - 0.34) / 0.18, 1) * clamp(0, (var(--p) - 0.34) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.34) / 0.18, 1))) + (clamp(0, (var(--p) - 0.58) / 0.18, 1) * clamp(0, (var(--p) - 0.58) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.58) / 0.18, 1)))) * 30px) 0"/>
   <path class="cx-rule" d="M290 24 V160"/>
   <g transform="translate(378 92)">
-    <path class="cx-you" data-p d="M0 -36 L34.238 -11.1246 L21.1603 29.1246 L-21.1603 29.1246 L-34.238 -11.1246 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.45) / 0.1, 1))"/>
-    <path class="cx-you" data-p d="M0 -36 L34.9181 -18 L34.9181 18 L0 36 L-31.1769 18 L-31.1769 -18 Z" style="opacity:clamp(0, (var(--p) - 0.45) / 0.1, 1)"/>
-    <path class="cx-fit" data-p d="M0 -46 L43.7486 -14.2148 L27.0381 37.2148 L-27.0381 37.2148 L-43.7486 -14.2148 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.55) / 0.1, 1))"/>
-    <path class="cx-fit" data-p pathLength="1" d="M0 -46 L44.6176 -23 L44.6176 23 L0 46 L-39.8372 23 L-39.8372 -23 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.4) / 0.2, 1))"/>
+    <path class="cx-you" data-p d="M0 -36 L34.24 -11.12 L21.16 29.12 L-21.16 29.12 L-34.24 -11.12 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.2) / 0.05, 1))"/>
+    <path class="cx-you" data-p d="M0 -36 L25.35 -34.89 L34.24 -11.12 L21.16 29.12 L-21.16 29.12 L-34.24 -11.12 Z" style="opacity:clamp(0, (var(--p) - 0.2) / 0.05, 1)"/>
+    <path class="cx-fit" data-p d="M0 -47.12 L44.82 -14.56 L27.7 38.12 L-27.7 38.12 L-44.82 -14.56 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.29) / 0.03, 1))"/>
+    <path class="cx-fit" data-p pathLength="1" d="M-2.75 -45.13 L31.69 -43.62 L43.77 -11.33 L27.7 38.12 L-27.7 38.12 L-44.82 -14.56 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.23) / 0.09, 1))"/>
   </g>
 </svg>
   <figcaption class="cx-labels"><span>Off the shelf</span><span>Yours</span></figcaption>
@@ -287,42 +354,41 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   </div></div>
 </section>
 
-<section id="loop" class="world ed-loop" data-world="ember" style="--h:420" data-label="The loop">
+<section id="loop" class="world ed-loop" data-world="ember" style="--h:460" data-label="The loop">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words">
       <h2 class="r">Tell us what you need. It gets built. You use it. You find what&#39;s next.</h2>
       <div class="r loop-ledger-box"><ol class="loop-ledger" aria-label="Four real requests, from request to live">
-    <li data-p style="opacity:clamp(0, (var(--p) - 0.105) / 0.015, 1)"><span>A new filter</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.265) / 0.015, 1)">31 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.325) / 0.015, 1)"><span>A fix</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.485) / 0.015, 1)">14 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.545) / 0.015, 1)"><span>Download to Excel</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.705) / 0.015, 1)">42 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.765) / 0.015, 1)"><span>A new report</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.88) / 0.015, 1)">33 min</span></li>
+    <li data-p style="opacity:clamp(0, (var(--p) - 0.085) / 0.015, 1)"><span>A new filter</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.137) / 0.015, 1)">31 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.275) / 0.015, 1)"><span>A fix</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.327) / 0.015, 1)">14 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.465) / 0.015, 1)"><span>Download to Excel</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.517) / 0.015, 1)">42 min</span></li><li data-p style="opacity:clamp(0, (var(--p) - 0.655) / 0.015, 1)"><span>A new report</span><span class="num" data-p style="opacity:clamp(0, (var(--p) - 0.681) / 0.015, 1)">33 min</span></li>
   </ol></div>
       <div class="r ed-close">
-        <p class="ed-after" data-p style="opacity:clamp(0, (var(--p) - 0.92) / 0.06, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.92) / 0.06, 1))">Most changes are live in under an hour.</p>
+        <p class="ed-after" data-p style="opacity:clamp(0.01, (var(--p) - 0.82) / 0.05, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.82) / 0.05, 1))">Most changes are live in under an hour.</p>
         <a class="more" href="/agent" data-talk>Tell us yours<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </div>
     <div class="ed-figbox r"><div class="loop-fig">
     <svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
-  <path class="loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0.05) / 0.04, 1);scale:calc(0.94 + 0.06 * clamp(0, (var(--p) - 0.05) / 0.04, 1))"/>
-  <path class="loop-ticks" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0.06) / 0.04, 1);stroke-dashoffset:calc(var(--p) * -0.5)"/>
+  <path class="loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0.03) / 0.03, 1);scale:calc(0.94 + 0.06 * clamp(0, (var(--p) - 0.03) / 0.03, 1))"/>
   <path class="loop-you" data-p pathLength="1" d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0) / 0.03, 1))"/>
-  <path class="loop-pulse" data-p d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="opacity:calc(clamp(0, 1 - max((var(--p) - 0.21) / 0.02, (0.21 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.43) / 0.02, (0.43 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.65) / 0.02, (0.65 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.8303) / 0.02, (0.8303 - var(--p)) / 0.02), 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.03) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.155) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.155) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.375) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-34 50 L-50 36 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.375) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.595) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L62 58 L-34 58 L-50 42 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.595) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.7922) / 0.02, 1))"/>
-  <path class="loop-fit" data-p pathLength="1" d="M0 -68 L48 -52 L84 -19 L92 14 L68 64 L-40 64 L-64 46 L-84 -19 L-46 -52 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.7922) / 0.025, 1));opacity:calc(1 - 0)"/>
-  <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:clamp(0, (var(--p) - 0.595) / 0.02, 1);translate:0 calc(6px - 6px * clamp(0, (var(--p) - 0.595) / 0.02, 1))"/>
-  <g class="loop-stations" data-p style="opacity:clamp(0, (var(--p) - 0.08) / 0.02, 1)"><circle cx="0" cy="-128" r="5"/><circle cx="200" cy="0" r="5"/><circle cx="0" cy="128" r="5"/><circle cx="-200" cy="0" r="5"/></g>
-  <path class="loop-tail" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="stroke-dasharray:0.111 0.889;stroke-dashoffset:calc(0.111 - (clamp(0, (var(--p) - 0.1) / 0.22, 1) + clamp(0, (var(--p) - 0.32) / 0.22, 1) + clamp(0, (var(--p) - 0.54) / 0.22, 1) + clamp(0, (var(--p) - 0.76) / 0.24, 1) * (2 - clamp(0, (var(--p) - 0.76) / 0.24, 1))));opacity:calc(0.3 * clamp(0, (var(--p) - 0.08) / 0.02, 1) * (1 - clamp(0, (var(--p) - 0.95) / 0.05, 1)))"/>
-  <circle class="loop-marker" data-p r="7" style="offset-path:path('M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.1) / 0.22, 1) + clamp(0, (var(--p) - 0.32) / 0.22, 1) + clamp(0, (var(--p) - 0.54) / 0.22, 1) + clamp(0, (var(--p) - 0.76) / 0.24, 1) * (2 - clamp(0, (var(--p) - 0.76) / 0.24, 1))) * 100%);opacity:clamp(0, (var(--p) - 0.08) / 0.02, 1)"/>
+  <path class="loop-pulse" data-p d="M0 -50 L59 -15 L36 40 L-36 40 L-59 -15 Z" style="opacity:calc(clamp(0, 1 - max((var(--p) - 0.175) / 0.02, (0.175 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.02, (0.365 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.02, (0.555 - var(--p)) / 0.02), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.02, (0.7056 - var(--p)) / 0.02), 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.03) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-45 50 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L45 50 L-34 50 L-50 36 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -62 L71 -19 L82 14 L62 58 L-34 58 L-50 42 L-71 -19 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.5075) / 0.025, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.02, 1))"/>
+  <path class="loop-fit" data-p pathLength="1" d="M0 -68 L48 -52 L84 -19 L92 14 L68 64 L-40 64 L-64 46 L-84 -19 L-46 -52 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.6755) / 0.025, 1));opacity:calc(1 - 0)"/>
+  <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:clamp(0, (var(--p) - 0.5075) / 0.02, 1);translate:0 calc(6px - 6px * clamp(0, (var(--p) - 0.5075) / 0.02, 1))"/>
+  <g class="loop-stations" data-p style="opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"><circle cx="0" cy="-128" r="5"/><circle cx="200" cy="0" r="5"/><circle cx="0" cy="128" r="5"/><circle cx="-200" cy="0" r="5"/></g>
+  <path class="loop-tail" data-p pathLength="1" d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="stroke-dasharray:0.111 0.889;stroke-dashoffset:calc(0.111 - (clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))));opacity:calc(0.3 * clamp(0, (var(--p) - 0.05) / 0.02, 1) * (1 - clamp(0, (var(--p) - 0.8) / 0.04, 1)))"/>
+  <circle class="loop-marker" data-p r="7" style="offset-path:path('M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.08) / 0.19, 1) + clamp(0, (var(--p) - 0.27) / 0.19, 1) + clamp(0, (var(--p) - 0.46) / 0.19, 1) + clamp(0, (var(--p) - 0.65) / 0.19, 1) * (2 - clamp(0, (var(--p) - 0.65) / 0.19, 1))) * 100%);opacity:clamp(0, (var(--p) - 0.05) / 0.02, 1)"/>
 </svg>
     <span class="loop-label loop-you-label" data-p style="left:50%;top:49.4118%;opacity:clamp(0, (var(--p) - 0.02) / 0.02, 1)" aria-hidden="true">You</span>
-    <ol class="loop-stops" data-p style="opacity:clamp(0, (var(--p) - 0.085) / 0.015, 1)" aria-label="Tell us, It gets built, You use it, What&#39;s next">
+    <ol class="loop-stops" data-p style="opacity:clamp(0, (var(--p) - 0.055) / 0.015, 1)" aria-label="Tell us, It gets built, You use it, What&#39;s next">
       <li class="at-top" style="left:50%;top:12.3529%">Tell us</li>
       <li class="at-right" style="left:91.6667%;top:50%">It gets built</li>
       <li class="at-bottom" style="left:50%;top:87.6471%">You use it</li>
       <li class="at-left" style="left:8.3333%;top:50%">What&#39;s next</li>
     </ol>
-    <div class="loop-notes" style="left:50%;top:21.7647%" aria-hidden="true"><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.105) / 0.015, 1) - clamp(0, (var(--p) - 0.3) / 0.02, 1))">A new filter <span class="loop-time num" data-p style="opacity:clamp(0, (var(--p) - 0.265) / 0.015, 1)">31 min</span></p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.325) / 0.015, 1) - clamp(0, (var(--p) - 0.52) / 0.02, 1))">A fix <span class="loop-time num" data-p style="opacity:clamp(0, (var(--p) - 0.485) / 0.015, 1)">14 min</span></p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.545) / 0.015, 1) - clamp(0, (var(--p) - 0.74) / 0.02, 1))">Download to Excel <span class="loop-time num" data-p style="opacity:clamp(0, (var(--p) - 0.705) / 0.015, 1)">42 min</span></p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.765) / 0.015, 1) - clamp(0, (var(--p) - 0.9) / 0.02, 1))">A new report <span class="loop-time num" data-p style="opacity:clamp(0, (var(--p) - 0.88) / 0.015, 1)">33 min</span></p></div>
+    <div class="loop-notes" style="left:50%;top:21.7647%" aria-hidden="true"><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.085) / 0.015, 1) - clamp(0, (var(--p) - 0.25) / 0.02, 1))">A new filter</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.275) / 0.015, 1) - clamp(0, (var(--p) - 0.44) / 0.02, 1))">A fix</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.465) / 0.015, 1) - clamp(0, (var(--p) - 0.63) / 0.02, 1))">Download to Excel</p><p class="loop-note" data-p style="opacity:calc(clamp(0, (var(--p) - 0.655) / 0.015, 1) - clamp(0, (var(--p) - 0.8) / 0.02, 1))">A new report</p></div>
   </div></div>
   </div></div>
 </section>
@@ -330,21 +396,32 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 <section id="numbers" class="world ed-numbers" data-world="grid" style="--h:200" data-label="The numbers">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r"><h2>Measured on real requests.</h2></div>
-    <div class="ed-figbox r"><figure class="bars" aria-label="Time from request to live, in minutes">
+    <div class="ed-figbox r"><div class="backed"><figure class="bars" aria-label="Time from request to live, in minutes">
   <div class="bars-axis" aria-hidden="true"><span>0</span><span>15 min</span><span>30 min</span><span>45 min</span><span>1 hour</span></div>
   <ol class="bars-list">
-    <li style="--v:0.23333333333333334;--i:0"><span class="bars-label">A fix</span><span class="bars-value num">14 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.5166666666666667;--i:1"><span class="bars-label">A new filter</span><span class="bars-value num">31 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.55;--i:2"><span class="bars-label">A new report</span><span class="bars-value num">33 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.7;--i:3"><span class="bars-label">Download to Excel</span><span class="bars-value num">42 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>
+    <li style="--v:0.23333333333333334;--i:0"><span class="bars-label">A fix</span><span class="bars-value num" data-p>14 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.5166666666666667;--i:1"><span class="bars-label">A new filter</span><span class="bars-value num" data-p>31 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.55;--i:2"><span class="bars-label">A new report</span><span class="bars-value num" data-p>33 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.7;--i:3"><span class="bars-label">Download to Excel</span><span class="bars-value num" data-p>42 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>
   </ol>
   <figcaption class="small">Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.</figcaption>
-</figure></div>
+</figure></div></div>
   </div></div>
 </section>
 
 <section class="world ed-more" data-world="grid" data-pin="off" data-label="The recording">
   <div class="wrap ed-more-wrap">
-    <p class="lead">Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.</p>
-    <p class="ed-week"><b class="num">19</b> people use it every day, and <b class="num">about 15</b> changes go live in a typical week.</p>
-    <p class="lead ed-finds">Ask it anything. Why don&#39;t these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.</p>
+    <p class="lead backed">Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.</p>
+    <figure class="pl-fig backed" role="img" aria-label="Their old system, a second app and four spreadsheets, replaced by one system.">
+  <svg viewBox="0 0 400 150" aria-hidden="true" focusable="false">
+    <rect class="pl-o" x="8" y="14" width="78" height="52" rx="3"/><path class="pl-l" d="M8 26H86"/>
+    <rect class="pl-o" x="100" y="22" width="24" height="42" rx="4"/>
+    <g transform="translate(10 84)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g><g transform="translate(52 92)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g><g transform="translate(94 80)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g><g transform="translate(136 96)"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g>
+    <path class="pl-gather" d="M176 40C220 40 240 70 270 74M176 74H270M176 112C220 112 240 78 270 74"/>
+    <path class="pl-biz" d="M330 44 L358.53 64.73 L347.63 98.27 L312.37 98.27 L301.47 64.73 Z"/>
+    <path class="pl-fit" d="M330 35 L367.09 61.95 L352.92 105.55 L307.08 105.55 L292.91 61.95 Z"/>
+  </svg>
+  <figcaption class="pl-labels" aria-hidden="true"><span>Their old system, a second app and four spreadsheets</span><span>One system</span></figcaption>
+</figure>
+    <p class="ed-week backed"><b class="num">19</b> people use it every day, and <b class="num">about 15</b> changes go live in a typical week.</p>
+    <p class="lead ed-finds backed">Ask it anything. Why don&#39;t these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.</p>
   </div>
   <div id="recording" class="wrap ed-rec-wrap">
     <div class="ed-words">
@@ -393,8 +470,23 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 
 <section class="world ed-price" data-world="paper" data-pin="off" data-label="Price">
   <div id="price" class="wrap ed-flow">
-    <h2 class="ed-price-shape">A setup fee and a fixed monthly fee, quoted after a first conversation.</h2>
-    <p class="ed-guarantee">The setup fee is due only when you switch off your old system.</p>
+    <div class="ed-price-words">
+      <h2 class="ed-price-shape">A setup fee and a fixed monthly fee, quoted after a first conversation.</h2>
+      <p class="ed-guarantee">The setup fee is due only when you switch off your old system.</p>
+    </div>
+    <figure class="pr-fig" role="img" aria-label="A first conversation, then a first version, then the old system is switched off, which is when the setup fee is due. After that, the fixed monthly fee.">
+  <svg viewBox="0 0 500 70" aria-hidden="true" focusable="false">
+    <path class="pr-axis" d="M16 46H492"/>
+    <circle class="pr-step" cx="16" cy="46" r="8"/><circle class="pr-step" cx="116" cy="46" r="8"/><circle class="pr-step pr-hot" cx="216" cy="46" r="8"/>
+    <path class="pr-due" d="M216 30V14"/>
+    <path class="pr-tick" d="M266 40V52" style="opacity:1.00"/><path class="pr-tick" d="M292 40V52" style="opacity:0.90"/><path class="pr-tick" d="M318 40V52" style="opacity:0.80"/><path class="pr-tick" d="M344 40V52" style="opacity:0.70"/><path class="pr-tick" d="M370 40V52" style="opacity:0.60"/><path class="pr-tick" d="M396 40V52" style="opacity:0.50"/><path class="pr-tick" d="M422 40V52" style="opacity:0.40"/><path class="pr-tick" d="M448 40V52" style="opacity:0.30"/><path class="pr-tick" d="M474 40V52" style="opacity:0.20"/>
+  </svg>
+  <span class="pr-setup" aria-hidden="true">Setup fee</span>
+  <ol class="pr-labels" aria-hidden="true">
+    <li style="--x:3.2%">First conversation</li><li style="--x:23.2%">First version</li><li style="--x:43.2%">Old system off</li>
+    <li class="pr-monthly" style="--x:66%">Then the monthly fee</li>
+  </ol>
+</figure>
   </div>
   <div id="questions" class="wrap ed-flow ed-qs">
     <h2>Questions owners ask</h2>
@@ -415,6 +507,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   <label class="cycle" for="ask-1"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-1" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
+  <a class="more talk-close-work" href="/work#engineering-department">Everything we&#39;ve built<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
 </section>
 </section>
 </main>
@@ -426,6 +519,8 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   <nav class="foot-pages" aria-label="Pages">
     <ul>
       <li><a href="/engineering-department">Engineering department</a></li><li><a href="/coaching">Coaching</a></li><li><a href="/build">Websites &amp; apps</a></li><li><a href="/work">Work</a></li><li><a href="/about">About</a></li>
+    </ul>
+    <ul class="foot-more">
       <li><a href="/hearth">Members</a></li>
       <li><a href="/brand">Brand</a></li>
       <li><a href="/privacy">Privacy</a></li>

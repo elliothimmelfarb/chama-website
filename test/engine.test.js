@@ -199,8 +199,8 @@ test("a stage's controls are delegated from document, and low motion stops autop
   assert.match(CSS, /html\[data-motion="low"\] \[data-stage-action\]/, "low motion hides play, pause and replay");
 });
 
-test("two sections in a row on the same ground do not burn into each other", () => {
-  // the fire line's position (b) is only ever set when the grounds differ
+test("two sections in a row on the same ground do not blend into each other", () => {
+  // the blend's position (b) is only ever set when the grounds differ
   const state = /function scrollState\(\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
   const sets = [...state.matchAll(/^\s*(.*)\bb = (?!0[,;])/gm)].map((m) => m[1]);
   assert.ok(sets.length >= 1, "scrollState sets b");
@@ -247,13 +247,24 @@ test("every pinned world on a built page sets --h, its hold", async () => {
   }
 });
 
-test("the char line marks only a change of ground, and only where there is no sky", () => {
-  const rule = RULES.find((r) => { const sel = r.selectors.join(","); return sel.includes("::before") && sel.startsWith("html:not(.gl)") && /var\(--accent\)/.test(r.body); });
-  assert.ok(rule, "worlds.css draws the char line");
+test("a change of ground is a hairline where there is no sky", () => {
+  const rule = RULES.find((r) => { const sel = r.selectors.join(","); return sel.includes("::before") && sel.startsWith("html:not(.gl)") && /var\(--line-strong\)/.test(r.body); });
+  assert.ok(rule, "worlds.css draws the hairline between grounds");
   const sel = rule.selectors.join(",");
   assert.match(sel, /^html:not\(\.gl\):not\(\.pin\)/);
-  for (const g of ["paper", "grid", "tides", "ember"]) assert.ok(sel.includes(`.world[data-world="${g}"] + .world:not([data-world="${g}"])`), `no char line after ${g}`);
-  assert.match(rule.body, /top:\s*-64px/);
+  for (const g of ["paper", "grid", "tides", "ember"]) assert.ok(sel.includes(`.world[data-world="${g}"] + .world:not([data-world="${g}"])`), `no hairline after ${g}`);
+  assert.match(rule.body, /height:\s*1px/);
+  assert.ok(!/mask/.test(rule.body), "the hairline has no torn edge: the fire is gone (2026-11-16)");
+});
+
+test("one ground blends into the next without fire, and a page change is a short dissolve", () => {
+  const main = /"void main\(\) \{",([\s\S]*?)\]\.join/.exec(SKY)[1];
+  for (const fire of ["rim", "burned", "0.34, 0.2, 0.12", "1.0, 0.42, 0.1"]) assert.ok(!main.includes(fire), `the shader still draws the fire (${fire})`);
+  assert.match(main, /smoothstep\(-0\.2/, "the edge between two grounds is soft, a fifth of the screen either side");
+  const fade = +/var FADE = (\d+)/.exec(JS)?.[1];
+  assert.ok(fade > 0 && fade <= 350, `the page change dissolves in at most 350ms (FADE is ${fade})`);
+  assert.ok(!/var BURN\b/.test(JS), "the router's burn is gone");
+  assert.ok(!/--wipe/.test(CSS) && !/--wipe/.test(JS), "nothing masks the new page behind a fire line");
 });
 
 test("after a router trip the header, the menu and the body name the new page", () => {
@@ -278,5 +289,32 @@ test("if worlds.js never runs, the boot snippet takes html.pin back", () => {
   assert.match(JS, /root\.dataset\.engine = "on";/);
   // set at the top, before anything that could stop the engine early
   assert.ok(JS.indexOf('root.dataset.engine = "on"') < JS.indexOf("if (!document.querySelector(\".world\")) return;"));
+});
+
+test("a leaving world's words stand still, each gone before the next words or its pin's edge reach it", () => {
+  const r = RULES.find((x) => x.selectors.includes(".r") && /transform:/.test(x.body));
+  assert.ok(r, "worlds.css styles .r");
+  assert.match(r.body, /clamp\(0, var\(--u\) - 1, var\(--sx, 0\)\) \* var\(--pl, 0px\)/, "a .r gives back its pin's travel for the first --sx of the exit");
+  const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(gone, /1 \+ next - foot - MEET_GAP/, "a word stays only until the next world's first words would reach it");
+  assert.match(gone, /1 - foot\)/, "and never past the moment its own pin's clipping edge would reach it");
+  assert.match(gone, /closest\("\.world > \.pin \.r"\)/, "a .r inside another takes the outer one's exit and does not stand on its own");
+  assert.match(JS, /setVar\(el, "--sx"/, "measure() writes --sx");
+  for (const v of ["--sx", "--pl"]) assert.match(CSS, new RegExp(`@property ${v} \\{[^}]*inherits: false`), `${v} is registered not to inherit, or a nested .r would move twice`);
+  assert.match(JS, /setVar\(el, "--pl"/, "measure() writes --pl");
+});
+
+test("the new page's words have finished rising before .nav-enter comes off", () => {
+  const enter = +/var FADE = \d+, ENTER = (\d+)/.exec(JS)[1];
+  let longest = 0;
+  for (const { selectors, body } of RULES) {
+    if (!selectors.some((x) => x.startsWith("html.nav-enter"))) continue;
+    const a = /animation:\s*\w+\s+([\d.]+)s[^;]*?\s([\d.]+)s/.exec(body);
+    const d = /animation-delay:\s*([\d.]+)s/.exec(body);
+    if (a) longest = Math.max(longest, (+a[1] + +a[2]) * 1000);
+    if (d) longest = Math.max(longest, (+d[1] + 0.45) * 1000);
+  }
+  assert.ok(longest > 0, "the .nav-enter animations were found");
+  assert.ok(enter >= longest, `ENTER (${enter}ms) ends before the longest .nav-enter animation (${longest}ms)`);
 });
 

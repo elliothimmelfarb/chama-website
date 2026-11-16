@@ -1,6 +1,6 @@
 /* What every public page shares: type, buttons, the header with its menu
    and Display popover, the Talk to us field, the doors, the footer.
-   Colours come only from tokens.css. The worlds (pins, grounds, the burn)
+   Colours come only from tokens.css. The worlds (pins, grounds, the blend between them)
    are in worlds.css. */
 
 * { box-sizing: border-box; }
@@ -23,6 +23,8 @@ img, svg, video { display: block; max-width: 100%; }
 
 h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
 h1 { font-size: min(var(--t-display), 4rem); line-height: 1.02; letter-spacing: -0.03em; }
+/* on a short desktop screen the H1 gives way, so the Talk to us field clears the fold */
+@media (min-width: 1100px) { h1 { font-size: min(var(--t-display), 4rem, 8.2svh); } }
 h2 { font-size: var(--t-h2); line-height: 1.08; letter-spacing: -0.025em; }
 h3 { font-size: var(--t-h3); line-height: 1.15; letter-spacing: -0.015em; }
 p { margin: 0; }
@@ -111,15 +113,20 @@ p { margin: 0; }
 @starting-style { .pop:popover-open { opacity: 0; translate: 0 -12px; } }
 .menu { inset: 8px 8px auto; width: auto; max-height: calc(100svh - 16px); overflow: auto; }
 .menu::backdrop { background: var(--scrim-sheet); }
-.menu-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s2); }
+.menu { padding-top: var(--s3); }
+.menu-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s1); }
 .menu-title { font: 600 var(--t-label)/1 var(--text); color: var(--fg-2); }
-.menu-pages { list-style: none; margin: 0 0 var(--s5); padding: 0; }
-.menu-pages a { display: grid; gap: 2px; padding: var(--s3) 0; border-top: 1px solid var(--line); text-decoration: none; }
+.menu-pages { list-style: none; margin: 0 0 var(--s3); padding: 0; }
+.menu-pages a { display: grid; gap: 1px; padding: var(--s2) 0; border-top: 1px solid var(--line); text-decoration: none; }
 .menu-pages li:last-child a { border-bottom: 1px solid var(--line); }
 .menu-name { font: 600 var(--t-h3)/1.15 var(--display); letter-spacing: -0.015em; }
-.menu-pages a[aria-current] .menu-name::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 8px; border-radius: 50%; background: var(--accent); vertical-align: 0.15em; }
-.menu-line { font-size: var(--t-small); color: var(--fg-2); }
-.menu-members { display: inline-block; margin-top: var(--s5); font-size: var(--t-small); color: var(--fg-2); text-underline-offset: 3px; }
+.menu-pages a[aria-current] .menu-name { color: var(--accent-text); }
+.menu-pages a[aria-current] .menu-name::after { content: ""; display: inline-block; width: 8px; height: 8px; margin-left: 8px; border-radius: 50%; background: var(--accent); vertical-align: 0.12em; }
+.menu-line { font-size: var(--t-small); line-height: 1.3; color: var(--fg-2); }
+.menu-home .menu-name { font-size: 1rem; }
+.menu-members { display: inline-block; margin-top: var(--s3); font-size: var(--t-small); color: var(--fg-2); text-underline-offset: 3px; }
+/* a link out of the menu closes it at once, so the page change starts clean */
+.menu.is-leaving, .menu.is-leaving::backdrop { transition: none !important; }
 .display-pop { inset: 72px var(--gutter) auto auto; width: 300px; }
 .pop-note { margin-top: var(--s4); font-size: var(--t-small); color: var(--fg-2); }
 
@@ -171,6 +178,7 @@ p { margin: 0; }
 .field input { flex: 1; min-width: 0; border: 0; background: transparent; font: 400 1rem var(--text); color: var(--fg); outline: none; }
 .field input::placeholder { color: var(--fg-2); opacity: 1; }
 .talk-close { padding: var(--s9) var(--gutter); max-width: var(--max); margin: 0 auto; }
+.talk-close-work { margin-top: var(--s6); }
 .talk-close-line { font: 600 var(--t-h2)/1.08 var(--display); letter-spacing: -0.025em; margin-bottom: var(--s6); max-width: 22ch; text-wrap: balance; }
 
 /* ---- the doors: rows on a phone, a band on desktop, never cards ---- */
@@ -220,6 +228,7 @@ html:not([data-motion="low"]) [data-doors][data-catch="wait"] .g { opacity: 0; }
 .foot { position: relative; display: grid; gap: var(--s6); padding: var(--s8) var(--gutter) var(--s7); max-width: var(--max); margin: 0 auto; font-size: var(--t-small); border-top: 1px solid var(--line); }
 .foot-who p { margin-top: var(--s3); color: var(--fg-2); }
 .foot-pages ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2) var(--s5); }
+.foot-pages .foot-more { margin-top: var(--s5); padding-top: var(--s4); border-top: 1px solid var(--line); color: var(--fg-2); }
 .foot a { text-underline-offset: 3px; text-decoration-color: transparent; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
 @media (hover: hover) { .foot a:hover { text-decoration-color: var(--accent-text); } }
 .foot-legal { color: var(--fg-2); font-size: var(--t-fine); }
@@ -255,7 +264,10 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 .bars-list li { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; font-size: var(--t-small); }
 .bars-value { font-weight: 600; }
 .bars-bar { grid-column: 1 / -1; height: 10px; border-radius: 0 5px 5px 0; background: var(--accent); width: calc(var(--v) * 100%); transform-origin: left; }
-.bars-bar[data-p] { scale: var(--p) 1; }
+/* each bar grows in turn and the last is whole by 60% of the hold; its value
+   arrives over the last third of its growth, so a bar never contradicts it */
+.bars-bar[data-p] { scale: clamp(0, (var(--p) - 0.08 - var(--i) * 0.1) / 0.22, 1) 1; }
+.bars-value[data-p] { opacity: clamp(0.01, (var(--p) - 0.23 - var(--i) * 0.1) / 0.07, 1); }
 .bars figcaption { margin-top: var(--s5); max-width: 52ch; }
 
 .logos { list-style: none; margin: 0; padding: var(--s7) 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s6); }
@@ -300,3 +312,8 @@ html:not(.pin):not([data-motion]) .top::before { opacity: 1; }
    a page's own Talk to us field is in view (chrome.js sets the class). */
 .talk-btn { transition: opacity var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
 html.field-in-view .top .talk-btn { opacity: 0; pointer-events: none; }
+/* on desktop the hidden pill gives its room back, so Display sits at the edge */
+@media (min-width: 1100px) {
+  .top .talk-btn { max-width: 12rem; overflow: hidden; transition: opacity var(--dur-quick) var(--ease-out), max-width var(--dur-base) var(--ease-out), padding var(--dur-base) var(--ease-out), margin var(--dur-base) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+  html.field-in-view .top .talk-btn { max-width: 0; padding-inline: 0; margin-left: calc(-1 * var(--s2)); }
+}

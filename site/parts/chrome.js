@@ -13,6 +13,10 @@ export const MARK = raw(
 export const ARROW = raw(
   `<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 );
+// a link that leaves the site
+export const OUT = raw(
+  `<svg class="arr arr-out" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 14 14 6M7.5 6H14v6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+);
 const DISPLAY_ICON = raw(
   `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg>`,
 );
@@ -138,6 +142,7 @@ export function header(page) {
       <button class="btn btn-quiet icon-btn" type="button" popovertarget="menu" popovertargetaction="hide" aria-label="${c.close}">${CLOSE_ICON}</button>
     </div>
     <ul class="menu-pages">
+      <li class="menu-home"><a href="/"${here(PAGES.find((x) => x.path === "/"))}><span class="menu-name">${c.homeShort}</span></a></li>
       ${navPages().map(
         (p) => html`<li><a href="${p.path}"${here(p)}><span class="menu-name">${c.navLabels[p.id]}</span><span class="menu-line">${c.menuLines[p.id]}</span></a></li>`,
       )}
@@ -160,11 +165,13 @@ export function talkField({ id } = {}) {
 </form>`;
 }
 
-// The closing block of every page.
-export function talkClose(line) {
+// The closing block of every page. An offer page passes its group on /work
+// as \`work\`, so the page points to what we have made of that kind.
+export function talkClose(line, { work } = {}) {
   return html`<section class="talk-close" aria-label="${c.talk.button}">
   ${line ? html`<p class="talk-close-line">${line}</p>` : ""}
   ${talkField()}
+  ${work ? html`<a class="more talk-close-work" href="/work#${work}">${c.workLink}${ARROW}</a>` : ""}
 </section>`;
 }
 
@@ -177,6 +184,8 @@ export function footer() {
   <nav class="foot-pages" aria-label="${c.pagesLabel}">
     <ul>
       ${navPages().map((p) => html`<li><a href="${p.path}">${c.navLabels[p.id]}</a></li>`)}
+    </ul>
+    <ul class="foot-more">
       <li><a href="/hearth">${c.membersShort}</a></li>
       <li><a href="/brand">${c.footer.brand}</a></li>
       <li><a href="/privacy">${c.footer.privacy}</a></li>

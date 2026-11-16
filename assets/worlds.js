@@ -5,7 +5,7 @@
    Each <section class="world"> names its ground in data-world: paper,
    grid, tides or ember. One WebGL sky (sky.js) paints the ground of the
    section on screen, in the light or the dark palette, and as the page
-   scrolls the next ground burns up through it from below.
+   scrolls the next ground rises softly through it from below.
 
    A world is pinned unless it says data-pin="off": its .pin (a direct
    child) sticks to the screen while the section, var(--h) screens tall,
@@ -364,7 +364,8 @@
     while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (fits(mid)) hi = mid; else lo = mid; }
     D.stage.style.setProperty("--fit", (1 - 0.04 * hi).toFixed(2));
   }
-  function drawDevices(sec, l, t, ex) {
+  // stand: how far the stage is held back as its pin leaves, in pixels
+  function drawDevices(sec, l, t, ex, stand) {
     var D = devicesOf(sec), n = D.items.length;
     if (!n || !D.stage) return;
     devicesFit(D, portrait());
@@ -373,10 +374,12 @@
     // hang over the next world as a grey slab. Written here, only when it
     // changes, rather than from --u in CSS, which would restyle everything
     // inside them every frame.
-    var gone = (ex * ex).toFixed(3);
+    // (held still as it leaves, it fades evenly: it never rides up over the next)
+    var gone = (stand ? ex : ex * ex).toFixed(3);
     put(D.stage, "opacity", gone);
     // drifting up a little as it goes, as the words do (.r in worlds.css)
-    put(D.stage, "translate", ex < 1 ? "0 " + (-(1 - ex) * 16).toFixed(1) + "px" : "");
+    var dy = (stand || 0) - (1 - ex) * 16;
+    put(D.stage, "translate", dy ? "0 " + dy.toFixed(1) + "px" : "");
     if (D.bar) put(D.bar, "opacity", gone);
     var a = devicesIntro(n), opening = l < a;
     var q = opening ? 0 : clamp((l - a) / (1 - a)) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
@@ -471,7 +474,7 @@
   // Where things are on the page, read once per layout rather than every
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
-  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [];
+  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [], goneEls = [], devStay = [];
   var docH = 0, vh = 0;
   // ---- leaving: what rides up with a pin is gone before it reaches anything ----
   // A world's --u runs from 1 to 2 while its pin scrolls away. goneOf is how
@@ -481,23 +484,76 @@
   // least EXIT_MIN of the screen: where the room is short it begins in the
   // last of the hold, and the words dissolve as they start to move rather
   // than blink out. setU writes what is left (exitOf) on each reader as --e.
-  var EXIT_MIN = 0.15;
+  //
+  // Where another world follows, each .r instead stands still as its pin
+  // leaves (--sx, --pl: worlds.css adds back the pin's travel) and
+  // dissolves in place (while the new ground rises under it, where there is
+  // one), gone a little before the next world's first words would reach it. So the scroll
+  // between two worlds is never bare (2026-11-16: up to a screen of empty
+  // ground on home and /engineering-department, measured by test/shots'
+  // dead scroll check). Readers that are not a .r (the shade) leave with the
+  // world's first word.
+  var EXIT_MIN = 0.15, MEET_GAP = 0.12, STAY_MAX = 0.8;
   // the slide a .r element is given while it is hidden, which is not its place
   function shiftOf(el) { var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
+  // where the next world's first words sit, as a share of the screen from
+  // the top of its pin (or of the section, when it scrolls)
+  function firstWords(k) {
+    var pin = pinOf[k], sec = sections[k], y = AH;
+    if (pin) {
+      var pt = pin.getBoundingClientRect().top;
+      [].forEach.call(pin.querySelectorAll(".r"), function (el) { if (el.offsetHeight) y = Math.min(y, el.getBoundingClientRect().top - shiftOf(el) - pt); });
+    } else {
+      var first = sec.querySelector("h1, h2, h3, p, figure, form, li");
+      if (first) y = first.getBoundingClientRect().top - sec.getBoundingClientRect().top;
+    }
+    return y / AH;
+  }
   function goneOf(k) {
-    var sec = sections[k], pin = pinOf[k];
+    var sec = sections[k], pin = pinOf[k], blend = k < NW - 1, next = blend ? firstWords(k + 1) : 0;
     var top = headBottom() + 8, pt = pin.getBoundingClientRect().top, room = pins[k] || AH;
     // everything that fades with the world, except what is gone before the
     // pin lets go (its --out is under 1)
-    [].forEach.call(pin.querySelectorAll(".r"), function (el) {
-      if (!el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return;
-      room = Math.min(room, el.getBoundingClientRect().top - shiftOf(el) - pt - top);
+    var len = pins[k] || AH;
+    var stay = [], own = readers[k].map(function (el, j) {
+      stay[j] = 0;
+      if (!el.classList.contains("r") || !el.offsetHeight || parseFloat(getComputedStyle(el).getPropertyValue("--out")) < 1) return null;
+      var r = el.getBoundingClientRect(), y = r.top - shiftOf(el) - pt, foot = (y + r.height) / len;
+      room = Math.min(room, y - top);
+      // a .r inside another moves and fades with it (its own stand would
+      // add the pin's travel twice)
+      if (!blend || el.parentElement.closest(".world > .pin .r")) return null;
+      // the share of the pin's exit before the next world's words, rising
+      // from below, would reach this one's foot, and never past the moment
+      // the pin's own bottom edge (it clips) would reach it: an element low
+      // in the pin starts to fade in the last of the hold instead
+      var x = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - foot - MEET_GAP), Math.max(0.02, 1 - foot));
+      stay[j] = x;
+      return x * len;
     });
+    var devices = 0;
     if (sec.classList.contains("devices-world")) {
       var D = devicesOf(sec), it = D.items[D.items.length - 1];
       if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) room = Math.min(room, it.offsetTop + el.offsetTop - top); });
+      // /build's devices leave together: drawDevices stands the stage still
+      // and fades it as one, for the share of the exit in devStay
+      own = own.map(function () { return null; });
+      stay = stay.map(function () { return 0; });
+      // the lowest of the last thing's devices and words, where the pin's edge would cut first
+      var dLow = 0;
+      if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) { if (el) dLow = Math.max(dLow, el.getBoundingClientRect().bottom - pt); });
+      var dFoot = (dLow || D.stage.offsetHeight * 0.75) / len;
+      if (blend) devices = Math.min(STAY_MAX, Math.max(EXIT_MIN, 1 + next - dFoot - MEET_GAP), Math.max(0.02, 1 - dFoot));
     }
-    return Math.max(room, 10);
+    room = Math.max(room, 10);
+    // a nested .r takes its outer .r's exit
+    own = own.map(function (r, j) {
+      if (r !== null) return r;
+      var outer = readers[k][j].parentElement && readers[k][j].parentElement.closest(".world > .pin .r");
+      var at = outer ? readers[k].indexOf(outer) : -1;
+      return at >= 0 && own[at] !== null ? own[at] : null;
+    });
+    return { world: room, els: own.map(function (r) { return r === null ? room : r; }), stay: stay, devices: devices };
   }
   // A unit of --u is a screen of scroll once a pin has let go (the last
   // world counts its tail in AH), and the hold's length before.
@@ -531,15 +587,32 @@
     pins = sections.map(function (s, k) { return held[k] ? pinOf[k].offsetHeight : 0; });
     docH = root.scrollHeight;
     vh = window.innerHeight;
-    gones = sections.map(function (s, k) { return held[k] ? reach(k, goneOf(k)) : undefined; });
+    goneEls = []; devStay = [];
+    var stays = [];
+    gones = sections.map(function (s, k) {
+      if (!held[k]) return undefined;
+      var g = goneOf(k);
+      goneEls[k] = g.els.map(function (r) { return reach(k, r); });
+      stays[k] = g.stay;
+      devStay[k] = g.devices;
+      return reach(k, g.world);
+    });
+    // then the writes: how long each .r stands still as its pin leaves
+    sections.forEach(function (s, k) {
+      (readers[k] || []).forEach(function (el, j) {
+        var x = held[k] && stays[k] ? stays[k][j] || 0 : 0;
+        setVar(el, "--sx", x ? String(round3(x)) : "");
+        setVar(el, "--pl", x ? Math.round(pins[k]) + "px" : "");
+      });
+    });
     if (nav) placeRail();
     // the exits may have moved: the next frame writes every --u, --e and --p again
     lastU = [];
     lastP = [];
   }
   // The world on screen (i), how far through its hold (l), how far the next
-  // one has come up the screen (a, 0 to 1), where the fire line between
-  // them stands (b), and how far the page has scrolled past the last world.
+  // one has come up the screen (a, 0 to 1), where the edge between their
+  // grounds stands (b), and how far the page has scrolled past the last world.
   function scrollState() {
     var y = sy, i = 0;
     for (var k = 0; k < NW; k++) if (y >= tops[k] - 1) i = k;
@@ -550,12 +623,18 @@
       // over the screen in which the next one's top edge comes up
       var P = held[i] ? Math.max(1, pins[i]) : AH;
       a = clamp((y - (tops[i + 1] - P)) / P);
-      // the fire line (-0.4 + 1.8 * b of the screen from the bottom,
-      // crossing() below) sweeps up as a pin leaves; under a world that
-      // scrolls it stands on the next section's top edge instead of sweeping
-      // up through this one's words. Two sections in a row on the same
-      // ground are one world to the eye, so nothing burns between them.
-      if (worldOf[i] !== worldOf[i + 1]) b = held[i] ? a : clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
+      // the edge between the grounds (-0.45 + 1.9 * b of the screen from
+      // the bottom, give or take its soft fifth: sky.js) rises as a pin
+      // leaves; under a world that scrolls it stands on the next section's
+      // top edge instead of rising through this one's words. Two sections
+      // in a row on the same ground are one world to the eye, so nothing
+      // blends between them.
+      if (worldOf[i] !== worldOf[i + 1]) b = held[i] ? a : clamp((1 - (tops[i + 1] - y) / AH + 0.45) / 1.9);
+      // At rest on the first screen the next ground stays down: where the
+      // next section starts just below the fold it would otherwise tint the
+      // page's first words (home's doors on a desktop). It rises in over the
+      // first scroll.
+      if (i === 0 && !held[0] && tops[1] > 0.85 * AH) b *= sm(0, Math.min(0.15 * AH, Math.max(1, docH - vh)), y);
     } else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, a, b, tail];
   }
@@ -572,9 +651,9 @@
       var u = round3(k < i ? 2 : k > i + 1 ? -1 : k === i ? l + x : -1 + x);
       if (u === lastU[k]) continue;
       lastU[k] = u;
-      var e = round3(exitOf(k, gones[k], u));
+      var own = goneEls[k] || [];
       for (var j = 0; j < readers[k].length; j++) {
-        var el = readers[k][j];
+        var el = readers[k][j], e = round3(exitOf(k, own[j] === undefined ? gones[k] : own[j], u));
         el.style.setProperty("--u", u);
         if (e !== lastE[k][j]) { lastE[k][j] = e; el.style.setProperty("--e", e); }
       }
@@ -703,7 +782,7 @@
       return pinOf[k] ? [].filter.call(s.querySelectorAll(P_READERS), function (el) { return !el.closest("[data-stage]"); }) : [];
     });
     lastE = readers.map(function () { return []; });
-    tops = []; hs = []; pins = []; held = []; gones = []; lastU = []; lastP = [];
+    tops = []; hs = []; pins = []; held = []; gones = []; goneEls = []; lastU = []; lastP = [];
     shown = worldOf[0] || 0;
     tBind = performance.now();
     if (!LOW) buildIndex();
@@ -718,7 +797,7 @@
   var stirAt = 0, stirY = -1, stirX = 0, stirP = 0;
   var ptr = { x: -9999, y: -9999, on: false, sx: 0, sy: 0 };
   function stirred(now) {
-    var moving = sy !== stirY || ptr.x !== stirX || ptr.y !== stirP || burnIn || leaveAt || now - themeAt < THEME_MS ||
+    var moving = sy !== stirY || ptr.x !== stirX || ptr.y !== stirP || arrival || leaveAt || now - themeAt < THEME_MS ||
       Math.abs((ptr.on ? ptr.x : AW / 2) - ptr.sx) > 0.5 || Math.abs((ptr.on ? ptr.y : AH / 2) - ptr.sy) > 0.5;
     stirY = sy; stirX = ptr.x; stirP = ptr.y;
     if (moving) stirAt = now;
@@ -739,13 +818,18 @@
     if (pinned) { setU(i, l, x); setP(i, l); }
     var pass = crossing(b);
 
-    // the ground on screen, where the next page's burn starts from
+    // the ground on screen, where the next page's dissolve starts from
     shown = pass && pass.mix < 0.8 ? pass.from : worldOf[b < 0.8 ? i : i + 1];
 
     if (pinned) {
       drawRail();
-      if (isDevices(i) && held[i]) drawDevices(sections[i], l, ts, exitOf(i, gones[i], u));
+      if (isDevices(i) && held[i]) {
+        var ds = devStay[i] || 0, dPx = ds * (pins[i] || AH);
+        drawDevices(sections[i], l, ts, exitOf(i, ds ? dPx : gones[i], u), ds ? Math.min(Math.max(u - 1, 0), ds) * (pins[i] || AH) : 0);
+      }
       if (a > 0 && isDevices(i + 1) && held[i + 1]) drawDevices(sections[i + 1], 0, ts, 1);
+      // a jump past the devices leaves them as they were; settle them gone
+      if (i > 0 && isDevices(i - 1) && held[i - 1]) { var past = devicesOf(sections[i - 1]); if (past.stage) { put(past.stage, "opacity", "0"); put(past.stage, "translate", ""); } }
     }
 
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));
@@ -758,9 +842,10 @@
       gl.uniform1f(U.uWorldA, pass ? pass.from : worldOf[i]);
       gl.uniform1f(U.uWorldB, pass ? worldOf[i] : worldOf[Math.min(i + 1, NW - 1)]);
       gl.uniform1f(U.uMix, pass ? pass.mix : b);
+      gl.uniform1f(U.uFade, pass ? 1 : 0);
       gl.uniform1f(U.uLocal, l);
       gl.uniform2f(U.uMouse, (ptr.sx - AW / 2) / AH, (AH / 2 - ptr.sy) / AH);
-      // nothing on the page is the fire's source: the focus stands far off screen
+      // nothing on the page is a flame's source: the focus stands far off screen
       gl.uniform2f(U.uFocus, 0, 10);
       gl.uniform1f(U.uFocusR, 0.1);
       gl.uniform1f(U.uFlame, 0);
@@ -813,12 +898,12 @@
   // The pages in PAGES are one place. A link between them does not load a
   // new document: the words in view lift away, the new page is fetched
   // (usually already, on hover or when the browser is idle) and put in
-  // place, and the sky burns from the world that was on screen into the new
-  // page's first world while the new words rise behind the fire. Any other
+  // place, and the sky dissolves from the world that was on screen into the
+  // new page's first world while the new words rise in. Any other
   // link is an ordinary navigation, and so is every link in low motion.
   // PAGES is the inRouter list in site/site.js (test/engine.test.js).
   var PAGES = { "/": 1, "/engineering-department": 1, "/coaching": 1, "/build": 1, "/work": 1, "/about": 1 };
-  var cache = {}, navSeq = 0, burnIn = null, leaveAt = 0;
+  var cache = {}, navSeq = 0, arrival = null, leaveAt = 0;
   function pathOf(u) {
     var p = u.pathname.replace(/\/index(\.html)?$/, "/").replace(/\.html$/, "");
     return p.length > 1 ? p.replace(/\/$/, "") : p;
@@ -841,38 +926,21 @@
     return cache[path];
   }
 
-  // the burn from the old page's world into the new one, read by the loop.
-  // The shader's fire line stands at -0.4 + 1.8 * mix of the screen's
-  // height from the bottom, and its flames reach about 0.3 above the line,
-  // so the burn starts where they first touch the screen, not below it. It
-  // answers a tap, so it eases out: fast through the words, slowing as it
-  // passes the header.
-  var BURN = 850, MIX_FROM = 0.06;
-  // The new words show just behind the fire line: --wipe is written on the
-  // arriving page's pins, the only thing that reads it, and is registered
-  // not to inherit (worlds.css), so each frame restyles those pins alone.
-  // On <html> it restyled the whole document, about 10ms a frame on a phone.
-  var wiped = [];
-  function wipe(m) {
-    var v = m === null ? null : ((-0.4 + 1.8 * m) * 100).toFixed(1) + "%";
-    wiped.forEach(function (pin) {
-      if (v === null) pin.style.removeProperty("--wipe");
-      else pin.style.setProperty("--wipe", v);
-    });
-    if (v === null) wiped = [];
-  }
-  function endBurn() {
-    burnIn = null;
+  // The dissolve from the old page's ground into the new one, read by the
+  // loop: FADE ms, eased out, because it answers a tap. The new words rise
+  // in over ENTER ms (.nav-enter, worlds.css), and the class stays until
+  // they have, so no rule changes under a running animation.
+  var FADE = 300, ENTER = 700, enterT = 0;
+  function endArrival() {
+    arrival = null;
+    clearTimeout(enterT);
     root.classList.remove("nav-enter");
-    wipe(null);
   }
   function crossing(b) {
-    if (!burnIn) return null;
-    var p = clamp((performance.now() - burnIn.start) / burnIn.dur);
-    var m = MIX_FROM + (1 - MIX_FROM) * (1 - Math.pow(1 - p, 3));
-    if (p >= 1) { endBurn(); return null; }
-    wipe(m);
-    return b > 0.001 ? null : { from: burnIn.from, mix: m };
+    if (!arrival) return null;
+    var p = clamp((performance.now() - arrival.start) / FADE);
+    if (p >= 1) { arrival = null; return null; }
+    return b > 0.001 ? null : { from: arrival.from, mix: 1 - (1 - p) * (1 - p) };
   }
 
   // Every address is versioned (scripts/stamp.js), so a page whose scripts
@@ -922,7 +990,7 @@
     if (push && !going) { try { history.replaceState({ y: window.scrollY }, ""); } catch (e) {} }
     going = path;
     setCurrent(path);
-    endBurn();
+    endArrival();
     root.classList.add("nav-leave");
     var now = performance.now();
     if (!RM && !leaveAt) leaveAt = now;
@@ -959,10 +1027,9 @@
       // (chrome.js, talk.js) binds to it now
       document.dispatchEvent(new CustomEvent("chama:swapped"));
       if (!RM) {
-        wiped = [].slice.call(document.querySelectorAll("main .world > .pin"));
-        wipe(MIX_FROM);
         root.classList.add("nav-enter");
-        burnIn = { from: from, start: performance.now(), dur: BURN };
+        enterT = setTimeout(function () { root.classList.remove("nav-enter"); }, ENTER);
+        arrival = { from: from, start: performance.now() };
       }
       var h = document.querySelector("main h1");
       if (h) {
@@ -1003,7 +1070,7 @@
     window.addEventListener("pageshow", function (e) {
       if (!e.persisted) return;
       stay();
-      endBurn();
+      endArrival();
     });
     window.addEventListener("popstate", function () {
       var path = pathOf(location);
