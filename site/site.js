@@ -21,11 +21,16 @@ export const SITE = {
 // without a full load. lastmod: bump in the same change as the page's copy.
 export const PAGES = [
   { id: "home", path: "/", file: "index.html", nav: null, inRouter: true, priority: "1.0", lastmod: "2026-11-16" },
-  { id: "engineering-department", path: "/engineering-department", file: "engineering-department.html", nav: "Engineering", inRouter: true, priority: "0.9", lastmod: "2026-11-16" },
+  { id: "engineering-department", path: "/engineering-department", file: "engineering-department.html", nav: "Engineering", inRouter: true, priority: "0.9", lastmod: "2026-11-16", ogImage: "/og-ed-2026-11-16.png" },
   { id: "coaching", path: "/coaching", file: "coaching.html", nav: "Coaching", inRouter: true, priority: "0.8", lastmod: "2026-11-16" },
   { id: "build", path: "/build", file: "build.html", nav: "Build", inRouter: true, priority: "0.8", lastmod: "2026-11-16" },
   { id: "work", path: "/work", file: "work.html", nav: "Work", inRouter: true, priority: "0.7", lastmod: "2026-11-16" },
   { id: "about", path: "/about", file: "about.html", nav: "About", inRouter: true, priority: "0.6", lastmod: "2026-11-16" },
+  { id: "hearth-public", path: "/hearth", file: "hearth-public.html", nav: null, inRouter: false, priority: "0.5", lastmod: "2026-11-16", ogImage: "/og-hearth-2026-10-22.png" },
+  { id: "privacy", path: "/privacy", file: "privacy.html", nav: null, inRouter: false, priority: "0.3", lastmod: "2026-11-16" },
+  { id: "brand", path: "/brand", file: "brand/index.html", nav: null, inRouter: false, priority: "0.3", lastmod: "2026-11-16" },
+  { id: "agent", path: "/agent", file: "agent.html", nav: null, inRouter: false, noindex: true, lastmod: "2026-11-16" },
+  { id: "not-found", path: "/404", file: "404.html", nav: null, inRouter: false, noindex: true, lastmod: "2026-11-16" },
 ];
 
 export const pageById = (id) => PAGES.find((p) => p.id === id);

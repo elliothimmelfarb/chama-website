@@ -111,3 +111,64 @@
   document.addEventListener("chama:swapped", ready);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ready); else ready();
 })();
+
+/* ---- the recording on /engineering-department -------------------------
+   A [data-rec] figure holds a muted <video> with data-tall and data-wide
+   sources, a [data-rec-toggle] button and caption lines carrying
+   data-wide/data-tall start times. In full motion the video plays when 60%
+   of it is in view and pauses out of view; once the visitor pauses it, it
+   waits for the button. The figure shows data-state (idle, playing,
+   paused, ended), and the caption being said gets data-now. The cut is
+   chosen here before the first play, because <source media> is not
+   honoured everywhere. The router swaps <main> without running its
+   scripts, so the button is delegated from document and new videos are
+   bound when <main> changes. */
+(function () {
+  "use strict";
+  var LOW = document.documentElement.getAttribute("data-motion") === "low";
+  var NARROW = matchMedia("(max-width: 759px)");
+  var io = !LOW && "IntersectionObserver" in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var v = e.target;
+      if (e.intersectionRatio >= 0.6) { if (!v._held && !v.ended && v.paused) play(v); }
+      else if (!e.isIntersecting && !v.paused) v.pause();
+    });
+  }, { threshold: [0, 0.6] }) : null;
+
+  function play(v) {
+    var want = v.getAttribute(NARROW.matches ? "data-tall" : "data-wide");
+    if (!v._started && want && v.getAttribute("src") !== want) v.setAttribute("src", want);
+    v.play().catch(function () {});
+  }
+  function show(v) {
+    var fig = v.closest("[data-rec]");
+    if (!fig) return;
+    fig.setAttribute("data-state", v.ended ? "ended" : v.paused ? (v._started ? "paused" : "idle") : "playing");
+    var cut = /tall/.test(v.currentSrc) ? "tall" : "wide", items = fig.querySelectorAll("[data-wide]"), now = 0, i;
+    for (i = 0; i < items.length; i++) if (v.currentTime >= +items[i].getAttribute("data-" + cut)) now = i;
+    for (i = 0; i < items.length; i++) items[i].toggleAttribute("data-now", i === now);
+  }
+  function bind() {
+    document.querySelectorAll("[data-rec] video").forEach(function (v) {
+      if (v._bound) return;
+      v._bound = true;
+      v.addEventListener("play", function () { v._started = true; });
+      ["play", "pause", "ended", "timeupdate", "seeked"].forEach(function (ev) { v.addEventListener(ev, function () { show(v); }); });
+      v.closest("[data-rec]").setAttribute("data-state", "idle");
+      if (io) io.observe(v);
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-rec-toggle]");
+    if (!b) return;
+    var v = b.closest("[data-rec]").querySelector("video");
+    if (v.paused) { v._held = false; play(v); } else { v._held = true; v.pause(); }
+  });
+  document.addEventListener("chama:swapped", bind);
+  function start() {
+    bind();
+    new MutationObserver(bind).observe(document.body, { childList: true });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();

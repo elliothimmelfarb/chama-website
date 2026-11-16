@@ -68,26 +68,58 @@
 
   // ---- stages: figures that play themselves ---------------------------------------
   // A [data-stage] runs --p from 0 to 1 over data-duration seconds on the
-  // [data-p] elements inside it. It starts when 60% of it is in view, pauses
-  // when it leaves the view or the tab is hidden, and stops at the end; it
-  // never loops. It shows its state as data-state (idle, playing, paused,
-  // ended). Its buttons carry data-stage-action="play|pause|replay" or
-  // data-stage-seek="<0..1>"; the seek at or before the playhead has
-  // aria-current="step". The handlers are on document, because scripts
-  // inside <main> never run after the router swaps it in.
-  // In low motion a stage is a stepper: it starts complete (ended, with no
-  // --p written), only its seek buttons show (worlds.css), and a seek jumps.
+  // [data-p] elements inside it. It starts when 60% of it is in view, but
+  // not before data-delay seconds after it was bound (page load, or the
+  // router's swap); it pauses when it leaves the view or the tab is hidden,
+  // and stops at the end; it never loops. It shows its state as data-state
+  // (idle, playing, paused, ended). Buttons inside it:
+  //   data-stage-action="play|pause|replay"
+  //   data-stage-seek="<0..1>"   jump to a beat; the one in play has
+  //                              aria-current="step". data-stage-still on
+  //                              the same button is where low motion shows it.
+  //   data-stage-step="-1|1"     the previous or next seek point; at an end
+  //                              it is aria-disabled="true" (and stays
+  //                              focusable). Arrow keys do the same while
+  //                              focus is in the stage.
+  // and [data-stage-count] reads "N of M" seek points.
+  // The handlers are on document, because scripts inside <main> never run
+  // after the router swaps it in.
+  // In low motion a stage is a stepper: no autoplay, it opens on its first
+  // seek point (complete, with no --p written, if it has none), and steps.
   // In the pinned layout the stage's figure starts at 0 from the first
   // paint (worlds.css), so it never flashes complete before it plays.
   var stages = [], stageIO = null, stageRaf = 0;
   function stageOf(el) {
     if (el._stage) return el._stage;
-    var seeks = [].map.call(el.querySelectorAll("[data-stage-seek]"), function (b) { return [b, clamp(parseFloat(b.getAttribute("data-stage-seek")) || 0)]; });
-    seeks.sort(function (x, y) { return x[1] - y[1]; });
+    var seeks = [].map.call(el.querySelectorAll("[data-stage-seek]"), function (b) {
+      var at = clamp(parseFloat(b.getAttribute("data-stage-seek")) || 0), still = b.getAttribute("data-stage-still");
+      return { b: b, at: at, still: still === null ? at : clamp(parseFloat(still) || 0) };
+    });
+    seeks.sort(function (x, y) { return x.at - y.at; });
     return (el._stage = {
       el: el, dur: Math.max(0.1, parseFloat(el.getAttribute("data-duration")) || 8) * 1000,
+      delay: Math.max(0, parseFloat(el.getAttribute("data-delay")) || 0) * 1000, bound: performance.now(), wait: 0,
       readers: [].slice.call(el.querySelectorAll("[data-p]")), seeks: seeks,
-      state: "", p: -1, from: 0, start: 0, seen: false, auto: false
+      steps: [].slice.call(el.querySelectorAll("[data-stage-step]")), count: el.querySelector("[data-stage-count]"),
+      state: "", p: -1, k: -2, from: 0, start: 0, seen: false, auto: false
+    });
+  }
+  // where a seek point puts the figure: its beat, or in low motion its still
+  function pointOf(s) { return LOW ? s.still : s.at; }
+  function stageIndex(S, p) {
+    var k = -1;
+    S.seeks.forEach(function (s, i) { if (pointOf(s) <= p + 0.0005) k = i; });
+    return k;
+  }
+  function stageMark(S) {
+    var k = stageIndex(S, Math.max(0, S.p)), n = S.seeks.length;
+    if (k === S.k) return;
+    S.k = k;
+    S.seeks.forEach(function (s, i) { if (i === k) s.b.setAttribute("aria-current", "step"); else s.b.removeAttribute("aria-current"); });
+    if (S.count && n) S.count.textContent = (Math.max(k, 0) + 1) + " of " + n;
+    S.steps.forEach(function (b) {
+      var end = +b.getAttribute("data-stage-step") < 0 ? k <= 0 : k >= n - 1;
+      if (end) b.setAttribute("aria-disabled", "true"); else b.removeAttribute("aria-disabled");
     });
   }
   function stageState(S, state) {
@@ -100,9 +132,7 @@
     if (p === S.p) return;
     S.p = p;
     S.readers.forEach(function (el) { el.style.setProperty("--p", p); });
-    var cur = null;
-    S.seeks.forEach(function (s) { if (s[1] <= p + 0.0005) cur = s[0]; });
-    S.seeks.forEach(function (s) { if (s[0] === cur) s[0].setAttribute("aria-current", "step"); else s[0].removeAttribute("aria-current"); });
+    stageMark(S);
   }
   function stageAt(S) { return S.state === "playing" ? clamp(S.from + (performance.now() - S.start) / S.dur) : Math.max(0, S.p); }
   function stagePlay(S, from) {
@@ -127,6 +157,11 @@
     S.from = S.p;
     stageState(S, p >= 1 ? "ended" : "paused");
   }
+  function stageStep(S, d) {
+    var n = S.seeks.length, k = stageIndex(S, Math.max(0, S.p)), to = Math.min(n - 1, Math.max(0, k + d));
+    if (!n || to === k) return;
+    stageSeek(S, pointOf(S.seeks[to]));
+  }
   function tickStages() {
     if (stageRaf) return;
     stageRaf = requestAnimationFrame(function () {
@@ -145,8 +180,14 @@
   // and holds one that has left the view
   function stageSeen(S) {
     if (LOW) return;
-    if (S.seen && !document.hidden && (S.state === "idle" || (S.state === "paused" && S.auto))) stagePlay(S, S.state === "idle" ? 0 : S.from);
-    else if ((!S.seen || document.hidden) && S.state === "playing") stagePause(S, true);
+    if (S.seen && !document.hidden && (S.state === "idle" || (S.state === "paused" && S.auto))) {
+      var early = S.delay - (performance.now() - S.bound);
+      if (S.state === "idle" && early > 0) {
+        if (!S.wait) S.wait = setTimeout(function () { S.wait = 0; stageSeen(S); }, early);
+        return;
+      }
+      stagePlay(S, S.state === "idle" ? 0 : S.from);
+    } else if ((!S.seen || document.hidden) && S.state === "playing") stagePause(S, true);
   }
   function bindStages() {
     if (stageIO) stageIO.disconnect();
@@ -157,28 +198,38 @@
           var S = en.target._stage, view = en.rootBounds ? en.rootBounds.height : window.innerHeight;
           // a stage taller than the screen counts once it fills 60% of it
           S.seen = en.isIntersecting && (en.intersectionRatio >= 0.6 || en.intersectionRect.height >= 0.6 * view);
-          if (!en.isIntersecting) S.seen = false;
           stageSeen(S);
         });
       }, { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1] });
     }
     stages.forEach(function (S) {
       if (S.state) return;
-      if (LOW) { stageState(S, "ended"); S.p = 1; return; }
+      if (LOW && S.seeks.length) { stageSeek(S, pointOf(S.seeks[0])); return; }
+      if (LOW) { stageState(S, "ended"); S.p = 1; stageMark(S); return; }
       stageState(S, "idle");
       stageWrite(S, 0);
     });
     if (stageIO) stages.forEach(function (S) { stageIO.observe(S.el); });
   }
   document.addEventListener("click", function (e) {
-    var b = e.target.closest && e.target.closest("[data-stage-action], [data-stage-seek]");
+    var b = e.target.closest && e.target.closest("[data-stage-action], [data-stage-seek], [data-stage-step]");
     var el = b && b.closest("[data-stage]");
-    if (!el) return;
+    if (!el || b.getAttribute("aria-disabled") === "true") return;
     var S = stageOf(el), act = b.getAttribute("data-stage-action");
-    if (b.hasAttribute("data-stage-seek")) stageSeek(S, clamp(parseFloat(b.getAttribute("data-stage-seek")) || 0));
+    if (b.hasAttribute("data-stage-step")) stageStep(S, +b.getAttribute("data-stage-step") < 0 ? -1 : 1);
+    else if (b.hasAttribute("data-stage-seek")) S.seeks.forEach(function (s) { if (s.b === b) stageSeek(S, pointOf(s)); });
     else if (act === "pause") stagePause(S, false);
     else if (act === "replay") stagePlay(S, 0);
     else if (act === "play" && !LOW) stagePlay(S, S.state === "ended" ? 0 : Math.max(0, S.p));
+  });
+  document.addEventListener("keydown", function (e) {
+    if ((e.key !== "ArrowLeft" && e.key !== "ArrowRight") || e.altKey || e.ctrlKey || e.metaKey) return;
+    var el = e.target.closest && e.target.closest("[data-stage]");
+    if (!el || e.target.closest("input, textarea, select, [contenteditable]")) return;
+    var S = stageOf(el);
+    if (!S.seeks.length) return;
+    e.preventDefault();
+    stageStep(S, e.key === "ArrowLeft" ? -1 : 1);
   });
   document.addEventListener("visibilitychange", function () { stages.forEach(stageSeen); });
   markMotion();
@@ -537,8 +588,9 @@
       // the fire line (-0.4 + 1.8 * b of the screen from the bottom,
       // crossing() below) sweeps up as a pin leaves; under a world that
       // scrolls it stands on the next section's top edge instead of sweeping
-      // up through this one's words
-      b = held[i] ? a : clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
+      // up through this one's words. Two sections in a row on the same
+      // ground are one world to the eye, so nothing burns between them.
+      if (worldOf[i] !== worldOf[i + 1]) b = held[i] ? a : clamp((1 - (tops[i + 1] - y) / AH + 0.4) / 1.8);
     } else tail = Math.max(0, y - (tops[i] + range));
     return [i, l, a, b, tail];
   }
@@ -1023,6 +1075,9 @@
         target.classList.add("is-target");
       }
       window.scrollTo({ top: y, behavior: "instant" });
+      // the new <main> is in place and measured: per-page setup elsewhere
+      // (chrome.js, talk.js) binds to it now
+      document.dispatchEvent(new CustomEvent("chama:swapped"));
       if (!RM) {
         wiped = [].slice.call(document.querySelectorAll("main .world > .pin"));
         wipe(MIX_FROM);

@@ -39,3 +39,376 @@ We're a small, family-owned, AI-native business, based in Lisbon and working wor
 We believe mastery of AI can give people more time for the things they want to do.
 
 More time for human things, and for each other.
+
+---
+
+## Home (https://chamainteligente.com/engineering-department)
+
+A small, family-owned, AI-native business in Lisbon, working worldwide.
+
+# Your own engineering department.
+
+Software that fits your process, and changes when you do. You talk to a person. AI does the heavy work behind us.
+
+## Software companies have engineers, and their customers wait in line.
+
+Here the engineers work only for you. You get what a software company has, without becoming one.
+
+## Tell us what you need. It gets built. You use it. You find what's next.
+
+Four real requests, from request to live: A new filter, 31 min; A fix, 14 min; Download to Excel, 42 min; A new report, 33 min.
+
+## Measured on real requests.
+
+Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.
+
+Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.
+
+19 people use it every day, and about 15 changes go live in a typical week.
+
+Ask it anything. Why don't these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.
+
+## A request, then the change.
+
+A real request and the change it became, recorded on the same app with demo data.
+
+- Someone in the office asks for a change from inside the app.
+
+- They type what they need: a way to see one supplier's orders at a time.
+
+- The note reaches us with the page they were on.
+
+- We build it, test it and ship it. This one took 31 minutes.
+
+- The new Vendor filter is live in their app.
+
+## You own the IP.
+
+We manage it for you, and you can take it anywhere.
+
+If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.
+
+## A setup fee and a fixed monthly fee, quoted after a first conversation.
+
+The setup fee is due only when you switch off your old system.
+
+## Questions owners ask
+
+### What if you disappear?
+
+You own the code and the data. It runs on standard tools, it's backed up, and any engineer can take it over.
+
+### How much of my time does it take?
+
+A few conversations at the start, so we understand how you work. After that, you ask for changes when you notice them, in a sentence.
+
+### How soon is there a first version?
+
+Usually within days of those first conversations. Your team uses it alongside the old system until it has earned its place.
+
+### Does it work with what we already use?
+
+Yes. It connects to the tools you keep, such as QuickBooks, and brings in what lives in your spreadsheets today.
+
+### Where does our data live?
+
+In your own database, on standard cloud hosting, backed up every night. It's yours.
+
+### Who checks the AI's work?
+
+Every change is written with its tests first and goes live only after the whole test suite passes and the change has been reviewed. Anything that touches money or another company's system waits for Elliot.
+
+## How it starts
+
+1. A first conversation about how your business works today.
+
+2. A first version your team can use, usually within days.
+
+3. You switch off the old system when you're ready. That's when the setup fee is due.
+
+---
+
+## Home (https://chamainteligente.com/coaching)
+
+# AI fluency coaching and training.
+
+When AI can do something new, so can you.
+
+## Time with someone who knows AI deeply and makes it simple.
+
+Elliot uses AI every day and keeps up with every new capability. He has mentored software engineers and people new to AI, and he starts from the work in front of you, whatever your role.
+
+## Who it's for
+
+### You, one to one
+
+Regular sessions with Elliot, built on the questions, decisions and ideas in front of you. No technical background needed.
+
+Each session builds on the last, and every one leaves you a record: the summary, what you decided, and a playbook of things to try.
+
+### Executive teams
+
+For leaders who are paying for AI and want to get far more from it, and to set the direction for everyone else.
+
+### Engineering teams
+
+Agentic engineering training: building software with AI agents that plan, write and verify code. On site or remote.
+
+We teach the habits that keep a team current: picking up each new capability early, and reviewing how you work every time a new model ships.
+
+### As a company benefit
+
+Coaching for your people, as a benefit you offer the whole company. Everyone learns from the work they already do.
+
+## Each new model can do more, and some old habits start to cost you.
+
+With the older Claude Opus models, Elliot never set thinking effort below extra high. With the current ones, high effort costs more and drifts from what you asked, and low or medium effort gives better answers. A team still on its old settings pays more for worse work.
+
+## AI enablement for companies
+
+Company AI policy, structure and enablement, from someone who led AI enablement at Campminder for two and a half years and then built AI platforms as an engineer.
+
+## The Hearth
+
+Members book sessions in their own timezone, keep the record of every session, review what they learned, and can connect their own AI agent.
+
+---
+
+## Home (https://chamainteligente.com/build)
+
+# Websites, apps and products.
+
+If it can be solved with something on a phone, a computer or in the cloud, we can do it.
+
+## Websites built to be found.
+
+Fast, clear, and set up for search from the first day.
+
+### Toraya Lisboa
+
+Website and staff app. A Japanese deli in Rossio station. We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour. The version they approved was ready four hours after we started.
+
+Live at https://toraya.pt
+
+## Apps made for one business.
+
+The tools a team runs on, shaped around how it already works.
+
+### VSF Lead Automation
+
+App for one business. Vivir Sin Fronteras helps students get into universities abroad. When someone enquires, a bot messages them on WhatsApp, asks the questions the team would ask, and books the meeting straight into the team's calendar when it's worth it.
+
+This is private software, built for one business.
+
+### Alves Teamwear
+
+App for one business. Alves Teamwear sells custom kits to sports teams. We built an app where a team designs its own kit and places the order, and a command center where the operators and the supplier keep track of everything.
+
+This is private software, built for one business.
+
+## Have an idea? We'll build it with you, as a partner or co-founder.
+
+We build our own products too, so we know the road from an idea to something people use.
+
+### ShopIntake
+
+Our own product. It reads the purchase orders customers email you and pulls the order out, so nobody has to type it into your ERP. https://shop-intake.com
+
+---
+
+## Home (https://chamainteligente.com/work)
+
+# Everything we've built.
+
+Every business is a different shape. Here is who we have worked with and what we made.
+
+## Your own engineering department
+
+- A metal stamping plant in Toronto: The software 88 people run the plant on. It replaced their old system, a second app and four spreadsheets. (https://chamainteligente.com/engineering-department)
+
+## Websites, apps and products
+
+- Toraya Lisboa: Website and staff app for a Japanese deli in Rossio station. Changes live within the hour. (https://chamainteligente.com/build#toraya)
+- Alves Limited Group: From an ad to a booked call: a landing page and an AI that asks each enquiry the team's questions. (https://chamainteligente.com/build#vsf)
+- Alves Teamwear: Teams design their own kit and order it; the operators and supplier track everything. (https://chamainteligente.com/build#alves)
+- ShopIntake: Our own product. Reads emailed purchase orders so nobody types them into the ERP. (https://chamainteligente.com/build#partnership)
+- View the Place: Our own product. Walk through a home for sale in 3D, on your phone, before you visit. (https://viewtheplace.com)
+- The Hearth: Our own platform for coaching: booking, session records and an MCP server. (https://chamainteligente.com/hearth)
+- aimade.games: Free to play. An arcade of browser games your AI agent can build and keep changing. (https://aimade.games)
+- Battle of Mogadishu: Free to explore. A full-scale 3D reconstruction from the historical record. (https://battle-of-mogadishu.vercel.app)
+
+## AI fluency coaching and training
+
+- Springlar: Healthy, carbon-neutral timber houses in Cascais. We work with them through coaching. (https://chamainteligente.com/coaching)
+
+---
+
+## Home (https://chamainteligente.com/about)
+
+# A small, family-owned, AI-native business.
+
+Real people you can reach. Based in Lisbon, working worldwide.
+
+Elliot, Annie and Rozalie.
+
+## Elliot, Annie and Rozalie
+
+We moved to Portugal in the fall of 2023, sight unseen, to explore more of the world, enjoy more of what life has to offer, and have our baby. Our daughter, Rozalie, was born in November 2025.
+
+We're growing this business together. Elliot brings the engineering and the AI. Annie brings the taste and the organisation that hold it together.
+
+## Superpowers to make anything on a computer, a phone or in the cloud.
+
+Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.
+
+Engineers who learned the craft before AI, weren't afraid of it, and mastered it, can now build anything, fast. Every new AI capability is ours on day one. AI is levelling up fast. We level up with it, and we help you level up too.
+
+## Partners
+
+People we work with, and introduce you to when they fit better than we do.
+
+- TLC Automation (Chris, Boulder County, Colorado): For a small business in the US, especially near Boulder, Chris is who we would call. He helps local businesses get more from the software they already use, and quotes a fixed price. https://tlcautomation.org/
+
+- Alves Limited Group (Plasencia, Spain and São Paulo, Brazil): They help us with sales and marketing, and bring deep experience of working across borders. https://alveslimitedgroup.com/
+
+## Chama means flame.
+
+Chama Inteligente is Portuguese for intelligent flame. It is said "Shama".
+
+---
+
+## Home (https://chamainteligente.com/hearth)
+
+# The Hearth.
+
+The members' room for our coaching clients. Everything that comes out of your sessions with Elliot is kept in one place, and it belongs to you.
+
+## Book a session.
+
+Pick a time from Elliot's open hours. The Hearth shows every time in your own timezone, so there is nothing to work out.
+
+## A record of every session.
+
+After each session you get a short summary, what we decided, a playbook of things to try before the next one, and follow-ups for both of us. The record is yours, and so is the transcript.
+
+## Remember what you learned.
+
+A record can come with Remember cards, short questions about what came up. A card comes back after one day, then three, seven, sixteen and thirty-five, just before you would forget it.
+
+## Bring your own AI agent.
+
+The Hearth has an MCP server. Connect Claude, or any agent that speaks MCP, and it can read your records and follow-ups and see your sessions. You approve what it may do, and can disconnect it at any time.
+
+## Private.
+
+Your room is private to you and to the people at Chama who coach you. Nothing in it is sold or shared.
+
+## How to join.
+
+Membership comes with coaching. The room is by invitation: when you start coaching with Elliot, he invites you in.
+
+---
+
+## Home (https://chamainteligente.com/privacy)
+
+# Privacy, in plain language.
+
+## Who is responsible
+
+Chama Inteligente, Lda. is the controller of information submitted through this website.
+
+Company registry and tax number 519425235
+Rua Cascais 33, bloco E, 3.º D
+1300-120 Lisboa, Portugal
+
+## Talking to us
+
+The chat on this site (Talk to us) is an AI, a Claude model. Conversations with it are saved: what you write and its replies. We save them so Elliot can read where the agent does well or badly and make it better. A second model, with no tools, reads recent conversations to catch misuse.
+
+A conversation is not linked to your name or an account (there are none); it contains only what you choose to type. Please do not share sensitive personal information in the chat. The legal basis for this processing is our legitimate interest in operating and improving the agent, under Article 6(1)(f) of the General Data Protection Regulation.
+
+## Asking us to reach out
+
+If you ask to be contacted, the agent shows you exactly what it will pass on: your name, a way to reach you (an email address, or a WhatsApp or phone number), and what you would like to be able to do. Nothing is sent until you confirm. If the chat is unreachable, a plain form takes the same details.
+
+Confirmed details are stored privately and emailed to us for Elliot to review. The legal basis is taking steps at your request before a possible agreement, under Article 6(1)(b).
+
+## Where it goes
+
+Where your words go. You, with no name, no account and no IP address stored, write in the chat on this site. Your message goes to the Claude API, where Anthropic writes the reply, and the reply comes back to you. The whole conversation is saved to private storage with Vercel in the European Union, Paris, and deleted within 12 months. Only if you ask, and confirm your details, an email goes to us through Resend. Your words are never treated as instructions.
+
+Chat messages are sent to Anthropic (the Claude API) to generate the agent's replies. Saved conversations and details are stored privately with Vercel, our hosting provider, in the European Union (Paris). Resend delivers the email. Like any website host, Vercel processes technical data such as IP addresses to serve the pages; we do not store IP addresses in conversations or details.
+
+We do not sell your information, use it for marketing, profile you, or make automated decisions with legal or similarly significant effects about you. Your words are never treated as instructions that change how our systems behave beyond the reply you see.
+
+## The Hearth, the members' room
+
+If you create an account in the Hearth (the members' room at /hearth), we keep what an account needs: your email address, the name you give, a picture if the sign-in provider offers one, your role, your timezone, and the link to the Google, GitHub or Discord account you signed in with. Each sign-in is recorded with its time, the kind of device and browser, and the country, never the IP address, so you can see where you are signed in and end any session. The legal basis is the agreement with you as a member (Article 6(1)(b)) and, for the sign-in records, our legitimate interest in keeping the room secure (Article 6(1)(f)).
+
+If you work with Elliot, the room holds the record of that work: the packs you asked for and paid, your sessions, the transcripts of those sessions and what is derived from them (a summary, key points, decisions, follow-ups), the notes you leave, and your follow-up list. Transcripts come from Google Meet when a session is held there, or Elliot attaches them. A transcript is sent to Anthropic (the Claude API) to write its record and, when you ask about your sessions in the room, to answer you. These records are yours: you can read every one, and ask for them or their deletion at any time.
+
+You can let your own software read your room: an API key you create, or an app you connect through the consent page, sees only what you grant it, every call is logged, and you can revoke it in the room. Nothing an app sends is treated as an instruction to anyone.
+
+The Hearth's database is hosted by Neon in the European Union (Frankfurt); the pages and functions run with Vercel in Paris; Resend delivers the room's email; Google provides Calendar and Meet when Elliot has connected his account, in which case your session is an event on his calendar with you as a guest.
+
+## How long we keep it
+
+We delete saved conversations and details within 12 months. A Hearth account and its records are kept while you are a member and for 12 months after your last sign-in, then deleted, except what accounting and tax law requires us to keep about a purchase; the sign-in and activity log is kept for 12 months. If we begin working together, information that becomes part of that relationship may be kept longer where the relationship or law requires it.
+
+## Your choices and rights
+
+You can ask to access, correct, delete, restrict, or receive your information, and object where the law gives you that right. Write to info@chamainteligente.com with "Privacy request" in the subject, or to the registered office above. A conversation is not linked to your identity, so to find yours we may need you to tell us roughly when it happened and what was discussed.
+
+You can also complain to Portugal's Comissão Nacional de Proteção de Dados (Data Protection Authority).
+
+Effective 2026-11-16.
+
+---
+
+## Home (https://chamainteligente.com/brand)
+
+# Media kit.
+
+You are welcome to use these files to link to or write about Chama Inteligente. There is no need to ask first.
+
+## Describing Chama
+
+Use either of these as they are:
+
+- Custom software and AI coaching, from a family business in Lisbon.
+
+- A small, family-owned, AI-native business. Based in Lisbon, working worldwide.
+
+The name is Chama Inteligente, or Chama for short. Link to chamainteligente.com, or to chamainteligente.com/coaching for the coaching in particular.
+
+## Using the logo
+
+- Use the files as they are. The mark is always ember; the name is ink on light backgrounds and paper on dark ones.
+
+- Keep clear space around the logo of at least half the mark's height. The logo files already carry it.
+
+- Below about 24 px tall, use the mark alone.
+
+- Do not stretch, rotate, recolour, outline or add effects to it.
+
+- To put the mark in a square or circle, use an avatar file rather than centring it yourself. The spark on the right makes a centred mark look off-balance, so the avatars are optically centred for you.
+
+- In running text, write the name in your own typeface.
+
+## Colours
+
+- Ember #f4581f: Ink on ember 5.50:1
+
+- Ink #141412: Paper on ink 16.20:1
+
+- Paper #f3f0e8: Ink on paper 16.20:1
+
+Text on ember is ink, never white: white on ember is 3.35:1. Ember text on paper is #b33d0b (5.14:1).
+
+## Fonts
+
+Two families from one superfamily, both under the SIL Open Font License 1.1.
+
+- Funnel Display: Headings
+
+- Funnel Sans: Text

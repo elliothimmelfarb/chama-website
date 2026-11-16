@@ -188,10 +188,44 @@ test("nothing cut from the engine comes back", () => {
 });
 
 test("a stage's controls are delegated from document, and low motion stops autoplay and the router", () => {
-  for (const attr of ["data-stage-action", "data-stage-seek", "data-duration", "data-motion-toggle"]) assert.ok(JS.includes(attr), `worlds.js handles ${attr}`);
+  for (const attr of ["data-stage-action", "data-stage-seek", "data-stage-still", "data-stage-step", "data-stage-count", "data-delay", "data-duration", "data-motion-toggle"]) assert.ok(JS.includes(attr), `worlds.js handles ${attr}`);
   for (const state of ["idle", "playing", "paused", "ended"]) assert.ok(JS.includes(`"${state}"`), `a stage can be ${state}`);
-  assert.match(JS, /document\.addEventListener\("click", function \(e\) \{\n\s*var b = e\.target\.closest && e\.target\.closest\("\[data-stage-action\], \[data-stage-seek\]"\)/);
+  assert.match(JS, /document\.addEventListener\("click", function \(e\) \{\n\s*var b = e\.target\.closest && e\.target\.closest\("\[data-stage-action\], \[data-stage-seek\], \[data-stage-step\]"\)/);
   assert.match(JS, /if \(!LOW && window\.fetch/, "the router is off in low motion");
   assert.match(JS, /var GL = !LOW &&/, "no WebGL in low motion");
   assert.match(CSS, /html\[data-motion="low"\] \[data-stage-action\]/, "low motion hides play, pause and replay");
 });
+
+test("two sections in a row on the same ground do not burn into each other", () => {
+  // the fire line's position (b) is only ever set when the grounds differ
+  const state = /function scrollState\(\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
+  const sets = [...state.matchAll(/^\s*(.*)\bb = (?!0[,;])/gm)].map((m) => m[1]);
+  assert.ok(sets.length >= 1, "scrollState sets b");
+  for (const before of sets) assert.match(before, /if \(worldOf\[i\] !== worldOf\[i \+ 1\]\)/, "b is set without checking the grounds differ");
+});
+
+test("the one-column padding on a pin leaves out a world that pads itself (data-pad=\"off\")", () => {
+  let checked = 0;
+  for (const { selectors, body } of RULES) {
+    if (!/(^|;)\s*padding(-top|-bottom|-inline)?\s*:/.test(body)) continue;
+    for (const s of selectors) {
+      if (!/\.world[^,]*\) > \.pin$/.test(s) || !s.startsWith(":is(")) continue;
+      checked++;
+      assert.match(s, /:not\(\[data-pad="off"\]\) > \.pin$/, `"${s}" pads a pin that asked for none`);
+    }
+  }
+  assert.ok(checked >= 3, "the column's padding rules were found");
+});
+
+test("the router tells the page's other scripts when a new <main> is in place and measured", () => {
+  const go = /function go\(u, push\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  const at = (needle) => go.indexOf(needle);
+  assert.ok(at('dispatchEvent(new CustomEvent("chama:swapped"))') > 0, "go() dispatches chama:swapped");
+  for (const before of ["swap(doc)", "bind()", "resize()"]) assert.ok(at(before) >= 0 && at(before) < at("chama:swapped"), `chama:swapped comes before ${before}`);
+});
+
+test("a stage's step buttons are marked at the ends with aria-disabled, never disabled", () => {
+  assert.match(JS, /setAttribute\("aria-disabled", "true"\)/);
+  assert.ok(!/\.disabled = |setAttribute\("disabled"/.test(JS), "disabled takes the button out of the focus order");
+});
+

@@ -20,10 +20,11 @@
       if (d.dataset.motion !== "low" && matchMedia("(min-height: 501px)").matches) d.classList.add("pin");
     })();
   </script>
-  <link rel="stylesheet" href="/assets/tokens.css">
-  <link rel="stylesheet" href="/assets/worlds.css">
-  <script src="/assets/sky.js" defer></script>
-  <script src="/assets/worlds.js" defer></script>
+  <link rel="stylesheet" href="/assets/tokens.css?v=a196fd43b6">
+  <link rel="stylesheet" href="/assets/base.css?v=4c9c8822cf">
+  <link rel="stylesheet" href="/assets/worlds.css?v=9bb77748cf">
+  <script src="/assets/sky.js?v=011d115dc0" defer></script>
+  <script src="/assets/worlds.js?v=464127a826" defer></script>
   <style>
     /* The fixture's own figures. Every rule that reads var(--p) sits on a
        [data-p] element, as on the real pages. */
@@ -64,7 +65,7 @@
       <div class="pin">
         <div class="copy">
           <h1>A stage that plays itself</h1>
-          <div class="stage" data-stage data-duration="6">
+          <div class="stage" data-stage data-duration="6" data-delay="1" tabindex="0" aria-label="The stage">
             <svg class="fig" viewBox="0 0 320 300" role="img" aria-label="A ring drawing itself, with a marker running round it">
               <path class="ink" data-p style="--from:0;--len:0.4" pathLength="1" d="M160 40 A120 120 0 1 1 159.9 40"/>
               <path class="hot" data-p style="--from:0.35;--len:0.4" pathLength="1" d="M110 120 L210 120 L230 200 L90 200 Z"/>
@@ -77,7 +78,10 @@
               <button type="button" data-stage-action="replay">Replay</button>
               <button type="button" data-stage-seek="0" aria-label="Beat 1">1</button>
               <button type="button" data-stage-seek="0.35" aria-label="Beat 2">2</button>
-              <button type="button" data-stage-seek="0.75" aria-label="Beat 3">3</button>
+              <button type="button" data-stage-seek="0.75" data-stage-still="0.95" aria-label="Beat 3">3</button>
+              <button type="button" data-stage-step="-1">Previous</button>
+              <span data-stage-count></span>
+              <button type="button" data-stage-step="1">Next</button>
             </div>
           </div>
         </div>
@@ -98,6 +102,16 @@
             <circle class="dot" data-p style="--at:0.8" cx="160" cy="160" r="9"/>
             <circle class="dot marker" data-p r="6"/>
           </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="world" data-world="grid" data-pin="off" data-pad="off" data-label="Same ground">
+      <div class="pin">
+        <div class="plain">
+          <p class="kicker r">Unpinned, still on the grid</p>
+          <h2 class="r">One world to the eye</h2>
+          <p class="r">The same ground as the pinned section above it, so nothing burns between them. It pads its own words (data-pad="off"), so the column adds none.</p>
         </div>
       </div>
     </section>

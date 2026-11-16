@@ -13,6 +13,7 @@ export const coaching = {
     h2: "Time with someone who knows AI deeply and makes it simple.",
     lead: "Elliot uses AI every day and keeps up with every new capability. He has mentored software engineers and people new to AI, and he starts from the work in front of you, whatever your role.",
     labels: ["Where you are", "A session", "Where you're going"],
+    alt: "A tangled line passes through a session and leaves as a straight line.",
   },
 
   forms: {
@@ -46,6 +47,12 @@ export const coaching = {
   example: {
     h2: "Each new model can do more, and some old habits start to cost you.",
     lead: "With the older Claude Opus models, Elliot never set thinking effort below extra high. With the current ones, high effort costs more and drifts from what you asked, and low or medium effort gives better answers. A team still on its old settings pays more for worse work.",
+    // The figure beside it: where Elliot sets thinking effort, then and now.
+    figure: {
+      alt: "Thinking effort: extra high with the older Claude Opus models, medium with the current ones.",
+      rows: ["Older Claude Opus models", "Current Claude Opus models"],
+      levels: ["Low", "Medium", "High", "Extra high"],
+    },
   },
 
   enablement: {
@@ -56,12 +63,14 @@ export const coaching = {
   video: {
     h2: "Meet Elliot",
     soon: "A short video of Elliot explaining how he coaches is on its way.",
+    label: "Video of Elliot, coming soon",
   },
 
   hearth: {
     h2: "The Hearth",
     lead: "Members book sessions in their own timezone, keep the record of every session, review what they learned, and can connect their own AI agent.",
     members: "Members: go to the Hearth",
+    shotAlt: "The Hearth's page, where members sign in.",
   },
 
   close: "What would you like to be able to do?",

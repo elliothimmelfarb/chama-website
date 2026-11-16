@@ -20,12 +20,13 @@ export function render(p) {
 <section class="world first" data-world="paper" data-pin="off">
   <div class="first-grid wrap">
     <div class="first-words">
+      <p class="thanks" id="thanks" role="status">${t.thanks}</p>
       <p class="descriptor">${t.descriptor}</p>
       <h1><span class="half">${t.h1[0]}</span> <span class="half">${t.h1[1]}</span></h1>
       <p class="lead sub">${t.sub}</p>
       ${talkField({ id: "ask-home" })}
     </div>
-    ${stage({ label: t.stageLabel })}
+    ${stage({ label: t.stageLabel, beats: t.stageBeats })}
   </div>
   <div class="wrap doors-wrap">
     ${doors()}

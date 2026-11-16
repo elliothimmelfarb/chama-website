@@ -21,12 +21,14 @@ export const ed = {
   loop: {
     h2: "Tell us what you need. It gets built. You use it. You find what's next.",
     stations: ["Tell us", "It gets built", "You use it", "What's next"],
+    you: "You",
+    ledgerLabel: "Four real requests, from request to live",
     after: "Most changes are live in under an hour.",
     cta: "Tell us yours",
   },
 
   numbers: {
-    h2: "Most changes are live in under an hour.",
+    h2: "Measured on real requests.",
     lead: "Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.",
     leadNamed: "Measured on the software we run for LA Metal Stamping, an 88-person plant in Toronto. It replaced their old system, a second app and four spreadsheets.",
     week: [
@@ -40,12 +42,17 @@ export const ed = {
 
   recording: {
     h2: "A request, then the change.",
+    play: "Play the recording",
+    pause: "Pause the recording",
+    posterAlt: "The supplier orders page in the app, with the new Vendor filter marked as new.",
     lead: "A real request and the change it became, recorded on the same app with demo data.",
   },
 
   own: {
     h2: "You own the IP.",
     lead: "We manage it for you, and you can take it anywhere.",
+    ours: "We manage it",
+    yours: "You own it",
     disappear: "If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.",
   },
 
@@ -76,4 +83,16 @@ export const ed = {
   },
 
   close: "Tell us what gets in your way.",
+
+  // The names of the sections on the rail (assistive tech and the rail's labels).
+  rail: {
+    first: "Your engineering department",
+    contrast: "Only for you",
+    loop: "The loop",
+    numbers: "The numbers",
+    recording: "The recording",
+    own: "You own it",
+    price: "Price",
+    starts: "How it starts",
+  },
 };

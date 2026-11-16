@@ -230,8 +230,8 @@ main { display: block; }
 h1 .half { display: block; }
 h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 /* The two halves arrive by CSS alone, from 0.01 so the H1 is the LCP. */
-@keyframes arrive { from { opacity: 0.01; translate: 0 12px; } }
-:root:not([data-motion="low"]) h1 .half { animation: arrive 600ms var(--ease-out) both; }
+@keyframes h1-arrive { from { opacity: 0.01; translate: 0 12px; } }
+:root:not([data-motion="low"]) h1 .half { animation: h1-arrive 600ms var(--ease-out) both; }
 :root:not([data-motion="low"]) h1 .half + .half { animation-delay: 400ms; animation-duration: 800ms; }
 .sub { margin-top: var(--s4); }
 .first-words .talk-field { margin-top: var(--s5); }
@@ -241,10 +241,6 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 .more .arr { width: 18px; height: 18px; transition: translate var(--dur-quick) var(--ease-spring); }
 @media (hover: hover) { .more:hover .arr { translate: 3px 0; } }
 
-.stage { position: relative; margin: var(--s5) 0 0; height: 40svh; min-height: 236px; }
-.stage-words { font: 500 var(--t-stage)/1.3 var(--display); letter-spacing: -0.01em; color: var(--fg-2); max-width: 32ch; }
-.stage-words b { font-weight: 600; color: var(--fg); }
-.stage-fig { position: absolute; left: 50%; top: 58%; translate: -50% -50%; height: 66%; width: auto; overflow: visible; }
 
 .split { display: grid; gap: var(--s6); align-items: center; }
 .copy .lead { margin-top: var(--s4); }
@@ -255,7 +251,8 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 .bars-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); }
 .bars-list li { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; font-size: var(--t-small); }
 .bars-value { font-weight: 600; }
-.bars-bar { grid-column: 1 / -1; height: 10px; border-radius: 0 5px 5px 0; background: var(--accent); width: calc(var(--v) * 100%); transform-origin: left; scale: var(--grow, 1) 1; }
+.bars-bar { grid-column: 1 / -1; height: 10px; border-radius: 0 5px 5px 0; background: var(--accent); width: calc(var(--v) * 100%); transform-origin: left; }
+.bars-bar[data-p] { scale: var(--p) 1; }
 .bars figcaption { margin-top: var(--s5); max-width: 52ch; }
 
 .logos { list-style: none; margin: 0; padding: var(--s7) 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s6); }
@@ -277,7 +274,6 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
   .descriptor { font-size: 1.0625rem; margin-bottom: var(--s5); max-width: none; }
   .sub { margin-top: var(--s5); }
   .first-words .talk-field { margin-top: var(--s6); }
-  .stage { grid-column: 8 / span 5; margin: 0; height: min(62svh, 560px); }
   .split { grid-template-columns: repeat(12, 1fr); column-gap: 24px; }
   .split > :first-child { grid-column: 1 / span 5; }
   .split > :last-child { grid-column: 7 / span 6; }
@@ -289,3 +285,7 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
   .top-end { gap: 6px; }
   .talk-btn { padding: 0 12px; }
 }
+
+/* /#thanks: where the no-JavaScript contact form lands. */
+.thanks { display: none; margin-bottom: var(--s5); padding: var(--s3) var(--s4); border-radius: var(--r-surface); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; }
+.thanks:target, .thanks.is-target { display: block; }

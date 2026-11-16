@@ -8,13 +8,14 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches)d.classList.add("pin")})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css">
-  <link rel="stylesheet" href="/assets/base.css">
-  <link rel="stylesheet" href="/assets/worlds.css">
-  <script src="/assets/sky.js" defer></script>
-  <script src="/assets/worlds.js" defer></script>
-  <script src="/assets/chrome.js" defer></script>
-  <script src="/assets/talk.js" defer fetchpriority="low"></script>
+  <link rel="stylesheet" href="/assets/tokens.css?v=a196fd43b6">
+  <link rel="stylesheet" href="/assets/base.css?v=4c9c8822cf">
+  <link rel="stylesheet" href="/assets/worlds.css?v=9bb77748cf">
+  <link rel="stylesheet" href="/assets/talk.css?v=062ea7a73d">
+  <script src="/assets/sky.js?v=011d115dc0" defer></script>
+  <script src="/assets/worlds.js?v=464127a826" defer></script>
+  <script src="/assets/chrome.js?v=c329450176" defer></script>
+  <script src="/assets/talk.js?v=c835281b54" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -44,6 +45,7 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"https://chamainteligente.com/#organization","name":"Chama Inteligente","alternateName":"Chama","legalName":"Chama Inteligente, Lda.","url":"https://chamainteligente.com/","logo":"https://chamainteligente.com/apple-touch-icon.png","image":"https://chamainteligente.com/og-2026-11-16.png","email":"info@chamainteligente.com","address":{"@type":"PostalAddress","addressLocality":"Lisbon","addressCountry":"PT"},"areaServed":"Worldwide","founder":{"@type":"Person","name":"Elliot Himmelfarb"}},{"@type":"WebSite","@id":"https://chamainteligente.com/#website","url":"https://chamainteligente.com/","name":"Chama Inteligente","publisher":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"},{"@type":"WebPage","@id":"https://chamainteligente.com/#webpage","url":"https://chamainteligente.com/","name":"Chama Inteligente | Custom software and AI coaching, from a family business in Lisbon","description":"A small, family-owned, AI-native business in Lisbon. You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem. Custom software, websites and apps, and AI fluency coaching.","isPartOf":{"@id":"https://chamainteligente.com/#website"},"about":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"}]}</script>
 </head>
 <body data-page="home">
+<canvas id="sky" class="layer" aria-hidden="true"></canvas>
 <a class="skip" href="#main">Skip to content</a>
 <header class="top" data-top>
   <a class="lockup" href="/" aria-label="Chama Inteligente, home"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="translate(2.06 0.06)" fill="var(--accent)"><path d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg><span>Chama Inteligente</span></a>
@@ -95,7 +97,8 @@
 
 <section class="world first" data-world="paper" data-pin="off">
   <div class="first-grid wrap">
-    <div class="hero">
+    <div class="first-words">
+      <p class="thanks" id="thanks" role="status">Thank you. We have your details, and a person will reach out soon.</p>
       <p class="descriptor">Custom software and AI coaching, from a family business in Lisbon.</p>
       <h1><span class="half">What you have to do, made easier.</span> <span class="half">What you wish you could do, made possible.</span></h1>
       <p class="lead sub">You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem. If you&#39;d like to learn it yourself, we teach that too.</p>
@@ -104,16 +107,189 @@
   <div class="field"><input id="ask-home" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
     </div>
-    <figure class="stage" data-stage data-duration="28" aria-label="How Chama works, in eight short scenes">
-  <p class="stage-words">Tell us what you need. <b>It gets built.</b> You use it. You find what's next.</p>
-  <svg class="stage-fig" viewBox="-220 -190 440 380" aria-hidden="true" focusable="false">
-    <ellipse cx="0" cy="0" rx="178" ry="150" fill="none" stroke="var(--fg)" stroke-opacity="0.35" stroke-width="1.25" stroke-dasharray="2 7" stroke-linecap="round"/>
-    <path d="M0 -104 L99 -32 L64 88 L-62 92 L-101 -30 Z" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" transform="rotate(4)"/>
-    <path d="M0 -80 L76 -25 L47 66 L-47 66 L-76 -25 Z" fill="var(--fg)" fill-opacity="0.07" stroke="var(--fg)" stroke-width="1.5" stroke-linejoin="round"/>
-    <g fill="var(--bg)" stroke="var(--fg)" stroke-width="1.5"><circle cx="0" cy="-150" r="5"/><circle cx="178" cy="0" r="5"/><circle cx="0" cy="150" r="5"/><circle cx="-178" cy="0" r="5"/></g>
-    <path d="M 126 -106 A 178 150 0 0 1 150 -81" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="150" cy="-81" r="7" fill="var(--accent)"/>
-  </svg>
+    <figure class="stage" data-stage data-duration="28" data-delay="1.4" tabindex="-1" aria-label="How Chama works, in eight short scenes">
+  <style>
+.stage { position: relative; margin: var(--s5) 0 0; height: clamp(14rem, 40svh, 22rem); display: flex; flex-direction: column; gap: var(--s2); }
+.stage-words { display: grid; margin: 0; font: 500 var(--t-stage)/1.3 var(--display); letter-spacing: -0.01em; color: var(--fg-2); max-width: 32ch; }
+.stage-say { grid-area: 1 / 1; margin: 0; }
+.stage-ph { display: inline-grid; }
+.stage-ph > span, .stage-ph::after { grid-area: 1 / 1; }
+/* each phrase keeps the width of its bold self, so lighting it never rewraps the line */
+.stage-ph::after { content: attr(data-t); font-weight: 600; visibility: hidden; }
+.stage-pic { flex: 1; min-height: 0; container-type: size; display: grid; place-items: center; }
+.stage-box { position: relative; width: min(82cqw, 100cqh * 400 / 190); aspect-ratio: 400 / 190; container: stage-box / inline-size; }
+/* Strokes scale with the picture, because Chrome misplaces pathLength dashes
+   under vector-effect: non-scaling-stroke. --sw holds them near their pixel
+   widths at each size of the box. */
+.stage-fig { --sw: 1.67; position: static; translate: none; display: block; width: 100%; height: 100%; overflow: visible; }
+@container stage-box (min-width: 280px) { .stage-fig { --sw: 1.33; } }
+@container stage-box (min-width: 360px) { .stage-fig { --sw: 1.05; } }
+@container stage-box (min-width: 440px) { .stage-fig { --sw: 0.9; } }
+.stage-ink { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: calc(1.5 * var(--sw)); stroke-linejoin: round; }
+.stage-sq { fill: color-mix(in srgb, var(--fg-2) 10%, transparent); stroke: var(--fg-2); stroke-width: calc(1.5 * var(--sw)); }
+.stage-hot { fill: none; stroke: var(--accent); stroke-width: calc(2 * var(--sw)); stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1 1; }
+.stage-ring { fill: none; stroke: var(--fg); stroke-opacity: 0.4; stroke-width: calc(1.25 * var(--sw)); stroke-dasharray: 2 6; stroke-linecap: round; }
+.stage-ticks { fill: none; stroke: var(--fg); stroke-width: calc(2.5 * var(--sw)); stroke-linecap: round; stroke-dasharray: 0.012 0.113; }
+.stage-mask { fill: none; stroke: var(--fg); stroke-width: 16; stroke-dasharray: 1 1; }
+.stage-people { fill: var(--fg); }
+.stage-stations circle { fill: var(--bg); stroke: var(--fg); stroke-width: calc(1.5 * var(--sw)); }
+.stage-link { fill: none; stroke: var(--fg); stroke-width: calc(1.25 * var(--sw)); stroke-dasharray: 1 1; }
+.stage-mk { fill: none; stroke: var(--accent); stroke-linecap: round; }
+.stage-head { stroke-width: calc(7 * var(--sw)); stroke-dasharray: 0.001 0.999; }
+.stage-tail { stroke-width: calc(3 * var(--sw)); stroke-dasharray: 0.05 0.95; }
+.stage-trail { stroke-width: calc(3 * var(--sw)); stroke-dasharray: 0.11 0.89; stroke-opacity: 0.35; }
+.stage-gl { color: var(--fg); }
+.stage-lb { position: absolute; font: 600 var(--t-label)/1.2 var(--text); letter-spacing: 0.01em; white-space: nowrap; }
+.stage-lb0 { left: 50%; bottom: calc(50% + 30.53% + 8px); translate: -50% 0; }
+.stage-lb1 { left: calc(50% + 31.25% + 10px); top: 50%; translate: 0 -50%; }
+.stage-lb2 { left: 50%; top: calc(50% + 30.53% + 8px); translate: -50% 0; }
+.stage-lb3 { right: calc(50% + 31.25% + 10px); top: 50%; translate: 0 -50%; }
+
+.stage-ctl, .stage-step { flex: none; display: flex; align-items: center; gap: var(--s3); height: 44px; }
+.stage-btn { flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-pill); background: var(--surface); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line-strong); cursor: pointer; transition: box-shadow var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+.stage-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.stage-btn:active { scale: 0.97; }
+.stage-btn[aria-disabled="true"] { color: var(--fg-2); box-shadow: inset 0 0 0 1px var(--line); cursor: default; }
+.stage-bar { position: relative; flex: 1; height: 44px; }
+.stage-track { position: absolute; inset: 20px 0 auto; height: 4px; overflow: hidden; background: color-mix(in srgb, var(--fg) 14%, transparent);
+  --seg: calc((100% - 28px) / 8);
+  -webkit-mask: repeating-linear-gradient(90deg, var(--fg) 0 var(--seg), transparent 0 calc(var(--seg) + 4px));
+  mask: repeating-linear-gradient(90deg, var(--fg) 0 var(--seg), transparent 0 calc(var(--seg) + 4px)); }
+.stage-fill { display: block; height: 100%; background: var(--accent); transform-origin: left; }
+.stage-segs { position: absolute; inset: 0; display: flex; gap: 4px; }
+.stage-seg { flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.stage-seg:focus-visible { outline-offset: -8px; }
+/* the stepper names the beat in play beside the engine's "N of M" */
+.stage-name { display: none; }
+.stage-name1, .stage:has(.stage-seg:nth-child(2)[aria-current]) .stage-name2, .stage:has(.stage-seg:nth-child(3)[aria-current]) .stage-name3, .stage:has(.stage-seg:nth-child(4)[aria-current]) .stage-name4, .stage:has(.stage-seg:nth-child(5)[aria-current]) .stage-name5, .stage:has(.stage-seg:nth-child(6)[aria-current]) .stage-name6, .stage:has(.stage-seg:nth-child(7)[aria-current]) .stage-name7, .stage:has(.stage-seg:nth-child(8)[aria-current]) .stage-name8 { display: inline; }
+.stage:has(.stage-seg[aria-current]:not(:first-child)) .stage-name1 { display: none; }
+.stage-count { flex: 1; margin: 0; text-align: center; font-size: var(--t-small); line-height: 1.3; color: var(--fg-2); font-variant-numeric: tabular-nums; }
+@media (hover: hover) { .stage-btn:not([aria-disabled="true"]):hover { box-shadow: inset 0 0 0 1px var(--fg-2); } }
+
+/* without the engine there is nothing to drive the controls, so they hide;
+   in low motion the stepper stands in for the bar */
+.stage:not([data-state]) :is(.stage-ctl, .stage-step), .stage-step,
+html[data-motion="low"] .stage-ctl { display: none; }
+html[data-motion="low"] .stage[data-state] .stage-step { display: flex; }
+html[data-motion="low"] .stage-ph { --in: 1; }
+
+@media (min-width: 1100px) {
+  .stage { grid-column: 8 / span 5; margin: 0; height: auto; gap: var(--s4); container-type: inline-size; }
+  .stage-pic { flex: none; height: calc(82cqw * 190 / 400); }
+}
+
+.stage [data-p], .stage-words { --t: calc(var(--p) * 28); }
+.stage-sq, .stage-qr { opacity: calc(1 - 0.9 * clamp(0, (var(--t) - 3.6) / 0.6, 1) - 0.1 * clamp(0, (var(--t) - 7) / 0.4, 1)); }
+.stage-qr { --k1: clamp(0, (var(--t) - 1.6) / 0.7, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); transform: translate(calc(30px * var(--e1)), 0); }
+.stage-qf { --k1: clamp(0, (var(--t) - 1.6) / 0.7, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); transform: translate(calc(82px + 61px * var(--e1)), 0) scale(calc(1 - 0.5 * var(--e1))); opacity: calc(1 - clamp(0, (var(--t) - 1.9) / 0.4, 1)); }
+.stage-you { --k1: clamp(0, (var(--t) - 1.6) / 0.7, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); --k2: clamp(0, (var(--t) - 3.7) / 0.5, 1); --e2: calc(var(--k2) * var(--k2) * (3 - 2 * var(--k2))); --k3: clamp(0, (var(--t) - 4.2) / 1, 1); --e3: calc(var(--k3) * var(--k3) * (3 - 2 * var(--k3))); --k4: clamp(0, (var(--t) - 17.5) / 0.4, 1); --e4: calc(var(--k4) * var(--k4) * (3 - 2 * var(--k4))); --k5: clamp(0, (var(--t) - 20.2) / 0.4, 1); --e5: calc(var(--k5) * var(--k5) * (3 - 2 * var(--k5)));
+  --z: calc(0.25 + 0.75 * var(--e3) - 0.15 * var(--e4) + 0.15 * var(--e5));
+  transform: translate(calc(-8px + 30px * var(--e1) - 22px * var(--e3)), calc(24px * var(--e2) * (1 - var(--e3)))) scale(var(--z)); }
+/* the business keeps its line weight at every size it takes */
+.stage-you .stage-ink { stroke-width: calc(1.5 * var(--sw) / var(--z)); }
+.stage-pent { opacity: calc(1 - clamp(0, (var(--t) - 15.6) / 0.2, 1)); }
+.stage-hex { opacity: clamp(0, (var(--t) - 15.6) / 0.2, 1); }
+.stage-wedge { --k1: clamp(0, (var(--t) - 15) / 0.6, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); opacity: calc(1 - clamp(0, (var(--t) - 15.6) / 0.2, 1));
+  transform: translate(19.02px, -26.18px) rotate(36deg) scale(1, calc(0.001 + var(--e1))) rotate(-36deg) translate(-19.02px, 26.18px); }
+.stage .stage-outp { --kd: clamp(0, (var(--t) - 5.2) / 1.2, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 16) / 0.4, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
+  --v: calc(var(--ed) - var(--eu));
+  stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage .stage-outh { --kd: clamp(0, (var(--t) - 16.3) / 0.9, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 17.5) / 0.4, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); --kr: clamp(0, (var(--t) - 20.3) / 0.6, 1); --er: calc(var(--kr) * var(--kr) * (3 - 2 * var(--kr)));
+  --v: calc(var(--ed) - var(--eu) + var(--er));
+  stroke-dashoffset: calc(1 - var(--ed) - var(--eu) - var(--er)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage .stage-phone { --kd: clamp(0, (var(--t) - 17.8) / 0.5, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 18.55) / 0.3, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
+  --v: calc(var(--ed) - var(--eu));
+  stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage .stage-laptop { --kd: clamp(0, (var(--t) - 18.6) / 0.5, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 19.35) / 0.3, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
+  --v: calc(var(--ed) - var(--eu));
+  stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage .stage-cloud { --kd: clamp(0, (var(--t) - 19.4) / 0.5, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 20.15) / 0.3, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
+  --v: calc(var(--ed) - var(--eu));
+  stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage-people { --k1: clamp(0, (var(--t) - 7.2) / 0.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); opacity: clamp(0, (var(--t) - 7.2) / 0.5, 1); transform: translate(-82px, 0) scale(calc(0.6 + 0.4 * var(--e1))); }
+.stage .stage-link { --kd: clamp(0, (var(--t) - 7.8) / 0.6, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd)));  
+  --v: calc(var(--ed));
+  stroke-dashoffset: calc(1 - var(--ed)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage .stage-ringm { --kd: clamp(0, (var(--t) - 8.6) / 1.2, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd)));  
+  --v: calc(var(--ed));
+  stroke-dashoffset: calc(1 - var(--ed)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage-ticks { --k1: clamp(0, (var(--t) - 24.5) / 1.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); opacity: clamp(0, (var(--t) - 9.3) / 0.6, 1); stroke-dashoffset: calc(-0.04 * min(var(--t), 24.5) - 0.03 * var(--e1)); }
+.stage-stations { opacity: clamp(0, (var(--t) - 10.5) / 0.4, 1); }
+.stage-mk { --k1: clamp(0, (var(--t) - 15.6) / 1, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); --s: calc(clamp(0, (var(--t) - 10.5) / 3.5, 1) + var(--e1)); opacity: calc(clamp(0, (var(--t) - 10.5) / 0.3, 1) * (1 - clamp(0, (var(--t) - 17.4) / 0.4, 1))); }
+.stage-head { stroke-dashoffset: calc(-1 * var(--s)); }
+.stage-tail { stroke-dashoffset: calc(0.05 - var(--s)); }
+.stage-trail { stroke-dashoffset: calc(0.11 - var(--s)); }
+.stage-lrn { --k1: clamp(0, (var(--t) - 22.4) / 0.6, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); --k2: clamp(0, (var(--t) - 26) / 0.7, 1); --e2: calc(var(--k2) * var(--k2) * (3 - 2 * var(--k2))); opacity: calc(clamp(0, (var(--t) - 22.4) / 0.5, 1) * (1 - clamp(0, (var(--t) - 26.2) / 0.4, 1)));
+  transform: translate(calc(165px * (1 - var(--e2))), calc(-60px * (1 - var(--e2)))) scale(calc((0.6 + 0.4 * var(--e1)) * (1 - 0.5 * var(--e2)))); }
+.stage .stage-lrnm { --kd: clamp(0, (var(--t) - 22.9) / 1.1, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd)));  
+  --v: calc(var(--ed));
+  stroke-dashoffset: calc(1 - var(--ed)); opacity: clamp(0, var(--v) * 50, 1); }
+.stage-loop { --k1: clamp(0, (var(--t) - 26) / 0.7, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); opacity: calc(1 - clamp(0, (var(--t) - 26.2) / 0.5, 1)); transform: translate(calc(-110px * var(--e1)), 0) scale(calc(1 - 0.81 * var(--e1))); }
+.stage-gl { --x: 0px; --a: 26.35; --k1: clamp(0, (var(--t) - var(--a)) / 0.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1)));
+  opacity: var(--k1); transform: translate(var(--x), 0) scale(calc(1.25 - 0.25 * var(--e1))); }
+.stage-gl1 { --x: -110px; }
+.stage-gl3 { --x: 110px; --a: 26.5; }
+.stage-lb { --on: calc(clamp(0, (var(--t) - var(--a)) / 0.12 + 1, 1) * (1 - clamp(0, (var(--t) - var(--a) - 0.875) / 0.12 + 1, 1)));
+  opacity: calc(clamp(0, (var(--t) - 10.5) / 0.4, 1) * (1 - clamp(0, (var(--t) - 26) / 0.4, 1))); color: color-mix(in srgb, var(--fg) calc(var(--on) * 100%), var(--fg-2)); }
+.stage-say { opacity: calc(clamp(0, (var(--t) - var(--s)) * 100 + 1, 1) * (1 - clamp(0, (var(--t) - var(--e)) / 0.25 + 1, 1))); }
+.stage-ph { --in: clamp(0, (var(--t) - var(--r)) / 0.35, 1);
+  --on: calc(clamp(0, (var(--t) - var(--a)) / 0.12 + 1, 1) * (1 - clamp(0, (var(--t) - var(--b)) / 0.12 + 1, 1)));
+  opacity: var(--in); transform: translateY(calc((1 - var(--in)) * 0.3em));
+  color: color-mix(in srgb, var(--fg) calc(var(--on) * 100%), var(--fg-2)); font-weight: calc(500 + 100 * var(--on)); }
+.stage-fill { transform: scaleX(var(--p)); }
+
+</style>
+  <div class="stage-words" data-p><p class="stage-say" style="--s:0;--e:3.5"><span class="stage-ph" style="--r:-1;--a:0;--b:1.5" data-t="Software companies have engineers,"><span>Software companies have engineers,</span></span> <span class="stage-ph" style="--r:-1;--a:1.5;--b:3.5" data-t="and their customers wait in line."><span>and their customers wait in line.</span></span></p><p class="stage-say" style="--s:3.5;--e:7"><span class="stage-ph" style="--r:3.5;--a:3.5;--b:4.6" data-t="Here the engineers"><span>Here the engineers</span></span> <span class="stage-ph" style="--r:4.6;--a:4.6;--b:7" data-t="work only for you."><span>work only for you.</span></span></p><p class="stage-say" style="--s:7;--e:10.5"><span class="stage-ph" style="--r:7;--a:7;--b:8.6" data-t="You talk to a person."><span>You talk to a person.</span></span> <span class="stage-ph" style="--r:8.6;--a:8.6;--b:10.5" data-t="AI does the heavy work behind us."><span>AI does the heavy work behind us.</span></span></p><p class="stage-say" style="--s:10.5;--e:14"><span class="stage-ph" style="--r:10.5;--a:10.5;--b:11.375" data-t="Tell us what you need."><span>Tell us what you need.</span></span> <span class="stage-ph" style="--r:11.375;--a:11.375;--b:12.25" data-t="It gets built."><span>It gets built.</span></span> <span class="stage-ph" style="--r:12.25;--a:12.25;--b:13.125" data-t="You use it."><span>You use it.</span></span> <span class="stage-ph" style="--r:13.125;--a:13.125;--b:14" data-t="You find what&#39;s next."><span>You find what&#39;s next.</span></span></p><p class="stage-say" style="--s:14;--e:17.5"><span class="stage-ph" style="--r:14;--a:14;--b:15" data-t="Fits your process,"><span>Fits your process,</span></span> <span class="stage-ph" style="--r:15;--a:15;--b:17.5" data-t="and changes when you do."><span>and changes when you do.</span></span></p><p class="stage-say" style="--s:17.5;--e:21"><span class="stage-ph" style="--r:17.5;--a:17.5;--b:17.9" data-t="If it can be solved with something"><span>If it can be solved with something</span></span> <span class="stage-ph" style="--r:17.9;--a:17.9;--b:18.7" data-t="on a phone,"><span>on a phone,</span></span> <span class="stage-ph" style="--r:18.7;--a:18.7;--b:19.5" data-t="a computer"><span>a computer</span></span> <span class="stage-ph" style="--r:19.5;--a:19.5;--b:20.3" data-t="or in the cloud,"><span>or in the cloud,</span></span> <span class="stage-ph" style="--r:20.3;--a:20.3;--b:21" data-t="we can do it."><span>we can do it.</span></span></p><p class="stage-say" style="--s:21;--e:24.5"><span class="stage-ph" style="--r:21;--a:21;--b:22.4" data-t="When AI can do something new,"><span>When AI can do something new,</span></span> <span class="stage-ph" style="--r:22.4;--a:22.4;--b:24.5" data-t="so can you."><span>so can you.</span></span></p><p class="stage-say" style="--s:24.5;--e:99"><span class="stage-ph" style="--r:24.5;--a:24.5;--b:25.6" data-t="More time for human things,"><span>More time for human things,</span></span> <span class="stage-ph" style="--r:25.6;--a:25.6;--b:99" data-t="and for each other."><span>and for each other.</span></span></p></div>
+  <div class="stage-pic"><div class="stage-box">
+    <svg class="stage-fig" viewBox="-200 -95 400 190" aria-hidden="true" focusable="false">
+  <defs>
+    <mask id="stage-ring-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-200" y="-100" width="400" height="200"><path class="stage-mask stage-ringm" data-p pathLength="1" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/></mask>
+    <mask id="stage-lrn-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-40" y="-25" width="80" height="50"><path class="stage-mask stage-lrnm" data-p pathLength="1" d="M0 -14 A27 14 0 1 1 0 14 A27 14 0 1 1 0 -14"/></mask>
+  </defs>
+  <rect class="stage-sq" data-p x="110" y="-33" width="66" height="66" rx="3"/>
+  <path class="stage-ink stage-qf" data-p d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z"/>
+  <g class="stage-qr" data-p><path class="stage-ink" transform="translate(52 0)" d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z"/><path class="stage-ink" transform="translate(22 0)" d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z"/><path class="stage-ink" transform="translate(-38 0)" d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z"/></g>
+  <g class="stage-loop" data-p>
+    <g mask="url(#stage-ring-m)"><path class="stage-ring" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/><path class="stage-ticks" data-p pathLength="1" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/></g>
+    <g class="stage-stations" data-p><circle cx="0" cy="-58" r="4.5"/><circle cx="125" cy="0" r="4.5"/><circle cx="0" cy="58" r="4.5"/><circle cx="-125" cy="0" r="4.5"/></g>
+    <g class="stage-people" data-p><circle cy="-14" r="3.5"/><circle r="3.5"/><circle cy="14" r="3.5"/></g>
+    <path class="stage-link" data-p pathLength="1" d="M-78 -1 L-39 -11"/>
+    <g class="stage-you" data-p>
+      <path class="stage-ink stage-pent" data-p d="M0 -40 L38.04 -12.36 L23.51 32.36 L-23.51 32.36 L-38.04 -12.36 Z"/>
+      <path class="stage-ink stage-hex" data-p d="M0 -40 L27.84 -38.32 L38.04 -12.36 L23.51 32.36 L-23.51 32.36 L-38.04 -12.36 Z"/>
+      <path class="stage-ink stage-wedge" data-p d="M0 -40 L27.84 -38.32 L38.04 -12.36"/>
+    </g>
+    <path class="stage-hot stage-outp" data-p pathLength="1" d="M0 -51.12 L48.62 -15.8 L30.05 41.36 L-30.05 41.36 L-48.62 -15.8 Z"/>
+    <path class="stage-hot stage-outh" data-p pathLength="1" d="M-2.68 -49.18 L34.12 -46.95 L47.6 -12.65 L30.05 41.36 L-30.05 41.36 L-48.62 -15.8 Z"/>
+    <path class="stage-hot stage-phone" data-p pathLength="1" d="M-24 -48 H24 A10 10 0 0 1 34 -38 V36 A10 10 0 0 1 24 46 H-24 A10 10 0 0 1 -34 36 V-38 A10 10 0 0 1 -24 -48 Z M-8 37 H8"/>
+    <path class="stage-hot stage-laptop" data-p pathLength="1" d="M-51 -46 H51 A5 5 0 0 1 56 -41 V25 A5 5 0 0 1 51 30 H-51 A5 5 0 0 1 -56 25 V-41 A5 5 0 0 1 -51 -46 Z M-68 38 H68"/>
+    <path class="stage-hot stage-cloud" data-p pathLength="1" transform="scale(1.15)" d="M-50 34 H48 C66 34 74 18 70 4 C66 -10 52 -14 42 -10 C40 -30 22 -42 2 -40 C-18 -38 -28 -24 -30 -14 C-46 -20 -66 -8 -64 10 C-62 26 -56 34 -50 34 Z"/>
+    <path class="stage-mk stage-trail" data-p pathLength="1" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/>
+    <path class="stage-mk stage-tail" data-p pathLength="1" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/>
+    <path class="stage-mk stage-head" data-p pathLength="1" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/>
+  </g>
+  <g class="stage-lrn" data-p>
+    <path class="stage-ink" d="M0 -12 L11.41 -3.71 L7.05 9.71 L-7.05 9.71 L-11.41 -3.71 Z"/>
+    <path class="stage-ring" mask="url(#stage-lrn-m)" d="M0 -14 A27 14 0 1 1 0 14 A27 14 0 1 1 0 -14" style="stroke-dasharray: 1.5 4"/>
+  </g>
+  <g class="stage-gl stage-gl1" data-p><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg></g><g class="stage-gl stage-gl2" data-p><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg></g><g class="stage-gl stage-gl3" data-p><svg class="g" x="-28" y="-28" width="56" height="56" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" x="24.5" y="12" width="9" height="16" rx="2"/></svg></g>
+</svg>
+    <span class="stage-lb stage-lb0" data-p style="--a:10.5" aria-hidden="true">Tell us</span><span class="stage-lb stage-lb1" data-p style="--a:11.375" aria-hidden="true">It gets built</span><span class="stage-lb stage-lb2" data-p style="--a:12.25" aria-hidden="true">You use it</span><span class="stage-lb stage-lb3" data-p style="--a:13.125" aria-hidden="true">What&#39;s next</span>
+  </div></div>
+  <div class="stage-ctl">
+    <button class="stage-btn" type="button" data-stage-action="play" aria-label="Play"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M6 4.2v9.6l8-4.8z"/></svg></button>
+    <button class="stage-btn" type="button" data-stage-action="pause" aria-label="Pause"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M6.5 4v10M11.5 4v10"/></svg></button>
+    <button class="stage-btn" type="button" data-stage-action="replay" aria-label="Play again"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9a5 5 0 1 0 1.6-3.7M4 3.2v3h3"/></svg></button>
+    <div class="stage-bar">
+      <div class="stage-track" aria-hidden="true"><i class="stage-fill" data-p></i></div>
+      <div class="stage-segs"><button class="stage-seg" type="button" data-stage-seek="0" data-stage-still="0.093" aria-label="Scene 1 of 8: The old way"></button><button class="stage-seg" type="button" data-stage-seek="0.125" data-stage-still="0.246" aria-label="Scene 2 of 8: The turn"></button><button class="stage-seg" type="button" data-stage-seek="0.25" data-stage-still="0.364" aria-label="Scene 3 of 8: A small team"></button><button class="stage-seg" type="button" data-stage-seek="0.375" data-stage-still="0.421" aria-label="Scene 4 of 8: The loop"></button><button class="stage-seg" type="button" data-stage-seek="0.5" data-stage-still="0.618" aria-label="Scene 5 of 8: Fit"></button><button class="stage-seg" type="button" data-stage-seek="0.625" data-stage-still="0.657" aria-label="Scene 6 of 8: Breadth"></button><button class="stage-seg" type="button" data-stage-seek="0.75" data-stage-still="0.864" aria-label="Scene 7 of 8: Learning"></button><button class="stage-seg" type="button" data-stage-seek="0.875" data-stage-still="1" aria-label="Scene 8 of 8: More time"></button></div>
+    </div>
+  </div>
+  <div class="stage-step">
+    <button class="stage-btn" type="button" data-stage-step="-1" aria-label="Previous scene" aria-disabled="true"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M11 4 6 9l5 5"/></svg></button>
+    <p class="stage-count" aria-live="polite"><span data-stage-count>1 of 8</span> · <span class="stage-name stage-name1">The old way</span><span class="stage-name stage-name2">The turn</span><span class="stage-name stage-name3">A small team</span><span class="stage-name stage-name4">The loop</span><span class="stage-name stage-name5">Fit</span><span class="stage-name stage-name6">Breadth</span><span class="stage-name stage-name7">Learning</span><span class="stage-name stage-name8">More time</span></p>
+    <button class="stage-btn" type="button" data-stage-step="1" aria-label="Next scene"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="m7 4 5 5-5 5"/></svg></button>
+  </div>
 </figure>
   </div>
   <div class="wrap doors-wrap">

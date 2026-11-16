@@ -55,6 +55,7 @@ export function head(page, { title, description, ogAlt }) {
   <link rel="stylesheet" href="/assets/tokens.css">
   <link rel="stylesheet" href="/assets/base.css">
   <link rel="stylesheet" href="/assets/worlds.css">
+  <link rel="stylesheet" href="/assets/talk.css">
   <script src="/assets/sky.js" defer></script>
   <script src="/assets/worlds.js" defer></script>
   <script src="/assets/chrome.js" defer></script>
@@ -66,7 +67,7 @@ export function head(page, { title, description, ogAlt }) {
   <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="description" content="${description}">
-  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="robots" content="${page.noindex ? "noindex, follow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"}">
   <link rel="canonical" href="${canonical}">
   <link rel="alternate" hreflang="en" href="${canonical}">
   <link rel="alternate" hreflang="x-default" href="${canonical}">
@@ -193,6 +194,7 @@ export function page(p, meta, main) {
 <html lang="en">
 ${head(p, meta)}
 <body data-page="${p.id}">
+<canvas id="sky" class="layer" aria-hidden="true"></canvas>
 ${header(p)}
 <main id="main">
 ${main}

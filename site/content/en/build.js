@@ -17,6 +17,7 @@ export const build = {
     h2: "Apps made for one business.",
     lead: "The tools a team runs on, shaped around how it already works.",
   },
+  ticksLabel: "Websites and apps we built",
   // The things shown on the laptop and phone, in order. Private work shows
   // demo data, never real records.
   things: [
@@ -32,6 +33,8 @@ export const build = {
       id: "vsf",
       name: "VSF Lead Automation",
       kind: "App for one business",
+      // the first app: the apps heading stands above its name
+      opensApps: true,
       text: "Vivir Sin Fronteras helps students get into universities abroad. When someone enquires, a bot messages them on WhatsApp, asks the questions the team would ask, and books the meeting straight into the team's calendar when it's worth it.",
       private: "This is private software, built for one business.",
     },
@@ -52,6 +55,7 @@ export const build = {
       text: "Our own product. It reads the purchase orders customers email you and pulls the order out, so nobody has to type it into your ERP.",
       href: "https://shop-intake.com",
       link: "shop-intake.com",
+      alt: "ShopIntake's website and its app on a phone.",
     },
   },
 

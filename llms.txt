@@ -12,6 +12,9 @@
 - [Build](https://chamainteligente.com/build):
 - [Work](https://chamainteligente.com/work):
 - [About](https://chamainteligente.com/about):
+- [Home](https://chamainteligente.com/hearth):
+- [Home](https://chamainteligente.com/privacy):
+- [Home](https://chamainteligente.com/brand):
 
 ## Optional
 
