@@ -6,14 +6,10 @@
 // the queue is on its first step, and the new outline draws over the old
 // one, which matches it everywhere but the new corner. Complete at --p 1.
 import { html, raw } from "../html.js";
-import { ngon, grow, poly } from "./stage.js";
+import { ngon, grow, poly, c, ss } from "./kit.js";
 
-const n = (v) => +v.toFixed(4);
-const c = (a, b) => `clamp(0, (var(--p) - ${n(a)}) / ${n(b - a)}, 1)`;
-// smoothstep over [a, b]
-const ease = (a, b) => `(${c(a, b)} * ${c(a, b)} * (3 - 2 * ${c(a, b)}))`;
 const STEPS = [[0.1, 0.28], [0.34, 0.52], [0.58, 0.76]];
-const MOVED = `(${STEPS.map(([a, b]) => ease(a, b)).join(" + ")})`;
+const MOVED = `(${STEPS.map(([a, b]) => ss(a, b)).join(" + ")})`;
 
 const GAP = 30, FRONT = 138, WAITING = 4;
 // customer m starts m places back; the first three go in, one per step,

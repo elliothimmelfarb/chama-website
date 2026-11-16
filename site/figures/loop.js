@@ -6,6 +6,7 @@
 // and one column show the finished picture with all four laps in the ledger.
 import { html, raw } from "../html.js";
 import { EXAMPLES } from "./proof.js";
+import { n, c, bump } from "./kit.js";
 
 // The ring, seen slightly from above. Station k sits at k quarters of its
 // length (12, 3, 6 and 9 o'clock): an ellipse's quadrants are equal arcs.
@@ -30,9 +31,6 @@ export const LAPS = ORDER.map((label) => EXAMPLES.find((e) => e.label === label)
 const START = [0.08, 0.27, 0.46, 0.65];
 const LAP = 0.19, PARK = START[3] + LAP;
 
-const n = (v) => +v.toFixed(4);
-// 0 before a, 1 after b, linear between: the progress of one moment
-const c = (a, b) => `clamp(0, (var(--p) - ${n(a)}) / ${n(b - a)}, 1)`;
 // the first three laps run at the scroll's pace; the last eases out and
 // parks the marker at "Tell us"
 const lapDone = (k) => (k < 3 ? c(START[k], START[k + 1]) : `${c(START[3], PARK)} * (2 - ${c(START[3], PARK)})`);
@@ -40,8 +38,6 @@ const LAPS_RUN = `(${[0, 1, 2, 3].map(lapDone).join(" + ")})`;
 // where in --p the marker passes a fraction f of lap k
 const at = (k, f) => (k < 3 ? START[k] + f * LAP : START[3] + LAP * (1 - Math.sqrt(1 - f)));
 const END = [at(0, 1), at(1, 1), at(2, 1), PARK - 0.02];
-// a single bump to 1 and back, w either side of m
-const bump = (m, w) => `clamp(0, 1 - max((var(--p) - ${n(m)}) / ${w}, (${n(m)} - var(--p)) / ${w}), 1)`;
 
 const REFIT = [0.03, ...[0, 1, 2, 3].map((k) => at(k, 0.25))];
 const outline = (d, k) => {
@@ -61,7 +57,7 @@ const svg = raw(`<svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="
   <path class="loop-pulse" data-p d="${YOU}" style="opacity:calc(${[0, 1, 2, 3].map((k) => bump(at(k, 0.5), 0.02)).join(" + ")})"/>
   ${OUTLINES.map(outline).join("\n  ")}
   <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:${c(at(2, 0.25), at(2, 0.25) + 0.02)};translate:0 calc(6px - 6px * ${c(at(2, 0.25), at(2, 0.25) + 0.02)})"/>
-  <g class="loop-stations" data-p style="opacity:${c(0.05, 0.07)}"><circle cx="0" cy="${-RY}" r="5"/><circle cx="${RX}" cy="0" r="5"/><circle cx="0" cy="${RY}" r="5"/><circle cx="${-RX}" cy="0" r="5"/></g>
+  <g class="loop-stations">${[[0, -RY], [RX, 0], [0, RY], [-RX, 0]].map(([x, y]) => `<circle data-p cx="${x}" cy="${y}" r="5" style="opacity:${c(0.05, 0.07)}"/>`).join("")}</g>
   ${tail(0.111, 0.3)}
   <circle class="loop-marker" data-p r="7" style="offset-path:path('${RING}');offset-rotate:0deg;offset-distance:calc(${LAPS_RUN} * 100%);opacity:${c(0.05, 0.07)}"/>
 </svg>`);

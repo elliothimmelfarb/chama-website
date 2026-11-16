@@ -317,3 +317,18 @@ html.field-in-view .top .talk-btn { opacity: 0; pointer-events: none; }
   .top .talk-btn { max-width: 12rem; overflow: hidden; transition: opacity var(--dur-quick) var(--ease-out), max-width var(--dur-base) var(--ease-out), padding var(--dur-base) var(--ease-out), margin var(--dur-base) var(--ease-out), scale var(--dur-press) var(--ease-out); }
   html.field-in-view .top .talk-btn { max-width: 0; padding-inline: 0; margin-left: calc(-1 * var(--s2)); }
 }
+
+/* ---- figure labels and statement type ---------------------------------- */
+/* The type for worlds.css's figure language and frame (that sheet sets no
+   type). A figure's labels never go under 12px, sentence case, standing on
+   a knockout of the ground's own colour so a line passing behind never
+   crosses a word. */
+.fx-lb { font: 600 var(--t-label)/1.25 var(--text); letter-spacing: 0.01em; color: var(--fg-2);
+  text-shadow: 0 0 2px var(--fx-halo), 0 0 6px var(--fx-halo), 0 0 14px var(--fx-halo); }
+.fx-lb.is-live { color: var(--fg); }
+.fx-lb.is-hot { color: var(--accent-text); }
+@media (min-width: 1100px) { .fx-lb { font-size: var(--t-small); } }
+/* A statement frame's sentence is set to fill it; a second sentence under
+   it is the same size in the secondary colour. */
+.frame[data-layout="statement"] > .words > :is(h1, h2, p) { max-width: none; font: 600 var(--t-display)/1.04 var(--display); letter-spacing: -0.03em; text-wrap: balance; }
+.frame[data-layout="statement"] > .words > :is(h1, h2, p) + :is(h2, p) { margin-top: 0.25em; color: var(--fg-2); }

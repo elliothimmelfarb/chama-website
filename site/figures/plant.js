@@ -1,7 +1,7 @@
 // Two small figures on /engineering-department that draw what its words
 // say. Both are still: they sit in sections that scroll.
 import { html, raw } from "../html.js";
-import { ngon, poly } from "./stage.js";
+import { ngon, poly } from "./kit.js";
 
 // Before and after (docs/DESIGN.md section 8): the systems the plant ran
 // on (one old system, a second app, four spreadsheets) drawn as outlines

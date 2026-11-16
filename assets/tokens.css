@@ -125,3 +125,38 @@
 :root[data-theme="dark"] [data-world="grid"]  { --ground: #0e151c; --fg: #e6edf3; --fg-2: #9cadbc; --accent-text: #ff7a45; --line-strong: #4f6273; --line: rgb(230 237 243 / 0.14); }
 :root[data-theme="dark"] [data-world="tides"] { --ground: #06343a; --fg: #f2fcf9; --fg-2: #b4dcd4; --accent-text: #ff9a6e; --line-strong: #3f7c7a; --line: rgb(242 252 249 / 0.16); }
 :root[data-theme="dark"] [data-world="ember"] { --ground: #0f0b09; --fg: #fff4e8; --fg-2: #cdb8a4; --accent-text: #ff8a55; --line-strong: #6e5546; --line: rgb(255 244 232 / 0.14); }
+
+/* ---- 4. Figures --------------------------------------------------------
+   Every figure's colours, mixed from the semantic tokens and the ground it
+   stands on (docs/DESIGN.md, "The frame and the figure language"). They sit
+   on .fx so they resolve inside each world's ground. In dark the floor
+   shadow is weaker against the ground and the body's light carries the
+   depth. The two dark blocks must stay identical. */
+.fx {
+  --fx-ink: var(--fg);
+  --fx-ink-2: var(--fg-2);
+  --fx-halo: var(--ground, var(--bg));
+  --fx-body: color-mix(in srgb, var(--fg) 6%, var(--ground, var(--bg)));
+  --fx-light: color-mix(in srgb, var(--surface) 80%, var(--ground, var(--bg)));
+  --fx-owned: color-mix(in srgb, var(--accent) 16%, var(--ground, var(--bg)));
+  --fx-shadow: color-mix(in srgb, var(--ink) 14%, transparent);
+  --fx-platform: color-mix(in srgb, var(--fg) 4%, transparent);
+  --fx-tint: color-mix(in srgb, var(--accent) 12%, transparent);
+  --fx-old: color-mix(in srgb, var(--fg-2) 14%, var(--ground, var(--bg)));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .fx {
+    --fx-body: color-mix(in srgb, var(--fg) 5%, var(--ground, var(--bg)));
+    --fx-light: color-mix(in srgb, var(--fg) 11%, var(--ground, var(--bg)));
+    --fx-owned: color-mix(in srgb, var(--accent) 22%, var(--ground, var(--bg)));
+    --fx-shadow: color-mix(in srgb, var(--ink) 55%, transparent);
+    --fx-platform: color-mix(in srgb, var(--fg) 5%, transparent);
+  }
+}
+:root[data-theme="dark"] .fx {
+  --fx-body: color-mix(in srgb, var(--fg) 5%, var(--ground, var(--bg)));
+  --fx-light: color-mix(in srgb, var(--fg) 11%, var(--ground, var(--bg)));
+  --fx-owned: color-mix(in srgb, var(--accent) 22%, var(--ground, var(--bg)));
+  --fx-shadow: color-mix(in srgb, var(--ink) 55%, transparent);
+  --fx-platform: color-mix(in srgb, var(--fg) 5%, transparent);
+}

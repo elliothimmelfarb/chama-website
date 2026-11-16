@@ -72,7 +72,7 @@ Rules: measure 46ch for leads, 65ch maximum for any running text; headings use `
 
 ### Strategy
 
-Restrained in the chrome, committed in the grounds. Ink, paper and one accent, ember, on every page in both themes. The four grounds bring the variety the old second accent tried to bring. Ember is used for: the mark, the primary button, the one live element in a figure (the marker, the refit outline, the bar), the current-page dot, and the focus ring (as `--accent-text`). It is never a background for text larger than a button, never a gradient, never a glow behind a heading.
+Restrained in the chrome, committed in the grounds. Ink, paper and one accent, ember, on every page in both themes. The four grounds bring the variety the old second accent tried to bring. Ember is used for: the mark, the primary button, the one live element in a figure (the marker, the refit outline, the bar), the current-page dot, and the focus ring (as `--accent-text`); and, at 12 to 22% on the ground, the tint inside the software's outline and the warmth of an owned business. It is never a background for text larger than a button, never a gradient, never a glow behind a heading.
 
 ### Semantic tokens (in `assets/tokens.css`, second layer)
 
@@ -382,7 +382,7 @@ Words are the lead's to finalise from `brand-language.md`; these are all approve
 
 `site/figures/loop.js`, on the ember ground of `/engineering-department`, pinned for about three screens and driven by `--p` from 0 to 1. Three rings drawn as concentric shapes seen slightly from above, so the whole reads as the torus Elliot described:
 
-- **Inner: you.** The business as an ink pentagon with a 7% fill, labelled "You".
+- **Inner: you.** The business as the protagonist pentagon (section 14), labelled "You".
 - **Middle: the software.** An ember outline that fits the pentagon closely and refits on every lap.
 - **Outer: the AI system we run.** A dotted ellipse with eight small ticks drifting along it, and four stations at 12, 3, 6 and 9 o'clock: "Tell us", "It gets built", "You use it", "What's next".
 - **The marker:** an ember dot with a 40-degree fading tail, running the outer ring.
@@ -416,7 +416,7 @@ Builders and reviewers check each of these. A page that has one is not done.
 10. Placeholder text used as the field's label.
 11. Logos made grey with `multiply` (vanish on dark), logos with labels under them, or a logo marquee.
 12. A photo with a filter, duotone or overlay; a stock photo; a second photo of the family on home.
-13. Icon-library pictograms or emoji standing in for figures. Figures are authored inline SVG in one stroke weight with one ember part.
+13. Icon-library pictograms or emoji standing in for figures. Figures are authored inline SVG on the five layers of the figure language (section 14): ink at one weight, the ember fit at one heavier weight, and ember only for the software, the marker and the owned warmth.
 14. Div-built fake screenshots. Product views are real screenshots or the real recording.
 15. Text placed where the shader is brighter than the ground's measured text region, or text under the header.
 16. Motion that gates content: anything starting at opacity 0 (start at 0.01), entrances that hide words until a scroll position, autoplay that loops forever, a stage that cannot be paused.
@@ -427,6 +427,42 @@ Builders and reviewers check each of these. A page that has one is not done.
 21. More than two font families, a system display face as a fallback that ships, or Inter.
 22. Long paragraphs. One lead of at most about 40 words per section; more depth goes in a disclosure.
 23. An email address other than info@chamainteligente.com in the footer's legal line, on /privacy and as the fallback form's last resort; a phone number; a price; "Shama" outside About, Rozalie's name outside About, or "LA Metal" while the flag is off.
+
+---
+
+## 14. The frame and the figure language
+
+Added 2026-11-16, after Elliot asked for the diagrams "seriously elevated" to the original site's polish and for no awkward empty space in any frame. The old site's pentagon spanned about half the screen and had material: a fill, a crisp outline, an ember outline that hugged it. The rebuild's figures had shrunk to a tenth of that, in one flat stroke.
+
+**The frame.** Every world's contents sit in one `.frame` (`assets/worlds.css`): a 12-column grid under the header whose rows are centred as one group, with the words in `.words` and the figure in `.fig`. It names one of five layouts with `data-layout`:
+
+| Layout | Desktop | For |
+|---|---|---|
+| `split` (default; `data-flip` mirrors it) | words 1-5, figure 6-12 | a heading, a lead, one figure that plays |
+| `wide` | words 1-7, figure 1-12 under them at 48svh | timelines, charts with many labels |
+| `index` | a list 1-5 that lights in turn, figure 6-12 | parallel things: offers, steps, reasons |
+| `statement` | one sentence 1-10 at display size, a quiet band under it | a belief or a promise |
+| `pair` | heading and lead 1-4, sticky, content 6-12 | flow worlds: lists, disclosures, long text |
+
+No two worlds in a row use the same layout. On a phone the frame is one column, words first and the figure under them, centred under the header. The figure fills its cell: by height when the cell is wide, by width when it is tall. A figure sets `--ar` (its viewBox's width over height) and gets its size from the cell, so the protagonist's size follows the frame and is never fixed in px or vw. At 1440x900 that makes it about 220px in circumradius, the old site's scale, and about 90px on a 364px phone.
+
+**Fill.** Words and figure together span at least 40% of the screen's height on desktop and 50% on a phone at every scroll position (the floor), and aim for 55% and 65% at the middle of a pinned world's hold, with the figure 45% tall on desktop. `test/shots/run.mjs` measures both (`test/shots/README.md`).
+
+**The protagonist.** Your business is always the same pentagon: regular, first vertex at the top, seen slightly from above (height 0.86). The ember outline, the software, stands 0.14 of its circumradius outside it, mitred at the corners, which is the old site's hug as measured. It is drawn on five layers, back to front:
+
+| Layer | What it gives |
+|---|---|
+| Floor shadow | a soft radial ellipse under it, so it stands on the ground |
+| Body | a radial gradient lit from the top left, opaque, so a ring behind it is hidden |
+| Ink outline | the shape, at one weight (1.75px, 1.5px on a phone) |
+| Halo | the ground's own colour under the fit, so a line passing behind is cut cleanly |
+| Ember fit | the software, at one heavier weight (2.5px, 2.25px on a phone) |
+
+An owned or complete business warms: its body turns to ember at 16% on the ground (22% in dark). Only Why, Own and Approach use the warmth, so it keeps its meaning. The supporting cast (the platform, people, the marker, devices, the off-the-shelf company) is drawn in the same family; anything that holds content gets a body and a floor shadow, hairlines and rings never do. Every colour is a token in `assets/tokens.css` section 4, mixed from the ground, so both themes come free.
+
+**Motion.** Inside a figure there is one timeline, on the world's `--p`: arrive (0 to 0.10, floor and body rise into place), draw (the ink, from the top vertex, clockwise), fit (the ember a moment behind it, the old site's lag), act (0.22 to 0.62, the figure's story), land (0.62 to 0.72, the fit settles from 1.035, end labels and the warmth arrive), then hold, still. No part or label fades in over less than 0.05 of the hold. A protagonist that continues from the world before, at the same size and place, arrives drawn and animates only what is new; a pentagon is drawn from nothing only where it first appears on a page. Labels are HTML on their part (`.fx-lb`), never a row of captions under the figure.
+
+**Cost.** `data-p` goes on each moving leaf, or a group of at most three; a figure restyles at most 24 elements a frame (the protagonist costs five, none when it arrives drawn); only opacity, transforms, dash offset, offset distance and fill opacity change with `--p`. `site/figures/kit.js` holds the helpers and `subject()`, the protagonist; `test/figures.test.js` holds these rules, and `test/fixtures/figure.html` shows the language on the real engine.
 
 ---
 

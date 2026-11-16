@@ -8,9 +8,9 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches){d.classList.add("pin");addEventListener("DOMContentLoaded",function(){setTimeout(function(){if(!d.dataset.engine)d.classList.remove("pin")},4e3)})}})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
-  <link rel="stylesheet" href="/assets/base.css?v=2f1034c928">
-  <link rel="stylesheet" href="/assets/worlds.css?v=ed8e5a0e90">
+  <link rel="stylesheet" href="/assets/tokens.css?v=90fbcb9cf7">
+  <link rel="stylesheet" href="/assets/base.css?v=64352538e0">
+  <link rel="stylesheet" href="/assets/worlds.css?v=de275a1e57">
   <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
   <script src="/assets/sky.js?v=f524e540c3" defer></script>
   <script src="/assets/worlds.js?v=5d7842046a" defer></script>
@@ -269,7 +269,7 @@ html[data-motion="low"] .stage-ph { --in: 1; }
   --v: calc(var(--ed));
   stroke-dashoffset: calc(1 - var(--ed)); opacity: clamp(0, var(--v) * 50, 1); }
 .stage-ticks { --k1: clamp(0, (var(--t) - 24.5) / 1.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); opacity: clamp(0, (var(--t) - 9.3) / 0.6, 1); stroke-dashoffset: calc(-0.04 * min(var(--t), 24.5) - 0.03 * var(--e1)); }
-.stage-stations { opacity: clamp(0, (var(--t) - 10.5) / 0.4, 1); }
+.stage-stations circle { opacity: clamp(0, (var(--t) - 10.5) / 0.4, 1); }
 .stage-mk { --k1: clamp(0, (var(--t) - 15.6) / 1, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); --s: calc(clamp(0, (var(--t) - 10.5) / 3.5, 1) + var(--e1)); opacity: calc(clamp(0, (var(--t) - 10.5) / 0.3, 1) * (1 - clamp(0, (var(--t) - 17.4) / 0.4, 1))); }
 .stage-head { stroke-dashoffset: calc(-1 * var(--s)); }
 .stage-tail { stroke-dashoffset: calc(0.05 - var(--s)); }
@@ -306,7 +306,7 @@ html[data-motion="low"] .stage-ph { --in: 1; }
   <g class="stage-qr" data-p><path class="stage-ink" transform="translate(52 0)" d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z"/><path class="stage-ink" transform="translate(22 0)" d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z"/><path class="stage-ink" transform="translate(-38 0)" d="M0 -10 L9.51 -3.09 L5.88 8.09 L-5.88 8.09 L-9.51 -3.09 Z"/></g>
   <g class="stage-loop" data-p>
     <g mask="url(#stage-ring-m)"><path class="stage-ring" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/><path class="stage-ticks" data-p pathLength="1" d="M0 -58 A125 58 0 1 1 0 58 A125 58 0 1 1 0 -58"/></g>
-    <g class="stage-stations" data-p><circle cx="0" cy="-58" r="4.5"/><circle cx="125" cy="0" r="4.5"/><circle cx="0" cy="58" r="4.5"/><circle cx="-125" cy="0" r="4.5"/></g>
+    <g class="stage-stations"><circle data-p cx="0" cy="-58" r="4.5"/><circle data-p cx="125" cy="0" r="4.5"/><circle data-p cx="0" cy="58" r="4.5"/><circle data-p cx="-125" cy="0" r="4.5"/></g>
     <g class="stage-people" data-p><circle cy="-14" r="3.5"/><circle r="3.5"/><circle cy="14" r="3.5"/></g>
     <path class="stage-link" data-p pathLength="1" d="M-78 -1 L-39 -11"/>
     <g class="stage-you" data-p>

@@ -434,6 +434,127 @@ html:not([data-motion="low"]) [data-stage] :is([data-stage-step], [data-stage-co
 [data-stage]:not([data-state="ended"]) [data-stage-action="replay"],
 html[data-motion="low"] [data-stage-action] { display: none; }
 
+/* ---- the figure language ------------------------------------------------ */
+/* Every figure is an .fx: an inline .fx-svg whose protagonist and cast are
+   drawn on five layers (floor shadow, body, ink, halo, ember fit) in the
+   colours of tokens.css section 4, with HTML labels placed over it (.fx-lb;
+   their type is base.css's). site/figures/kit.js writes the parts; this is
+   how they are painted. Strokes on paths with pathLength cannot use
+   non-scaling-stroke (Chrome misplaces the dashes), so a figure sets --sw,
+   viewBox units per CSS pixel, on its .fx-svg at three container widths:
+     .x .fx-svg { --sw: calc(VBW / 330); }
+     @container fx (min-width: 480px) { .x .fx-svg { --sw: calc(VBW / 520); } }
+     @container fx (min-width: 600px) { .x .fx-svg { --sw: calc(VBW / 660); } }
+   Nothing here reads --p: each part's --p style is inline, on the part. */
+.fx { position: relative; margin: 0; container: fx / inline-size; }
+.fx-svg { --sw: 1; display: block; width: 100%; height: auto; overflow: visible; }
+.fx-svg [pathLength] { stroke-dasharray: 1 1; }
+.fx-s-light { stop-color: var(--fx-light); }
+.fx-s-body { stop-color: var(--fx-body); }
+.fx-s-owned { stop-color: var(--fx-owned); }
+.fx-s-shadow { stop-color: var(--fx-shadow); }
+.fx-s-clear { stop-color: var(--fx-shadow); stop-opacity: 0; }
+.fx-body, .fx-floor { stroke: none; }
+.fx-ink { fill: none; stroke: var(--fx-ink); stroke-width: calc(1.75px * var(--sw)); stroke-linejoin: round; stroke-linecap: round; }
+.fx-halo { fill: none; stroke: var(--fx-halo); stroke-width: calc(7px * var(--sw)); stroke-linejoin: round; }
+.fx-fit { fill: none; stroke: var(--accent); stroke-width: calc(2.5px * var(--sw)); stroke-linejoin: round; stroke-linecap: round; }
+.fx-tinted { fill: var(--fx-tint); }
+.fx-plat { fill: var(--fx-platform); stroke: none; }
+.fx-ring { fill: none; stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: 1.5 6; stroke-linecap: round; }
+.fx-ring.is-yours { stroke-opacity: 0.8; stroke-dasharray: none; }
+.fx-dot { fill: var(--fx-ink); }
+.fx-mk { fill: var(--accent); stroke: var(--fx-halo); stroke-width: calc(3px * var(--sw)); paint-order: stroke; }
+.fx-hair { fill: none; stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); }
+@media (max-width: 759px) {
+  .fx-ink { stroke-width: calc(1.5px * var(--sw)); }
+  .fx-fit { stroke-width: calc(2.25px * var(--sw)); }
+}
+/* A label sits on its part at --x, --y (kit.js place()), centred unless it
+   sets --tx and --ty. A callout is a 5px dot on the part and a hairline of
+   --len at --ang; its word is a label of its own at the line's end. */
+.fx-lb { position: absolute; left: var(--x); top: var(--y); translate: var(--tx, -50%) var(--ty, -50%); white-space: nowrap; }
+.fx-call { --len: 32px; --ang: -30deg; width: 0; height: 0; }
+.fx-call::before { content: ""; position: absolute; left: 0; top: -0.5px; width: var(--len); height: 1px; background: var(--fg-2); transform-origin: 0 50%; rotate: var(--ang); }
+.fx-call::after { content: ""; position: absolute; left: -2.5px; top: -2.5px; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
+
+/* ---- the frame ---------------------------------------------------------- */
+/* A world's contents live in one .frame: a 12-column grid inside --max, from
+   under the header to the bottom safe edge, whose rows are centred as one
+   group, so words and figure can never drift apart. Its children are
+   .words and .fig (any other child takes the figure's columns); .r stays
+   on them or inside them, so the engine's arrival, stand and exit are
+   unchanged. data-layout names one of five layouts:
+     split      words 1-5, figure 6-12 (the default; data-flip mirrors it)
+     wide       words 1-7, then the figure across 1-12 at 48svh
+     index      a list 1-5 that lights in turn (.qs li), figure 6-12
+     statement  one sentence across 1-10 (type in base.css), a quiet band under it
+     pair       heading and lead 1-4, sticky, content 6-12; for flow worlds
+   The figure fills its cell: by height when the cell is wide, by width when
+   it is tall. A figure sets --ar (its viewBox's width over height) on .fig;
+   its size, and so its protagonist's, comes from the cell, never from a
+   fixed px or vw. A frame never reads --u, --e or --p: it is a container
+   (pages.md). It is positioned so the .pin-shade before it paints under it. */
+.frame {
+  --head: 72px;
+  --fig-h: calc(100svh - var(--head) - var(--s6) - var(--s7) - 2rem);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--s5);
+  row-gap: var(--s6);
+  align-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding: calc(var(--head) + var(--s6)) var(--gutter) var(--s7);
+}
+.world:not([data-pin="off"]) > .pin > .frame { height: 100%; }
+/* flow: the height the content needs. In one column the pin already pads,
+   so a frame there adds none; a world that pads its own (data-pad="off")
+   keeps the frame's. */
+:is(.world[data-pin="off"], html:not(.pin) .world) > .pin > .frame { height: auto; padding-block: var(--s8); }
+:is(.world[data-pin="off"], html:not(.pin) .world):not([data-pad="off"]) > .pin > .frame { padding: 0; }
+
+.frame > * { grid-column: 6 / -1; min-width: 0; }
+.frame > .words { grid-column: 1 / span 5; }
+.frame:where([data-flip]) > .words { grid-column: 8 / -1; grid-row: 1; }
+.frame:where([data-flip]) > :not(.words) { grid-column: 1 / span 7; grid-row: 1; }
+
+.frame:where([data-layout="wide"]) { --fig-h: 48svh; }
+.frame:where([data-layout="wide"]) > .words { grid-column: 1 / span 7; }
+.frame:where([data-layout="wide"]) > :not(.words) { grid-column: 1 / -1; }
+
+.frame:where([data-layout="statement"]) { --fig-h: 30svh; }
+.frame:where([data-layout="statement"]) > .words { grid-column: 1 / span 10; }
+.frame:where([data-layout="statement"]) > :not(.words) { grid-column: 1 / -1; }
+
+.frame:where([data-layout="pair"]) { align-items: start; }
+.frame:where([data-layout="pair"]) > .words { grid-column: 1 / span 4; position: sticky; top: calc(var(--head) + var(--s6)); }
+
+.frame > .fig > :is(svg, img, video, .fx, .fig-box) {
+  display: block;
+  width: min(100%, var(--fig-h) * var(--ar, 1));
+  margin-inline: auto;
+}
+
+/* Phone and portrait: one column, words first, the figure directly under
+   them, the pair centred in the space under the header. The figure takes
+   what the words leave (--words-h, set by a page that knows it), and never
+   less than a third of the screen. */
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  .frame {
+    --head: 56px;
+    --fig-h: max(34svh, calc(100svh - var(--head) - var(--words-h, 18rem) - 6rem));
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s5);
+    align-content: safe center;
+    padding: calc(var(--head) + env(safe-area-inset-top) + var(--s4)) 16px calc(var(--s5) + env(safe-area-inset-bottom));
+  }
+  .frame > :is(*, .words) { grid-column: 1; grid-row: auto; }
+  .frame:where([data-layout="pair"]) > .words { position: static; }
+}
+
 /* ---- where the ground changes, without a sky ---------------------------- */
 /* Where there is no sky to blend (low motion, no WebGL) and two different
    grounds meet in one column, a hairline across the full width, 64px above

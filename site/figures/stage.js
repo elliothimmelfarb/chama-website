@@ -6,6 +6,7 @@
 // stepper over the same eight points, each shown at its data-stage-still.
 import { html, raw } from "../html.js";
 import { GLYPHS } from "./glyphs.js";
+import { poly, ngon, grow } from "./kit.js";
 
 const T = 28;
 
@@ -32,16 +33,6 @@ const STATIONS = ["Tell us", "It gets built", "You use it", "What's next"];
 // ---- geometry, in the viewBox's units ------------------------------------
 const VW = 400, VH = 190, RX = 125, RY = 58;
 const f = (n) => +n.toFixed(2);
-export const poly = (pts) => "M" + pts.map(([x, y]) => `${f(x)} ${f(y)}`).join(" L") + " Z";
-export const ngon = (r) => [0, 1, 2, 3, 4].map((i) => [r * Math.cos(((i * 72 - 90) * Math.PI) / 180), r * Math.sin(((i * 72 - 90) * Math.PI) / 180)]);
-// The outline sits a constant distance outside the shape, mitred at the corners.
-export function grow(pts, d) {
-  const n = pts.length, norm = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); return [dy / l, -dx / l]; };
-  return pts.map((v, i) => {
-    const n1 = norm(pts[(i - 1 + n) % n], v), n2 = norm(v, pts[(i + 1) % n]), k = d / (1 + n1[0] * n2[0] + n1[1] * n2[1]);
-    return [v[0] + (n1[0] + n2[0]) * k, v[1] + (n1[1] + n2[1]) * k];
-  });
-}
 const PENT = ngon(40);
 // the sixth corner grows out of the upper right edge
 const MID = [(PENT[0][0] + PENT[1][0]) / 2, (PENT[0][1] + PENT[1][1]) / 2];
@@ -86,7 +77,7 @@ ${strokeRule("stage-cloud", [19.6, 19.95], [20.35, 20.55])}
 ${strokeRule("stage-link", [7.8, 8.4])}
 ${strokeRule("stage-ringm", [8.6, 9.8])}
 .stage-ticks { ${k(1, 24.5, 26)} opacity: ${w(9.3, 9.9)}; stroke-dashoffset: calc(-0.04 * min(var(--t), 24.5) - 0.03 * ${e(1)}); }
-.stage-stations { opacity: ${w(10.5, 10.9)}; }
+.stage-stations circle { opacity: ${w(10.5, 10.9)}; }
 .stage-mk { ${k(1, 15.6, 16.6)} --s: calc(${w(10.5, 14)} + ${e(1)}); opacity: calc(${w(10.5, 10.8)} * (1 - ${w(17.4, 17.8)})); }
 .stage-head { stroke-dashoffset: calc(-1 * var(--s)); }
 .stage-tail { stroke-dashoffset: calc(0.05 - var(--s)); }
@@ -258,7 +249,7 @@ const FIG = `<svg class="stage-fig" viewBox="${-VW / 2} ${-VH / 2} ${VW} ${VH}" 
   <g class="stage-qr" data-p>${[52, 22, -38].map((x) => `<path class="stage-ink" transform="translate(${x} 0)" d="${poly(ngon(10))}"/>`).join("")}</g>
   <g class="stage-loop" data-p>
     <g mask="url(#stage-ring-m)"><path class="stage-ring" d="${RING}"/><path class="stage-ticks" data-p pathLength="1" d="${RING}"/></g>
-    <g class="stage-stations" data-p>${[[0, -RY], [RX, 0], [0, RY], [-RX, 0]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.5"/>`).join("")}</g>
+    <g class="stage-stations">${[[0, -RY], [RX, 0], [0, RY], [-RX, 0]].map(([x, y]) => `<circle data-p cx="${x}" cy="${y}" r="4.5"/>`).join("")}</g>
     <g class="stage-people" data-p><circle cy="-14" r="3.5"/><circle r="3.5"/><circle cy="14" r="3.5"/></g>
     <path class="stage-link" data-p pathLength="1" d="M-78 -1 L-39 -11"/>
     <g class="stage-you" data-p>

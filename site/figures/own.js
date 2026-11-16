@@ -2,8 +2,8 @@
 // software's ember outline lifts out of our ring and sets down around your
 // business in yours. Complete at --p 1, with the outline in your ring.
 import { html, raw } from "../html.js";
+import { n } from "./kit.js";
 
-const n = (v) => +v.toFixed(4);
 const t = "clamp(0, (var(--p) - 0.15) / 0.6, 1)";
 // eased in and out along the arc
 const MOVE = `(${t} * ${t} * (3 - 2 * ${t}))`;

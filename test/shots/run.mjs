@@ -441,6 +441,132 @@ async function sweepDead(pg, state, page, dir, stem) {
   }
 }
 
+// ---- frame fill ------------------------------------------------------------------
+// Every scroll position is a frame people see, and none should feel empty
+// (Elliot, 2026-11-16: "make every frame feel cozy"). Two measures, in
+// light full motion at 1440x900, 1280x720 and 364x610 (17px):
+// - the floor, every eighth of a screen: the visible words and figures
+//   together span under FILL_FLOOR of the screen's height for more than a
+//   quarter screen. A world that opts in with data-fill fails the run on
+//   it; every other world is reported, until the page builders bring each
+//   page up to it and opt it in.
+// - the targets (docs/DESIGN.md, the frame), at 60% of each pinned world's
+//   hold: the group, the figure, how far apart their centres are, and the
+//   largest empty band. Always reported, never failed.
+// A world that cannot meet the floor is listed in FILL_EXEMPT by its
+// selector, with the reason; none is today.
+const FILL_SIZES = [DESK, { name: "laptop", width: 1280, height: 720, font: null, scale: 1, mobile: false }, PHONE];
+const FILL_FLOOR = { desk: 0.4, laptop: 0.4, phone: 0.5 };
+const FILL_RUN = 0.25;
+const FILL_TARGET = {
+  desk: { group: 0.55, fig: 0.45, centre: 0.08, band: 0.35 },
+  laptop: { group: 0.55, fig: 0.45, centre: 0.08, band: 0.35 },
+  phone: { group: 0.65, fig: 0.3, figWidth: 0.9, band: 0.3 },
+};
+const FILL_EXEMPT = {};
+const fillReport = [];
+
+// What one frame holds: the boxes of the visible words and of the visible
+// figures inside the safe area (under the header), as fractions of the
+// screen's height, and the world under the middle of the screen.
+function fillProbe(exempt) {
+  const vh = innerHeight, vw = innerWidth, head = document.querySelector("[data-top]")?.offsetHeight || 0;
+  for (const f of document.querySelectorAll("footer")) if (f.getBoundingClientRect().top < vh) return { footer: true };
+  const seen = (el) => { let o = 1; for (let e = el; e && e !== document.body; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === "none" || cs.visibility === "hidden") return 0; o *= +cs.opacity; } return o; };
+  const floor = (el) => { const pin = el.closest(".world > .pin"); return pin && getComputedStyle(pin).overflow !== "visible" ? pin.getBoundingClientRect().bottom : vh; };
+  const boxes = (els) => els.map((el) => {
+    const r = el.getBoundingClientRect(), t = Math.max(r.top, head), b = Math.min(r.bottom, vh, floor(el));
+    return b - t >= 2 && r.width >= 2 && r.right > 0 && r.left < vw && seen(el) >= 0.35 ? { l: r.left, r: r.right, t, b } : null;
+  }).filter(Boolean);
+  const union = (bs) => bs.length ? { l: Math.min(...bs.map((b) => b.l)), r: Math.max(...bs.map((b) => b.r)), t: Math.min(...bs.map((b) => b.t)), b: Math.max(...bs.map((b) => b.b)) } : null;
+  const words = boxes([...document.querySelectorAll("main :is(h1, h2, h3, p, li, a.more, .talk-field, summary)")].filter((e) => !e.closest("svg, .fx, figure .bars-list, .figure-box figcaption")));
+  const figs = boxes([...document.querySelectorAll("main :is(svg, img, video, .bars, .rig)")].filter((e) => {
+    if (e.closest(".talk-field, .door, .more, summary, button") || (e.tagName === "svg" && e.parentElement.closest("svg"))) return false;
+    const r = e.getBoundingClientRect(); return r.width > 60 || r.height > 60;
+  }));
+  const W = union(words), F = union(figs), G = union([W, F].filter(Boolean));
+  // the largest run of the safe area that nothing covers
+  const N = 40, band = new Array(N).fill(0), safe = vh - head;
+  for (const b of [...words, ...figs]) for (let i = Math.max(0, Math.floor((b.t - head) / safe * N)); i <= Math.min(N - 1, Math.floor((b.b - 1 - head) / safe * N)); i++) band[i] = 1;
+  let empty = 0, run = 0;
+  for (const v of band) { run = v ? 0 : run + 1; empty = Math.max(empty, run); }
+  const mid = vh / 2, worlds = [...document.querySelectorAll("main .world")];
+  const k = worlds.findIndex((s) => { const r = s.getBoundingClientRect(); return r.top <= mid && r.bottom > mid; });
+  const world = worlds[k];
+  const h = (b) => (b ? (b.b - b.t) / vh : 0);
+  return {
+    k, label: world ? `w${k + 1}-${world.dataset.world}${world.dataset.label ? ` "${world.dataset.label}"` : ""}` : "none",
+    opted: !!world?.hasAttribute("data-fill"),
+    exempt: world ? Object.keys(exempt).find((s) => world.matches(s)) || null : null,
+    group: h(G), fig: h(F), figWidth: F ? (F.r - F.l) / Math.max(1, vw - 32) : 0,
+    centre: W && F ? Math.abs((W.t + W.b) / 2 - (F.t + F.b) / 2) / vh : 0,
+    band: (empty / N) * safe / vh,
+  };
+}
+
+async function fillCheck(pg, vp) {
+  const state = `fill, light full ${vp.name} ${vp.width}x${vp.height}`;
+  const dir = dirFor(pg), stem = `fill-${vp.name}`;
+  const { context, page } = await open(vp, { theme: "light", motion: "full" });
+  const pct = (v) => `${Math.round(v * 100)}%`;
+  try {
+    await page.goto(BASE + pg.path, { waitUntil: "load" });
+    await page.waitForTimeout(SETTLE);
+    const { max, vh } = await page.evaluate(() => ({ max: document.documentElement.scrollHeight - innerHeight, vh: innerHeight }));
+    const step = Math.round(vh / 8), floorAt = FILL_FLOOR[vp.name];
+    let run = null, shots = 0;
+    const close = async (endY) => {
+      if (!run || endY - run.y <= vh * FILL_RUN) return (run = null);
+      const detail = `${run.label}: words and figures span under ${pct(floorAt)} of the screen (lowest ${pct(run.low)}) for ${((endY - run.y) / vh).toFixed(2)} screens from scrollY ${run.y}`;
+      let shot = null;
+      if (shots < 3) {
+        shots++;
+        await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), run.lowY);
+        await page.waitForTimeout(STEP_WAIT);
+        shot = path.join(dir, `${stem}-floor-${run.lowY}.png`);
+        await page.screenshot({ path: shot });
+      }
+      if (run.opted && !run.exempt) fail(pg.id, state, "fill floor", detail, shot);
+      else fillReport.push({ page: pg.id, state, kind: run.exempt ? `floor (exempt: ${FILL_EXEMPT[run.exempt]})` : "floor", detail, shot: shot && path.relative(process.cwd(), shot) });
+      run = null;
+    };
+    for (let y = 0; y <= max; y += step) {
+      await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y);
+      await page.waitForTimeout(160);
+      const m = await page.evaluate(fillProbe, FILL_EXEMPT);
+      const low = !m.footer && m.k >= 0 && m.group < floorAt;
+      if (run && (!low || m.k !== run.k)) await close(y);
+      if (low && !run) run = { y, k: m.k, label: m.label, opted: m.opted, exempt: m.exempt, low: m.group, lowY: y };
+      if (low && m.group < run.low) Object.assign(run, { low: m.group, lowY: y });
+    }
+    await close(max + step);
+
+    // the targets, at 60% of each pinned world's hold
+    const target = FILL_TARGET[vp.name];
+    const holds = await page.evaluate(() => [...document.querySelectorAll("main .world")].map((s) => {
+      const pin = s.querySelector(":scope > .pin");
+      if (!document.documentElement.classList.contains("pin") || !pin || s.dataset.pin === "off") return null;
+      return Math.round(s.getBoundingClientRect().top + scrollY + (s.offsetHeight - pin.offsetHeight) * 0.6);
+    }));
+    for (const y of holds.filter((y) => y !== null)) {
+      await scrollTo(page, y);
+      const m = await page.evaluate(fillProbe, FILL_EXEMPT);
+      if (m.footer || m.k < 0) continue;
+      const misses = [];
+      if (m.group < target.group) misses.push(`group ${pct(m.group)} (target ${pct(target.group)})`);
+      if (m.fig && m.fig < target.fig) misses.push(`figure ${pct(m.fig)} tall (target ${pct(target.fig)})`);
+      if (m.fig && target.figWidth && m.figWidth < target.figWidth) misses.push(`figure ${pct(m.figWidth)} of the column wide (target ${pct(target.figWidth)})`);
+      if (target.centre && m.fig && m.centre > target.centre) misses.push(`centres ${pct(m.centre)} apart (target ${pct(target.centre)})`);
+      if (m.band > target.band) misses.push(`empty band ${pct(m.band)} (target ${pct(target.band)})`);
+      if (misses.length) fillReport.push({ page: pg.id, state, kind: "target", detail: `${m.label} at 60% of its hold: ${misses.join(", ")}`, shot: null });
+    }
+  } catch (e) {
+    fail(pg.id, state, "rig error", e.message.split("\n")[0]);
+  } finally {
+    await context.close();
+  }
+}
+
 // ---- the matrix ---------------------------------------------------------------
 async function runState(pg, theme, motion, vp) {
   const state = `${theme} ${motion} ${vp.name} ${vp.width}x${vp.height}`;
@@ -600,6 +726,7 @@ async function thanks(motion) {
 const jobs = [];
 for (const pg of pages) for (const theme of ["light", "dark"]) for (const motion of ["full", "low"]) for (const vp of [PHONE, DESK]) jobs.push(() => runState(pg, theme, motion, vp));
 for (const pg of pages) jobs.push(() => oneColumn(pg));
+for (const pg of pages) for (const vp of FILL_SIZES) jobs.push(() => fillCheck(pg, vp));
 for (const pg of pages.filter((p) => ["/", "/engineering-department"].includes(p.path))) for (const vp of [PHONE, DESK]) for (const sys of ["light", "dark"]) jobs.push(() => noJs(pg, vp, sys));
 if (pages.some((p) => p.path === "/")) {
   jobs.push(() => routerTrip(DESK), () => routerTrip(PHONE), () => thanks("full"), () => thanks("low"));
@@ -651,11 +778,13 @@ await sheetCtx.close();
 await browser.close();
 server?.close();
 
-fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify({ base: BASE, pages: pages.map((p) => p.id), seconds: Math.round((Date.now() - started) / 1000), failures, sheets, stats }, null, 2));
+fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify({ base: BASE, pages: pages.map((p) => p.id), seconds: Math.round((Date.now() - started) / 1000), failures, fill: fillReport, sheets, stats }, null, 2));
 const byCheck = {};
 for (const f of failures) byCheck[f.check] = (byCheck[f.check] || 0) + 1;
 console.log(`\n${done} states in ${Math.round((Date.now() - started) / 1000)}s, ${failures.length} failures`);
 for (const [c, n] of Object.entries(byCheck)) console.log(`  ${c}: ${n}`);
+const floors = fillReport.filter((r) => r.kind.startsWith("floor")).length;
+console.log(`fill (reported, not failed; worlds opt in with data-fill): ${floors} runs under the floor, ${fillReport.length - floors} worlds short of a target`);
 console.log(`report: ${path.join(OUT, "report.json")}`);
 for (const s of sheets) console.log(`sheet:  ${s}`);
 process.exit(failures.length ? 1 : 0);
