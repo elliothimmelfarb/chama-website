@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Engine fixture</title>
+  <!-- Not deployed (test/ is in .vercelignore). Serve the repo root and open
+       /test/fixtures/engine.html; ?theme=light|dark and ?motion=low|full
+       override the stored choices. The boot is site/parts/boot.js's, with
+       those two overrides. -->
+  <script>
+    (function () {
+      var d = document.documentElement, q = new URLSearchParams(location.search);
+      try {
+        var t = q.get("theme") || localStorage.getItem("chama-theme");
+        if (t === "light" || t === "dark") d.dataset.theme = t;
+        var m = q.get("motion") || localStorage.getItem("chama-motion");
+        if (m === "low" || (m !== "full" && matchMedia("(prefers-reduced-motion: reduce)").matches)) d.dataset.motion = "low";
+      } catch (e) {}
+      if (d.dataset.motion !== "low" && matchMedia("(min-height: 501px)").matches) d.classList.add("pin");
+    })();
+  </script>
+  <link rel="stylesheet" href="/assets/tokens.css">
+  <link rel="stylesheet" href="/assets/worlds.css">
+  <script src="/assets/sky.js" defer></script>
+  <script src="/assets/worlds.js" defer></script>
+  <style>
+    /* The fixture's own figures. Every rule that reads var(--p) sits on a
+       [data-p] element, as on the real pages. */
+    main { font-family: var(--text); }
+    .fig { display: block; width: 100%; height: auto; overflow: visible; }
+    .fig .ink { fill: none; stroke: var(--fg); stroke-width: 2; }
+    .fig .hot { fill: none; stroke: var(--accent); stroke-width: 3; }
+    .fig .dot { fill: var(--accent); }
+    .fig path[data-p] { stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, (var(--p) - var(--from, 0)) / var(--len, 1), 1)); }
+    .fig circle[data-p] { opacity: clamp(0, (var(--p) - var(--at, 0)) * 10, 1); }
+    .fig [data-p].marker { offset-path: path("M160 40 A120 120 0 1 1 159.9 40"); offset-distance: calc(var(--p) * 100%); }
+    .stage { max-width: 34rem; }
+    .stage .fig { max-height: 40svh; }
+    .stage-bar { display: flex; gap: 6px; align-items: center; margin-top: 12px; }
+    .stage-bar button { min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--fg-2); border-radius: 999px; background: var(--surface); color: var(--fg); font: inherit; }
+    .stage-bar [data-stage-seek] { min-width: 44px; padding: 0; }
+    .stage-bar [aria-current="step"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    .stage-state { margin-left: 8px; color: var(--fg-2); font-size: 0.8rem; }
+    .figure-box { position: absolute; right: var(--edge); top: 50%; width: min(38vw, 28rem); translate: 0 -50%; }
+    @media (max-width: 759px), (max-aspect-ratio: 9/10) {
+      .figure-box { left: 50%; right: auto; top: calc(110px + env(safe-area-inset-top)); width: min(70vw, 34svh); translate: -50% 0; }
+    }
+    html:not(.pin) .figure-box { position: static; translate: none; width: min(100%, 22rem); margin-top: 2rem; }
+    .plain { max-width: 40rem; padding: 6rem var(--pad) 30vh; color: var(--fg); }
+    .plain p { color: var(--fg-2); line-height: 1.5; }
+    .theme-btn { min-height: 32px; padding: 0 12px; border: 1px solid var(--fg-2); border-radius: 999px; background: var(--surface); color: var(--fg); font: inherit; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <canvas id="sky" class="layer" aria-hidden="true"></canvas>
+  <header class="top">
+    <a class="mast" href="/test/fixtures/engine.html"><span><b>Engine fixture</b><small>worlds.js</small></span></a>
+    <button class="theme-btn" type="button" id="theme">Theme</button>
+    <button class="motion-toggle" type="button" data-motion-toggle><span class="motion-track" aria-hidden="true"><i></i></span><span class="motion-label">Low motion</span></button>
+  </header>
+  <main id="main">
+    <section class="world" data-world="paper" data-pin="off" data-label="Stage">
+      <div class="pin">
+        <div class="copy">
+          <h1>A stage that plays itself</h1>
+          <div class="stage" data-stage data-duration="6">
+            <svg class="fig" viewBox="0 0 320 300" role="img" aria-label="A ring drawing itself, with a marker running round it">
+              <path class="ink" data-p style="--from:0;--len:0.4" pathLength="1" d="M160 40 A120 120 0 1 1 159.9 40"/>
+              <path class="hot" data-p style="--from:0.35;--len:0.4" pathLength="1" d="M110 120 L210 120 L230 200 L90 200 Z"/>
+              <circle class="dot" data-p style="--at:0.75" cx="160" cy="160" r="8"/>
+              <circle class="dot marker" data-p r="6"/>
+            </svg>
+            <div class="stage-bar">
+              <button type="button" data-stage-action="play">Play</button>
+              <button type="button" data-stage-action="pause">Pause</button>
+              <button type="button" data-stage-action="replay">Replay</button>
+              <button type="button" data-stage-seek="0" aria-label="Beat 1">1</button>
+              <button type="button" data-stage-seek="0.35" aria-label="Beat 2">2</button>
+              <button type="button" data-stage-seek="0.75" aria-label="Beat 3">3</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="world" data-world="grid" data-label="Pinned" style="--h:300">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker r" style="--in:-0.4">Pinned, on the grid</p>
+          <h2 class="r" style="--in:-0.3">A figure drawn by the scroll</h2>
+          <p class="r" style="--in:-0.2">The ring, the shape and the marker follow --p, the world's progress through its hold.</p>
+        </div>
+        <div class="figure-box r" style="--in:-0.3">
+          <svg class="fig" viewBox="0 0 320 320" role="img" aria-label="A ring and a shape drawn as the page scrolls">
+            <path class="ink" data-p style="--from:0;--len:0.35" pathLength="1" d="M160 40 A120 120 0 1 1 159.9 40"/>
+            <path class="hot" data-p style="--from:0.3;--len:0.4" pathLength="1" d="M160 95 L225 145 L200 225 L120 225 L95 145 Z"/>
+            <circle class="dot" data-p style="--at:0.8" cx="160" cy="160" r="9"/>
+            <circle class="dot marker" data-p r="6"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="world" data-world="tides" data-pin="off" data-label="Unpinned">
+      <div class="plain">
+        <p class="kicker r">Unpinned, on the tides</p>
+        <h2 class="r">Plain flow under the same sky</h2>
+        <p class="r">This section has data-pin="off": it scrolls like an ordinary page, its words are shown complete, and the fire between grounds stands on the next section's top edge.</p>
+        <svg class="fig" viewBox="0 0 320 120" role="img" aria-label="A finished line" style="max-width:20rem">
+          <path class="hot" data-p pathLength="1" d="M10 100 C80 10 160 110 310 20"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="world" data-world="ember" data-label="Ember" style="--h:220">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker r" style="--in:-0.4">Pinned, on the ember</p>
+          <h2 class="r" style="--in:-0.3">The last world</h2>
+          <p class="r" style="--in:-0.2">Its figure completes as the world is held, and the words leave before they reach the header.</p>
+        </div>
+        <div class="figure-box r" style="--in:-0.3">
+          <svg class="fig" viewBox="0 0 320 320" role="img" aria-label="Three rings drawn in turn">
+            <path class="ink" data-p style="--from:0;--len:0.3" pathLength="1" d="M160 60 A100 100 0 1 1 159.9 60"/>
+            <path class="ink" data-p style="--from:0.3;--len:0.3" pathLength="1" d="M160 100 A60 60 0 1 1 159.9 100"/>
+            <path class="hot" data-p style="--from:0.6;--len:0.3" pathLength="1" d="M160 130 A30 30 0 1 1 159.9 130"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="end-row">Engine fixture</div></footer>
+  <script>
+    /* Stands in for the header's theme control: it stores the choice, sets
+       data-theme and tells the sky. */
+    document.getElementById("theme").addEventListener("click", function () {
+      var d = document.documentElement, dark = d.dataset.theme ? d.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+      d.dataset.theme = dark ? "light" : "dark";
+      try { localStorage.setItem("chama-theme", d.dataset.theme); } catch (e) {}
+      document.dispatchEvent(new CustomEvent("chama:theme"));
+    });
+  </script>
+</body>
+</html>

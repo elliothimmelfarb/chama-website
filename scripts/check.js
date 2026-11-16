@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from "node:child_process";
 
-const DIRS = ["api", "lib", "assets", "evals", "test", "scripts"];
+const DIRS = ["api", "lib", "assets", "evals", "test", "scripts", "site"];
 
 const files = execFileSync(
   "git",

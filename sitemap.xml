@@ -1,79 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://chamainteligente.com/</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-11-16</lastmod>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/"/>
-    <image:image>
-      <image:loc>https://chamainteligente.com/og-2026-09-22.png</image:loc>
-      <image:title>Chama Inteligente</image:title>
-      <image:caption>Software shaped for your business. Most businesses change how they work to fit the software they buy. Yours does not have to. Chama Inteligente, Lisbon.</image:caption>
-    </image:image>
+  </url>
+  <url>
+    <loc>https://chamainteligente.com/engineering-department</loc>
+    <lastmod>2026-11-16</lastmod>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/engineering-department"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/engineering-department"/>
   </url>
   <url>
     <loc>https://chamainteligente.com/coaching</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-11-16</lastmod>
+    <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/coaching"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/coaching"/>
   </url>
   <url>
-    <loc>https://chamainteligente.com/built</loc>
-    <lastmod>2026-11-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/built"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/built"/>
+    <loc>https://chamainteligente.com/build</loc>
+    <lastmod>2026-11-16</lastmod>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/build"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/build"/>
   </url>
   <url>
-    <loc>https://chamainteligente.com/clients</loc>
-    <lastmod>2026-10-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/clients"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/clients"/>
+    <loc>https://chamainteligente.com/work</loc>
+    <lastmod>2026-11-16</lastmod>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/work"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/work"/>
   </url>
   <url>
     <loc>https://chamainteligente.com/about</loc>
-    <lastmod>2026-10-26</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-11-16</lastmod>
+    <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/about"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/about"/>
-  </url>
-  <url>
-    <loc>https://chamainteligente.com/hearth</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/hearth"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/hearth"/>
-    <image:image>
-      <image:loc>https://chamainteligente.com/og-hearth-2026-10-22.png</image:loc>
-      <image:title>The Hearth</image:title>
-      <image:caption>The Hearth. For our coaching clients: book sessions with Elliot, keep a record of each one, and connect your own AI agent.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://chamainteligente.com/brand</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/brand"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/brand"/>
-  </url>
-  <url>
-    <loc>https://chamainteligente.com/privacy</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://chamainteligente.com/privacy"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://chamainteligente.com/privacy"/>
   </url>
 </urlset>

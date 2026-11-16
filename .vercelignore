@@ -13,3 +13,6 @@ test/
 
 # The check runner. Run locally with `npm run check`.
 scripts/
+
+# The page sources. npm run build writes the pages from them.
+site/
