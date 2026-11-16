@@ -1,6 +1,6 @@
 // Simulated visitors for evals/simulate.js. Authored by hand, like the cases.
 //
-// Each one is a person with a reason to be on the page, things the flame can
+// Each one is a person with a reason to be on the page, things the agent can
 // only learn by asking well, questions they want answered, and a name and one
 // way to be reached that they will hand over only if the conversation earns
 // it. `patience` is how many walls of text or stacked questions they sit

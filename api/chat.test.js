@@ -3,13 +3,13 @@ import test from "node:test";
 
 import Anthropic from "@anthropic-ai/sdk";
 
-import {
+import chat, {
   KILL_SWITCH_KEY,
   MESSAGES,
   buildConversationRecord,
-  clampExperience,
   countUserTurns,
   describeError,
+  consentProblem,
   executeNoteTool,
   friendlyErrorFor,
   isClosedStream,
@@ -18,6 +18,8 @@ import {
   persistConversation,
   resetKillSwitchCache,
   runAgent,
+  chatRequest,
+  warmRequest,
   validateChatMessages
 } from "./chat.js";
 
@@ -126,6 +128,20 @@ const INPUT = {
   request: "Understand which AI workflow fits my team."
 };
 
+// A conversation in which the visitor gave every detail in INPUT, was shown
+// what would be sent, and said yes. Consent is read from this, not from
+// anything the model claims.
+const CONFIRMED = history(
+  ["user", "I'm Ada Lovelace. I want to understand which AI workflow fits my team."],
+  ["assistant", "Happy to. What's the best way to reach you?"],
+  ["user", "ada@example.com or WhatsApp +351 912 345 678"],
+  [
+    "assistant",
+    "Here's what I'll send:\nName: Ada Lovelace\nEmail: ada@example.com\nWhatsApp: +351 912 345 678\nWhat you need: Understand which AI workflow fits my team.\nSend it?"
+  ],
+  ["user", "yes"]
+);
+
 function fakeDeps(overrides = {}) {
   const calls = { put: [], sent: [] };
   const deps = {
@@ -144,10 +160,10 @@ function fakeDeps(overrides = {}) {
 
 test("stores and emails a valid note through the intake pipeline", async () => {
   const { calls, deps } = fakeDeps();
-  const outcome = await executeNoteTool(INPUT, deps);
+  const outcome = await executeNoteTool(INPUT, deps, { conversation: CONFIRMED });
 
   assert.equal(outcome.ok, true);
-  assert.match(outcome.text, /sent to Elliot/);
+  assert.match(outcome.text, /sent/);
   assert.equal(calls.put.length, 1);
   assert.equal(
     calls.put[0].key,
@@ -167,9 +183,16 @@ test("stores and emails a valid note through the intake pipeline", async () => {
   assert.deepEqual(calls.sent[0], record);
 });
 
+test("the record names the conversation it came from, so Elliot can read it first", async () => {
+  const { calls, deps } = fakeDeps();
+  await executeNoteTool(INPUT, deps, { conversation: CONFIRMED, conversationId: "abc12345-6789" });
+
+  assert.equal(JSON.parse(calls.put[0].body).conversationId, "abc12345-6789");
+});
+
 test("accepts a note with a WhatsApp number and no email", async () => {
   const { calls, deps } = fakeDeps();
-  const outcome = await executeNoteTool({ ...INPUT, email: "" }, deps);
+  const outcome = await executeNoteTool({ ...INPUT, email: "" }, deps, { conversation: CONFIRMED });
 
   assert.equal(outcome.ok, true);
   assert.equal(calls.put.length, 1);
@@ -177,7 +200,9 @@ test("accepts a note with a WhatsApp number and no email", async () => {
 
 test("reports the validation error and stores nothing when no contact way is given", async () => {
   const { calls, deps } = fakeDeps();
-  const outcome = await executeNoteTool({ ...INPUT, email: "", whatsappNumber: "" }, deps);
+  const outcome = await executeNoteTool({ ...INPUT, email: "", whatsappNumber: "" }, deps, {
+    conversation: CONFIRMED
+  });
 
   assert.equal(outcome.ok, false);
   assert.match(outcome.text, /way to reach you/);
@@ -187,7 +212,9 @@ test("reports the validation error and stores nothing when no contact way is giv
 
 test("reports a bad email address", async () => {
   const { deps } = fakeDeps();
-  const outcome = await executeNoteTool({ ...INPUT, email: "not-an-email" }, deps);
+  const outcome = await executeNoteTool({ ...INPUT, email: "not-an-email" }, deps, {
+    conversation: CONFIRMED
+  });
 
   assert.equal(outcome.ok, false);
   assert.match(outcome.text, /valid email/);
@@ -195,7 +222,80 @@ test("reports a bad email address", async () => {
 
 test("treats a non-object tool input as a missing note", async () => {
   const { calls, deps } = fakeDeps();
-  const outcome = await executeNoteTool("send it", deps);
+  const outcome = await executeNoteTool("send it", deps, { conversation: CONFIRMED });
+
+  assert.equal(outcome.ok, false);
+  assert.equal(calls.put.length, 0);
+});
+
+test("refuses a contact request when no conversation is given to check consent against", async () => {
+  const { calls, deps } = fakeDeps();
+  const outcome = await executeNoteTool(INPUT, deps);
+
+  assert.equal(outcome.ok, false);
+  assert.equal(calls.put.length, 0);
+  assert.equal(calls.sent.length, 0);
+});
+
+test("refuses an email address the visitor never typed", async () => {
+  const { calls, deps } = fakeDeps();
+  const outcome = await executeNoteTool({ ...INPUT, email: "someone.else@example.com" }, deps, {
+    conversation: CONFIRMED
+  });
+
+  assert.equal(outcome.ok, false);
+  assert.match(outcome.text, /visitor/);
+  assert.equal(calls.put.length, 0);
+});
+
+test("refuses a number the visitor never typed", async () => {
+  const { calls, deps } = fakeDeps();
+  const outcome = await executeNoteTool({ ...INPUT, whatsappNumber: "+1 555 0100 999" }, deps, {
+    conversation: CONFIRMED
+  });
+
+  assert.equal(outcome.ok, false);
+  assert.equal(calls.put.length, 0);
+});
+
+test("refuses a name the visitor never gave", async () => {
+  const { calls, deps } = fakeDeps();
+  const outcome = await executeNoteTool({ ...INPUT, name: "Grace Hopper" }, deps, {
+    conversation: CONFIRMED
+  });
+
+  assert.equal(outcome.ok, false);
+  assert.equal(calls.put.length, 0);
+});
+
+test("a number matches however the visitor spaced or punctuated it", async () => {
+  const { calls, deps } = fakeDeps();
+  const outcome = await executeNoteTool({ ...INPUT, email: null, whatsappNumber: "+351912345678" }, deps, {
+    conversation: CONFIRMED
+  });
+
+  assert.equal(outcome.ok, true);
+  assert.equal(calls.put.length, 1);
+});
+
+test("refuses to send what the visitor was not shown before saying yes", async () => {
+  const { calls, deps } = fakeDeps();
+  const unseen = history(
+    ["user", "I'm Ada Lovelace, ada@example.com. Understand which AI workflow fits my team."],
+    ["assistant", "Would you like us to get in touch?"],
+    ["user", "yes"]
+  );
+  const outcome = await executeNoteTool({ ...INPUT, whatsappNumber: null }, deps, { conversation: unseen });
+
+  assert.equal(outcome.ok, false);
+  assert.equal(outcome.text, MESSAGES.notShown);
+  assert.equal(calls.put.length, 0);
+});
+
+test("refuses a note sent in the same breath as the details, before any yes", async () => {
+  const { calls, deps } = fakeDeps();
+  const noPreview = history(["user", "I'm Ada Lovelace, ada@example.com, please have someone call me"]);
+  const outcome = await executeNoteTool(INPUT, deps, { conversation: noPreview });
 
   assert.equal(outcome.ok, false);
   assert.equal(calls.put.length, 0);
@@ -207,10 +307,10 @@ test("reports failure when storage throws", async () => {
       throw new Error("BlobError");
     }
   });
-  const outcome = await executeNoteTool(INPUT, deps);
+  const outcome = await executeNoteTool(INPUT, deps, { conversation: CONFIRMED });
 
   assert.equal(outcome.ok, false);
-  assert.equal(outcome.text, "The note could not be saved.");
+  assert.equal(outcome.text, MESSAGES.notSaved);
   assert.equal(calls.sent.length, 0);
 });
 
@@ -220,165 +320,21 @@ test("treats an email failure as a success the visitor can rely on", async () =>
       throw new Error("EmailDeliveryError");
     }
   });
-  const outcome = await executeNoteTool(INPUT, deps);
+  const outcome = await executeNoteTool(INPUT, deps, { conversation: CONFIRMED });
 
   assert.equal(outcome.ok, true);
-  assert.match(outcome.text, /storage/);
+  assert.match(outcome.text, /saved/);
   assert.equal(calls.put.length, 1);
 });
 
-const NULL_SETTINGS = {
-  brightness: null,
-  motion: null,
-  hue: null,
-  size: null,
-  speed: null,
-  turbulence: null,
-  density: null,
-  angle: null,
-  position: null,
-  sparkle: null,
-  textAnimation: null,
-  reset: null
-};
-
-test("passes sensible experience values through untouched", () => {
-  const result = clampExperience({
-    brightness: 0.5,
-    motion: 0.9,
-    hue: 210,
-    size: 1.4,
-    speed: 1.5,
-    turbulence: 0.8,
-    density: 0.6,
-    angle: 180,
-    position: 0.7,
-    sparkle: 0.9,
-    textAnimation: "subtle"
-  });
-
-  assert.deepEqual(result, {
-    settings: {
-      ...NULL_SETTINGS,
-      brightness: 0.5,
-      motion: 0.9,
-      hue: 210,
-      size: 1.4,
-      speed: 1.5,
-      turbulence: 0.8,
-      density: 0.6,
-      angle: 180,
-      position: 0.7,
-      sparkle: 0.9,
-      textAnimation: "subtle"
-    },
-    changed: true
-  });
+// The chat is how people reach us, so nothing it shows may hand them an
+// email address or phone number instead.
+test("no message the chat can show names an email address or a phone number", () => {
+  for (const [name, text] of Object.entries(MESSAGES)) {
+    assert.doesNotMatch(text, /@|\+?\d[\d\s-]{6,}/, name);
+  }
 });
 
-test("wraps hue and angle around the circle instead of clamping", () => {
-  assert.equal(clampExperience({ hue: 380 }).settings.hue, 20);
-  assert.equal(clampExperience({ hue: -60 }).settings.hue, 300);
-  assert.equal(clampExperience({ hue: 360 }).settings.hue, 0);
-  assert.equal(clampExperience({ hue: "210" }).settings.hue, 210);
-  assert.equal(clampExperience({ hue: "fire" }).settings.hue, null);
-  assert.equal(clampExperience({ angle: 540 }).settings.angle, 180);
-  assert.equal(clampExperience({ angle: -90 }).settings.angle, 270);
-});
-
-test("clamps every bounded field to its own range", () => {
-  const high = clampExperience({
-    brightness: 9999,
-    motion: 1.0001,
-    size: 50,
-    speed: 50,
-    turbulence: 2,
-    density: 9,
-    position: 2,
-    sparkle: 7
-  });
-  assert.equal(high.settings.brightness, 1);
-  assert.equal(high.settings.motion, 1);
-  assert.equal(high.settings.size, 1.6);
-  assert.equal(high.settings.speed, 2);
-  assert.equal(high.settings.turbulence, 1);
-  assert.equal(high.settings.density, 1.5);
-  assert.equal(high.settings.position, 1);
-  assert.equal(high.settings.sparkle, 1);
-
-  const low = clampExperience({
-    brightness: -50,
-    motion: 0,
-    size: 0,
-    speed: 0,
-    turbulence: -1,
-    density: 0,
-    position: -0.5,
-    sparkle: -1
-  });
-  assert.equal(low.settings.brightness, 0.2);
-  assert.equal(low.settings.motion, 0.2);
-  assert.equal(low.settings.size, 0.3);
-  assert.equal(low.settings.speed, 0.2);
-  assert.equal(low.settings.turbulence, 0);
-  assert.equal(low.settings.density, 0.2);
-  assert.equal(low.settings.position, 0);
-  assert.equal(low.settings.sparkle, 0);
-});
-
-test("coerces numeric strings", () => {
-  const result = clampExperience({ brightness: "0.4", motion: "3", textAnimation: null });
-
-  assert.equal(result.settings.brightness, 0.4);
-  assert.equal(result.settings.motion, 1);
-  assert.equal(result.changed, true);
-});
-
-test("turns garbage numbers into null", () => {
-  const result = clampExperience({
-    brightness: "dim please",
-    motion: Number.NaN,
-    size: "huge",
-    textAnimation: null
-  });
-
-  assert.deepEqual(result, { settings: NULL_SETTINGS, changed: false });
-});
-
-test("accepts only the three text animation values", () => {
-  assert.equal(clampExperience({ textAnimation: "off" }).settings.textAnimation, "off");
-  assert.equal(clampExperience({ textAnimation: "full" }).settings.textAnimation, "full");
-  assert.equal(clampExperience({ textAnimation: "sparkly" }).settings.textAnimation, null);
-  assert.equal(clampExperience({ textAnimation: 1 }).settings.textAnimation, null);
-});
-
-test("treats missing fields and a non-object input as no change", () => {
-  assert.deepEqual(clampExperience({}), { settings: NULL_SETTINGS, changed: false });
-  assert.equal(clampExperience("calm it down").changed, false);
-  assert.equal(clampExperience(null).changed, false);
-});
-
-test("reports a change when only one field is valid", () => {
-  const result = clampExperience({ brightness: 0.3, motion: "nope", textAnimation: "loud" });
-
-  assert.deepEqual(result, {
-    settings: { ...NULL_SETTINGS, brightness: 0.3 },
-    changed: true
-  });
-});
-
-test("accepts reset only as boolean true", () => {
-  assert.equal(clampExperience({ reset: true }).settings.reset, true);
-  assert.equal(clampExperience({ reset: true }).changed, true);
-  assert.equal(clampExperience({ reset: false }).settings.reset, null);
-  assert.equal(clampExperience({ reset: "yes" }).settings.reset, null);
-});
-
-test("returns exactly the experience keys", () => {
-  const result = clampExperience({ brightness: 0.5, extra: "ignored" });
-
-  assert.deepEqual(Object.keys(result.settings).sort(), Object.keys(NULL_SETTINGS).sort());
-});
 /* ---- saved conversations ---------------------------------------------- */
 
 function fakeStore(overrides = {}) {
@@ -396,8 +352,8 @@ function fakeStore(overrides = {}) {
 
 const TURNS = [
   { role: "user", content: "What is this?" },
-  { role: "assistant", content: "A small flame that answers questions." },
-  { role: "user", content: "Make the flame green." }
+  { role: "assistant", content: "A box where you can talk to us." },
+  { role: "user", content: "Can someone call me?" }
 ];
 
 test("writes one private json blob per conversation per day", async () => {
@@ -457,8 +413,7 @@ test("stores the tool calls the exchange produced", async () => {
     {
       name: "send_note_to_elliot",
       input: { name: "Ada", email: "ada@example.com", request: "Automate my invoices." }
-    },
-    { name: "adjust_experience", input: { hue: 120, brightness: null } }
+    }
   ];
   await persistConversation(
     { conversationId: "abcd1234-conversation", turns: TURNS, toolEvents },
@@ -553,7 +508,7 @@ function killSwitchDeps(overrides = {}) {
   return { calls, deps };
 }
 
-test("a disabled kill switch takes the flame offline", async () => {
+test("a disabled kill switch takes the chat offline", async () => {
   resetKillSwitchCache();
   const { calls, deps } = killSwitchDeps({ disabled: true });
 
@@ -561,7 +516,7 @@ test("a disabled kill switch takes the flame offline", async () => {
   assert.equal(calls.get.length, 1);
   assert.equal(calls.get[0].key, KILL_SWITCH_KEY);
   assert.equal(calls.get[0].options.access, "private");
-  assert.match(MESSAGES.offline, /resting right now/);
+  assert.match(MESSAGES.offline, /offline right now/);
 });
 
 test("no kill switch blob leaves the flame burning", async () => {
@@ -660,20 +615,20 @@ function apiError(Kind, status, message) {
   );
 }
 
-test("a spend cap tells the visitor the flame is resting, not that we broke", () => {
+test("a spend cap tells the visitor the chat is offline, not that we broke", () => {
   const capped = apiError(
     Anthropic.BadRequestError,
     400,
     "You have reached your specified API usage limits. You will regain access on 2026-09-01 at 00:00 UTC."
   );
 
-  assert.deepEqual(friendlyErrorFor(capped), { message: MESSAGES.offline, status: 503 });
+  assert.deepEqual(friendlyErrorFor(capped), { message: MESSAGES.offline, status: 503, kind: "offline" });
 });
 
 test("any other bad request is still the generic failure", () => {
   const broken = apiError(Anthropic.BadRequestError, 400, "max_tokens: must be greater than 0");
 
-  assert.deepEqual(friendlyErrorFor(broken), { message: MESSAGES.failed, status: 502 });
+  assert.deepEqual(friendlyErrorFor(broken), { message: MESSAGES.failed, status: 502, kind: "retry" });
 });
 
 test("an API error describes itself by class, status and type", () => {
@@ -698,7 +653,9 @@ function fakeClient(turns) {
         sent.push(params);
         const turn = turns[sent.length - 1] || { text: "" };
         const content = [{ type: "text", text: turn.text || "" }];
-        if (turn.tool) content.push({ type: "tool_use", id: `t${sent.length}`, name: turn.tool, input: {} });
+        if (turn.tool) {
+          content.push({ type: "tool_use", id: `t${sent.length}`, name: turn.tool, input: turn.input || {} });
+        }
         return {
           async *[Symbol.asyncIterator]() {
             if (turn.text) yield { type: "content_block_delta", delta: { type: "text_delta", text: turn.text } };
@@ -719,8 +676,8 @@ function fakeClient(turns) {
 test("forbids a tool on the last permitted call so the visitor always gets words", async () => {
   // A model that asks for a tool every time it is offered one.
   const client = fakeClient([
-    { tool: "adjust_experience" },
-    { tool: "adjust_experience" },
+    { tool: "send_note_to_elliot" },
+    { tool: "send_note_to_elliot" },
     { text: "Here is the answer." }
   ]);
 
@@ -747,4 +704,213 @@ test("a visitor who closed the tab is not an error worth logging", () => {
 test("a genuine failure that mentions closing is still an error", () => {
   assert.equal(isClosedStream(new Error("The upstream connection closed unexpectedly")), false);
   assert.equal(isClosedStream(new Error("Database pool closed")), false);
+});
+
+test("a contact request runs against the conversation the page sent, and carries its id", async () => {
+  const { calls, deps } = fakeDeps();
+  const client = fakeClient([{ tool: "send_note_to_elliot", input: INPUT }, { text: "Sent. We'll be in touch." }]);
+  const events = [];
+
+  await runAgent(client, CONFIRMED, (event) => events.push(event), {
+    noteDeps: deps,
+    conversationId: "abc12345-6789"
+  });
+
+  assert.equal(calls.put.length, 1);
+  assert.equal(JSON.parse(calls.put[0].body).conversationId, "abc12345-6789");
+  assert.deepEqual(events.find((event) => event.type === "tool"), { type: "tool", name: "send_note_to_elliot", ok: true });
+});
+
+test("a contact request the visitor did not confirm goes back to the model as an error and sends nothing", async () => {
+  const { calls, deps } = fakeDeps();
+  const client = fakeClient([{ tool: "send_note_to_elliot", input: INPUT }, { text: "Here's what I'll send." }]);
+
+  await runAgent(client, history(["user", "I'm Ada Lovelace, ada@example.com"]), () => {}, { noteDeps: deps });
+
+  assert.equal(calls.put.length, 0);
+  const toolResult = client.sent[1].messages.at(-1).content[0];
+  assert.equal(toolResult.is_error, true);
+});
+
+test("the cache warm-up asks for exactly what a real first message reads, and nothing back", () => {
+  const real = chatRequest(history(["user", "Hello"]), { lastCall: false });
+  const warm = warmRequest();
+
+  assert.equal(warm.max_tokens, 0);
+  assert.equal(warm.stream, undefined, "max_tokens 0 is refused with streaming");
+  for (const key of ["model", "system", "tools", "output_config", "thinking"]) {
+    assert.deepEqual(warm[key], real[key], key);
+  }
+  assert.ok(real.system.at(-1).cache_control, "the shared prefix ends in a cache breakpoint");
+  assert.equal(warm.cache_control, undefined, "no automatic breakpoint on the placeholder message");
+});
+
+test("the agent offers only the contact tool, and no control over a flame", () => {
+  const real = chatRequest(history(["user", "Hello"]), { lastCall: false });
+  assert.deepEqual(real.tools.map((tool) => tool.name), ["send_note_to_elliot"]);
+});
+
+// The widget decides what follows a failure from `kind`, not from wording:
+// "offline" shows the contact form, "retry" offers to send again, "final"
+// does neither.
+test("every failure the chat can answer with says what kind it is", async () => {
+  const saved = { ...process.env };
+  try {
+    process.env.ANTHROPIC_API_KEY = "test";
+    process.env.CHAT_DISABLED = "1";
+    const offline = await chat.fetch(chatPost({ messages: [{ role: "user", content: "hi" }] }));
+    assert.equal(offline.status, 503);
+    assert.deepEqual(await offline.json(), { error: MESSAGES.offline, kind: "offline" });
+
+    delete process.env.CHAT_DISABLED;
+    resetKillSwitchCache();
+    // a kill switch read that fails fails open, so the chat is up from here
+    const unreadable = await chat.fetch(chatPost({ messages: [] }));
+    assert.equal(unreadable.status, 400);
+    assert.deepEqual(await unreadable.json(), { error: MESSAGES.unreadable, kind: "final" });
+
+    const crossSite = await chat.fetch(chatPost({ messages: [] }, "https://evil.example"));
+    assert.equal(crossSite.status, 403);
+    assert.equal((await crossSite.json()).kind, "final");
+  } finally {
+    process.env = saved;
+  }
+
+  assert.equal(friendlyErrorFor(apiError(Anthropic.RateLimitError, 429, "slow down")).kind, "retry");
+});
+
+function chatPost(body, origin = "https://chamainteligente.com") {
+  return new Request("https://chamainteligente.com/api/chat", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin },
+    body: JSON.stringify(body)
+  });
+}
+
+/* ---- consent, the edges ---------------------------------------------------- */
+
+function confirmed(visitorTurns, preview) {
+  const turns = [];
+  for (const text of visitorTurns) {
+    turns.push(["user", text]);
+    turns.push(["assistant", "Got it."]);
+  }
+  turns.pop();
+  turns.push(["assistant", preview], ["user", "yes"]);
+  return history(...turns);
+}
+
+const NEED = "A booking app for my barbershop.";
+
+test("a name matches whatever its case, Unicode form or spacing", () => {
+  const conversation = confirmed(
+    ["i'm josé  da silva, jose@example.pt".normalize("NFD"), NEED],
+    `Name: José da Silva\nEmail: jose@example.pt\nWhat you need: ${NEED}\nSend it?`
+  );
+  const submission = { name: "José da Silva", email: "jose@example.pt", whatsappNumber: "", request: NEED };
+  assert.equal(consentProblem(submission, conversation), null);
+});
+
+test("a name given in pieces across turns still counts as the visitor's", () => {
+  const conversation = confirmed(
+    ["I'm Ana, ana@example.pt", "Surname Ferreira. " + NEED],
+    `Name: Ana Ferreira\nEmail: ana@example.pt\nWhat you need: ${NEED}\nSend it?`
+  );
+  const submission = { name: "Ana Ferreira", email: "ana@example.pt", whatsappNumber: "", request: NEED };
+  assert.equal(consentProblem(submission, conversation), null);
+});
+
+test("a name word must be a whole word the visitor typed, not part of another", () => {
+  const conversation = confirmed(
+    ["reach me at annabelle@example.pt", NEED],
+    `Name: Anna\nEmail: annabelle@example.pt\nWhat you need: ${NEED}\nSend it?`
+  );
+  const submission = { name: "Anna", email: "annabelle@example.pt", whatsappNumber: "", request: NEED };
+  assert.equal(consentProblem(submission, conversation), MESSAGES.notGiven);
+});
+
+test("a preview that left out the number is not consent to send it", () => {
+  const conversation = confirmed(
+    ["I'm Rui Lopes, +351 911 222 333", NEED],
+    `Name: Rui Lopes\nWhat you need: ${NEED}\nSend it?`
+  );
+  const submission = { name: "Rui Lopes", email: "", whatsappNumber: "+351 911 222 333", request: NEED };
+  assert.equal(consentProblem(submission, conversation), MESSAGES.notShown);
+});
+
+test("what they need must be what the preview showed, not something new", () => {
+  const conversation = confirmed(
+    ["I'm Rui Lopes, rui@example.pt", NEED],
+    `Name: Rui Lopes\nEmail: rui@example.pt\nWhat you need: ${NEED}\nSend it?`
+  );
+  const submission = {
+    name: "Rui Lopes",
+    email: "rui@example.pt",
+    whatsappNumber: "",
+    request: "Wants a full ERP replacement and mentioned his divorce settlement."
+  };
+  assert.equal(consentProblem(submission, conversation), MESSAGES.notShown);
+});
+
+test("a number too short to be a phone number is refused", () => {
+  const conversation = confirmed(["I'm Rui Lopes, 12345", NEED], `Name: Rui Lopes\nWhatsApp: 12345\nWhat you need: ${NEED}\nSend it?`);
+  const submission = { name: "Rui Lopes", email: "", whatsappNumber: "12345", request: NEED };
+  assert.equal(consentProblem(submission, conversation), MESSAGES.notGiven);
+});
+
+test("one exchange sends at most one contact request, however often the model asks", async () => {
+  const { calls, deps } = fakeDeps();
+  const client = fakeClient([
+    { tool: "send_note_to_elliot", input: INPUT },
+    { tool: "send_note_to_elliot", input: INPUT },
+    { text: "Sent." }
+  ]);
+
+  await runAgent(client, CONFIRMED, () => {}, { noteDeps: deps });
+
+  assert.equal(calls.put.length, 1);
+  assert.equal(client.sent[2].messages.at(-1).content[0].is_error, true);
+});
+
+test("a warm-up answers 204 before any conversation is read, and a failure stays quiet", async () => {
+  const saved = { ...process.env };
+  try {
+    process.env.ANTHROPIC_API_KEY = "test";
+    delete process.env.CHAT_DISABLED;
+    resetKillSwitchCache();
+    const response = await chat.fetch(chatPost({ warm: true }), {
+      makeClient: () => ({ messages: { create: async () => { throw new Error("APIConnectionError"); } } })
+    });
+    assert.equal(response.status, 204);
+  } finally {
+    process.env = saved;
+  }
+});
+
+test("a warm-up without an Origin header is refused, so it cannot be scripted from elsewhere", async () => {
+  const saved = { ...process.env };
+  try {
+    process.env.ANTHROPIC_API_KEY = "test";
+    resetKillSwitchCache();
+    let called = false;
+    const request = new Request("https://chamainteligente.com/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ warm: true })
+    });
+    const response = await chat.fetch(request, { makeClient: () => ({ messages: { create: async () => { called = true; } } }) });
+    assert.equal(response.status, 403);
+    assert.equal(called, false);
+  } finally {
+    process.env = saved;
+  }
+});
+
+test("the line marking a number as not WhatsApp need not be in the preview", () => {
+  const conversation = confirmed(
+    ["I'm Ana Ferreira, +351 233 000 111, landline", "Fix our rota."],
+    "Name: Ana Ferreira\nPhone: +351 233 000 111\nWhat you need: Fix our rota.\nSend it?"
+  );
+  const submission = { name: "Ana Ferreira", email: "", whatsappNumber: "+351 233 000 111", request: "Fix our rota.\nPhone, not WhatsApp." };
+  assert.equal(consentProblem(submission, conversation), null);
 });

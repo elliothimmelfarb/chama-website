@@ -154,13 +154,13 @@
     return hex;
   }
 
-  /* What a message that got no answer leads to. "resting": the flame is out
+  /* What a message that got no answer leads to. "resting": the chat is offline
      (api/chat.js MESSAGES.offline, by kill switch or spend limit), so the
      composer goes quiet. "retry": the network, a timeout or the server's own
      fault, so the same message may well go through a second time. "final":
      the server refused what was sent (400, 403, 429), and sending it again
      would only be refused again. */
-  var RESTING = "The flame is resting";
+  var RESTING = "The chat is offline";
   // api/chat.js MESSAGES.overwhelmed, which asks for a second try
   var BUSY = "The agent is busy right now. Please try again in a minute.";
   var GENERIC = "Something went wrong. Please try again.";
@@ -187,6 +187,16 @@
     }
     if (at < text.length || !parts.length) parts.push({ text: text.slice(at) });
     return parts;
+  }
+
+  /* The model reads a long prompt before its first word, and the API keeps
+     what it read for five minutes. A quiet warm-up when a visitor looks
+     ready to talk (the composer gets focus, or /agent opens) has it read
+     already when their first message arrives. Warmed within the window:
+     nothing to do. */
+  var WARM_WINDOW_MS = 4.5 * 60 * 1000;
+  function shouldWarm(now, lastWarm) {
+    return lastWarm === null || now - lastWarm >= WARM_WINDOW_MS;
   }
 
   function mount(rootEl, options) {
@@ -644,6 +654,22 @@
 
     // the flame said it is resting: the composer stays quiet until it answers
     var resting = false;
+
+    // a real message warms the cache as well as any warm-up does
+    var lastWarm = null;
+    function warmSoon() {
+      var now = Date.now();
+      if (resting || !shouldWarm(now, lastWarm)) return;
+      lastWarm = now;
+      try {
+        fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ warm: true }),
+          keepalive: true
+        }).catch(function () {});
+      } catch (e) { /* a warm-up is only ever a head start */ }
+    }
     // the last message that got no answer at all: { message, turn, line }
     var lastFailure = null;
     // set while a reply has not started, and calling it gives up waiting
@@ -1631,6 +1657,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
 
       armStall(FIRST_BYTE_MS);
 
+      lastWarm = Date.now();
       fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1790,6 +1817,7 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     });
 
     input.addEventListener("focus", function () {
+      warmSoon();
       form.classList.add("focused");
       if (!busy) setState("listening");
     });
@@ -2223,9 +2251,17 @@ var SITE_PATH = /^\/(?:(?:privacy|agent)\/?)?$/i;
     }
     say = say.replace(/\s+$/, "").slice(0, 4000);
     if (say) setTimeout(function () { send(say); }, 0);
+    // full screen, the visitor came here to talk
+    else if (mode === "page") warmSoon();
 
     return api;
   }
 
-  window.ChamaAgent = { mount: mount, failureKind: failureKind, bodylessFailure: bodylessFailure, emailParts: emailParts };
+  window.ChamaAgent = {
+    mount: mount,
+    failureKind: failureKind,
+    bodylessFailure: bodylessFailure,
+    emailParts: emailParts,
+    shouldWarm: shouldWarm
+  };
 })();
