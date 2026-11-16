@@ -1,11 +1,14 @@
-// The website chat agent endpoint: same-origin, streaming, two tools.
+// The "Talk to us" chat endpoint: same-origin, streaming, one tool.
 //
-// The prompt and tool definitions live in chat-prompt.js and are authored like
+// The prompt and tool definition live in chat-prompt.js and are authored like
 // copy. This file is only the plumbing: validate the conversation the page
 // sends, run the model with a small agent loop, stream the reply back as
-// Server-Sent Events, execute send_note_to_elliot through the exact intake
-// pipeline the form uses (api/intake.js), and turn adjust_experience into a
-// config event the page applies.
+// Server-Sent Events, and run send_note_to_elliot (a visitor asking to be
+// contacted) through the intake pipeline in api/intake.js, after checking the
+// conversation shows the visitor gave those details and confirmed them.
+//
+// A request with { warm: true } only fills the prompt cache, so the visitor's
+// first real message does not wait for the model to read the whole prompt.
 //
 // Conversations are saved: after every exchange the whole transcript is
 // written to a private blob so Elliot can read it back and improve the agent.
@@ -31,18 +34,21 @@ const LIMITS = {
 };
 
 export const MESSAGES = {
-  offline: "The flame is resting right now. Email contact@chamainteligente.com and Elliot will get back to you.",
+  offline: "The chat is offline right now. Please try again later.",
   unreadable: "That conversation could not be read. Please reload the page and try again.",
   tooLong:
-    "This conversation has gone on longer than the agent allows in one sitting. Reload the page to start fresh, or email contact@chamainteligente.com.",
+    "This conversation has gone on longer than one sitting allows. Reload the page to start fresh.",
   overwhelmed: "The agent is busy right now. Please try again in a minute.",
-  failed: "Something went wrong on our side. Please try again, or email contact@chamainteligente.com.",
-  notSaved: "The note could not be saved.",
+  failed: "Something went wrong on our side. Please try again.",
+  notSaved: "The details could not be saved, so nothing was sent.",
   savedNotEmailed:
-    "The note was saved. The email notification did not go out, but Elliot will see it in storage.",
-  sent: "The note was sent to Elliot.",
-  applied: "Applied.",
-  nothingAdjusted: "No valid changes were given, so nothing was adjusted."
+    "The details were saved, so Elliot will see them, but the email telling him did not go out.",
+  sent: "The details were sent. Elliot will get in touch.",
+  notShown:
+    "Not sent. Show the visitor exactly what will be sent (their name, how to reach them, what they need), ask them to confirm, and send only after they say yes.",
+  notGiven:
+    "Not sent. Every name, email address and number must be one the visitor typed in this conversation. Use only what they gave you.",
+  alreadySent: "Not sent again. This visitor's details already went to Elliot in this reply."
 };
 
 function clean(value) {
@@ -129,9 +135,69 @@ export function countUserTurns(messages) {
   return messages.filter((entry) => entry.role === "user").length;
 }
 
-// Runs the one tool the agent has, through the same pipeline as the form.
+function digits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function normal(text) {
+  return String(text || "").normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function wordsOf(text) {
+  return normal(text).match(/[\p{L}\p{N}'-]+/gu) || [];
+}
+
+// Share of the words in `request` worth comparing (four letters or more)
+// that the preview showed. The model may tidy punctuation, not substance.
+const REQUEST_SHOWN_SHARE = 0.8;
+
+// This guards against the model, not against an attacker: every turn,
+// including the agent's preview, comes from the page, so a script can write
+// any history it likes (and /api/intake takes a form anyway). What it stops
+// is the model sending details the visitor never typed or never saw.
+//
+// Every word of the name, the email and the number must be ones the visitor
+// typed, and the agent's message just before the visitor's latest one must
+// have shown all of them and what they need, so that latest message is the
+// visitor's answer to what will be sent. Returns the reason to refuse, or null.
+export function consentProblem(submission, conversation) {
+  if (!Array.isArray(conversation) || conversation.length < 3) return MESSAGES.notShown;
+  const latest = conversation[conversation.length - 1];
+  const shown = conversation[conversation.length - 2];
+  if (latest.role !== "user" || shown.role !== "assistant") return MESSAGES.notShown;
+
+  const visitorTurns = conversation.filter((entry) => entry.role === "user").map((entry) => entry.content);
+  const visitorWords = new Set(visitorTurns.flatMap(wordsOf));
+  const visitorText = visitorTurns.map(normal);
+  const previewWords = new Set(wordsOf(shown.content));
+  const preview = normal(shown.content);
+
+  const nameWords = wordsOf(submission.name);
+  const email = normal(submission.email);
+  const number = digits(submission.whatsappNumber);
+
+  if (!nameWords.length || !nameWords.every((word) => visitorWords.has(word))) return MESSAGES.notGiven;
+  if (email && !visitorText.some((text) => text.includes(email))) return MESSAGES.notGiven;
+  if (submission.whatsappNumber && number.length < 6) return MESSAGES.notGiven;
+  if (number && !visitorTurns.some((text) => digits(text).includes(number))) return MESSAGES.notGiven;
+
+  if (!nameWords.every((word) => previewWords.has(word))) return MESSAGES.notShown;
+  if (email && !preview.includes(email)) return MESSAGES.notShown;
+  if (number && !digits(shown.content).includes(number)) return MESSAGES.notShown;
+
+  const requestWords = wordsOf(submission.request.replace(/phone, not whatsapp\.?/i, "")).filter(
+    (word) => word.length >= 4
+  );
+  const seen = requestWords.filter((word) => previewWords.has(word)).length;
+  if (requestWords.length && seen / requestWords.length < REQUEST_SHOWN_SHARE) return MESSAGES.notShown;
+
+  return null;
+}
+
+// A visitor asking to be contacted: checked against the conversation, then
+// stored and emailed through the same pipeline as /api/intake.
 // Dependencies are injectable so the tool path can be tested without network.
-export async function executeNoteTool(input, dependencies = {}) {
+export async function executeNoteTool(input, dependencies = {}, context = {}) {
   const deps = {
     validate,
     buildRecord,
@@ -153,9 +219,14 @@ export async function executeNoteTool(input, dependencies = {}) {
     return { ok: false, text: result.error };
   }
 
+  const refusal = consentProblem(result.submission, context.conversation);
+  if (refusal) {
+    return { ok: false, text: refusal };
+  }
+
   const submittedAt = deps.now();
   const day = submittedAt.slice(0, 10);
-  const record = deps.buildRecord(result.submission, submittedAt);
+  const record = deps.buildRecord(result.submission, submittedAt, context.conversationId);
 
   try {
     await deps.put(
@@ -183,59 +254,6 @@ export async function executeNoteTool(input, dependencies = {}) {
   }
 
   return { ok: true, text: MESSAGES.sent };
-}
-
-// The second tool has no server-side effect: it only tells the page what to
-// change. All the work is validation, so it is a pure function. Anything the
-// model gets wrong becomes null rather than an error, and a call where every
-// field is null changed nothing.
-// Numeric fields clamp to their range; circular ones (hue, angle) wrap
-// instead. reset: true restores every default and ignores the rest.
-const EXPERIENCE_RANGES = {
-  brightness: { min: 0.2, max: 1 },
-  motion: { min: 0.2, max: 1 },
-  hue: { wrap: 360 },
-  size: { min: 0.3, max: 1.6 },
-  speed: { min: 0.2, max: 2 },
-  turbulence: { min: 0, max: 1 },
-  density: { min: 0.2, max: 1.5 },
-  angle: { wrap: 360 },
-  position: { min: 0, max: 1 },
-  sparkle: { min: 0, max: 1 }
-};
-
-export function clampExperience(input) {
-  const fields = typeof input === "object" && input !== null ? input : {};
-
-  const settings = {};
-  for (const [name, range] of Object.entries(EXPERIENCE_RANGES)) {
-    const value = fields[name];
-    if (value === null || value === undefined || value === "") {
-      settings[name] = null;
-      continue;
-    }
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) {
-      settings[name] = null;
-      continue;
-    }
-    settings[name] = range.wrap
-      ? ((parsed % range.wrap) + range.wrap) % range.wrap
-      : Math.min(range.max, Math.max(range.min, parsed));
-  }
-
-  settings.textAnimation =
-    fields.textAnimation === "off" ||
-    fields.textAnimation === "subtle" ||
-    fields.textAnimation === "full"
-      ? fields.textAnimation
-      : null;
-
-  settings.reset = fields.reset === true ? true : null;
-
-  const changed = Object.values(settings).some((value) => value !== null);
-
-  return { settings, changed };
 }
 
 // The conversation id the page sends is the storage key, so it has to be
@@ -383,54 +401,71 @@ function isUsageLimit(error) {
   return /usage limits|credit balance|billing/i.test(String(detail || ""));
 }
 
+// kind tells the page what follows: "offline" (nobody is answering here, so
+// it offers another way to leave details), "retry" (sending again may work),
+// "final" (sending the same again would be refused again).
 export function friendlyErrorFor(error) {
   if (error instanceof Anthropic.RateLimitError) {
-    return { message: MESSAGES.overwhelmed, status: 503 };
+    return { message: MESSAGES.overwhelmed, status: 503, kind: "retry" };
   }
 
   // Out of budget is not a fault the visitor should be asked to retry through.
-  // It is the same situation as the kill switch: the flame is simply out.
+  // It is the same situation as the kill switch: the chat is simply offline.
   if (isUsageLimit(error)) {
-    return { message: MESSAGES.offline, status: 503 };
+    return { message: MESSAGES.offline, status: 503, kind: "offline" };
   }
 
-  if (error instanceof Anthropic.APIError) {
-    return { message: MESSAGES.failed, status: 502 };
-  }
+  return { message: MESSAGES.failed, status: 502, kind: "retry" };
+}
 
-  return { message: MESSAGES.failed, status: 502 };
+function failure(message, status, kind) {
+  return json({ error: message, kind }, status);
 }
 
 function eventLine(payload) {
   return `data: ${JSON.stringify(payload)}\n\n`;
 }
 
-// The agent loop. Streams text deltas out as they arrive, runs a tool when
+// What every call to the model sends. The model, effort, system prompt and
+// tools are the cached prefix, identical on every request.
+export function chatRequest(messages, { lastCall }) {
+  return {
+    model: MODEL,
+    max_tokens: LIMITS.maxTokens,
+    output_config: { effort: EFFORT },
+    system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+    tools: TOOLS,
+    // On the last permitted call the model is told not to use a tool, so it
+    // has to answer in words. Left free, it could spend the turn on another
+    // tool call and the visitor would get a done event with nothing in it.
+    // The tool definitions still go with every call: once the history holds
+    // tool_use and tool_result blocks, the API rejects a request without them.
+    ...(lastCall ? { tool_choice: { type: "none" } } : {}),
+    messages
+  };
+}
+
+// Reads the prompt into the cache and answers nothing (max_tokens 0), so a
+// visitor's first message finds it warm. It must send exactly what
+// chatRequest sends before the messages, or it warms an entry nobody reads.
+export function warmRequest() {
+  const prefix = chatRequest([], { lastCall: false });
+  delete prefix.messages;
+  return { ...prefix, max_tokens: 0, messages: [{ role: "user", content: "warmup" }] };
+}
+
+// The agent loop. Streams text deltas out as they arrive, runs the tool when
 // the model asks for it, and stops after at most LIMITS.modelCalls turns.
-export async function runAgent(client, history, emit) {
+export async function runAgent(client, history, emit, options = {}) {
   const messages = history.map((entry) => ({ role: entry.role, content: entry.content }));
   const usage = { model: MODEL, effort: EFFORT, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 };
   const toolEvents = [];
   let reply = "";
+  let noteSent = false;
 
   for (let call = 0; call < LIMITS.modelCalls; call += 1) {
-    // On the last permitted call the model is told not to use a tool, so it has
-    // to answer in words. Left free, it could spend the turn on another tool
-    // call and the visitor would get a done event with nothing in it. The tool
-    // definitions still go with every call: once the history holds tool_use and
-    // tool_result blocks, the API rejects a request that omits them.
     const lastCall = call === LIMITS.modelCalls - 1;
-    const stream = client.messages.stream({
-      model: MODEL,
-      max_tokens: LIMITS.maxTokens,
-      output_config: { effort: EFFORT },
-      system: [
-        { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }
-      ],
-      tools: TOOLS,
-      ...(lastCall ? { tool_choice: { type: "none" } } : {}),
-      messages
-    });
+    const stream = client.messages.stream(chatRequest(messages, { lastCall }));
 
     for await (const event of stream) {
       if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
@@ -456,21 +491,6 @@ export async function runAgent(client, history, emit) {
     for (const block of message.content) {
       if (block.type !== "tool_use") continue;
 
-      if (block.name === "adjust_experience") {
-        const { settings, changed } = clampExperience(block.input);
-        toolEvents.push({ name: block.name, input: settings });
-        if (changed) {
-          emit({ type: "config", settings });
-        }
-        toolResults.push({
-          type: "tool_result",
-          tool_use_id: block.id,
-          is_error: !changed,
-          content: changed ? MESSAGES.applied : MESSAGES.nothingAdjusted
-        });
-        continue;
-      }
-
       if (block.name !== "send_note_to_elliot") {
         toolResults.push({
           type: "tool_result",
@@ -482,7 +502,13 @@ export async function runAgent(client, history, emit) {
       }
 
       toolEvents.push({ name: block.name, input: block.input });
-      const outcome = await executeNoteTool(block.input);
+      const outcome = noteSent
+        ? { ok: false, text: MESSAGES.alreadySent }
+        : await executeNoteTool(block.input, options.noteDeps, {
+            conversation: history,
+            conversationId: options.conversationId
+          });
+      if (outcome.ok) noteSent = true;
       toolResults.push({
         type: "tool_result",
         tool_use_id: block.id,
@@ -500,7 +526,9 @@ export async function runAgent(client, history, emit) {
 }
 
 export default {
-  async fetch(request) {
+  // `testing` lets a test hand in a fake model client; the platform passes
+  // nothing that has makeClient.
+  async fetch(request, testing) {
     if (request.method !== "POST") {
       return new Response("Method not allowed.", {
         status: 405,
@@ -509,39 +537,63 @@ export default {
     }
 
     if (!isSameOrigin(request)) {
-      return json({ error: "This request could not be accepted." }, 403);
+      return failure("This request could not be accepted.", 403, "final");
     }
 
-    // CHAT_DISABLED is the kill switch: any non-empty value takes the flame
+    // CHAT_DISABLED is the kill switch: any non-empty value takes the chat
     // offline without touching the key. Set it in Vercel and redeploy.
     if (process.env.CHAT_DISABLED || !process.env.ANTHROPIC_API_KEY) {
-      return json({ error: MESSAGES.offline }, 503);
+      return failure(MESSAGES.offline, 503, "offline");
     }
 
     // The watchdog's switch, which it can throw on its own authority.
     if (await isFlameKilled()) {
-      return json({ error: MESSAGES.offline }, 503);
+      return failure(MESSAGES.offline, 503, "offline");
     }
 
     let body;
     try {
       body = await request.json();
     } catch {
-      return json({ error: MESSAGES.unreadable }, 400);
+      return failure(MESSAGES.unreadable, 400, "final");
+    }
+
+    const client =
+      typeof testing?.makeClient === "function"
+        ? testing.makeClient()
+        : new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    if (body?.warm === true) {
+      // the page always sends an Origin on a POST; a script elsewhere need not
+      if (!request.headers.get("origin")) {
+        return failure("This request could not be accepted.", 403, "final");
+      }
+      try {
+        const warmed = await client.messages.create(warmRequest());
+        console.log(
+          "Chat warm-up",
+          JSON.stringify({
+            cacheWrite: warmed?.usage?.cache_creation_input_tokens || 0,
+            cacheRead: warmed?.usage?.cache_read_input_tokens || 0
+          })
+        );
+      } catch (error) {
+        console.error("Chat warm-up failed", describeError(error));
+      }
+      return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
     }
 
     const conversationId = normalizeConversationId(body?.conversationId);
 
     const result = validateChatMessages(body?.messages);
     if (result.error) {
-      return json({ error: result.error }, 400);
+      return failure(result.error, 400, "final");
     }
 
     if (countUserTurns(result.messages) > LIMITS.userTurns) {
-      return json({ error: MESSAGES.tooLong }, 429);
+      return failure(MESSAGES.tooLong, 429, "final");
     }
 
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
@@ -567,13 +619,14 @@ export default {
         let toolEvents = [];
         let reply = "";
         try {
-          const outcome = await runAgent(client, result.messages, emit);
+          const outcome = await runAgent(client, result.messages, emit, { conversationId });
           usage = outcome.usage;
           toolEvents = outcome.toolEvents;
           reply = outcome.reply;
         } catch (error) {
           console.error("Chat agent failed", describeError(error));
-          emit({ type: "error", error: friendlyErrorFor(error).message });
+          const { message, kind } = friendlyErrorFor(error);
+          emit({ type: "error", error: message, kind });
         }
 
         // Serverless: nothing runs after the response ends, so the transcript

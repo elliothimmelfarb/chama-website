@@ -17,7 +17,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 import { CASES, JUDGE_PROMPT, VERDICT_SCHEMA } from "./cases.js";
 import { addUsage, agentTurn, loadAgent, loadApiKey, runPool, textOf } from "./lib.js";
-import { checkReplyShape } from "./shape.js";
+import { checkReplyLinks, checkReplyShape } from "./shape.js";
 
 const FAMILIES = ["attack", "quality", "conversation"];
 
@@ -180,7 +180,8 @@ async function runCase(client, agent, options, testCase, totals) {
 
     const mechanical =
       checkToolExpectations(testCase.expectTool, toolCalls) ||
-      checkReplyShape(testCase.expectReply, replies);
+      checkReplyShape(testCase.expectReply, replies) ||
+      checkReplyLinks(replies, testCase.messages);
     if (mechanical) {
       return { id: testCase.id, family: testCase.family, pass: false, score: 0, reason: mechanical, transcript, replies, toolCalls };
     }
