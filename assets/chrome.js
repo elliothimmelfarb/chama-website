@@ -57,10 +57,16 @@
   });
 
   // ---- the menu closes on any navigation --------------------------------
+  // At once and in the capture phase, before the router starts lifting the
+  // page: a menu fading out over the lift muddies the first frames.
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest(".menu a");
-    if (a) { var m = document.getElementById("menu"); if (m && m.hidePopover) try { m.hidePopover(); } catch (err) {} }
-  });
+    var m = a && document.getElementById("menu");
+    if (!m || !m.hidePopover) return;
+    m.classList.add("is-leaving");
+    try { m.hidePopover(); } catch (err) {}
+    setTimeout(function () { m.classList.remove("is-leaving"); }, 50);
+  }, true);
 
   // ---- the cycling phrases ---------------------------------------------
   // Each holds 2.8s and swaps over 0.56s (base.css has the swap). Paused
@@ -131,18 +137,24 @@
   addEventListener("resize", strip);
 
   // ---- one Talk to us button per screen ----------------------------------
-  var fieldIo = "IntersectionObserver" in window ? new IntersectionObserver(function () {
-    var any = false;
-    document.querySelectorAll("main [data-talk-form]").forEach(function (f) {
+  // A field counts only when the whole of it can be pressed: one cut by the
+  // fold leaves no Talk to us on screen if the header's pill steps aside.
+  // Read in the scroll event (and when a field crosses the screen's edge).
+  function fieldsInView() {
+    var any = false, top = document.querySelector("[data-top]"), h = top ? top.offsetHeight : 0;
+    document.querySelectorAll("main [data-talk-form] .field").forEach(function (f) {
       var r = f.getBoundingClientRect();
-      if (r.bottom > 0 && r.top < innerHeight) any = true;
+      if (r.height && r.top >= h && r.bottom <= innerHeight) any = true;
     });
-    root.classList.toggle("field-in-view", any);
-  }) : null;
+    if (root.classList.contains("field-in-view") !== any) root.classList.toggle("field-in-view", any);
+  }
+  addEventListener("scroll", fieldsInView, { passive: true });
+  addEventListener("resize", fieldsInView);
+  var fieldIo = "IntersectionObserver" in window ? new IntersectionObserver(fieldsInView, { threshold: [0, 1] }) : null;
   var fieldsSeen = new WeakSet();
   function watchFields() {
     if (!fieldIo) return;
-    document.querySelectorAll("main [data-talk-form]").forEach(function (f) {
+    document.querySelectorAll("main [data-talk-form] .field").forEach(function (f) {
       if (fieldsSeen.has(f)) return;
       fieldsSeen.add(f);
       fieldIo.observe(f);

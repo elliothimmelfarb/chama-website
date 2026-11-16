@@ -1,14 +1,15 @@
 /* ==========================================================================
    The sky: one WebGL fragment shader that paints the four grounds (paper,
-   grid, tides, ember), each in a light and a dark palette, and the fire
-   that burns one into the next. Shared by worlds.js and sparks.js (the 404
+   grid, tides, ember), each in a light and a dark palette, and the soft
+   edge along which one rises into the next. Shared by worlds.js and sparks.js (the 404
    page's game). It paints nothing from the network.
 
    ChamaSky.init(canvas) returns { gl, U } with the program bound and the
    uniforms located, or null when WebGL or the shader is unavailable.
    Uniforms: uRes, uTime, uTheme (0 light .. 1 dark), uWorldA, uWorldB
-   (GROUNDS index; anything past the last is ember), uMix (0..1, B burning
-   up through A), uLocal, uMouse, uFocus, uFocusR, uFlame, uHeat. Positions
+   (GROUNDS index; anything past the last is ember), uMix (0..1, B rising
+   through A), uFade (1: B dissolves evenly over A, for a page change),
+   uLocal, uMouse, uFocus, uFocusR, uFlame, uHeat. Positions
    are in units of the canvas height with the origin at its centre, y up.
    ========================================================================== */
 (function () {
@@ -92,7 +93,7 @@
     "#else",
     "precision mediump float;",
     "#endif",
-    "uniform vec2 uRes; uniform float uTime; uniform float uTheme; uniform float uWorldA; uniform float uWorldB; uniform float uMix;",
+    "uniform vec2 uRes; uniform float uTime; uniform float uTheme; uniform float uWorldA; uniform float uWorldB; uniform float uMix; uniform float uFade;",
     "uniform float uLocal; uniform vec2 uMouse; uniform vec2 uFocus; uniform float uFocusR; uniform float uFlame; uniform float uHeat;",
     "const vec3 EMBER = vec3(0.957, 0.345, 0.122);",
     "const mat2 M2 = mat2(1.6, 1.2, -1.2, 1.6);",
@@ -181,18 +182,13 @@
     "  vec2 uv = gl_FragCoord.xy / uRes; vec2 p = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;",
     "  vec3 col = world(uWorldA, uv, p);",
     "  if (uMix > 0.0005) {",
-    // the handoff: the next ground burns up through this one from below
+    // the handoff: the next ground rises softly through this one from
+    // below, along a slow, uneven edge a fifth of the screen wide either
+    // side; a page change (uFade) is an even dissolve instead
     "    vec3 nxt = world(uWorldB, uv, p);",
-    "    float h = uv.y + (fbm(p * 2.6 + vec2(0.0, -uTime * 0.5)) - 0.5) * 0.55 + (noise(p * 14.0 + vec2(0.0, -uTime * 1.5)) - 0.5) * 0.06;",
-    "    float d = mix(-0.4, 1.4, uMix) - h; float burned = smoothstep(-0.004, 0.004, d);",
-    "    col = mix(col, col * vec3(0.34, 0.2, 0.12), smoothstep(-0.15, 0.0, d) * (1.0 - burned) * 0.92);",
-    "    col = mix(col, nxt, burned);",
-    "    float rim = exp(-abs(d) * 70.0) * (0.6 + 0.8 * noise(p * 30.0 - vec2(0.0, uTime * 4.0)));",
-    "    float lum = dot(col, vec3(0.299, 0.587, 0.114));",
-    "    col *= mix(vec3(1.0), vec3(1.0, 0.72, 0.5), smoothstep(0.1, 0.0, d) * burned * 0.7);",
-    "    col = mix(col, vec3(1.0, 0.42, 0.1), clamp(rim * 0.8, 0.0, 1.0));",
-    "    col += vec3(1.0, 0.42, 0.1) * rim * 0.5 * (1.0 - lum);",
-    "    col = mix(col, vec3(1.0, 0.88, 0.6), clamp(exp(-abs(d) * 230.0) * 1.1, 0.0, 1.0)); }",
+    "    float h = uv.y + (fbm(p * 1.6 + vec2(0.0, -uTime * 0.08)) - 0.5) * 0.25;",
+    "    float k = uFade > 0.5 ? uMix : smoothstep(-0.2, 0.2, mix(-0.45, 1.45, uMix) - h);",
+    "    col = mix(col, nxt, k); }",
     "  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0); }"
   ].join("\n");
 
@@ -222,7 +218,7 @@
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     var U = {};
-    ["uRes", "uTime", "uTheme", "uWorldA", "uWorldB", "uMix", "uLocal", "uMouse", "uFocus", "uFocusR", "uFlame", "uHeat"].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
+    ["uRes", "uTime", "uTheme", "uWorldA", "uWorldB", "uMix", "uFade", "uLocal", "uMouse", "uFocus", "uFocusR", "uFlame", "uHeat"].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
     return { gl: gl, U: U };
   }
   window.ChamaSky = { FRAG: FRAG, GROUNDS: GROUNDS, init: init };

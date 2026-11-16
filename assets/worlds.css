@@ -177,18 +177,23 @@ main { position: relative; z-index: 2; }
   width: 85%;
   --scrim: color-mix(in srgb, var(--ground, var(--bg)) 60%, transparent);
   background: radial-gradient(closest-side, var(--scrim), transparent);
-  opacity: calc(clamp(0, (var(--u) + 0.45) * 4, 1) * var(--e));
+  opacity: calc(clamp(0, (var(--u) + 0.9) * 4, 1) * var(--e));
   pointer-events: none;
 }
 
+/* A .r fades in as it rises into view with its world's pin (the leaving
+   world's words are gone before it reaches them: worlds.js, goneOf), and
+   leaves by its own exit, --e, rather than at a fixed --u. */
 .r {
-  --in: -0.3;
-  --out: 1.35;
+  --in: -0.85;
+  --out: 2;
   --k: 6;
   --a: clamp(0, (var(--u) - var(--in)) * var(--k), 1);
   --b: min(clamp(0, (var(--out) - var(--u)) * var(--k), 1), var(--e));
   opacity: calc(var(--a) * var(--b));
-  transform: translate3d(0, calc((1 - var(--a)) * 26px - (1 - var(--b)) * 16px), 0);
+  /* --sx and --pl (worlds.js, measure): while its pin leaves, a .r gives
+     back the pin's travel for the first --sx of it, so it stands still */
+  transform: translate3d(0, calc((1 - var(--a)) * 26px - (1 - var(--b)) * 16px + clamp(0, var(--u) - 1, var(--sx, 0)) * var(--pl, 0px)), 0);
 }
 html:not(.pin) .r,
 .world[data-pin="off"] .r { opacity: 1; transform: none; }
@@ -226,34 +231,54 @@ html:not(.pin) .slot,
   transform: translateX(calc((1 - var(--t)) * 8px));
 }
 
+/* ---- words on the grid --------------------------------------------------- */
+/* The grid's floor lines run under the lower part of the screen. Text and
+   charts that can sit there (.backed) stand on a patch of the ground's own
+   colour, feathered at its edges, so no line crosses a word (docs/DESIGN.md,
+   anti-pattern 15). It is static: nothing here reads --u, --e or --p. */
+.world[data-world="grid"] .backed { position: relative; isolation: isolate; }
+.world[data-world="grid"] .backed::before {
+  content: "";
+  position: absolute;
+  /* never wider than the gutter, or a phone's page scrolls sideways */
+  inset: -48px -16px;
+  z-index: -1;
+  background: radial-gradient(closest-side, var(--ground, var(--bg)) 55%, transparent);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
 /* ---- moving between pages ---------------------------------------------- */
 /* worlds.js moves between the router's pages without loading a new
-   document. First the page in view lifts away (.nav-leave); then the new
-   page is in place and the sky burns up into it from below while its words
-   rise just behind the fire (.nav-enter, with --wipe tracking the fire
-   line). The swap waits only for the words to have gone (LIFT in
-   worlds.js, 0.2s) and the burn takes 0.85s (BURN), so everything here
-   ends inside 0.8s of the swap. */
+   document. First the page in view lifts away (.nav-leave, LIFT in
+   worlds.js, 0.2s); then the new page is in place, the sky dissolves into
+   its ground (FADE, 0.3s) and its words rise in (.nav-enter, which stays
+   for ENTER, 0.7s), so everything here ends inside 0.7s of the swap. */
 html.nav-leave main,
 html.nav-leave body > footer,
 html.nav-leave .worlds {
   opacity: 0;
   translate: 0 -2.5vh;
   pointer-events: none;
-  transition: opacity 0.18s ease, translate 0.2s cubic-bezier(0.5, 0, 0.75, 0);
+  /* the words are still going when the new page arrives, so no frame is bare */
+  transition: opacity 0.22s ease, translate 0.2s cubic-bezier(0.5, 0, 0.75, 0);
 }
-@property --wipe { syntax: "<percentage>"; inherits: false; initial-value: 140%; }
-html.nav-enter .world > .pin {
-  -webkit-mask-image: linear-gradient(to top, var(--ink) calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
-  mask-image: linear-gradient(to top, var(--ink) calc(var(--wipe, 140%) - 16%), transparent var(--wipe, 140%));
-}
-html.nav-enter .world .copy > * { animation: rise 0.55s cubic-bezier(0.23, 1, 0.32, 1) 0.1s backwards; }
-html.nav-enter .world .copy > :nth-child(2) { animation-delay: 0.15s; }
-html.nav-enter .world .copy > :nth-child(3) { animation-delay: 0.2s; }
-html.nav-enter .world .copy > :nth-child(n+4) { animation-delay: 0.25s; }
-html.nav-enter .worlds { animation: arrive 0.4s ease 0.4s backwards; }
-html.nav-enter body > footer { animation: arrive 0.35s ease 0.4s backwards; }
-@keyframes rise { from { opacity: 0; translate: 0 20px; filter: blur(4px); } }
+html.nav-enter .world .copy > *,
+html.nav-enter main > .world[data-pin="off"]:first-child :is(.descriptor, .lead, .talk-field, .stage, .doors, .home-also) { animation: rise 0.45s cubic-bezier(0.23, 1, 0.32, 1) 0.05s backwards; }
+html.nav-enter .world .copy > :nth-child(2),
+html.nav-enter main > .world:first-child .lead { animation-delay: 0.1s; }
+html.nav-enter .world .copy > :nth-child(3),
+html.nav-enter main > .world:first-child :is(.talk-field, .stage) { animation-delay: 0.15s; }
+html.nav-enter .world .copy > :nth-child(n+4),
+html.nav-enter main > .world:first-child :is(.doors, .home-also) { animation-delay: 0.2s; }
+html.nav-enter .worlds { animation: arrive 0.3s ease 0.3s backwards; }
+html.nav-enter body > footer { animation: arrive 0.3s ease 0.3s backwards; }
+/* After a page change the H1 arrives on the dissolve's time, not the first
+   load's: done within 0.6s of the swap. .routed stays once set, so the
+   rule never changes under a running animation. */
+html.routed h1 .half { animation-duration: 400ms; animation-delay: 60ms; }
+html.routed h1 .half + .half { animation-duration: 450ms; animation-delay: 140ms; }
+@keyframes rise { from { opacity: 0.01; translate: 0 16px; filter: blur(3px); } }
 @keyframes arrive { from { opacity: 0.01; } }
 /* a page slow to come: worlds.js adds .nav-wait once the words have gone */
 html.nav-wait { cursor: progress; }
@@ -405,10 +430,10 @@ html:not([data-motion="low"]) [data-stage] :is([data-stage-step], [data-stage-co
 [data-stage]:not([data-state="ended"]) [data-stage-action="replay"],
 html[data-motion="low"] [data-stage-action] { display: none; }
 
-/* ---- the char line ------------------------------------------------------ */
-/* Where there is no sky to burn (low motion, no WebGL) and two different
-   grounds meet in one column, the burn's still frame: a 2px ember line with
-   a torn lower edge across the full width, 64px above the next section. */
+/* ---- where the ground changes, without a sky ---------------------------- */
+/* Where there is no sky to blend (low motion, no WebGL) and two different
+   grounds meet in one column, a hairline across the full width, 64px above
+   the next section, says the page has moved on. */
 html:not(.gl):not(.pin) :is(
   .world[data-world="paper"] + .world:not([data-world="paper"]),
   .world[data-world="grid"] + .world:not([data-world="grid"]),
@@ -420,10 +445,8 @@ html:not(.gl):not(.pin) :is(
   left: 0;
   right: 0;
   top: -64px;
-  height: 5px;
-  background: var(--accent);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0H96V2L91 2.6 86 2.1 80 3.4 74 2.2 69 2.9 62 2.1 57 4.2 51 2.3 45 2.8 39 2.1 33 3.6 27 2.2 21 2.7 15 2.1 9 3.9 4 2.3 0 2.8Z'/%3E%3C/svg%3E") 0 0 / 96px 5px repeat-x;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 5' preserveAspectRatio='none'%3E%3Cpath d='M0 0H96V2L91 2.6 86 2.1 80 3.4 74 2.2 69 2.9 62 2.1 57 4.2 51 2.3 45 2.8 39 2.1 33 3.6 27 2.2 21 2.7 15 2.1 9 3.9 4 2.3 0 2.8Z'/%3E%3C/svg%3E") 0 0 / 96px 5px repeat-x;
+  height: 1px;
+  background: var(--line-strong);
   pointer-events: none;
 }
 
@@ -433,8 +456,8 @@ html:not(.gl):not(.pin) :is(
    in low motion, on a screen too short to pin the words (html.pin is off
    at 500px of height and under: a phone held sideways, a laptop zoomed to 200%),
    and in print. A world marked data-pin="off" is laid out the same way in
-   the pinned layout. The sky still burns from world to world, its fire on
-   each section's top edge. */
+   the pinned layout. The sky still blends from world to world, the edge
+   between two grounds on each section's top edge. */
 html:not(.pin) .worlds,
 html:not(.pin) .pin-shade,
 :is(html:not(.pin) .world, .world[data-pin="off"]) .ticks { display: none; }
@@ -444,8 +467,8 @@ html:not(.pin) .pin-shade,
    devices) says data-pad="off" */
 :is(html:not(.pin) .world, .world[data-pin="off"]):not([data-pad="off"]) > .pin { padding: clamp(3.5rem, 12vh, 7rem) var(--pad); }
 :is(html:not(.pin) main > .world:first-child, main > .world[data-pin="off"]:first-child):not([data-pad="off"]) > .pin { padding-top: calc(env(safe-area-inset-top) + 8.5rem); }
-/* the sky's fire follows each section's lower edge, so the words end a
-   fifth of a screen above it and the handoff burns in the gap */
+/* the edge between grounds follows each section's lower edge and is a
+   fifth of a screen soft, so the words end that far above it */
 @media screen { :is(html:not(.pin) .world, .world[data-pin="off"]):not([data-pad="off"]) > .pin { padding-bottom: calc(clamp(3.5rem, 12vh, 7rem) + 20vh); } }
 :is(html:not(.pin) .world, .world[data-pin="off"]) .copy { position: static; width: auto; max-width: 46rem; transform: none; }
 :is(html:not(.pin) .world, .world[data-pin="off"]) .qs li { opacity: 1; transform: none; }

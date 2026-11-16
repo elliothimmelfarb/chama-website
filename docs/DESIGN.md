@@ -8,7 +8,7 @@ Mockups next to this file, each one self-contained (fonts inlined, zero requests
 |---|---|
 | `mockup-home.html` | Home first screen, stage (beat 4 still) and the three doors. Add `?theme=dark` or `?theme=light` to force a theme. |
 | `mockup-chrome.html` | The phone menu (`?state=menu`), the Talk to us sheet (`?state=talk`), the desktop Display popover (`?state=desk`) and the desktop Talk panel (`?state=desktalk`). |
-| `mockup-low-motion.html` | The same home in low motion: still ground, stage as a stepper, the char line between worlds, and the proof chart. |
+| `mockup-low-motion.html` | The same home in low motion: still ground, stage as a stepper, the hairline between worlds, and the proof chart. |
 
 Screenshots of all three at 364x610 (text at 106.25%) and 1440x900, light and dark, are in `design-shots/`.
 
@@ -16,17 +16,17 @@ Screenshots of all three at 364x610 (text at 106.25%) and 1440x900, light and da
 
 ## 1. The design read and the dials
 
-**Reading this as:** a redesign that preserves an established world, for referred business owners on a phone, with a calm, quietly confident language, leaning toward what the site already is: paper and ember, WebGL grounds, a fire that burns one world into the next, and drawn line figures, now rebuilt on tokens with both themes designed and far fewer words on screen.
+**Reading this as:** a redesign that preserves an established world, for referred business owners on a phone, with a calm, quietly confident language, leaning toward what the site already is: paper and ember, WebGL grounds that blend one into the next, and drawn line figures, now rebuilt on tokens with both themes designed and far fewer words on screen.
 
-The current site is the evidence, not something to replace. People praise it for three things, and all three stay: the scroll-driven worlds, the paper with its contours, and the burn between sections. What changes is everything that made it crowded or inconsistent: worlds that flipped the page between light and dark, a second accent colour (blue on the grid), long paragraphs, a header that could not hold the pages, and a chat with a character.
+The current site is the evidence, not something to replace. People praise it for three things: the scroll-driven worlds, the paper with its contours, and the burn between sections. The first two stay. The burn was retired on 2026-11-16 (Elliot: "it doesn't fit anymore"): it belonged to the flame persona the rebuild dropped, it was the loudest thing on a calm site, and steering words around its fire line caused most of the empty scroll and the late words on a page change. One ground now blends softly into the next. What changes is everything that made it crowded or inconsistent: worlds that flipped the page between light and dark, a second accent colour (blue on the grid), long paragraphs, a header that could not hold the pages, and a chat with a character.
 
 | Dial | Value | Why |
 |---|---|---|
 | DESIGN_VARIANCE | 6 | Asymmetric, left-anchored type with figures to the right on desktop; one column on the phone. Not playful, because the tone is calm. |
-| MOTION_INTENSITY | 6 in full motion, 2 in low motion | Motion explains (the stage, the loop, the burn). Nothing loops forever except the slow ground. |
+| MOTION_INTENSITY | 6 in full motion, 2 in low motion | Motion explains (the stage, the loop, the figures). Nothing loops forever except the slow ground. |
 | VISUAL_DENSITY | 3 | Each screen holds one idea: a heading, at most one short paragraph, one figure or one action. Depth opens on request. |
 
-**Grammar.** Chaptered worlds: each section is a world on one of four grounds, pinned while its figure plays, and handed to the next by the burn. This is the incumbent grammar and it stays. Hard rules that follow from it: the ground changes only at a burn; a section never changes theme; the rail on the right is the progress readout.
+**Grammar.** Chaptered worlds: each section is a world on one of four grounds, pinned while its figure plays, and handed to the next by a soft blend of grounds. Hard rules that follow from it: the ground changes only between sections; a section never changes theme; the rail on the right is the progress readout.
 
 **Signature move (new): the doors catch.** The opening stage ends by collapsing its whole picture into three small glyphs (the rings, the spiral, the devices), which drop into the three door rows directly below and become their icons. The visitor watches the explanation turn into the navigation. The door glyphs in the mockup are those end frames.
 
@@ -72,7 +72,7 @@ Rules: measure 46ch for leads, 65ch maximum for any running text; headings use `
 
 ### Strategy
 
-Restrained in the chrome, committed in the grounds. Ink, paper and one accent, ember, on every page in both themes. The four grounds bring the variety the old second accent tried to bring. Ember is used for: the mark, the primary button, the one live element in a figure (the marker, the refit outline, the bar), the current-page dot, the focus ring (as `--accent-text`) and the burn. It is never a background for text larger than a button, never a gradient, never a glow behind a heading.
+Restrained in the chrome, committed in the grounds. Ink, paper and one accent, ember, on every page in both themes. The four grounds bring the variety the old second accent tried to bring. Ember is used for: the mark, the primary button, the one live element in a figure (the marker, the refit outline, the bar), the current-page dot, and the focus ring (as `--accent-text`). It is never a background for text larger than a button, never a gradient, never a glow behind a heading.
 
 ### Semantic tokens (in `assets/tokens.css`, second layer)
 
@@ -116,7 +116,7 @@ Text selection is ember with ink text on every ground. The caret is `--accent-te
 
 ## 4. The four grounds, in both themes
 
-One fragment shader (`sky.js`) paints them, with a `uTheme` uniform (0 light, 1 dark) that each world function reads. The burn stays exactly as today in both themes: the next world burns up through the current one from below, with the ember rim. In light the scorch darkens the leaving ground; in dark the rim glows brighter against it. The old night and forge worlds are retired; their jobs move to tides and ember.
+One fragment shader (`sky.js`) paints them, with a `uTheme` uniform (0 light, 1 dark) that each world function reads. Between sections the next ground rises softly through the current one from below, along a slow uneven edge about a fifth of the screen wide either side, with no scorch, rim or smoke. On a page change the new ground dissolves evenly over the old one (`uFade`). The old night and forge worlds are retired; their jobs move to tides and ember.
 
 | Ground | Light rendition | Dark rendition | What moves (full motion) | Carries |
 |---|---|---|---|---|
@@ -149,7 +149,7 @@ One rule, followed everywhere: anything you press is a pill (`--r-pill: 999px`):
 | `--dur-theme` | 250ms | The theme change, a view-transition dissolve (architecture). |
 | `--dur-sheet` | 420ms | Talk sheet open on phone. |
 | `--dur-arrive` | 1200ms | The H1's two halves, done by 1.2s, from opacity 0.01. |
-| `--dur-burn` | 850ms | Page change and world handoff (router `BURN`, unchanged). |
+| Page change | 220ms lift, 300ms dissolve | The words in view lift away (`LIFT`), the sky dissolves into the new page's ground (`FADE`), and the new words rise in, done within 0.7s of the swap (`ENTER`). |
 | `--dur-beat` | 3500ms | One stage beat. |
 | `--dur-phrase` | 2800ms hold, 560ms swap | The cycling phrases. |
 | `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Everything that enters or responds. The default. |
@@ -200,7 +200,7 @@ Ground: the page's last world continues into it; on a non-world page it sits on 
 
 ## 7. Pages, sections, grounds and motion
 
-"Pinned" means the section holds while its figure plays from `--p`, for the hold its `--h` sets (in screens times 100; 150 by default). A pinned section without enough hold never shows its words. At most three burns per page, and never two within about two screens: merge short sections onto a neighbour's ground. Every change of ground between sections is a burn; consecutive sections on the same ground scroll as one world with no burn. Every page ends with a Talk to us block and the footer.
+"Pinned" means the section holds while its figure plays from `--p`, for the hold its `--h` sets (in screens times 100; 150 by default). A pinned section without enough hold never shows its words. At most three changes of ground per page, and never two within about two screens: merge short sections onto a neighbour's ground. Consecutive sections on the same ground scroll as one world with no blend. As a pinned section leaves, its words stand still and fade in place before the next section's words, rising from below, would reach them, so no stretch of scroll is bare ground (`test/shots` checks it). Every page ends with a Talk to us block and the footer.
 
 ### `/` Home
 
@@ -208,9 +208,9 @@ Ground: the page's last world continues into it; on a non-world page it sits on 
 |---|---|---|---|
 | 1 | First screen: descriptor, H1 in two halves, sub-line, the chat field with the cycling phrase | Paper | The H1 halves arrive by CSS (first half 0 to 0.6s, second 0.4s to 1.2s, each a 12px rise and fade from 0.01). The phrase above the field cycles. Not pinned. |
 | 2 | The stage (see section 11) and the three doors | Paper | The stage self-plays at 60% in view; at its last beat the doors catch their glyphs. Desktop: the stage sits in the first screen's right columns, the doors are a band under both. Phone: stage (40svh) under the field, doors as rows under the stage. |
-| 3 | Proof: "Most changes are live in under an hour." The note-to-live bars, then the client logo strip | Grid | Pinned briefly: the four bars grow from zero to their value in order as `--p` goes 0.1 to 0.7, values count up beside them. Logos are still. |
-| 4 | The people: the family photo, "Real people you can reach.", the line about talking to a person | Ember | The photo settles from scale 1.04 to 1 as it enters. Embers rise behind. |
-| 5 | The belief: "We believe mastery of AI can give people more time for the things they want to do." then "More time for human things, and for each other." | Tides | The two sentences arrive a few words at a time with `--p`, the currents slow down as the second lands. Pinned. |
+| 3 | Proof: "Most changes are live in under an hour." The note-to-live bars, then the client logo strip | Grid | Pinned: the four bars grow in turn and are whole by 60% of the hold; each value fades in over the last third of its bar. The logos arrive inside the same pin once the bars are whole (on a phone they take the caption's place). |
+| 4 | The people: the family photo, "Real people you can reach.", the line about talking to a person | Ember | The photo settles from scale 1.04 to 1 over the first 40% of the hold. On a phone it is the column's width, cropped 16:10 to the faces. |
+| 5 | The belief: "We believe mastery of AI can give people more time for the things they want to do." then "More time for human things, and for each other." | Tides | Pinned. The first sentence arrives with the world; the second between 30% and 55% of the hold. |
 | 6 | Talk to us | Tides | The cycling phrase. |
 
 Test (from the architecture): after one viewport of scroll at 364x610 with 17px text, all three doors are in view. The mockup measures the third door's bottom at 1196px against a limit of 1220px, with the stage at 40svh.
@@ -221,25 +221,26 @@ Built to stand alone for a referral link: the first screen says what it is witho
 
 | # | Section | Ground | What moves |
 |---|---|---|---|
-| 1 | One-line who-we-are, H1 "Your own engineering department.", the line from D.17, Talk to us field | Paper | H1 arrives. |
-| 2 | The contrast with buying software: a software company's customers wait in line; here the engineers work only for you | Grid | Pinned. Left: a queue of small pentagons waiting at one big square (the software company), each a step behind. Right: one pentagon with its own ember outline. On scroll the queue shuffles forward one step while the single pentagon's outline refits once. |
+| 1 | One-line who-we-are, H1 "Your own engineering department.", the line from D.17, Talk to us field; from 1100px the loop's finished picture beside them | Paper | H1 arrives. The next heading peeks over the fold. |
+| 2 | The contrast with buying software: a software company's customers wait in line; here the engineers work only for you | Paper | Pinned. Left: a queue of small pentagons at one big square (the software company). It moves up three times (10 to 28%, 34 to 52%, 58 to 76% of the hold); each time the front one goes in and a new one joins at the back. Right: one pentagon with its own ember outline, which grows a sixth corner and refits between 20% and 32%. |
 | 3 | The loop (see section 12) | Ember | Pinned for about three screens, scroll-driven, four laps. |
 | 4 | The week in numbers and the measured change time: the four real examples as bars, the median, the 88% | Grid | The bars grow as on home. On this page they carry the full sentence: measured on 123 requests since 2026-09-29, median 30 minutes, 88% within an hour, all the same day. |
 | 5 | The recording: a feedback note becoming a live change (muted video, poster first) | Grid | The video plays muted when 60% in view, pauses out of view, has a play/pause control; captions are HTML under it. |
+| 5b | The plant's numbers in words, beside a before-and-after figure: the old system, a second app and four spreadsheets as outlines, gathered into one ember-outlined pentagon | Grid | Still. Text on the grid stands on a feathered patch of its ground (`.backed`). |
 | 6 | You own it: "You own the IP. We manage it for you, and you can take it anywhere." and "what if you disappear" | Paper | A small figure: the software outline lifts out of our ring and sets down in yours. |
-| 7 | Price shape and the guarantee | Paper | None. Two short lines, set large: the price shape, then the risk reversal in `--accent-text`. |
+| 7 | Price shape and the guarantee, with a timeline beside them: the three steps of How it starts, the third in ember where the setup fee falls due, then the monthly fee as fading ticks | Paper | None. Two short lines, set large: the price shape, then the risk reversal in `--accent-text`. |
 | 8 | Objections, as a disclosure list (six questions, each a `<details>` row with an h3 question and a short answer) | Paper | Disclosure opens with a height and fade over `--dur-base`. |
-| 9 | How it starts, then Talk to us | Tides | The cycling phrase. |
+| 9 | How it starts, then Talk to us, with a link to this offer's group on /work | Tides | The cycling phrase. |
 
 ### `/coaching`
 
 | # | Section | Ground | What moves |
 |---|---|---|---|
 | 1 | H1 "AI fluency coaching and training.", line E.25, Talk to us field | Tides | H1 arrives. |
-| 2 | The coaching figure: you arrive unsure (a tangled line), a session (the mark in a ring), you leave with a direction (a straight ember line) | Tides | Pinned. The tangle draws, passes through the ring and straightens as `--p` runs. |
-| 3 | Who it is for: individuals, executive teams, engineering teams (agentic engineering training, on site or remote), coaching as a company benefit. Four rows, each opens for detail | Paper | Disclosure only. |
+| 2 | The coaching figure: you arrive unsure (a tangled line), a session (the mark in a ring), you leave with a direction (a straight ember line) | Tides | Pinned, centred, the figure filling its six columns. The tangle draws (5 to 35%), the ring and the mark arrive, the line runs out (42 to 64%) and its head lands at 62%; each label arrives with its part. |
+| 3 | Who it is for: individuals, executive teams, engineering teams (agentic engineering training, on site or remote), coaching as a company benefit. Four rows, each opens for detail, each with a small group of dots (two, a table of five, a team of nine, a ring), one ember dot for the coach | Tides | Disclosure only; an open row's dots turn `--fg`. |
 | 4 | The model-effort example | Grid | The example's figure plays with `--p` (as today, redrawn in SVG). |
-| 5 | AI enablement: company policy, structure and enablement, one short section | Grid | None. |
+| 5 | AI enablement: company policy, structure and enablement, one short section, with the three as stacked layers, enablement on top in ember | Grid | None. |
 | 6 | Elliot's coaching video slot | Paper | A 16:9 frame with a poster and a play button; until the video exists, the slot holds a still of Elliot and one line, never an empty box. |
 | 7 | The Hearth, the members' room, with the Members link | Ember | The Hearth screenshot (existing assets) rises 16px into place. |
 | 8 | Talk to us | Tides | The cycling phrase. |
@@ -264,7 +265,7 @@ One scrolling index on paper, not pinned, no figures. Grouped under three h2s (t
 |---|---|---|---|
 | 1 | H1 "A small, family-owned, AI-native business.", the photo | Paper | H1 arrives; the photo settles. |
 | 2 | The family: Elliot, Annie and Rozalie, moving to Portugal in fall 2023 sight unseen, growing it together. The only page that names Rozalie | Paper | None. |
-| 3 | Elliot's background and superpowers (C.15) | Ember | The superpowers line arrives a few words at a time. |
+| 3 | Elliot's background and superpowers (C.15), with his background as a four-point timeline under the heading | Ember | None. |
 | 4 | Partners: TLC Automation and Alves Limited Group, logos plus one line each | Grid | None. |
 | 5 | The name: Chama means flame; it is said "Shama". The only page with "Shama" | Tides | The mark's flame draws itself once. |
 | 6 | Talk to us | Tides | The cycling phrase. |
@@ -277,7 +278,7 @@ One scrolling index on paper, not pinned, no figures. Grouped under three h2s (t
 | `/hearth`, the public Hearth page | Ember ground, the members' room screenshot, a sign-in button for members. The Hearth room itself stays pinned dark until its light theme is checked (architecture). |
 | `/privacy` | Paper, one scrolling column at 65ch, header strip on, h2 per topic. |
 | `/brand` | Paper, the mark on light and dark tiles, the palette as swatches with their hex and contrast, the two fonts as specimens. |
-| 404 | The paper ground burning through to ember, "This page isn't here.", the five pages as door rows, Talk to us. The sparks game may stay if it fits the tokens. |
+| 404 | The paper ground giving way to ember, "This page isn't here.", the five pages as door rows, Talk to us. The sparks game may stay if it fits the tokens. |
 
 ---
 
@@ -348,10 +349,10 @@ Low motion (`html[data-motion="low"]`) is a calm printed edition of the same sit
 
 - **Layout:** one column of sections on desktop and phone, the same type, tokens and section order. Desktop keeps the two-column first screen (words left, stage right) and the door band; everything after is a centred 12-column flow.
 - **Grounds:** no WebGL. Each world is its base colour with a still version of its motif drawn in CSS or a small inline SVG: paper gets a very soft top-right warmth; the grid gets a 40px square grid at 6% (as in the mockup); tides get three long curves at 8% across the top of the section; ember gets a soft warm gradient rising from the bottom at 10%. All in both themes, from the same ground tokens.
-- **The char line:** where the full site burns, low motion draws a 2px ember line with a slightly torn edge across the full width, 64px above the next section. It is the burn's still frame, and it tells the visitor the world has changed.
+- **The hairline:** where the full site blends one ground into the next, low motion draws a 1px `--line-strong` line across the full width, 64px above the next section, so the visitor sees the world has changed.
 - **The stage** becomes a stepper: the same eight scenes as still pictures, each with its words, with previous and next buttons (44px) and "4 of 8 · The loop" between them. It opens on scene 1. Arrow keys step when the stepper has focus.
 - **Figures** are drawn complete (`--p` unset). The loop shows the full picture with all four stations and the four real examples as labels around the outer ring.
-- **No pinning, no rail, no router burn,** no photo settle, no bar growth (bars drawn at their value). The chat sheet opens with a 200ms fade instead of a slide. The cycling phrases crossfade or hold.
+- **No pinning, no rail, no router,** no photo settle, no bar growth (bars drawn at their value). The chat sheet opens with a 200ms fade instead of a slide. The cycling phrases crossfade or hold.
 - **Switching** from the Display control reloads in the other mode; the choice is stored (`chama-motion`) and a system reduced-motion setting picks low on a first visit.
 
 ---
@@ -393,7 +394,7 @@ Words are the lead's to finalise from `brand-language.md`; these are all approve
 | 0.32 to 0.54 | Lap 2: "A fix", 14 min. The outline tightens a corner. |
 | 0.54 to 0.76 | Lap 3: "Download to Excel", 42 min. A small rectangle (the export) appears inside the outline. |
 | 0.76 to 0.92 | Lap 4: "A new report", 33 min. The outline grows to its fullest shape. The four laps' pills remain, stacked by the "What's next" station, as a short ledger. |
-| 0.92 to 1 | The marker slows and parks at "Tell us". The line "Most changes are live in under an hour." arrives under the figure. The pin releases and the burn takes the page to the grid. |
+| 0.92 to 1 | The marker slows and parks at "Tell us". The line "Most changes are live in under an hour." arrives under the figure. The pin releases and the page moves on to the grid. |
 
 On the phone the figure fills the width minus gutters, station labels are HTML at `--t-label` placed over it, and the heading sits above the figure with the pills below it rather than beside the station. Transforms, opacity and dashoffset only. The four examples are the real, measured ones.
 

@@ -384,6 +384,45 @@ async function sweepHeader(pg, state, page, dir, stem) {
   }
 }
 
+// Every tenth of a screen, how much of the screen below the header holds
+// something to read or look at. A stretch of scroll where almost nothing
+// does (under 12% for more than a quarter of a screen) is dead scroll: the
+// words of one world gone and the next not yet arrived (2026-11-16 review).
+// Anything at 35% opacity or more counts, so a cross-fade is not dead.
+const DEAD_COVER = 0.12, DEAD_RUN = 0.25;
+async function sweepDead(pg, state, page, dir, stem) {
+  const { max, vh } = await page.evaluate(() => ({ max: document.documentElement.scrollHeight - innerHeight, vh: innerHeight }));
+  const step = Math.round(vh * 0.1), rows = [];
+  for (let y = 0; y <= max; y += step) {
+    await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y);
+    await page.waitForTimeout(160);
+    rows.push({ y, cover: await page.evaluate(() => {
+      const vh = innerHeight, vw = innerWidth, head = document.querySelector("[data-top]")?.offsetHeight || 0, bands = new Array(40).fill(0);
+      const seen = (el) => { let o = 1; for (let e = el; e && e !== document.body; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.visibility === "hidden" || cs.display === "none") return 0; o *= +cs.opacity; } return o; };
+      for (const el of document.querySelectorAll("main :is(h1, h2, h3, p, li, img, svg, video, a, summary, figcaption, input, .logo)")) {
+        const r = el.getBoundingClientRect();
+        if (r.width < 4 || r.height < 4 || r.bottom < head || r.top > vh || r.right < 0 || r.left > vw || seen(el) < 0.35) continue;
+        for (let i = Math.max(0, Math.floor(r.top / vh * 40)); i <= Math.min(39, Math.floor((r.bottom - 1) / vh * 40)); i++) bands[i] = 1;
+      }
+      for (const r of document.querySelectorAll("footer")) { const b = r.getBoundingClientRect(); if (b.top < vh) return 1; }
+      return bands.reduce((s, v) => s + v, 0) / 40;
+    }) });
+  }
+  let start = null;
+  for (const r of [...rows, { y: max + step, cover: 1 }]) {
+    if (r.cover < DEAD_COVER) { if (start === null) start = r.y; continue; }
+    if (start !== null && r.y - start > vh * DEAD_RUN) {
+      await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), start + step);
+      await page.waitForTimeout(STEP_WAIT);
+      const shot = path.join(dir, `${stem}-dead-${start}.png`);
+      await page.screenshot({ path: shot });
+      shots.push({ page: pg, row: stem, label: `dead ${start} to ${r.y}`, file: shot, vp: page.__vp });
+      fail(pg, state, "dead scroll", `${((r.y - start) / vh).toFixed(2)} screens with under ${DEAD_COVER * 100}% of the screen showing anything, from scrollY ${start}`, shot);
+    }
+    start = null;
+  }
+}
+
 // ---- the matrix ---------------------------------------------------------------
 async function runState(pg, theme, motion, vp) {
   const state = `${theme} ${motion} ${vp.name} ${vp.width}x${vp.height}`;
@@ -430,6 +469,7 @@ async function runState(pg, theme, motion, vp) {
         }
       }
       await sweepHeader(pg.id, state, page, dir, stem);
+      if (theme === "light") { page.__vp = vp; await sweepDead(pg.id, state, page, dir, stem); }
     } else {
       const shot = path.join(dir, `${stem}-full.png`);
       await page.screenshot({ path: shot, fullPage: true });

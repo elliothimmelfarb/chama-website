@@ -199,8 +199,8 @@ test("a stage's controls are delegated from document, and low motion stops autop
   assert.match(CSS, /html\[data-motion="low"\] \[data-stage-action\]/, "low motion hides play, pause and replay");
 });
 
-test("two sections in a row on the same ground do not burn into each other", () => {
-  // the fire line's position (b) is only ever set when the grounds differ
+test("two sections in a row on the same ground do not blend into each other", () => {
+  // the blend's position (b) is only ever set when the grounds differ
   const state = /function scrollState\(\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
   const sets = [...state.matchAll(/^\s*(.*)\bb = (?!0[,;])/gm)].map((m) => m[1]);
   assert.ok(sets.length >= 1, "scrollState sets b");
@@ -247,13 +247,24 @@ test("every pinned world on a built page sets --h, its hold", async () => {
   }
 });
 
-test("the char line marks only a change of ground, and only where there is no sky", () => {
-  const rule = RULES.find((r) => { const sel = r.selectors.join(","); return sel.includes("::before") && sel.startsWith("html:not(.gl)") && /var\(--accent\)/.test(r.body); });
-  assert.ok(rule, "worlds.css draws the char line");
+test("a change of ground is a hairline where there is no sky", () => {
+  const rule = RULES.find((r) => { const sel = r.selectors.join(","); return sel.includes("::before") && sel.startsWith("html:not(.gl)") && /var\(--line-strong\)/.test(r.body); });
+  assert.ok(rule, "worlds.css draws the hairline between grounds");
   const sel = rule.selectors.join(",");
   assert.match(sel, /^html:not\(\.gl\):not\(\.pin\)/);
-  for (const g of ["paper", "grid", "tides", "ember"]) assert.ok(sel.includes(`.world[data-world="${g}"] + .world:not([data-world="${g}"])`), `no char line after ${g}`);
-  assert.match(rule.body, /top:\s*-64px/);
+  for (const g of ["paper", "grid", "tides", "ember"]) assert.ok(sel.includes(`.world[data-world="${g}"] + .world:not([data-world="${g}"])`), `no hairline after ${g}`);
+  assert.match(rule.body, /height:\s*1px/);
+  assert.ok(!/mask/.test(rule.body), "the hairline has no torn edge: the fire is gone (2026-11-16)");
+});
+
+test("one ground blends into the next without fire, and a page change is a short dissolve", () => {
+  const main = /"void main\(\) \{",([\s\S]*?)\]\.join/.exec(SKY)[1];
+  for (const fire of ["rim", "burned", "0.34, 0.2, 0.12", "1.0, 0.42, 0.1"]) assert.ok(!main.includes(fire), `the shader still draws the fire (${fire})`);
+  assert.match(main, /smoothstep\(-0\.2/, "the edge between two grounds is soft, a fifth of the screen either side");
+  const fade = +/var FADE = (\d+)/.exec(JS)?.[1];
+  assert.ok(fade > 0 && fade <= 350, `the page change dissolves in at most 350ms (FADE is ${fade})`);
+  assert.ok(!/var BURN\b/.test(JS), "the router's burn is gone");
+  assert.ok(!/--wipe/.test(CSS) && !/--wipe/.test(JS), "nothing masks the new page behind a fire line");
 });
 
 test("after a router trip the header, the menu and the body name the new page", () => {

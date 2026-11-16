@@ -24,18 +24,22 @@ const OUTLINES = [
 // The laps in the order the marker runs them (DESIGN.md section 12).
 const ORDER = ["A new filter", "A fix", "Download to Excel", "A new report"];
 export const LAPS = ORDER.map((label) => EXAMPLES.find((e) => e.label === label));
-const START = [0.1, 0.32, 0.54, 0.76];
+// Each lap is 0.19 of the hold and the last parks by 0.84, so the finished
+// picture (all four laps in the ledger, the closing line) stands for the
+// rest of the hold, which on a phone is when the words begin to leave.
+const START = [0.08, 0.27, 0.46, 0.65];
+const LAP = 0.19, PARK = START[3] + LAP;
 
 const n = (v) => +v.toFixed(4);
 // 0 before a, 1 after b, linear between: the progress of one moment
 const c = (a, b) => `clamp(0, (var(--p) - ${n(a)}) / ${n(b - a)}, 1)`;
 // the first three laps run at the scroll's pace; the last eases out and
 // parks the marker at "Tell us"
-const lapDone = (k) => (k < 3 ? c(START[k], START[k + 1]) : `${c(0.76, 1)} * (2 - ${c(0.76, 1)})`);
+const lapDone = (k) => (k < 3 ? c(START[k], START[k + 1]) : `${c(START[3], PARK)} * (2 - ${c(START[3], PARK)})`);
 const LAPS_RUN = `(${[0, 1, 2, 3].map(lapDone).join(" + ")})`;
 // where in --p the marker passes a fraction f of lap k
-const at = (k, f) => (k < 3 ? START[k] + f * 0.22 : 0.76 + 0.24 * (1 - Math.sqrt(1 - f)));
-const END = [at(0, 1), at(1, 1), at(2, 1), 0.92];
+const at = (k, f) => (k < 3 ? START[k] + f * LAP : START[3] + LAP * (1 - Math.sqrt(1 - f)));
+const END = [at(0, 1), at(1, 1), at(2, 1), PARK - 0.02];
 // a single bump to 1 and back, w either side of m
 const bump = (m, w) => `clamp(0, 1 - max((var(--p) - ${n(m)}) / ${w}, (${n(m)} - var(--p)) / ${w}), 1)`;
 
@@ -49,22 +53,21 @@ const outline = (d, k) => {
 // The tail: two overlapping arcs behind the marker, shorter ones
 // stronger, so 40 degrees of trail fade toward the back.
 const tail = (len, op) =>
-  `<path class="loop-tail" data-p pathLength="1" d="${RING}" style="stroke-dasharray:${len} ${1 - len};stroke-dashoffset:calc(${len} - ${LAPS_RUN});opacity:calc(${op} * ${c(0.08, 0.1)} * (1 - ${c(0.95, 1)}))"/>`;
+  `<path class="loop-tail" data-p pathLength="1" d="${RING}" style="stroke-dasharray:${len} ${1 - len};stroke-dashoffset:calc(${len} - ${LAPS_RUN});opacity:calc(${op} * ${c(0.05, 0.07)} * (1 - ${c(PARK - 0.04, PARK)}))"/>`;
 
 const svg = raw(`<svg class="loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
-  <path class="loop-ring" data-p d="${RING}" style="opacity:${c(0.05, 0.09)};scale:calc(0.94 + 0.06 * ${c(0.05, 0.09)})"/>
-  <path class="loop-ticks" data-p pathLength="1" d="${RING}" style="opacity:${c(0.06, 0.1)};stroke-dashoffset:calc(var(--p) * -0.5)"/>
+  <path class="loop-ring" data-p d="${RING}" style="opacity:${c(0.03, 0.06)};scale:calc(0.94 + 0.06 * ${c(0.03, 0.06)})"/>
   <path class="loop-you" data-p pathLength="1" d="${YOU}" style="stroke-dashoffset:calc(1 - ${c(0, 0.03)})"/>
   <path class="loop-pulse" data-p d="${YOU}" style="opacity:calc(${[0, 1, 2, 3].map((k) => bump(at(k, 0.5), 0.02)).join(" + ")})"/>
   ${OUTLINES.map(outline).join("\n  ")}
   <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:${c(at(2, 0.25), at(2, 0.25) + 0.02)};translate:0 calc(6px - 6px * ${c(at(2, 0.25), at(2, 0.25) + 0.02)})"/>
-  <g class="loop-stations" data-p style="opacity:${c(0.08, 0.1)}"><circle cx="0" cy="${-RY}" r="5"/><circle cx="${RX}" cy="0" r="5"/><circle cx="0" cy="${RY}" r="5"/><circle cx="${-RX}" cy="0" r="5"/></g>
+  <g class="loop-stations" data-p style="opacity:${c(0.05, 0.07)}"><circle cx="0" cy="${-RY}" r="5"/><circle cx="${RX}" cy="0" r="5"/><circle cx="0" cy="${RY}" r="5"/><circle cx="${-RX}" cy="0" r="5"/></g>
   ${tail(0.111, 0.3)}
-  <circle class="loop-marker" data-p r="7" style="offset-path:path('${RING}');offset-rotate:0deg;offset-distance:calc(${LAPS_RUN} * 100%);opacity:${c(0.08, 0.1)}"/>
+  <circle class="loop-marker" data-p r="7" style="offset-path:path('${RING}');offset-rotate:0deg;offset-distance:calc(${LAPS_RUN} * 100%);opacity:${c(0.05, 0.07)}"/>
 </svg>`);
 
 // Each station's label arrives with its station, after the ring has drawn.
-const STOP = c(0.085, 0.1);
+const STOP = c(0.055, 0.07);
 
 // Station labels and the "You" label are HTML over the figure, so they
 // stay readable at any width (figure text never goes under 12px).
@@ -72,11 +75,11 @@ const pos = (x, y) => `left:${n(((x + 240) / 480) * 100)}%;top:${n(((y + 170) / 
 
 export function loop({ stations, you = "You", label }) {
   const notes = LAPS.map(
-    (e, k) => html`<p class="loop-note" data-p style="${`opacity:calc(${c(START[k] + 0.005, START[k] + 0.02)} - ${c(END[k] - 0.02, END[k])})`}">${e.label} <span class="loop-time num" data-p style="${`opacity:${c(at(k, 0.75), at(k, 0.75) + 0.015)}`}">${e.minutes} min</span></p>`,
+    (e, k) => html`<p class="loop-note" data-p style="${`opacity:calc(${c(START[k] + 0.005, START[k] + 0.02)} - ${c(END[k] - 0.02, END[k])})`}">${e.label}</p>`,
   );
   const ledger = html`<ol class="loop-ledger" aria-label="${label}">
     ${LAPS.map(
-      (e, k) => html`<li data-p style="${`opacity:${c(START[k] + 0.005, START[k] + 0.02)}`}"><span>${e.label}</span><span class="num" data-p style="${`opacity:${c(at(k, 0.75), at(k, 0.75) + 0.015)}`}">${e.minutes} min</span></li>`,
+      (e, k) => html`<li data-p style="${`opacity:${c(START[k] + 0.005, START[k] + 0.02)}`}"><span>${e.label}</span><span class="num" data-p style="${`opacity:${c(at(k, 0.3), at(k, 0.3) + 0.015)}`}">${e.minutes} min</span></li>`,
     )}
   </ol>`;
   const figure = html`<div class="loop-fig">

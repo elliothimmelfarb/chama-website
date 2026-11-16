@@ -1,14 +1,11 @@
 import { html, raw } from "../html.js";
-import { page, talkField, talkClose } from "../parts/chrome.js";
+import { page, talkField, talkClose, OUT } from "../parts/chrome.js";
 import { build as t } from "../content/en/build.js";
 import { rig, SHOPINTAKE_TOP } from "../figures/devices.js";
 
 // Which pictures in assets/built/ show each thing.
 const PICTURES = { toraya: "toraya-lisboa", original: "original-site", vsf: "vsf-lead-automation", alves: "alves-teamwear" };
 
-const OUT = raw(
-  `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-);
 const LOCK = raw(
   `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3.2" y="7" width="9.6" height="6.8" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`,
 );
@@ -131,7 +128,7 @@ export function render(p) {
 </section>
 
 <section class="world end" data-world="ember" data-pin="off" data-label="${t.close}">
-  ${talkClose(t.close)}
+  ${talkClose(t.close, { work: "build" })}
 </section>`;
   return page(p, t, main);
 }

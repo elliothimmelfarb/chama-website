@@ -5,11 +5,11 @@ import { notFound as t } from "../content/en/not-found.js";
 import { common as c } from "../content/en/common.js";
 import { GLYPHS } from "../figures/glyphs.js";
 
-// Paper burning through to ember (docs/DESIGN.md, "Other pages"): the
+// Paper giving way to ember (docs/DESIGN.md, "Other pages"): the
 // words and the five pages on paper, Talk to us on the ember below.
 const STYLE = raw(`<style>
 .nf { padding: calc(56px + var(--s7)) 0 var(--s9); }
-/* The burn's rim waves about 200px above the next ground's edge. */
+/* The next ground's soft edge reaches about a fifth of a screen above it. */
 :root:not([data-motion="low"]) :is(.nf) { padding-bottom: calc(var(--s9) + 160px); }
 .nf .lead { margin-top: var(--s4); }
 .nf-doors { list-style: none; margin: var(--s7) 0 0; padding: 0; max-width: 46rem; }

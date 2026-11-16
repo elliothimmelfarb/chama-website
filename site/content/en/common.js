@@ -5,6 +5,7 @@ export const common = {
   skip: "Skip to content",
   lockup: "Chama Inteligente",
   home: "Chama Inteligente, home",
+  homeShort: "Home",
   pagesLabel: "Pages",
   menu: "Menu",
   close: "Close",
@@ -28,6 +29,8 @@ export const common = {
     about: "About",
   },
   members: "Coaching members: the Hearth",
+  // the link from an offer page's closing block to its group on /work
+  workLink: "Everything we've built",
   membersShort: "Members",
   talk: {
     button: "Talk to us",

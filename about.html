@@ -9,12 +9,12 @@
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
-  <link rel="stylesheet" href="/assets/base.css?v=10fdbe416d">
-  <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
+  <link rel="stylesheet" href="/assets/base.css?v=2f1034c928">
+  <link rel="stylesheet" href="/assets/worlds.css?v=70c12f273b">
   <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
-  <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
-  <script src="/assets/worlds.js?v=7fe9c3a6be" defer></script>
-  <script src="/assets/chrome.js?v=c9dc4c4621" defer></script>
+  <script src="/assets/sky.js?v=f524e540c3" defer></script>
+  <script src="/assets/worlds.js?v=d517eb96b4" defer></script>
+  <script src="/assets/chrome.js?v=18940e8963" defer></script>
   <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
@@ -77,6 +77,7 @@
       <button class="btn btn-quiet icon-btn" type="button" popovertarget="menu" popovertargetaction="hide" aria-label="Close"><svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path d="M4 4l10 10M14 4 4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     </div>
     <ul class="menu-pages">
+      <li class="menu-home"><a href="/"><span class="menu-name">Home</span></a></li>
       <li><a href="/engineering-department"><span class="menu-name">Engineering department</span><span class="menu-line">Software that changes when you do</span></a></li><li><a href="/coaching"><span class="menu-name">Coaching</span><span class="menu-line">AI fluency coaching and training</span></a></li><li><a href="/build"><span class="menu-name">Websites &amp; apps</span><span class="menu-line">Websites, apps and products</span></a></li><li><a href="/work"><span class="menu-name">Work</span><span class="menu-line">Everything we&#39;ve built</span></a></li><li><a href="/about" aria-current="page"><span class="menu-name">About</span><span class="menu-line">The family behind Chama</span></a></li>
     </ul>
     
@@ -107,7 +108,7 @@
 .ab-block h2 { max-width: 22ch; }
 .ab-block > p { margin-top: var(--s4); max-width: 60ch; color: var(--fg-2); font-size: var(--t-lead); line-height: 1.5; text-wrap: pretty; }
 .ab-block > p + p { margin-top: var(--s3); }
-/* The burn's rim waves about 200px above the next ground's edge. */
+/* The next ground's soft edge reaches about a fifth of a screen above it. */
 :root:not([data-motion="low"]) :is(.ab-first, .ab-elliot) { padding-bottom: calc(var(--s9) + 160px); }
 :root:not([data-motion="low"]) .ab-elliot { padding-top: calc(var(--s9) + 120px); }
 
@@ -123,6 +124,13 @@
 .ab-plist h3 a:focus-visible, .ab-plist h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent-text); text-underline-offset: 3px; }
 .ab-where { color: var(--fg-2); font-size: var(--t-small); }
 .ab-plist p.ab-text { color: var(--fg-2); max-width: 60ch; margin-top: var(--s1); }
+
+.ab-line { list-style: none; margin: var(--s6) 0 0; padding: 0 0 0 22px; position: relative; display: grid; gap: var(--s5); }
+.ab-line::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1.5px; background: var(--line-strong); }
+.ab-line li { position: relative; display: grid; gap: 2px; font-size: var(--t-small); line-height: 1.35; color: var(--fg-2); }
+.ab-line li::before { content: ""; position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--ground, var(--bg)); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.ab-line li.ab-now::before { background: var(--accent); box-shadow: none; }
+.ab-line b { font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
 
 .ab-name > .pin { display: flex; align-items: center; }
 .ab-name-grid { display: grid; gap: var(--s6); align-items: center; }
@@ -144,6 +152,8 @@
      so the world is not a column with an empty right half. */
   .ab-split { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; max-width: none; }
   .ab-split > h2 { grid-column: 1 / span 5; }
+  /* the timeline stands under the heading, in the left half */
+  .ab-split > .ab-line { grid-column: 1 / span 4; grid-row: 2 / span 4; align-self: start; margin-top: var(--s7); }
   .ab-split > :not(h2) { grid-column: 7 / span 6; }
   .ab-split > p:first-of-type { margin-top: 0; }
   .ab-split > h2 + p { grid-row: 1; }
@@ -174,6 +184,9 @@
     <div class="ab-block ab-split">
       <h2>Superpowers to make anything on a computer, a phone or in the cloud.</h2>
       <p>Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.</p><p>Engineers who learned the craft before AI, weren&#39;t afraid of it, and mastered it, can now build anything, fast. Every new AI capability is ours on day one. AI is levelling up fast. We level up with it, and we help you level up too.</p>
+      <ol class="ab-line" aria-hidden="true">
+  <li><b>2016</b><span>Software engineer</span></li><li><b>Campminder</b><span>Led AI enablement for two and a half years</span></li><li><b>Then</b><span>Built AI platforms as an engineer</span></li><li class="ab-now"><b>Since 2023</b><span>Putting the most capable AI systems to work</span></li>
+</ol>
     </div>
     <div class="ab-block ab-split">
       <h2>Partners</h2>
@@ -188,10 +201,10 @@
 <section class="world ab-name" data-world="tides" style="--h:180">
   <div class="pin"><div class="wrap ab-name-grid">
     <div>
-      <h2 class="r" style="--in:-0.3">Chama means flame.</h2>
-      <p class="lead r" style="--in:-0.2">Chama Inteligente is Portuguese for intelligent flame. It is said &quot;Shama&quot;.</p>
+      <h2 class="r">Chama means flame.</h2>
+      <p class="lead r">Chama Inteligente is Portuguese for intelligent flame. It is said &quot;Shama&quot;.</p>
     </div>
-    <div class="ab-name-fig r" style="--in:-0.3"><svg class="mark-draw" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="translate(2.06 0.06)"><path class="md-line" data-p pathLength="1" d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path class="md-fill" data-p d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path class="md-spark" data-p d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg></div>
+    <div class="ab-name-fig r"><svg class="mark-draw" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="translate(2.06 0.06)"><path class="md-line" data-p pathLength="1" d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path class="md-fill" data-p d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path class="md-spark" data-p d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg></div>
   </div></div>
 </section>
 
@@ -202,6 +215,7 @@
   <label class="cycle" for="ask-1"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-1" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
+  
 </section>
 </section>
 </main>
@@ -213,6 +227,8 @@
   <nav class="foot-pages" aria-label="Pages">
     <ul>
       <li><a href="/engineering-department">Engineering department</a></li><li><a href="/coaching">Coaching</a></li><li><a href="/build">Websites &amp; apps</a></li><li><a href="/work">Work</a></li><li><a href="/about">About</a></li>
+    </ul>
+    <ul class="foot-more">
       <li><a href="/hearth">Members</a></li>
       <li><a href="/brand">Brand</a></li>
       <li><a href="/privacy">Privacy</a></li>

@@ -13,7 +13,13 @@ const keepHyphens = (line) =>
 
 const partnerOf = (id) => PARTNERS.find((p) => p.id === id);
 
-// Three grounds, two burns: paper (who we are, the family), ember (Elliot,
+// Elliot's background as four points on a line, from the paragraph beside
+// it; the latest in ember.
+const timeline = (points) => html`<ol class="ab-line" aria-hidden="true">
+  ${points.map((pt, i) => html`<li${i === points.length - 1 ? raw(' class="ab-now"') : ""}><b>${pt.when}</b><span>${pt.what}</span></li>`)}
+</ol>`;
+
+// Three grounds, two changes of ground: paper (who we are, the family), ember (Elliot,
 // then the partners), tides (the name, then Talk to us).
 const STYLE = raw(`<style>
 .ab-nobr { white-space: nowrap; }
@@ -28,7 +34,7 @@ const STYLE = raw(`<style>
 .ab-block h2 { max-width: 22ch; }
 .ab-block > p { margin-top: var(--s4); max-width: 60ch; color: var(--fg-2); font-size: var(--t-lead); line-height: 1.5; text-wrap: pretty; }
 .ab-block > p + p { margin-top: var(--s3); }
-/* The burn's rim waves about 200px above the next ground's edge. */
+/* The next ground's soft edge reaches about a fifth of a screen above it. */
 :root:not([data-motion="low"]) :is(.ab-first, .ab-elliot) { padding-bottom: calc(var(--s9) + 160px); }
 :root:not([data-motion="low"]) .ab-elliot { padding-top: calc(var(--s9) + 120px); }
 
@@ -45,6 +51,13 @@ const STYLE = raw(`<style>
 .ab-where { color: var(--fg-2); font-size: var(--t-small); }
 .ab-plist p.ab-text { color: var(--fg-2); max-width: 60ch; margin-top: var(--s1); }
 
+.ab-line { list-style: none; margin: var(--s6) 0 0; padding: 0 0 0 22px; position: relative; display: grid; gap: var(--s5); }
+.ab-line::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1.5px; background: var(--line-strong); }
+.ab-line li { position: relative; display: grid; gap: 2px; font-size: var(--t-small); line-height: 1.35; color: var(--fg-2); }
+.ab-line li::before { content: ""; position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--ground, var(--bg)); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.ab-line li.ab-now::before { background: var(--accent); box-shadow: none; }
+.ab-line b { font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
+
 .ab-name > .pin { display: flex; align-items: center; }
 .ab-name-grid { display: grid; gap: var(--s6); align-items: center; }
 .ab-name-fig { width: min(40vw, 160px); }
@@ -60,6 +73,8 @@ ${MARK_DRAW_CSS}
      so the world is not a column with an empty right half. */
   .ab-split { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; max-width: none; }
   .ab-split > h2 { grid-column: 1 / span 5; }
+  /* the timeline stands under the heading, in the left half */
+  .ab-split > .ab-line { grid-column: 1 / span 4; grid-row: 2 / span 4; align-self: start; margin-top: var(--s7); }
   .ab-split > :not(h2) { grid-column: 7 / span 6; }
   .ab-split > p:first-of-type { margin-top: 0; }
   .ab-split > h2 + p { grid-row: 1; }
@@ -93,6 +108,7 @@ export function render(p) {
     <div class="ab-block ab-split">
       <h2>${t.elliot.h2}</h2>
       ${t.elliot.paras.map((x) => html`<p>${x}</p>`)}
+      ${timeline(t.elliot.timeline)}
     </div>
     <div class="ab-block ab-split">
       <h2>${t.partners.h2}</h2>
@@ -110,10 +126,10 @@ export function render(p) {
 <section class="world ab-name" data-world="tides" style="--h:180">
   <div class="pin"><div class="wrap ab-name-grid">
     <div>
-      <h2 class="r" style="--in:-0.3">${t.name.h2}</h2>
-      <p class="lead r" style="--in:-0.2">${t.name.lead}</p>
+      <h2 class="r">${t.name.h2}</h2>
+      <p class="lead r">${t.name.lead}</p>
     </div>
-    <div class="ab-name-fig r" style="--in:-0.3">${markDraw()}</div>
+    <div class="ab-name-fig r">${markDraw()}</div>
   </div></div>
 </section>
 

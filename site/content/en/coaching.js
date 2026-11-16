@@ -59,6 +59,8 @@ export const coaching = {
 
   enablement: {
     h2: "AI enablement for companies",
+    // the figure's three layers, bottom to top, the lead's own words
+    layers: ["Policy", "Structure", "Enablement"],
     lead: "Company AI policy, structure and enablement, from someone who led AI enablement at Campminder for two and a half years and then built AI platforms as an engineer.",
   },
 
@@ -73,6 +75,8 @@ export const coaching = {
     h2: "The Hearth",
     lead: "Members book sessions in their own timezone, keep the record of every session, review what they learned, and can connect their own AI agent.",
     members: "Members: go to the Hearth",
+    // the figure's two rows, from the lead's own words
+    figure: { sessions: "Sessions", records: "Records" },
   },
 
   close: "What would you like to be able to do?",

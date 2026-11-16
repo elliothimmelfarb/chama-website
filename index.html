@@ -9,12 +9,12 @@
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
-  <link rel="stylesheet" href="/assets/base.css?v=10fdbe416d">
-  <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
+  <link rel="stylesheet" href="/assets/base.css?v=2f1034c928">
+  <link rel="stylesheet" href="/assets/worlds.css?v=70c12f273b">
   <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
-  <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
-  <script src="/assets/worlds.js?v=7fe9c3a6be" defer></script>
-  <script src="/assets/chrome.js?v=c9dc4c4621" defer></script>
+  <script src="/assets/sky.js?v=f524e540c3" defer></script>
+  <script src="/assets/worlds.js?v=d517eb96b4" defer></script>
+  <script src="/assets/chrome.js?v=18940e8963" defer></script>
   <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
@@ -77,6 +77,7 @@
       <button class="btn btn-quiet icon-btn" type="button" popovertarget="menu" popovertargetaction="hide" aria-label="Close"><svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path d="M4 4l10 10M14 4 4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     </div>
     <ul class="menu-pages">
+      <li class="menu-home"><a href="/" aria-current="page"><span class="menu-name">Home</span></a></li>
       <li><a href="/engineering-department"><span class="menu-name">Engineering department</span><span class="menu-line">Software that changes when you do</span></a></li><li><a href="/coaching"><span class="menu-name">Coaching</span><span class="menu-line">AI fluency coaching and training</span></a></li><li><a href="/build"><span class="menu-name">Websites &amp; apps</span><span class="menu-line">Websites, apps and products</span></a></li><li><a href="/work"><span class="menu-name">Work</span><span class="menu-line">Everything we&#39;ve built</span></a></li><li><a href="/about"><span class="menu-name">About</span><span class="menu-line">The family behind Chama</span></a></li>
     </ul>
     
@@ -108,6 +109,12 @@
 .home-photo { margin: 0; position: absolute; right: var(--edge); top: calc(50% + 36px); translate: 0 -50%;
   width: min(42vw, 36rem, (100svh - 72px - 150px) * 8 / 7); }
 .home-photo figcaption { margin-top: var(--s3); }
+/* the photo settles as the world is held (docs/DESIGN.md, home row 4) */
+.home-photo-crop { border-radius: var(--r-surface); overflow: hidden; }
+.home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }
+/* the client logos arrive after the bars, under the words and the chart */
+.home-logos { position: absolute; left: var(--edge); right: calc(var(--edge) + 40px); bottom: var(--s6); }
+.home-logos .logos { padding: 0; }
 .home-belief .copy { width: min(56vw, 46rem); }
 .home-belief-line { font: 600 var(--t-h2)/1.12 var(--display); letter-spacing: -0.025em; max-width: 24ch; text-wrap: balance; }
 .home-belief-line + .home-belief-line { margin-top: var(--s6); color: var(--fg-2); }
@@ -115,15 +122,27 @@
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   /* words in the upper part of the screen: above the grid's horizon, and in
      the upper 60% of the ember (docs/DESIGN.md section 4) */
-  :is(.home-proof, .home-people) .copy { top: calc(56px + env(safe-area-inset-top) + 20px); bottom: auto; }
-  .home-proof .figure-box { left: 16px; right: 16px; top: auto; bottom: calc(20px + env(safe-area-inset-bottom)); width: auto; translate: none; }
+  /* the words and their figure as one group, centred, a fixed gap apart, so
+     a tall phone has no hole between them */
+  html.pin :is(.home-proof, .home-people) > .pin { display: flex; flex-direction: column; justify-content: safe center; gap: var(--s6);
+    padding: calc(56px + env(safe-area-inset-top) + 20px) 16px calc(20px + env(safe-area-inset-bottom)); }
+  html.pin :is(.home-proof, .home-people) :is(.copy, .figure-box) { position: relative; inset: auto; width: auto; translate: none; }
+  html.pin :is(.home-proof, .home-people) .copy { transform: none; }
+  html.pin .home-proof > .pin { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
   .home-proof .bars-list { gap: var(--s3); }
   .home-proof .bars figcaption { margin-top: var(--s3); }
-  .home-photo { left: 16px; right: auto; top: auto; bottom: calc(20px + env(safe-area-inset-bottom)); translate: none;
-    width: min(100vw - 32px, (100svh - 400px) * 8 / 7); }
+  /* on a phone the photo is the width of the column, cropped to the faces */
+  .home-photo-crop { aspect-ratio: 16 / 10; max-height: calc(100svh - 56px - 20px - 360px); }
+  .home-photo .photo { height: 100%; object-fit: cover; object-position: 50% 30%; }
+  /* there is no room for the caption and the logos at once: the logos take
+     the caption's place once the bars are whole and it has been read */
+  .home-logos { left: 16px; right: 28px; bottom: calc(24px + env(safe-area-inset-bottom)); --in: 0.62 !important; }
+  .home-logos .logos { gap: var(--s4) var(--s5); }
+  .home-caption { --out: 0.58; }
+  .home-proof .bars-axis { display: none; }
 }
 /* one column: the figures follow their words */
-html:not(.pin) :is(.home-proof .figure-box, .home-photo) { position: static; translate: none; width: min(100%, 36rem); margin-top: var(--s6); }
+html:not(.pin) :is(.home-proof .figure-box, .home-photo, .home-logos) { position: static; translate: none; width: min(100%, 36rem); margin-top: var(--s6); }
 </style>
 <section class="world first" data-world="paper" data-pin="off">
   <div class="first-grid wrap">
@@ -230,16 +249,16 @@ html[data-motion="low"] .stage-ph { --in: 1; }
 .stage .stage-outp { --kd: clamp(0, (var(--t) - 5.2) / 1.2, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 16) / 0.4, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
   --v: calc(var(--ed) - var(--eu));
   stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
-.stage .stage-outh { --kd: clamp(0, (var(--t) - 16.3) / 0.9, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 17.5) / 0.4, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); --kr: clamp(0, (var(--t) - 20.3) / 0.6, 1); --er: calc(var(--kr) * var(--kr) * (3 - 2 * var(--kr)));
+.stage .stage-outh { --kd: clamp(0, (var(--t) - 16.3) / 0.9, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 17.5) / 0.4, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); --kr: clamp(0, (var(--t) - 20.4) / 0.5, 1); --er: calc(var(--kr) * var(--kr) * (3 - 2 * var(--kr)));
   --v: calc(var(--ed) - var(--eu) + var(--er));
   stroke-dashoffset: calc(1 - var(--ed) - var(--eu) - var(--er)); opacity: clamp(0, var(--v) * 50, 1); }
-.stage .stage-phone { --kd: clamp(0, (var(--t) - 17.8) / 0.5, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 18.55) / 0.3, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
+.stage .stage-phone { --kd: clamp(0, (var(--t) - 18.1) / 0.35, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 18.85) / 0.2, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
   --v: calc(var(--ed) - var(--eu));
   stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
-.stage .stage-laptop { --kd: clamp(0, (var(--t) - 18.6) / 0.5, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 19.35) / 0.3, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
+.stage .stage-laptop { --kd: clamp(0, (var(--t) - 18.85) / 0.35, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 19.6) / 0.2, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
   --v: calc(var(--ed) - var(--eu));
   stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
-.stage .stage-cloud { --kd: clamp(0, (var(--t) - 19.4) / 0.5, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 20.15) / 0.3, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
+.stage .stage-cloud { --kd: clamp(0, (var(--t) - 19.6) / 0.35, 1); --ed: calc(var(--kd) * var(--kd) * (3 - 2 * var(--kd))); --ku: clamp(0, (var(--t) - 20.35) / 0.2, 1); --eu: calc(var(--ku) * var(--ku) * (3 - 2 * var(--ku))); 
   --v: calc(var(--ed) - var(--eu));
   stroke-dashoffset: calc(1 - var(--ed) - var(--eu)); opacity: clamp(0, var(--v) * 50, 1); }
 .stage-people { --k1: clamp(0, (var(--t) - 7.2) / 0.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1))); opacity: clamp(0, (var(--t) - 7.2) / 0.5, 1); transform: translate(-82px, 0) scale(calc(0.6 + 0.4 * var(--e1))); }
@@ -275,7 +294,7 @@ html[data-motion="low"] .stage-ph { --in: 1; }
 .stage-fill { transform: scaleX(var(--p)); }
 
 </style>
-  <div class="stage-words" data-p><p class="stage-say" style="--s:0;--e:3.5"><span class="stage-ph" style="--r:-1;--a:0;--b:1.5" data-t="Software companies have engineers,"><span>Software companies have engineers,</span></span> <span class="stage-ph" style="--r:-1;--a:1.5;--b:3.5" data-t="and their customers wait in line."><span>and their customers wait in line.</span></span></p><p class="stage-say" style="--s:3.5;--e:7"><span class="stage-ph" style="--r:3.5;--a:3.5;--b:4.6" data-t="Here the engineers"><span>Here the engineers</span></span> <span class="stage-ph" style="--r:4.6;--a:4.6;--b:7" data-t="work only for you."><span>work only for you.</span></span></p><p class="stage-say" style="--s:7;--e:10.5"><span class="stage-ph" style="--r:7;--a:7;--b:8.6" data-t="You talk to a person."><span>You talk to a person.</span></span> <span class="stage-ph" style="--r:8.6;--a:8.6;--b:10.5" data-t="AI does the heavy work behind us."><span>AI does the heavy work behind us.</span></span></p><p class="stage-say" style="--s:10.5;--e:14"><span class="stage-ph" style="--r:10.5;--a:10.5;--b:11.375" data-t="Tell us what you need."><span>Tell us what you need.</span></span> <span class="stage-ph" style="--r:11.375;--a:11.375;--b:12.25" data-t="It gets built."><span>It gets built.</span></span> <span class="stage-ph" style="--r:12.25;--a:12.25;--b:13.125" data-t="You use it."><span>You use it.</span></span> <span class="stage-ph" style="--r:13.125;--a:13.125;--b:14" data-t="You find what&#39;s next."><span>You find what&#39;s next.</span></span></p><p class="stage-say" style="--s:14;--e:17.5"><span class="stage-ph" style="--r:14;--a:14;--b:15" data-t="Fits your process,"><span>Fits your process,</span></span> <span class="stage-ph" style="--r:15;--a:15;--b:17.5" data-t="and changes when you do."><span>and changes when you do.</span></span></p><p class="stage-say" style="--s:17.5;--e:21"><span class="stage-ph" style="--r:17.5;--a:17.5;--b:17.9" data-t="If it can be solved with something"><span>If it can be solved with something</span></span> <span class="stage-ph" style="--r:17.9;--a:17.9;--b:18.7" data-t="on a phone,"><span>on a phone,</span></span> <span class="stage-ph" style="--r:18.7;--a:18.7;--b:19.5" data-t="a computer"><span>a computer</span></span> <span class="stage-ph" style="--r:19.5;--a:19.5;--b:20.3" data-t="or in the cloud,"><span>or in the cloud,</span></span> <span class="stage-ph" style="--r:20.3;--a:20.3;--b:21" data-t="we can do it."><span>we can do it.</span></span></p><p class="stage-say" style="--s:21;--e:24.5"><span class="stage-ph" style="--r:21;--a:21;--b:22.4" data-t="When AI can do something new,"><span>When AI can do something new,</span></span> <span class="stage-ph" style="--r:22.4;--a:22.4;--b:24.5" data-t="so can you."><span>so can you.</span></span></p><p class="stage-say" style="--s:24.5;--e:99"><span class="stage-ph" style="--r:24.5;--a:24.5;--b:25.6" data-t="More time for human things,"><span>More time for human things,</span></span> <span class="stage-ph" style="--r:25.6;--a:25.6;--b:99" data-t="and for each other."><span>and for each other.</span></span></p></div>
+  <div class="stage-words" data-p><p class="stage-say" style="--s:0;--e:3.5"><span class="stage-ph" style="--r:-1;--a:0;--b:1.5" data-t="Software companies have engineers,"><span>Software companies have engineers,</span></span> <span class="stage-ph" style="--r:-1;--a:1.5;--b:3.5" data-t="and their customers wait in line."><span>and their customers wait in line.</span></span></p><p class="stage-say" style="--s:3.5;--e:7"><span class="stage-ph" style="--r:3.5;--a:3.5;--b:4.6" data-t="Here the engineers"><span>Here the engineers</span></span> <span class="stage-ph" style="--r:4.6;--a:4.6;--b:7" data-t="work only for you."><span>work only for you.</span></span></p><p class="stage-say" style="--s:7;--e:10.5"><span class="stage-ph" style="--r:7;--a:7;--b:8.6" data-t="You talk to a person."><span>You talk to a person.</span></span> <span class="stage-ph" style="--r:8.6;--a:8.6;--b:10.5" data-t="AI does the heavy work behind us."><span>AI does the heavy work behind us.</span></span></p><p class="stage-say" style="--s:10.5;--e:14"><span class="stage-ph" style="--r:10.5;--a:10.5;--b:11.375" data-t="Tell us what you need."><span>Tell us what you need.</span></span> <span class="stage-ph" style="--r:11.375;--a:11.375;--b:12.25" data-t="It gets built."><span>It gets built.</span></span> <span class="stage-ph" style="--r:12.25;--a:12.25;--b:13.125" data-t="You use it."><span>You use it.</span></span> <span class="stage-ph" style="--r:13.125;--a:13.125;--b:14" data-t="You find what&#39;s next."><span>You find what&#39;s next.</span></span></p><p class="stage-say" style="--s:14;--e:17.5"><span class="stage-ph" style="--r:14;--a:14;--b:15" data-t="Fits your process,"><span>Fits your process,</span></span> <span class="stage-ph" style="--r:15;--a:15;--b:17.5" data-t="and changes when you do."><span>and changes when you do.</span></span></p><p class="stage-say" style="--s:17.5;--e:21"><span class="stage-ph" style="--r:17.5;--a:17.5;--b:18.1" data-t="If it can be solved with something"><span>If it can be solved with something</span></span> <span class="stage-ph" style="--r:18.1;--a:18.1;--b:18.85" data-t="on a phone,"><span>on a phone,</span></span> <span class="stage-ph" style="--r:18.85;--a:18.85;--b:19.6" data-t="a computer"><span>a computer</span></span> <span class="stage-ph" style="--r:19.6;--a:19.6;--b:20.35" data-t="or in the cloud,"><span>or in the cloud,</span></span> <span class="stage-ph" style="--r:20.35;--a:20.35;--b:21" data-t="we can do it."><span>we can do it.</span></span></p><p class="stage-say" style="--s:21;--e:24.5"><span class="stage-ph" style="--r:21;--a:21;--b:22.4" data-t="When AI can do something new,"><span>When AI can do something new,</span></span> <span class="stage-ph" style="--r:22.4;--a:22.4;--b:24.5" data-t="so can you."><span>so can you.</span></span></p><p class="stage-say" style="--s:24.5;--e:99"><span class="stage-ph" style="--r:24.5;--a:24.5;--b:25.6" data-t="More time for human things,"><span>More time for human things,</span></span> <span class="stage-ph" style="--r:25.6;--a:25.6;--b:99" data-t="and for each other."><span>and for each other.</span></span></p></div>
   <div class="stage-pic"><div class="stage-box">
     <svg class="stage-fig" viewBox="-200 -95 400 190" aria-hidden="true" focusable="false">
   <defs>
@@ -318,7 +337,7 @@ html[data-motion="low"] .stage-ph { --in: 1; }
     <button class="stage-btn" type="button" data-stage-action="replay" aria-label="Play again"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9a5 5 0 1 0 1.6-3.7M4 3.2v3h3"/></svg></button>
     <div class="stage-bar">
       <div class="stage-track" aria-hidden="true"><i class="stage-fill" data-p></i></div>
-      <div class="stage-segs"><button class="stage-seg" type="button" data-stage-seek="0" data-stage-still="0.093" aria-label="Scene 1 of 8: The old way"></button><button class="stage-seg" type="button" data-stage-seek="0.125" data-stage-still="0.246" aria-label="Scene 2 of 8: The turn"></button><button class="stage-seg" type="button" data-stage-seek="0.25" data-stage-still="0.364" aria-label="Scene 3 of 8: A small team"></button><button class="stage-seg" type="button" data-stage-seek="0.375" data-stage-still="0.421" aria-label="Scene 4 of 8: The loop"></button><button class="stage-seg" type="button" data-stage-seek="0.5" data-stage-still="0.618" aria-label="Scene 5 of 8: Fit"></button><button class="stage-seg" type="button" data-stage-seek="0.625" data-stage-still="0.657" aria-label="Scene 6 of 8: Breadth"></button><button class="stage-seg" type="button" data-stage-seek="0.75" data-stage-still="0.864" aria-label="Scene 7 of 8: Learning"></button><button class="stage-seg" type="button" data-stage-seek="0.875" data-stage-still="1" aria-label="Scene 8 of 8: More time"></button></div>
+      <div class="stage-segs"><button class="stage-seg" type="button" data-stage-seek="0" data-stage-still="0.093" aria-label="Scene 1 of 8: The old way"></button><button class="stage-seg" type="button" data-stage-seek="0.125" data-stage-still="0.246" aria-label="Scene 2 of 8: The turn"></button><button class="stage-seg" type="button" data-stage-seek="0.25" data-stage-still="0.364" aria-label="Scene 3 of 8: A small team"></button><button class="stage-seg" type="button" data-stage-seek="0.375" data-stage-still="0.421" aria-label="Scene 4 of 8: The loop"></button><button class="stage-seg" type="button" data-stage-seek="0.5" data-stage-still="0.618" aria-label="Scene 5 of 8: Fit"></button><button class="stage-seg" type="button" data-stage-seek="0.625" data-stage-still="0.664" aria-label="Scene 6 of 8: Breadth"></button><button class="stage-seg" type="button" data-stage-seek="0.75" data-stage-still="0.864" aria-label="Scene 7 of 8: Learning"></button><button class="stage-seg" type="button" data-stage-seek="0.875" data-stage-still="1" aria-label="Scene 8 of 8: More time"></button></div>
     </div>
   </div>
   <div class="stage-step">
@@ -385,31 +404,28 @@ html[data-motion="low"] .stage-ph { --in: 1; }
   </div>
 </section>
 
-<section class="world home-proof" data-world="grid" style="--h:180">
+<section class="world home-proof" data-world="grid" style="--h:210">
   <div class="pin">
     <div class="copy">
       <h2 class="r">Most changes are live in under an hour.</h2>
       <p class="lead r">Measured on the software we run for an 88-person metal stamping plant in Toronto.</p>
       <a class="more r" href="/engineering-department">See how it works<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-    <div class="figure-box r"><figure class="bars" aria-label="Time from request to live, in minutes">
+    <div class="figure-box r"><div class="backed"><figure class="bars" aria-label="Time from request to live, in minutes">
   <div class="bars-axis" aria-hidden="true"><span>0</span><span>15 min</span><span>30 min</span><span>45 min</span><span>1 hour</span></div>
   <ol class="bars-list">
-    <li style="--v:0.23333333333333334;--i:0"><span class="bars-label">A fix</span><span class="bars-value num">14 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.5166666666666667;--i:1"><span class="bars-label">A new filter</span><span class="bars-value num">31 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.55;--i:2"><span class="bars-label">A new report</span><span class="bars-value num">33 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.7;--i:3"><span class="bars-label">Download to Excel</span><span class="bars-value num">42 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>
+    <li style="--v:0.23333333333333334;--i:0"><span class="bars-label">A fix</span><span class="bars-value num" data-p>14 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.5166666666666667;--i:1"><span class="bars-label">A new filter</span><span class="bars-value num" data-p>31 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.55;--i:2"><span class="bars-label">A new report</span><span class="bars-value num" data-p>33 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li><li style="--v:0.7;--i:3"><span class="bars-label">Download to Excel</span><span class="bars-value num" data-p>42 min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>
   </ol>
-  <figcaption class="small">Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.</figcaption>
-</figure></div>
+  <figcaption class="small r home-caption">Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.</figcaption>
+</figure></div></div>
+    <div class="home-logos r" style="--in:0.5">
+      <h2 class="sr-only">Who we have worked with</h2>
+      <ul class="logos"><li><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-mask.webp');--lw:46;--lh:44"></span></li><li><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></li><li><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-mask.webp');--lw:119;--lh:20"></span></li></ul>
+    </div>
   </div>
 </section>
 
-<section class="world clients" data-world="grid" data-pin="off">
-  <div class="wrap">
-    <h2 class="sr-only">Who we have worked with</h2>
-    <ul class="logos"><li><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-mask.webp');--lw:46;--lh:44"></span></li><li><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></li><li><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-mask.webp');--lw:119;--lh:20"></span></li></ul>
-  </div>
-</section>
-
-<section class="world home-people" data-world="ember" style="--h:170">
+<section class="world home-people" data-world="ember" style="--h:160">
   <div class="pin">
     <div class="copy">
       <h2 class="r">Real people you can reach.</h2>
@@ -417,14 +433,14 @@ html[data-motion="low"] .stage-ph { --in: 1; }
       <p class="lead r">We&#39;re a small, family-owned, AI-native business, based in Lisbon and working worldwide.</p>
       <a class="more r" href="/about">About us<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
-    <figure class="figure-box home-photo r"><img class="photo" src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 40vw, 70vw" width="2048" height="1804" alt="Elliot and Annie, smiling, with their baby daughter, in Lisbon." loading="lazy" decoding="async"><figcaption class="small">Elliot and Annie, in Lisbon.</figcaption></figure>
+    <figure class="figure-box home-photo r"><div class="home-photo-crop"><img class="photo" data-p src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 40vw, 100vw" width="2048" height="1804" alt="Elliot and Annie, smiling, with their baby daughter, in Lisbon." loading="lazy" decoding="async"></div><figcaption class="small">Elliot and Annie, in Lisbon.</figcaption></figure>
   </div>
 </section>
 
 <section class="world home-belief" data-world="tides" style="--h:170" data-label="What we believe">
   <div class="pin">
     <div class="copy">
-      <p class="home-belief-line r" style="--in:-0.3">We believe mastery of AI can give people more time for the things they want to do.</p><p class="home-belief-line r" style="--in:0.15">More time for human things, and for each other.</p>
+      <p class="home-belief-line r">We believe mastery of AI can give people more time for the things they want to do.</p><p class="home-belief-line r" style="--in:0.3;--k:4">More time for human things, and for each other.</p>
     </div>
   </div>
 </section>
@@ -436,6 +452,7 @@ html[data-motion="low"] .stage-ph { --in: 1; }
   <label class="cycle" for="ask-1"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-1" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
+  
 </section>
 </section>
 </main>
@@ -447,6 +464,8 @@ html[data-motion="low"] .stage-ph { --in: 1; }
   <nav class="foot-pages" aria-label="Pages">
     <ul>
       <li><a href="/engineering-department">Engineering department</a></li><li><a href="/coaching">Coaching</a></li><li><a href="/build">Websites &amp; apps</a></li><li><a href="/work">Work</a></li><li><a href="/about">About</a></li>
+    </ul>
+    <ul class="foot-more">
       <li><a href="/hearth">Members</a></li>
       <li><a href="/brand">Brand</a></li>
       <li><a href="/privacy">Privacy</a></li>

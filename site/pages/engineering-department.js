@@ -9,6 +9,7 @@ import { ed as t } from "../content/en/engineering-department.js";
 import { proofChart } from "../figures/proof.js";
 import { contrast } from "../figures/contrast.js";
 import { loop, LAPS } from "../figures/loop.js";
+import { beforeAfter, priceLine } from "../figures/plant.js";
 import { own } from "../figures/own.js";
 
 const MEDIA = "/assets/media/note-to-change-2026-11-16";
@@ -76,7 +77,6 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .loop-fig { position: relative; width: 100%; margin: 0 auto; }
 .loop-svg { width: 100%; height: auto; overflow: visible; }
 .loop-ring { fill: none; stroke: var(--fg); stroke-opacity: 0.45; stroke-width: 1.25; stroke-dasharray: 1.5 6; stroke-linecap: round; transform-origin: 0 0; }
-.loop-ticks { fill: none; stroke: var(--fg-2); stroke-width: 5; stroke-dasharray: 0.006 0.119; }
 .loop-you { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linejoin: round; stroke-dasharray: 1; }
 .loop-pulse { fill: var(--fg); stroke: none; }
 .loop-svg .loop-you + .loop-pulse { fill-opacity: 0.16; }
@@ -90,11 +90,10 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .loop-stops { list-style: none; margin: 0; padding: 0; }
 .loop-stops .at-top { translate: -50% calc(-100% - 12px); }
 .loop-stops .at-bottom { translate: -50% 12px; }
-.loop-stops .at-right { translate: calc(-100% - 4px) calc(-100% - 14px); }
-.loop-stops .at-left { translate: 4px calc(-100% - 14px); }
+.loop-stops .at-right { translate: calc(-100% - 10px) calc(-100% - 14px); }
+.loop-stops .at-left { translate: 10px calc(-100% - 14px); }
 .loop-notes { position: absolute; }
 .loop-note { position: absolute; left: 0; top: 0; translate: -50% -50%; white-space: nowrap; padding: 5px 10px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
-.loop-time { color: var(--accent-text); margin-left: 4px; }
 .loop-ledger { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: var(--t-small); }
 .loop-ledger li { display: flex; justify-content: space-between; gap: var(--s2); padding-top: 4px; border-top: 1px solid var(--line); white-space: nowrap; }
 .loop-ledger .num { font-weight: 600; color: var(--accent-text); }
@@ -103,12 +102,40 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .ed-loop .more { margin-top: var(--s2); }
 
 /* The numbers */
-.ed-numbers .bars-bar[data-p] { scale: clamp(0, (var(--p) - 0.1 - var(--i) * 0.12) / 0.24, 1) 1; }
 .ed-more-wrap, .ed-rec-wrap, .ed-flow { padding-top: var(--s7); padding-bottom: var(--s7); }
 .ed-more .lead { max-width: 46ch; }
 .ed-week { margin-top: var(--s5); font: 600 var(--t-h3)/1.3 var(--display); letter-spacing: -0.015em; color: var(--fg-2); max-width: 30ch; }
-.ed-week b { color: var(--fg); font-weight: 600; }
+.ed-week b { color: var(--fg); font-weight: 600; white-space: nowrap; }
 .ed-finds { margin-top: var(--s5); max-width: 46ch; }
+
+/* Before and after, beside the plant's numbers */
+.pl-fig { margin: var(--s6) 0 0; max-width: 30rem; }
+.pl-fig svg { width: 100%; height: auto; overflow: visible; }
+.pl-o, .pl-l, .pl-gather, .pl-biz, .pl-fit { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.pl-o { stroke: var(--fg-2); stroke-width: 1.5; fill: var(--ground, var(--bg)); }
+.pl-l { stroke: var(--fg-2); stroke-width: 1; stroke-opacity: 0.6; }
+.pl-gather { stroke: var(--line-strong); stroke-width: 1.25; stroke-dasharray: 2 5; }
+.pl-biz { stroke: var(--fg); stroke-width: 1.5; fill: color-mix(in srgb, var(--fg) 7%, var(--ground, var(--bg))); }
+.pl-fit { stroke: var(--accent); stroke-width: 2.5; }
+.pl-labels { display: grid; grid-template-columns: 11fr 7fr; gap: var(--s4); margin-top: var(--s3); font: 600 var(--t-label)/1.3 var(--text); color: var(--fg-2); }
+.pl-labels span:last-child { text-align: center; color: var(--fg); }
+
+/* The first screen: the loop's finished picture beside the words */
+.ed-first-fig { display: none; }
+
+/* The price, with how it starts drawn beside it */
+.pr-fig { position: relative; margin: var(--s8) 0 0; max-width: 34rem; }
+.pr-fig svg { width: 100%; height: auto; overflow: visible; }
+.pr-axis { stroke: var(--line-strong); stroke-width: 1.5; }
+.pr-step { fill: var(--ground, var(--bg)); stroke: var(--fg); stroke-width: 1.5; }
+.pr-step.pr-hot { fill: var(--accent); stroke: var(--accent); }
+.pr-due { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
+.pr-tick { stroke: var(--fg-2); stroke-width: 1.5; stroke-linecap: round; }
+.pr-labels { position: relative; list-style: none; margin: var(--s2) 0 0; padding: 0; height: 3.4em; font: 600 var(--t-label)/1.25 var(--text); color: var(--fg-2); }
+.pr-labels li { position: absolute; left: var(--x); top: 0; translate: -50% 0; max-width: 7.5em; text-align: center; }
+.pr-labels li:first-child { translate: -8px 0; text-align: left; }
+.pr-setup { position: absolute; left: 43.2%; top: 0; translate: -50% -60%; font: 600 var(--t-label)/1.25 var(--text); color: var(--accent-text); white-space: nowrap; }
+.pr-labels .pr-monthly { translate: 0 0; text-align: left; max-width: 10em; }
 
 /* The recording */
 .ed-rec { margin: var(--s5) 0 0; }
@@ -128,6 +155,8 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines { list-style: none; padding-left: 0; min-height: 3em; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li:not([data-now]) { display: none; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
+:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); } }
 @media (max-width: 759px) {
   .ed-rec-frame { aspect-ratio: 9 / 16; width: min(100%, calc(70svh * 9 / 16)); margin-inline: auto; }
 }
@@ -166,8 +195,16 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 [data-page="engineering-department"] main [id] { scroll-margin-top: 72px; }
 
 @media (min-width: 1100px) {
-  .ed-first .wrap { min-height: calc(100svh - 72px); display: flex; flex-direction: column; justify-content: center; padding-bottom: var(--s9); }
+  /* the next section's heading peeks over the fold */
+  .ed-first .wrap { min-height: calc(88svh - 72px); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; padding-bottom: var(--s8); }
+  .ed-first-words { grid-column: 1 / span 6; }
   .ed-first h1 { max-width: 12ch; }
+  .ed-first-fig { display: block; grid-column: 8 / span 5; max-width: 30rem; justify-self: end; width: 100%; }
+  .ed-first-fig .loop-fig { width: 100%; }
+  .ed-more-wrap > .pl-fig { grid-column: 8 / span 5; grid-row: 1 / span 3; align-self: center; margin: 0; max-width: none; }
+  .ed-price .ed-flow:first-child { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; }
+  .ed-price-words { grid-column: 1 / span 7; }
+  .ed-price .pr-fig { grid-column: 8 / span 5; margin: 0; }
   .ed-hold { padding-top: calc(72px + var(--s5)); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: center; }
   .ed-hold > .ed-words { grid-column: 1 / span 5; }
   /* on the grid the words stay above the horizon */
@@ -195,6 +232,8 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   .ed-loop .ed-after { font-size: var(--t-lead); }
 
   .loop-fig { width: min(100%, calc((100svh - 390px) * 480 / 340)); }
+  /* the ledger sits right under the ring here, so the ring's pill would say it twice */
+  .loop-notes { display: none; }
 }
 </style>`);
 
@@ -204,14 +243,17 @@ export function render(p) {
 ${STYLE}
 <section class="world first ed-first" data-world="paper" data-pin="off" data-label="${t.rail.first}">
   <div class="wrap">
-    <p class="descriptor">${t.who}</p>
-    <h1><span class="half">${t.h1}</span></h1>
-    <p class="lead">${t.lead}</p>
-    ${talkField({ id: "ask-ed" })}
+    <div class="ed-first-words">
+      <p class="descriptor">${t.who}</p>
+      <h1><span class="half">${t.h1}</span></h1>
+      <p class="lead">${t.lead}</p>
+      ${talkField({ id: "ask-ed" })}
+    </div>
+    <div class="ed-first-fig" aria-hidden="true">${loop({ stations: t.loop.stations, you: t.loop.you, label: t.loop.ledgerLabel }).figure}</div>
   </div>
 </section>
 
-<section id="contrast" class="world ed-contrast" data-world="paper" style="--h:230" data-label="${t.rail.contrast}">
+<section id="contrast" class="world ed-contrast" data-world="paper" style="--h:210" data-label="${t.rail.contrast}">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r">
       <h2>${t.contrast.h2}</h2>
@@ -221,13 +263,13 @@ ${STYLE}
   </div></div>
 </section>
 
-<section id="loop" class="world ed-loop" data-world="ember" style="--h:420" data-label="${t.rail.loop}">
+<section id="loop" class="world ed-loop" data-world="ember" style="--h:460" data-label="${t.rail.loop}">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words">
       <h2 class="r">${t.loop.h2}</h2>
       <div class="r loop-ledger-box">${L.ledger}</div>
       <div class="r ed-close">
-        <p class="ed-after" data-p style="opacity:clamp(0, (var(--p) - 0.92) / 0.06, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.92) / 0.06, 1))">${t.loop.after}</p>
+        <p class="ed-after" data-p style="opacity:clamp(0.01, (var(--p) - 0.82) / 0.05, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.82) / 0.05, 1))">${t.loop.after}</p>
         <a class="more" href="/agent" data-talk>${t.loop.cta}${ARROW}</a>
       </div>
     </div>
@@ -238,15 +280,16 @@ ${STYLE}
 <section id="numbers" class="world ed-numbers" data-world="grid" style="--h:200" data-label="${t.rail.numbers}">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r"><h2>${t.numbers.h2}</h2></div>
-    <div class="ed-figbox r">${proofChart({ caption: t.numbers.caption })}</div>
+    <div class="ed-figbox r"><div class="backed">${proofChart({ caption: t.numbers.caption })}</div></div>
   </div></div>
 </section>
 
 <section class="world ed-more" data-world="grid" data-pin="off" data-label="${t.rail.recording}">
   <div class="wrap ed-more-wrap">
-    <p class="lead">${numbersLead()}</p>
-    <p class="ed-week"><b class="num">${t.numbers.week[0].value}</b> ${t.numbers.week[0].text}, and <b class="num">${t.numbers.week[1].value}</b> ${t.numbers.week[1].text}.</p>
-    <p class="lead ed-finds">${t.numbers.finds}</p>
+    <p class="lead backed">${numbersLead()}</p>
+    ${beforeAfter(t.numbers.figure)}
+    <p class="ed-week backed"><b class="num">${t.numbers.week[0].value}</b> ${t.numbers.week[0].text}, and <b class="num">${t.numbers.week[1].value}</b> ${t.numbers.week[1].text}.</p>
+    <p class="lead ed-finds backed">${t.numbers.finds}</p>
   </div>
   <div id="recording" class="wrap ed-rec-wrap">
     <div class="ed-words">
@@ -270,8 +313,11 @@ ${STYLE}
 
 <section class="world ed-price" data-world="paper" data-pin="off" data-label="${t.rail.price}">
   <div id="price" class="wrap ed-flow">
-    <h2 class="ed-price-shape">${t.price.h2}</h2>
-    <p class="ed-guarantee">${t.price.guarantee}</p>
+    <div class="ed-price-words">
+      <h2 class="ed-price-shape">${t.price.h2}</h2>
+      <p class="ed-guarantee">${t.price.guarantee}</p>
+    </div>
+    ${priceLine(t.price.line)}
   </div>
   <div id="questions" class="wrap ed-flow ed-qs">
     <h2>${t.objections.h2}</h2>
@@ -288,7 +334,7 @@ ${STYLE}
     <h2>${t.starts.h2}</h2>
     <ol class="ed-steps">${t.starts.steps.map((s) => html`<li>${s}</li>`)}</ol>
   </div>
-  ${talkClose(t.close)}
+  ${talkClose(t.close, { work: "engineering-department" })}
 </section>`;
   return page(p, t, main);
 }
