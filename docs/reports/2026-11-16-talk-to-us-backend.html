@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Talk To Us Backend</title>
+<meta name="description" content="The Talk to us chat's back end, rebuilt for the rebrand and verified in production, 2026-11-16.">
+<style>
+  :root {
+    --ground: #f3f0e8; --ground-2: #e9e4d8; --ink: #141412; --ink-dim: #5e5a52;
+    --line: rgba(20, 20, 18, 0.14); --ember: #c9461b; --ok: #2f7a4f; --ok-soft: rgba(47, 122, 79, 0.12);
+    --before: #8a8378; --open: #a86a12; --open-soft: rgba(168, 106, 18, 0.12);
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+      --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+      --before: #7d776e; --open: #e0a54a; --open-soft: rgba(224, 165, 74, 0.14); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e0c0a; --ground-2: #171412; --ink: #ece7dc; --ink-dim: #9a938a;
+    --line: rgba(243, 240, 232, 0.14); --ember: #f4581f; --ok: #7fcf9a; --ok-soft: rgba(127, 207, 154, 0.12);
+    --before: #7d776e; --open: #e0a54a; --open-soft: rgba(224, 165, 74, 0.14); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration-color: var(--ember); text-underline-offset: 0.18em; }
+  code { font-size: 0.88em; background: var(--ground-2); padding: 0.05em 0.3em; border-radius: 3px; overflow-wrap: anywhere; }
+  .wrap { max-width: 64rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2.5rem 4rem; display: grid; gap: 3rem; }
+  .wrap > * { min-width: 0; }
+  header { display: grid; gap: 0.9rem; }
+  h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
+  .lede { margin: 0; max-width: 60ch; color: var(--ink-dim); font-size: 1.12rem; }
+  h2 { margin: 0 0 1rem; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+  .note { margin: 0.8rem 0 0; color: var(--ink-dim); font-size: 0.9rem; max-width: 70ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { font-size: 0.82rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; background: var(--ok-soft); color: var(--ok); }
+
+  .found { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+  .found > li { padding-top: 0.7rem; border-top: 2px solid var(--ember); }
+  .found b { display: block; font-size: 2.4rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .found span { color: var(--ink-dim); font-size: 0.92rem; }
+
+  .bars { display: grid; gap: 1.1rem; }
+  .bar { display: grid; gap: 0.3rem; }
+  .bar-head { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.92rem; }
+  .bar-head b { font-weight: 600; }
+  .bar-head span { color: var(--ink-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .track { position: relative; height: 14px; background: var(--ground-2); border-radius: 3px; }
+  .range { position: absolute; top: 3px; height: 8px; border-radius: 4px; opacity: 0.35; }
+  .median { position: absolute; top: -2px; width: 4px; height: 18px; border-radius: 2px; }
+  .s-before .range, .s-before .median { background: var(--before); }
+  .s-cold .range, .s-cold .median { background: var(--open); }
+  .s-after .range, .s-after .median { background: var(--ember); }
+  .scale { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+
+  .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin: 0; padding: 0; list-style: none; }
+  .flow > li { padding: 0.9rem 0.9rem 0.9rem 0; border-top: 2px solid var(--ember); display: grid; gap: 0.25rem; align-content: start; }
+  .flow > li + li { padding-left: 0.9rem; border-left: 1px solid var(--line); }
+  .flow em { font-style: normal; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ember); }
+  .flow b { font-size: 1rem; font-weight: 600; }
+  .flow span { color: var(--ink-dim); font-size: 0.88rem; }
+
+  .scope { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+  .scope > li { display: grid; grid-template-columns: 1.4rem minmax(0, 12rem) minmax(0, 1fr); gap: 0.2rem 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+  .scope > li::before { content: "✓"; color: var(--ok); font-weight: 700; }
+  .scope > li.open::before { content: "○"; color: var(--open); }
+  .scope b { font-weight: 600; }
+  .scope span { color: var(--ink-dim); }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 1rem 1.1rem; display: grid; gap: 0.4rem; align-content: start; }
+  .card h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+  .card p { margin: 0; color: var(--ink-dim); font-size: 0.92rem; }
+  .card.ask { border-color: var(--open); background: var(--open-soft); }
+
+  @media (max-width: 44rem) {
+    .found { grid-template-columns: minmax(0, 1fr); }
+    .flow { grid-template-columns: minmax(0, 1fr); }
+    .flow > li + li { padding-left: 0; border-left: 0; }
+    .scope > li { grid-template-columns: 1.4rem minmax(0, 1fr); }
+    .scope > li span { grid-column: 2; }
+    .grid2 { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Talk to us, behind the box</h1>
+  <p class="lede">The chat answers sooner, speaks the new brand language with no flame persona, links only to pages that exist, and takes contact details only after the visitor has seen them and said yes. All of it is live and checked in production.</p>
+  <div class="chips">
+    <span class="chip">PR #196 merged and deployed</span>
+    <span class="chip">807 tests pass</span>
+    <span class="chip">Contact email received</span>
+  </div>
+</header>
+
+<section>
+  <ul class="found">
+    <li><b>1.8 s → 1.06 s</b><span>to the first word of a visitor's first message, median in production</span></li>
+    <li><b>30 → 38</b><span>of 41 eval cases passed, old prompt against new on the same cases (35 on a second full run)</span></li>
+    <li><b>0</b><span>email addresses or phone numbers the chat gives out, checked by test and by eval</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>How long until the first word</h2>
+  <div class="bars">
+    <div class="bar s-before">
+      <div class="bar-head"><b>Before: a visitor's first message</b><span>1.39, 1.77, 6.67 s · median 1.77</span></div>
+      <div class="track"><div class="range" style="left:20.9%;width:79.1%"></div><div class="median" style="left:26.5%"></div></div>
+    </div>
+    <div class="bar s-cold">
+      <div class="bar-head"><b>After, without a warm-up (control)</b><span>1.49, 1.60, 1.64 s · median 1.60</span></div>
+      <div class="track"><div class="range" style="left:22.3%;width:2.3%"></div><div class="median" style="left:24%"></div></div>
+    </div>
+    <div class="bar s-after">
+      <div class="bar-head"><b>After, with the warm-up</b><span>1.00, 1.06, 1.07 s · median 1.06</span></div>
+      <div class="track"><div class="range" style="left:15%;width:1.1%"></div><div class="median" style="left:15.9%"></div></div>
+    </div>
+    <div class="scale"><span>0 s</span><span>6.67 s</span></div>
+  </div>
+  <p class="note">Measured against chamainteligente.com/api/chat with "Hi, what do you do?", each run more than five minutes after the last so the prompt cache had expired. The wait was the cache: visitors arrive more than five minutes apart, so almost every first message made the model read the whole prompt. The browser adds almost nothing (first word on screen 1.06 s after Enter on /agent). Sonnet 5 stays: Sonnet 5.5 and Haiku 5.5 were quicker on "hey" but their slowest replies in ten reached 2.2 s and 5.4 s.</p>
+</section>
+
+<section>
+  <h2>How a contact request now reaches Elliot</h2>
+  <ol class="flow">
+    <li><em>Visitor</em><b>Gives a name and a way to reach them</b><span>Email, or a number (asked once if it's WhatsApp)</span></li>
+    <li><em>Agent</em><b>Shows exactly what will be sent</b><span>Then asks "Send it?"</span></li>
+    <li><em>Visitor</em><b>Says yes</b><span>A change inside the yes gets shown again</span></li>
+    <li><em>Code</em><b>Checks the conversation</b><span>Details typed by the visitor and shown just before the yes; one per reply</span></li>
+    <li><em>Inbox</em><b>"Someone asked to be contacted"</b><span>With the conversation id; visitor text can't forge lines</span></li>
+  </ol>
+  <p class="note">Tested end to end in production at 16:33 UTC: the agent linked /coaching, declined to give an email, showed the details, sent after the yes, and the email arrived at contact@. It is the one titled "Claude Test".</p>
+</section>
+
+<section>
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li><b>Fast</b><span>Root cause found (cold prompt cache), warm-up on composer focus and on /agent opening, before and after measured in production.</span></li>
+    <li><b>New voice</b><span>Prompt rewritten from brand-language.md: no persona, three offerings, "most changes are live in under an hour", no prices.</span></li>
+    <li><b>Links to pages</b><span><code>lib/site-pages.js</code> is the one list. Only live pages are offered, and tests keep the live flags in line with what's actually served.</span></li>
+    <li><b>Contact flow</b><span>Same pipeline as before, with consent checked in code and a safer, clearer email.</span></li>
+    <li><b>Tested</b><span>Red, green, refactor for consent, page links, email and warm-up. Evals gained link, no-email, brand and change-after-yes cases, plus mechanical link checks.</span></li>
+    <li><b>Reviewed</b><span>A reviewer subagent found 1 high, 5 medium and 8 low issues. The high, all five medium and five of the low are fixed, and the rest are below.</span></li>
+    <li><b>README and skill</b><span>Speed, page list, consent and a frozen chat event contract for the lead's new widget.</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Left open</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Two questions in one reply</h3>
+      <p>About half the time on repeat runs, the model still asks two things at once in a few cases. The old prompt did the same. The prompt now spells out what "one question" means.</p>
+    </div>
+    <div class="card">
+      <h3>"Flame" in internal names</h3>
+      <p>Visitors never see them, but the watchdog emails, <code>isFlameKilled</code> and some test names still say flame. A rename is a small follow-up.</p>
+    </div>
+    <div class="card">
+      <h3>Handed to the lead</h3>
+      <p>The new widget (<code>talk.js</code>) carries over the warm-up, shows the fallback form when <code>kind</code> is "offline", and flips pages live in <code>lib/site-pages.js</code> as they land.</p>
+    </div>
+    <div class="card ask">
+      <h3>For you</h3>
+      <p>Nothing to decide. You can delete the "Claude Test" contact email.</p>
+    </div>
+  </div>
+</section>
+</div>
+</body>
+</html>
