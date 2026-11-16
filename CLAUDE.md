@@ -6,7 +6,7 @@ This is the public face of Chama Inteligente, Lda, written for prospective clien
 
 The session owns the site's code, design, tests and docs, and its copy as long as the copy says what the site already says: rewording, tightening, fixing and restructuring existing claims, including in the flame's prompt (`api/chat-prompt.js`, which is reviewed like copy). Shipping that work is ordinary work here, not a post in Elliot's name.
 
-Elliot owns what the company newly promises or claims: new offers, prices, numbers, guarantees, results, testimonials, new pages and new public surfaces. Because a push publishes, these reach him before they are pushed. Each client or friend decides, in writing, whether their name and logo appear. Outreach is Elliot's, and this domain sends no cold outreach.
+Elliot decides what the site newly says and shows: offers, prices, numbers, results, testimonials, client names and logos, new pages and new public surfaces. He tells the session, and the session builds what he asks for. Outreach is Elliot's, and this domain sends no cold outreach.
 
 ## Facts that change how you work
 
