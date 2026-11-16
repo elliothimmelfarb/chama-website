@@ -41,7 +41,7 @@ const STYLE = raw(`<style>
 
 export function render(p) {
   const main = html`${STYLE}
-<section class="world wk" data-world="paper" data-pin="off" data-strip>
+<section class="world wk" data-world="paper" data-pin="off">
   <div class="wrap">
     <div class="wk-head">
       <h1><span class="half">${t.h1}</span></h1>

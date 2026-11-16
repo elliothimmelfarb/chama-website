@@ -201,7 +201,7 @@ export function render(p) {
   const L = loop({ stations: t.loop.stations, you: t.loop.you, label: t.loop.ledgerLabel });
   const main = html`
 ${STYLE}
-<section class="world first ed-first" data-world="paper" data-pin="off" data-strip data-label="${t.rail.first}">
+<section class="world first ed-first" data-world="paper" data-pin="off" data-label="${t.rail.first}">
   <div class="wrap">
     <p class="descriptor">${t.who}</p>
     <h1><span class="half">${t.h1}</span></h1>
@@ -239,7 +239,7 @@ ${STYLE}
   </div></div>
 </section>
 
-<section class="world ed-more" data-world="grid" data-pin="off" data-strip data-label="${t.rail.recording}">
+<section class="world ed-more" data-world="grid" data-pin="off" data-label="${t.rail.recording}">
   <div class="wrap ed-more-wrap">
     <p class="lead">${numbersLead()}</p>
     <p class="ed-week"><b class="num">${t.numbers.week[0].value}</b> ${t.numbers.week[0].text}, and <b class="num">${t.numbers.week[1].value}</b> ${t.numbers.week[1].text}.</p>
@@ -265,7 +265,7 @@ ${STYLE}
   </div></div>
 </section>
 
-<section class="world ed-price" data-world="paper" data-pin="off" data-strip data-label="${t.rail.price}">
+<section class="world ed-price" data-world="paper" data-pin="off" data-label="${t.rail.price}">
   <div id="price" class="wrap ed-flow">
     <h2 class="ed-price-shape">${t.price.h2}</h2>
     <p class="ed-guarantee">${t.price.guarantee}</p>
@@ -280,7 +280,7 @@ ${STYLE}
   </div>
 </section>
 
-<section id="starts" class="world ed-starts" data-world="tides" data-pin="off" data-strip data-label="${t.rail.starts}">
+<section id="starts" class="world ed-starts" data-world="tides" data-pin="off" data-label="${t.rail.starts}">
   <div class="wrap ed-flow">
     <h2>${t.starts.h2}</h2>
     <ol class="ed-steps">${t.starts.steps.map((s) => html`<li>${s}</li>`)}</ol>

@@ -1,3 +1,4 @@
+import { SITE } from "../../site.js";
 // /engineering-department. It stands alone for a referral link, so its first
 // screen says who we are without the home page.
 
@@ -36,7 +37,7 @@ export const ed = {
       { value: "about 15", text: "changes go live in a typical week" },
     ],
     caption:
-      "Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.",
+      SITE.changeCaption,
     finds: "Ask it anything. Why don't these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.",
   },
 

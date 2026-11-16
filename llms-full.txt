@@ -42,7 +42,7 @@ More time for human things, and for each other.
 
 ---
 
-## Home (https://chamainteligente.com/engineering-department)
+## Your own engineering department (https://chamainteligente.com/engineering-department)
 
 A small, family-owned, AI-native business in Lisbon, working worldwide.
 
@@ -128,7 +128,7 @@ Every change is written with its tests first and goes live only after the whole 
 
 ---
 
-## Home (https://chamainteligente.com/coaching)
+## AI fluency coaching and training (https://chamainteligente.com/coaching)
 
 # AI fluency coaching and training.
 
@@ -174,7 +174,7 @@ Members book sessions in their own timezone, keep the record of every session, r
 
 ---
 
-## Home (https://chamainteligente.com/build)
+## Websites, apps and products (https://chamainteligente.com/build)
 
 # Websites, apps and products.
 
@@ -189,6 +189,12 @@ Fast, clear, and set up for search from the first day.
 Website and staff app. A Japanese deli in Rossio station. We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour. The version they approved was ready four hours after we started.
 
 Live at https://toraya.pt
+
+### The original chamainteligente.com
+
+Our own website. Our first site, where scrolling moves you through worlds and a fire burns each one into the next. We kept it online as it was.
+
+Live at /original
 
 ## Apps made for one business.
 
@@ -216,7 +222,7 @@ Our own product. It reads the purchase orders customers email you and pulls the 
 
 ---
 
-## Home (https://chamainteligente.com/work)
+## Work (https://chamainteligente.com/work)
 
 # Everything we've built.
 
@@ -224,11 +230,12 @@ Every business is a different shape. Here is who we have worked with and what we
 
 ## Your own engineering department
 
-- A metal stamping plant in Toronto: The software 88 people run the plant on. It replaced their old system, a second app and four spreadsheets. (https://chamainteligente.com/engineering-department)
+- A metal stamping plant in Toronto: The software an 88-person plant runs on. It replaced their old system, a second app and four spreadsheets. (https://chamainteligente.com/engineering-department)
 
 ## Websites, apps and products
 
 - Toraya Lisboa: Website and staff app for a Japanese deli in Rossio station. Changes live within the hour. (https://chamainteligente.com/build#toraya)
+- The original chamainteligente.com: Our first site, kept online as it was. (https://chamainteligente.com/original)
 - Alves Limited Group: From an ad to a booked call: a landing page and an AI that asks each enquiry the team's questions. (https://chamainteligente.com/build#vsf)
 - Alves Teamwear: Teams design their own kit and order it; the operators and supplier track everything. (https://chamainteligente.com/build#alves)
 - ShopIntake: Our own product. Reads emailed purchase orders so nobody types them into the ERP. (https://chamainteligente.com/build#partnership)
@@ -243,7 +250,7 @@ Every business is a different shape. Here is who we have worked with and what we
 
 ---
 
-## Home (https://chamainteligente.com/about)
+## About (https://chamainteligente.com/about)
 
 # A small, family-owned, AI-native business.
 
@@ -277,7 +284,7 @@ Chama Inteligente is Portuguese for intelligent flame. It is said "Shama".
 
 ---
 
-## Home (https://chamainteligente.com/hearth)
+## The Hearth (https://chamainteligente.com/hearth)
 
 # The Hearth.
 
@@ -309,7 +316,7 @@ Membership comes with coaching. The room is by invitation: when you start coachi
 
 ---
 
-## Home (https://chamainteligente.com/privacy)
+## Privacy (https://chamainteligente.com/privacy)
 
 # Privacy, in plain language.
 
@@ -341,6 +348,8 @@ Chat messages are sent to Anthropic (the Claude API) to generate the agent's rep
 
 We do not sell your information, use it for marketing, profile you, or make automated decisions with legal or similarly significant effects about you. Your words are never treated as instructions that change how our systems behave beyond the reply you see.
 
+If you choose a theme (light or dark) or low motion, your browser remembers that choice on your device. It never leaves your device. The public pages set no cookies and use no analytics.
+
 ## The Hearth, the members' room
 
 If you create an account in the Hearth (the members' room at /hearth), we keep what an account needs: your email address, the name you give, a picture if the sign-in provider offers one, your role, your timezone, and the link to the Google, GitHub or Discord account you signed in with. Each sign-in is recorded with its time, the kind of device and browser, and the country, never the IP address, so you can see where you are signed in and end any session. The legal basis is the agreement with you as a member (Article 6(1)(b)) and, for the sign-in records, our legitimate interest in keeping the room secure (Article 6(1)(f)).
@@ -365,7 +374,7 @@ Effective 2026-11-16.
 
 ---
 
-## Home (https://chamainteligente.com/brand)
+## Media kit (https://chamainteligente.com/brand)
 
 # Media kit.
 

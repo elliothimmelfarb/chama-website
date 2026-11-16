@@ -71,7 +71,7 @@ const dl = (file, label = file) => html`<a class="bd-dl" href="${KIT + file}" do
 
 export function render(p) {
   const main = html`${STYLE}
-<section class="world bd" data-world="paper" data-pin="off" data-strip>
+<section class="world bd" data-world="paper" data-pin="off">
   <div class="wrap"><div class="bd-col">
     <h1><span class="half">${t.h1}</span></h1>
     <p class="lead">${t.lead}</p>

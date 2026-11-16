@@ -4,7 +4,7 @@ import { build as t } from "../content/en/build.js";
 import { rig, SHOPINTAKE_TOP } from "../figures/devices.js";
 
 // Which pictures in assets/built/ show each thing.
-const PICTURES = { toraya: "toraya-lisboa", vsf: "vsf-lead-automation", alves: "alves-teamwear" };
+const PICTURES = { toraya: "toraya-lisboa", original: "original-site", vsf: "vsf-lead-automation", alves: "alves-teamwear" };
 
 const OUT = raw(
   `<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
@@ -137,14 +137,15 @@ export function render(p) {
 }
 
 export function text() {
-  const [site, ...apps] = t.things;
+  const at = t.things.findIndex((x) => x.opensApps);
+  const sites = t.things.slice(0, at), apps = t.things.slice(at);
   const thing = (x) => [`### ${x.name}`, `${x.kind}. ${x.text}`, x.href ? `Live at ${x.href}` : x.private].join("\n\n");
   return [
     `# ${t.h1}`,
     t.lead,
     `## ${t.websites.h2}`,
     t.websites.lead,
-    thing(site),
+    ...sites.map(thing),
     `## ${t.apps.h2}`,
     t.apps.lead,
     ...apps.map(thing),

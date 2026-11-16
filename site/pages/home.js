@@ -98,7 +98,7 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world home-belief" data-world="tides" style="--h:170">
+<section class="world home-belief" data-world="tides" style="--h:170" data-label="What we believe">
   <div class="pin">
     <div class="copy">
       ${t.belief.lines.map((l, i) => html`<p class="home-belief-line r" style="--in:${i ? 0.15 : -0.3}">${l}</p>`)}
@@ -106,7 +106,7 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world end" data-world="tides" data-pin="off">
+<section class="world end" data-world="tides" data-pin="off" data-label="Talk to us">
   ${talkClose(t.close)}
 </section>`;
   return page(p, t, main);

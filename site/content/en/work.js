@@ -16,7 +16,7 @@ export const work = {
       offer: "engineering-department",
       h2: "Your own engineering department",
       items: [
-        { id: "stamping", name: "A metal stamping plant in Toronto", nameNamed: "LA Metal Stamping", line: "The software 88 people run the plant on. It replaced their old system, a second app and four spreadsheets.", href: "/engineering-department" },
+        { id: "stamping", name: "A metal stamping plant in Toronto", nameNamed: "LA Metal Stamping", line: "The software an 88-person plant runs on. It replaced their old system, a second app and four spreadsheets.", href: "/engineering-department" },
       ],
     },
     {
@@ -24,6 +24,7 @@ export const work = {
       h2: "Websites, apps and products",
       items: [
         { id: "toraya-lisboa", name: "Toraya Lisboa", line: "Website and staff app for a Japanese deli in Rossio station. Changes live within the hour.", href: "/build#toraya", logo: "toraya-lisboa" },
+        { id: "original-site", name: "The original chamainteligente.com", line: "Our first site, kept online as it was.", href: "/original" },
         { id: "alves-limited-group", also: "vsf-lead-automation", name: "Alves Limited Group", line: "From an ad to a booked call: a landing page and an AI that asks each enquiry the team's questions.", href: "/build#vsf", logo: "alves-limited" },
         { id: "alves-teamwear", name: "Alves Teamwear", line: "Teams design their own kit and order it; the operators and supplier track everything.", href: "/build#alves" },
         { id: "shopintake", name: "ShopIntake", line: "Our own product. Reads emailed purchase orders so nobody types them into the ERP.", href: "/build#partnership" },

@@ -9,6 +9,7 @@ const SHOTS = {
   "toraya-lisboa": { desktop: { widths: [640, 960, 1200, 1440], h: 4500 }, phone: { widths: [160, 240, 320], top: 440, h: 3836 } },
   "vsf-lead-automation": { desktop: { widths: [640, 960, 1200, 1440], h: 4500 }, phone: { widths: [160, 240, 320], top: 440, h: 3809 } },
   "alves-teamwear": { desktop: { widths: [640, 960, 1200, 1440], top: 1800, suffixed: true, h: 2248 }, phone: { widths: [160, 240], top: 360, h: 4674 } },
+  "original-site": { desktop: { widths: [640, 960, 1200, 1440], h: 4500 }, phone: { widths: [160, 240, 320], top: 440, h: 3836 } },
   shopintake: { desktop: { widths: [640, 960, 1200, 1440], h: 4500 }, phone: { widths: [160, 240, 320], top: 440, h: 3836 } },
 };
 

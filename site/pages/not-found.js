@@ -31,7 +31,7 @@ const STYLE = raw(`<style>
 export function render(p) {
   const pages = PAGES.filter((x) => x.nav);
   const main = html`${STYLE}
-<section class="world nf" data-world="paper" data-pin="off" data-strip>
+<section class="world nf" data-world="paper" data-pin="off">
   <div class="wrap">
     <h1><span class="half">${t.h1}</span></h1>
     <p class="lead">${t.lead}</p>
@@ -42,7 +42,7 @@ export function render(p) {
     </nav>
   </div>
 </section>
-<section class="world end" data-world="ember" data-pin="off" data-strip>
+<section class="world end" data-world="ember" data-pin="off">
   ${talkClose(t.close)}
 </section>`;
   return page(p, t, main);

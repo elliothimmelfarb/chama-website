@@ -32,6 +32,14 @@ export const build = {
       link: "toraya.pt",
     },
     {
+      id: "original",
+      name: "The original chamainteligente.com",
+      kind: "Our own website",
+      text: "Our first site, where scrolling moves you through worlds and a fire burns each one into the next. We kept it online as it was.",
+      href: "/original",
+      link: "chamainteligente.com/original",
+    },
+    {
       id: "vsf",
       name: "VSF Lead Automation",
       kind: "App for one business",

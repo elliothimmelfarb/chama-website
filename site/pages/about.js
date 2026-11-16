@@ -72,7 +72,7 @@ ${MARK_DRAW_CSS}
 
 export function render(p) {
   const main = html`${STYLE}
-<section class="world ab-first" data-world="paper" data-pin="off" data-strip>
+<section class="world ab-first" data-world="paper" data-pin="off">
   <div class="wrap">
     <div class="ab-first-grid">
       <div class="ab-first-words">
@@ -88,7 +88,7 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world ab-elliot" data-world="ember" data-pin="off" data-strip>
+<section class="world ab-elliot" data-world="ember" data-pin="off">
   <div class="wrap">
     <div class="ab-block ab-split">
       <h2>${t.elliot.h2}</h2>
@@ -117,7 +117,7 @@ export function render(p) {
   </div></div>
 </section>
 
-<section class="world end" data-world="tides" data-pin="off" data-strip>
+<section class="world end" data-world="tides" data-pin="off">
   ${talkClose(t.close)}
 </section>`;
   return page(p, t, main);

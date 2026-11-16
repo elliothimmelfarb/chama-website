@@ -26,3 +26,13 @@ test("the build is deterministic: two runs give the same files", async () => {
   const b = await build();
   assert.deepEqual([...a], [...b]);
 });
+
+test("llms.txt names every page by its own title and summary", async () => {
+  const llms = (await build()).get("llms.txt");
+  const rows = [...llms.matchAll(/^- \[([^\]]+)\]\((\S+)\): (.*)$/gm)].filter((m) => !m[2].endsWith("llms-full.txt"));
+  assert.ok(rows.length >= 8);
+  for (const [, title, href, summary] of rows) {
+    assert.ok(summary.length > 40, `${href} has no summary`);
+    assert.equal(title === "Home", href === "https://chamainteligente.com/", `${href} is titled ${title}`);
+  }
+});

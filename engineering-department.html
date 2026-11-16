@@ -5,16 +5,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Your own engineering department | Chama Inteligente</title>
-  <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches)d.classList.add("pin")})();</script>
+  <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches){d.classList.add("pin");addEventListener("DOMContentLoaded",function(){setTimeout(function(){if(!d.dataset.engine)d.classList.remove("pin")},4e3)})}})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
-  <link rel="stylesheet" href="/assets/base.css?v=44e11ef289">
+  <link rel="stylesheet" href="/assets/base.css?v=10fdbe416d">
   <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
   <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
   <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
-  <script src="/assets/worlds.js?v=464127a826" defer></script>
-  <script src="/assets/chrome.js?v=63d4c9f255" defer></script>
+  <script src="/assets/worlds.js?v=7fe9c3a6be" defer></script>
+  <script src="/assets/chrome.js?v=9913b6538c" defer></script>
   <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
@@ -247,7 +247,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   .loop-fig { width: min(100%, calc((100svh - 390px) * 480 / 340)); }
 }
 </style>
-<section class="world first ed-first" data-world="paper" data-pin="off" data-strip data-label="Your engineering department">
+<section class="world first ed-first" data-world="paper" data-pin="off" data-label="Your engineering department">
   <div class="wrap">
     <p class="descriptor">A small, family-owned, AI-native business in Lisbon, working worldwide.</p>
     <h1><span class="half">Your own engineering department.</span></h1>
@@ -337,7 +337,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   </div></div>
 </section>
 
-<section class="world ed-more" data-world="grid" data-pin="off" data-strip data-label="The recording">
+<section class="world ed-more" data-world="grid" data-pin="off" data-label="The recording">
   <div class="wrap ed-more-wrap">
     <p class="lead">Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.</p>
     <p class="ed-week"><b class="num">19</b> people use it every day, and <b class="num">about 15</b> changes go live in a typical week.</p>
@@ -388,7 +388,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   </div></div>
 </section>
 
-<section class="world ed-price" data-world="paper" data-pin="off" data-strip data-label="Price">
+<section class="world ed-price" data-world="paper" data-pin="off" data-label="Price">
   <div id="price" class="wrap ed-flow">
     <h2 class="ed-price-shape">A setup fee and a fixed monthly fee, quoted after a first conversation.</h2>
     <p class="ed-guarantee">The setup fee is due only when you switch off your old system.</p>
@@ -401,7 +401,7 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   </div>
 </section>
 
-<section id="starts" class="world ed-starts" data-world="tides" data-pin="off" data-strip data-label="How it starts">
+<section id="starts" class="world ed-starts" data-world="tides" data-pin="off" data-label="How it starts">
   <div class="wrap ed-flow">
     <h2>How it starts</h2>
     <ol class="ed-steps"><li>A first conversation about how your business works today.</li><li>A first version your team can use, usually within days.</li><li>You switch off the old system when you&#39;re ready. That&#39;s when the setup fee is due.</li></ol>

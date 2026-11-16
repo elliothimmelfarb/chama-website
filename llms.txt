@@ -6,15 +6,15 @@
 
 ## Pages
 
-- [Home](https://chamainteligente.com/):
-- [Engineering](https://chamainteligente.com/engineering-department):
-- [Coaching](https://chamainteligente.com/coaching):
-- [Build](https://chamainteligente.com/build):
-- [Work](https://chamainteligente.com/work):
-- [About](https://chamainteligente.com/about):
-- [Home](https://chamainteligente.com/hearth):
-- [Home](https://chamainteligente.com/privacy):
-- [Home](https://chamainteligente.com/brand):
+- [Home](https://chamainteligente.com/): A small, family-owned, AI-native business in Lisbon. You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem. Custom software, websites and apps, and AI fluency coaching.
+- [Your own engineering department](https://chamainteligente.com/engineering-department): Software that fits how your business works and changes when you do. Tell us what you need and it gets built: most changes are live in under an hour. You own the code. From a small, family-owned, AI-native business in Lisbon.
+- [AI fluency coaching and training](https://chamainteligente.com/coaching): AI fluency coaching for individuals, executive teams and whole companies, and agentic engineering training for engineering teams, on site or remote. Time with someone who knows AI deeply and makes it simple. Elliot Himmelfarb, Lisbon.
+- [Websites, apps and products](https://chamainteligente.com/build): Websites built to be found, apps for one business, and products built with founders. If it can be solved with something on a phone, a computer or in the cloud, we can do it. Chama Inteligente, Lisbon.
+- [Work](https://chamainteligente.com/work): Everything Chama Inteligente has built and the businesses we have worked with: software we run for one business, websites, apps, our own products, and coaching.
+- [About](https://chamainteligente.com/about): Chama Inteligente is Elliot Himmelfarb and Annie, a small, family-owned, AI-native business in Lisbon, working worldwide. Who we are, where the experience comes from, and the partners we work with.
+- [The Hearth](https://chamainteligente.com/hearth): The members' room for our coaching clients. Book time with Elliot, keep a record of every session, remember what you learned, and connect your own AI agent.
+- [Privacy](https://chamainteligente.com/privacy): How Chama Inteligente handles conversations with the chat on its website and the details you send.
+- [Media kit](https://chamainteligente.com/brand): The Chama Inteligente logo, mark, colours and fonts, for anyone linking to or writing about us.
 
 ## Optional
 

@@ -83,7 +83,7 @@ const section = (s, extra) => html`<section class="pv-sec" aria-labelledby="pv-$
 
 export function render(p) {
   const main = html`${STYLE}
-<section class="world pv" data-world="paper" data-pin="off" data-strip>
+<section class="world pv" data-world="paper" data-pin="off">
   <div class="wrap"><div class="pv-col">
     <h1><span class="half">${t.h1}</span></h1>
     <section class="pv-sec" aria-labelledby="pv-who">

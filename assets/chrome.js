@@ -11,8 +11,18 @@
 
   // ---- theme -----------------------------------------------------------
   function themeChoice() { var t = get("chama-theme"); return t === "light" || t === "dark" ? t : "system"; }
+  // The browser bar's colour: both metas follow a forced choice, and go back
+  // to their own media queries when the visitor follows the system again.
+  var BAR = { light: "#f3f0e8", dark: "#161513" };
+  function themeBar(choice) {
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) {
+      var own = /dark/.test(m.media) ? BAR.dark : BAR.light;
+      m.content = choice === "system" ? own : BAR[choice];
+    });
+  }
   function applyTheme(choice) {
     if (choice === "system") delete root.dataset.theme; else root.dataset.theme = choice;
+    themeBar(choice);
     document.dispatchEvent(new CustomEvent("chama:theme", { detail: { choice: choice } }));
     sync();
   }
@@ -136,7 +146,7 @@
     });
   }
 
-  function ready() { sync(); watch(); strip(); watchFields(); }
+  function ready() { sync(); watch(); strip(); watchFields(); themeBar(themeChoice()); }
   document.addEventListener("chama:swapped", ready);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ready); else ready();
 })();

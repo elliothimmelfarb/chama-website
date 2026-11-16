@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://chamainteligente.com/original/agent">
+  <title>The Agent | Chama Inteligente</title>
+  <meta name="description" content="A live Claude model, configured by Elliot Himmelfarb.">
+  <meta name="theme-color" content="#0e0c0a">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="/original/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/original/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/original/apple-touch-icon.png">
+  <link rel="stylesheet" href="/original/assets/agent.css">
+  <script src="/original/assets/flame.js" defer></script>
+  <script src="/original/assets/agent.js" defer></script>
+  <style>
+    /* The archive note: fixed above everything but an engaged chat sheet
+       (z-index 60), and the old header is moved below it. */
+    :root { --archive-h: 30px; }
+    .archive-note { position: fixed; z-index: 50; top: 0; left: 0; right: 0; box-sizing: border-box; min-height: var(--archive-h); margin: 0; padding: calc(7px + env(safe-area-inset-top)) 16px 7px; background: #0e0c0a; color: #f6f0e6; font: 400 12px/16px "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.01em; text-align: center; -webkit-font-smoothing: antialiased; }
+    .archive-note a { color: #ff7a3d; text-decoration: underline; text-underline-offset: 2px; }
+    .archive-note a:focus-visible { outline: 2px solid #f4581f; outline-offset: 2px; }
+    @media (max-width: 720px) { :root { --archive-h: 46px; } }
+    .top { top: calc(var(--archive-h) + 16px + env(safe-area-inset-top)) !important; }
+    @media (max-width: 759px) { .top { top: calc(var(--archive-h) + 12px + env(safe-area-inset-top)) !important; } }
+    body > .skip-link:focus { top: calc(var(--archive-h) + 0.75rem); }
+    body.archive-flow { padding-top: var(--archive-h); }
+    .chama-agent-mode-page { top: var(--archive-h); height: calc(100% - var(--archive-h)); }
+  </style>
+</head>
+<body>
+  <p class="archive-note" role="note">This is the original chamainteligente.com, kept as it was. The current site is at <a href="/">chamainteligente.com</a></p>
+  <script>
+    /* the note wraps to however many lines the screen needs */
+    (function () {
+      var n = document.querySelector(".archive-note");
+      function fit() { document.documentElement.style.setProperty("--archive-h", n.offsetHeight + "px"); }
+      fit();
+      addEventListener("resize", fit);
+    })();
+  </script>
+  <div id="agent-root"></div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var host = document.getElementById("agent-root");
+      if (host && window.ChamaAgent) {
+        window.ChamaAgent.mount(host, { mode: "page" });
+      }
+    });
+  </script>
+</body>
+</html>

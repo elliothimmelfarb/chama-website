@@ -173,7 +173,10 @@ test("the sky paints the engine's grounds, each in its --ground colour", () => {
 test("nothing cut from the engine comes back", () => {
   const gone = ["actors", "SCENES", "shapeState", "drawShape", "drawWheel", "drawCoil", "drawCurve", "drawSession", "drawReleases", "drawKeepers", "drawFamily", "drawTimeline",
     "seedParticles", "updateParticles", "drawParticles", "stackOf", "markGone", "placeCaps", "mountRoom", "keptRoom", "toRoom",
-    "in-room", "room-pinned", "foot-over", "flame-room", "flame.js", "flame-worker", "ChamaFlame", "themeMeta", "lastTheme"];
+    "in-room", "room-pinned", "foot-over", "flame-room", "flame.js", "flame-worker", "ChamaFlame", "themeMeta", "lastTheme",
+    // the old header's
+    "data-motion-toggle", "markMotion", "headLift", "talkDrop", "head-compact", "past-hero", "last-world", "at-end",
+    "offer-switch", "thumbOf", "placeThumb", "placeSwitches", "worlds-members", "nav-talk"];
   for (const word of gone) {
     for (const [file, text] of [["worlds.js", JS], ["worlds.css", CSS], ["sky.js", SKY]]) {
       assert.ok(!new RegExp(`(?<![\\w-])${word.replace(/[.]/g, "\\.")}(?![\\w-])`).test(text), `${file} still mentions ${word}`);
@@ -188,7 +191,7 @@ test("nothing cut from the engine comes back", () => {
 });
 
 test("a stage's controls are delegated from document, and low motion stops autoplay and the router", () => {
-  for (const attr of ["data-stage-action", "data-stage-seek", "data-stage-still", "data-stage-step", "data-stage-count", "data-delay", "data-duration", "data-motion-toggle"]) assert.ok(JS.includes(attr), `worlds.js handles ${attr}`);
+  for (const attr of ["data-stage-action", "data-stage-seek", "data-stage-still", "data-stage-step", "data-stage-count", "data-delay", "data-duration"]) assert.ok(JS.includes(attr), `worlds.js handles ${attr}`);
   for (const state of ["idle", "playing", "paused", "ended"]) assert.ok(JS.includes(`"${state}"`), `a stage can be ${state}`);
   assert.match(JS, /document\.addEventListener\("click", function \(e\) \{\n\s*var b = e\.target\.closest && e\.target\.closest\("\[data-stage-action\], \[data-stage-seek\], \[data-stage-step\]"\)/);
   assert.match(JS, /if \(!LOW && window\.fetch/, "the router is off in low motion");
@@ -251,5 +254,29 @@ test("the char line marks only a change of ground, and only where there is no sk
   assert.match(sel, /^html:not\(\.gl\):not\(\.pin\)/);
   for (const g of ["paper", "grid", "tides", "ember"]) assert.ok(sel.includes(`.world[data-world="${g}"] + .world:not([data-world="${g}"])`), `no char line after ${g}`);
   assert.match(rule.body, /top:\s*-64px/);
+});
+
+test("after a router trip the header, the menu and the body name the new page", () => {
+  const current = /function setCurrent\(path\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
+  assert.ok(current.includes('".top .nav-link, .menu-pages a"'), "setCurrent marks the header's pages and the menu's");
+  const chrome = read("site/parts/chrome.js");
+  assert.match(chrome, /class="nav-link"/, "the header's page links are .nav-link");
+  assert.match(chrome, /class="menu-pages"/, "the menu's pages are under .menu-pages");
+  assert.match(chrome, /<body data-page=/, "each page names itself on <body>");
+  const swap = /function swap\(doc\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
+  assert.match(swap, /document\.body\.setAttribute\("data-page", doc\.body\.getAttribute\("data-page"\)\)/);
+});
+
+test("a rail button is named, from data-label or the section's first heading", () => {
+  assert.match(JS, /sec\.getAttribute\("data-label"\) \|\| \(\(sec\.querySelector\("h1, h2, h3"\)/);
+  assert.match(JS, /if \(!name\) li\.hidden = true;/);
+});
+
+test("if worlds.js never runs, the boot snippet takes html.pin back", () => {
+  const boot = read("site/parts/boot.js");
+  assert.match(boot, /if\(!d\.dataset\.engine\)d\.classList\.remove\("pin"\)/);
+  assert.match(JS, /root\.dataset\.engine = "on";/);
+  // set at the top, before anything that could stop the engine early
+  assert.ok(JS.indexOf('root.dataset.engine = "on"') < JS.indexOf("if (!document.querySelector(\".world\")) return;"));
 });
 

@@ -1,3 +1,4 @@
+import { SITE } from "../../site.js";
 // The home page's words. Approved wording: brand-language.md (brain).
 
 export const home = {
@@ -40,7 +41,7 @@ export const home = {
     lead: "Measured on the software we run for an 88-person metal stamping plant in Toronto.",
     leadNamed: "Measured on the software we run for LA Metal Stamping, an 88-person plant in Toronto.",
     caption:
-      "Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.",
+      SITE.changeCaption,
     cta: { text: "See how it works", href: "/engineering-department" },
     clientsLabel: "Who we have worked with",
   },

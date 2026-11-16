@@ -43,6 +43,9 @@
   var ROOMY = window.matchMedia(PIN_QUERY), printing = false, pinned = false;
   function pinnable() { pinned = !LOW && ROOMY.matches && !printing; root.classList.toggle("pin", pinned); }
   pinnable();
+  // the boot snippet takes html.pin back if this never runs (words in a pin
+  // are hidden until the engine writes --u)
+  root.dataset.engine = "on";
 
   var RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var GROUND = { paper: 0, grid: 1, tides: 2, ember: 3 };
@@ -50,21 +53,6 @@
   function clamp(x, a, b) { if (a === undefined) { a = 0; b = 1; } return x < a ? a : x > b ? b : x; }
   function sm(a, b, x) { var t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
   function round3(v) { return Math.round(v * 1000) / 1000; }
-
-  // ---- motion ------------------------------------------------------------------
-  // A [data-motion-toggle] switches between the animated page and the low
-  // motion one. The boot snippet reads the choice (chama-motion) before the
-  // first paint, so switching reloads the page.
-  function markMotion() {
-    [].forEach.call(document.querySelectorAll("[data-motion-toggle]"), function (b) { b.setAttribute("aria-pressed", LOW ? "true" : "false"); });
-  }
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest && e.target.closest("[data-motion-toggle]");
-    if (!b) return;
-    e.preventDefault();
-    try { window.localStorage.setItem("chama-motion", LOW ? "full" : "low"); } catch (err) {}
-    location.reload();
-  });
 
   // ---- stages: figures that play themselves ---------------------------------------
   // A [data-stage] runs --p from 0 to 1 over data-duration seconds on the
@@ -232,7 +220,6 @@
     stageStep(S, e.key === "ArrowLeft" ? -1 : 1);
   });
   document.addEventListener("visibilitychange", function () { stages.forEach(stageSeen); });
-  markMotion();
   bindStages();
 
   // ---- the sky ----------------------------------------------------------------
@@ -294,25 +281,8 @@
   var PQ = window.matchMedia("(max-width: 759px), (max-aspect-ratio: 9/10)");
   function portrait() { return PQ.matches; }
 
-  var footer = null;
   var head = document.querySelector(".top");
   function headBottom() { return head ? head.getBoundingClientRect().bottom : 0; }
-  // on a phone the lockup row folds away past the opening world, lifting
-  // the pages' row by this much (worlds.css, .head-compact)
-  function headLift() {
-    var nav = head && head.querySelector(".site-nav");
-    return portrait() && nav ? nav.offsetTop : 0;
-  }
-  // and past the opening world the phone's "Talk to us" disc drops under the
-  // pages' row (worlds.css), so the worlds before the last keep clear of it;
-  // from the last world on it is hidden
-  function talkDrop(k) {
-    var t = head && head.querySelector(".nav-talk");
-    return portrait() && t && k < NW - 1 ? t.offsetHeight + 8 : 0;
-  }
-  // the devices on /build open their page and are all scrolling, so the
-  // header folds almost at once there
-  function allScroll(sec) { return sec.classList.contains("devices-world"); }
   function isDevices(k) { return k >= 0 && k < NW && sections[k].classList.contains("devices-world"); }
 
   // a style is written only when its value changes, so a still stage
@@ -379,7 +349,7 @@
     D.fitted = key;
     D.rooms = [];
     var rig0 = D.items[0].querySelector(".rig"), lead = D.open && D.open.firstElementChild;
-    var words = D.items.map(function (it) { return it.querySelector(".made-words"); }), lift = P ? headLift() : 0;
+    var words = D.items.map(function (it) { return it.querySelector(".made-words"); });
     // the sizes run from 1 down in steps of 0.04 to 0.52, and each try is a
     // layout, so the largest that fits is found by halving, in four tries
     function fits(n) {
@@ -387,7 +357,7 @@
       if (!P) return true;
       var floor = D.bar.offsetTop - 12;
       for (var i = 0; i < words.length; i++) if (words[i].offsetTop + words[i].offsetHeight > floor) return false;
-      return !lead || rig0.offsetTop + rig0.offsetHeight + lift + 12 <= lead.offsetTop;
+      return !lead || rig0.offsetTop + rig0.offsetHeight + 12 <= lead.offsetTop;
     }
     if (fits(0) || !fits(12)) return;
     var lo = 0, hi = 12;
@@ -502,7 +472,7 @@
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
   var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [];
-  var footTop = 0, docH = 0, vh = 0;
+  var docH = 0, vh = 0;
   // ---- leaving: what rides up with a pin is gone before it reaches anything ----
   // A world's --u runs from 1 to 2 while its pin scrolls away. goneOf is how
   // far, in pixels of scroll past the pin's release, the first thing that
@@ -515,8 +485,8 @@
   // the slide a .r element is given while it is hidden, which is not its place
   function shiftOf(el) { var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
   function goneOf(k) {
-    var sec = sections[k], pin = pinOf[k], P = portrait();
-    var top = headBottom() - (P && (k > 0 || allScroll(sec)) ? headLift() - talkDrop(k) : 0) + 8, pt = pin.getBoundingClientRect().top, room = pins[k] || AH;
+    var sec = sections[k], pin = pinOf[k];
+    var top = headBottom() + 8, pt = pin.getBoundingClientRect().top, room = pins[k] || AH;
     // everything that fades with the world, except what is gone before the
     // pin lets go (its --out is under 1)
     [].forEach.call(pin.querySelectorAll(".r"), function (el) {
@@ -559,11 +529,6 @@
     tops = sections.map(function (s) { return s.getBoundingClientRect().top + sy; });
     hs = sections.map(function (s) { return s.offsetHeight; });
     pins = sections.map(function (s, k) { return held[k] ? pinOf[k].offsetHeight : 0; });
-    var lift = headLift();
-    setVar(root, "--head-lift", lift + "px");
-    // the exits are read where --head-lift put the header: when it did not
-    // change, that layout is the one already read and costs nothing
-    if (footer) footTop = footer.getBoundingClientRect().top + sy;
     docH = root.scrollHeight;
     vh = window.innerHeight;
     gones = sections.map(function (s, k) { return held[k] ? reach(k, goneOf(k)) : undefined; });
@@ -659,7 +624,11 @@
     dots = sections.map(function (sec, k) {
       var li = document.createElement("li"), btn = document.createElement("button"), span = document.createElement("span"), dot = document.createElement("i");
       btn.type = "button";
-      span.textContent = sec.getAttribute("data-label") || "";
+      // a section's name: its data-label, or its first heading; one with
+      // neither keeps its mark on the rail but has no button
+      var name = sec.getAttribute("data-label") || ((sec.querySelector("h1, h2, h3") || {}).textContent || "").replace(/\s+/g, " ").trim();
+      if (!name) li.hidden = true;
+      span.textContent = name;
       btn.appendChild(span);
       btn.appendChild(dot);
       btn.addEventListener("click", function () {
@@ -712,7 +681,6 @@
 
   // ---- the loop --------------------------------------------------------------------------
   var t0 = performance.now(), last = t0, ema = 16, frames = 0, shown = 0;
-  var lastEnd = false, lastCompact = false, lastPast = false, lastLast = false;
   // tBind starts each page's own clock; the sky keeps one clock for the whole visit
   var tBind = t0;
 
@@ -735,11 +703,8 @@
       return pinOf[k] ? [].filter.call(s.querySelectorAll(P_READERS), function (el) { return !el.closest("[data-stage]"); }) : [];
     });
     lastE = readers.map(function () { return []; });
-    footer = document.querySelector("body > footer");
     tops = []; hs = []; pins = []; held = []; gones = []; lastU = []; lastP = [];
     shown = worldOf[0] || 0;
-    lastEnd = false; lastCompact = false; lastPast = false; lastLast = false;
-    root.classList.remove("at-end", "head-compact", "past-hero", "last-world");
     tBind = performance.now();
     if (!LOW) buildIndex();
   }
@@ -774,17 +739,6 @@
     if (pinned) { setU(i, l, x); setP(i, l); }
     var pass = crossing(b);
 
-    // once the footer is on screen its nav is the one to use
-    var atEnd = !!footer && footTop - sy < AH - 8;
-    if (atEnd !== lastEnd) { root.classList.toggle("at-end", atEnd); lastEnd = atEnd; }
-    var compact = portrait() && (i > 0 || a > 0.5 || (allScroll(sections[i]) && l > 0.02));
-    if (compact !== lastCompact) { root.classList.toggle("head-compact", compact); lastCompact = compact; }
-    // the header's "Talk to us" fades in as the hero's own button fades out
-    // (the hero's words go between 0.55 and 0.7 of a screen down), and gives
-    // way to the last world's (worlds.css)
-    var pastHero = i > 0 || sy > AH * 0.64, lastWorld = i >= NW - 1;
-    if (pastHero !== lastPast) { root.classList.toggle("past-hero", pastHero); lastPast = pastHero; }
-    if (lastWorld !== lastLast) { root.classList.toggle("last-world", lastWorld); lastLast = lastWorld; }
     // the ground on screen, where the next page's burn starts from
     shown = pass && pass.mix < 0.8 ? pass.from : worldOf[b < 0.8 ? i : i + 1];
 
@@ -826,7 +780,6 @@
     sizeView();
     sizeSky();
     measure();
-    placeSwitches(true);
     stirAt = performance.now();
   }
   var queued = false;
@@ -847,74 +800,14 @@
   document.addEventListener("pointerleave", function () { ptr.on = false; });
   window.addEventListener("blur", function () { ptr.on = false; });
 
-  // ---- the switch: one thumb that slides between Software and Coaching ------------
-  // Each .offer-switch gets a thumb that sits under the current page's link
-  // (worlds.css fills the link itself when there is no JavaScript). When the
-  // page changes, the thumb first stretches to cover both links, then lets
-  // go of the old one and settles on the new.
-  function thumbOf(sw) {
-    var th = sw.querySelector(".thumb");
-    if (!th) {
-      th = document.createElement("i");
-      th.className = "thumb";
-      th.setAttribute("aria-hidden", "true");
-      th.appendChild(document.createElement("span")).className = "thumb-ink";
-      sw.insertBefore(th, sw.firstChild);
-    }
-    // The thumb carries a copy of the labels in the inverse colour, held
-    // still while the thumb moves under it, so each label turns over
-    // exactly where the thumb is and never fades out on the way.
-    var ink = th.firstChild;
-    ink.textContent = "";
-    [].forEach.call(sw.querySelectorAll(".nav-link"), function (a) {
-      var c = ink.appendChild(document.createElement("span"));
-      c.className = a.className;
-      c.setAttribute("data-href", a.getAttribute("href"));
-      if (a.hasAttribute("aria-current")) c.setAttribute("data-current", "");
-      c.textContent = a.textContent;
-    });
-    return th;
-  }
-  function placeThumb(sw, from) {
-    thumbOf(sw);
-    var cur = sw.querySelector('.nav-link[aria-current="page"]');
-    if (!cur) { sw.classList.remove("has-thumb"); return; }
-    var x = cur.offsetLeft, w = cur.offsetWidth;
-    clearTimeout(sw._settle);
-    if (from && !RM && (from.x !== x || from.w !== w)) {
-      var x0 = Math.min(x, from.x), x1 = Math.max(x + w, from.x + from.w);
-      sw.classList.add("stretch");
-      sw.style.setProperty("--tx", x0 + "px");
-      sw.style.setProperty("--tw", (x1 - x0) + "px");
-      sw._settle = setTimeout(function () {
-        sw.classList.remove("stretch");
-        sw.style.setProperty("--tx", x + "px");
-        sw.style.setProperty("--tw", w + "px");
-      }, 160);
-    } else {
-      sw.style.setProperty("--tx", x + "px");
-      sw.style.setProperty("--tw", w + "px");
-    }
-    sw.classList.add("has-thumb");
-  }
-  function placeSwitches(still) {
-    [].forEach.call(document.querySelectorAll(".offer-switch"), function (sw) {
-      if (still || !sw.classList.contains("has-thumb")) sw.classList.add("still");
-      placeThumb(sw, null);
-      void sw.offsetWidth;
-      requestAnimationFrame(function () { sw.classList.remove("still"); });
-    });
-  }
+  // the header's pages and the menu's mark the page in view
   function setCurrent(path) {
-    [].forEach.call(document.querySelectorAll("[data-site-nav] .nav-link"), function (a) {
+    [].forEach.call(document.querySelectorAll(".top .nav-link, .menu-pages a"), function (a) {
       if (pathOf(new URL(a.href, location.href)) === path) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    [].forEach.call(document.querySelectorAll(".offer-switch"), function (sw) {
-      var from = sw.classList.contains("has-thumb") ? { x: parseFloat(sw.style.getPropertyValue("--tx")) || 0, w: parseFloat(sw.style.getPropertyValue("--tw")) || 0 } : null;
-      placeThumb(sw, from);
-    });
   }
+
 
   // ---- the router: the public pages without leaving the page -----------------------
   // The pages in PAGES are one place. A link between them does not load a
@@ -1000,21 +893,9 @@
     // a parsed document runs no scripts, so its <noscript> is ordinary markup
     [].forEach.call(doc.querySelectorAll("noscript"), function (n) { n.remove(); });
 
-    // the header stays (its switch is mid-slide); only what differs changes
-    var top0 = document.querySelector(".top"), top1 = doc.querySelector(".top");
-    if (top0 && top1) {
-      var m0 = top0.querySelector(".worlds-members"), m1 = top1.querySelector(".worlds-members");
-      if (m0 && !m1) m0.remove();
-      if (m1 && !m0) {
-        var m = document.importNode(m1, true);
-        m.classList.add("arrive");
-        top0.insertBefore(m, top0.querySelector(".site-nav"));
-      }
-      var talk0 = top0.querySelector(".nav-talk"), talk1 = top1.querySelector(".nav-talk");
-      if (talk0 && talk1 && talk1.hasAttribute("href")) talk0.setAttribute("href", talk1.getAttribute("href"));
-    }
-
+    // the header stays; only main, the footer and the page's name change
     document.querySelector("main").replaceWith(document.importNode(doc.querySelector("main"), true));
+    if (doc.body.hasAttribute("data-page")) document.body.setAttribute("data-page", doc.body.getAttribute("data-page"));
     var foot0 = document.querySelector("body > footer"), foot1 = doc.querySelector("body > footer");
     if (foot0 && foot1) foot0.replaceWith(document.importNode(foot1, true));
   }
@@ -1065,7 +946,6 @@
       settleNav();
       bind();
       bindStages();
-      markMotion();
       resize();
       var y = push ? 0 : (history.state && history.state.y) || 0;
       var target = u.hash && document.getElementById(u.hash.slice(1));
@@ -1124,7 +1004,6 @@
       if (!e.persisted) return;
       stay();
       endBurn();
-      placeSwitches(true);
     });
     window.addEventListener("popstate", function () {
       var path = pathOf(location);

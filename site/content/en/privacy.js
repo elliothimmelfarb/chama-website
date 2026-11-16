@@ -56,6 +56,7 @@ export const privacy = {
     paras: [
       "Chat messages are sent to Anthropic (the Claude API) to generate the agent's replies. Saved conversations and details are stored privately with Vercel, our hosting provider, in the European Union (Paris). Resend delivers the email. Like any website host, Vercel processes technical data such as IP addresses to serve the pages; we do not store IP addresses in conversations or details.",
       "We do not sell your information, use it for marketing, profile you, or make automated decisions with legal or similarly significant effects about you. Your words are never treated as instructions that change how our systems behave beyond the reply you see.",
+      "If you choose a theme (light or dark) or low motion, your browser remembers that choice on your device. It never leaves your device. The public pages set no cookies and use no analytics.",
     ],
   },
 

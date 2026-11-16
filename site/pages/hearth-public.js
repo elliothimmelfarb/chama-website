@@ -57,7 +57,7 @@ const STYLE = raw(`<style>
 
 export function render(p) {
   const main = html`${STYLE}
-<section class="world hp-first" data-world="ember" data-pin="off" data-strip>
+<section class="world hp-first" data-world="ember" data-pin="off">
   <div class="wrap">
     <h1><span class="half">${t.h1}</span></h1>
     <p class="lead">${t.lead}</p>

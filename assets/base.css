@@ -265,6 +265,7 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 .photo-wrap { margin: 0; }
 .photo { width: 100%; height: auto; border-radius: var(--r-surface); }
 :root[data-theme="dark"] .photo { box-shadow: 0 0 0 1px var(--line); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .photo { box-shadow: 0 0 0 1px var(--line); } }
 .photo-wrap figcaption { margin-top: var(--s3); }
 
 

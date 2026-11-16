@@ -32,7 +32,7 @@ export const SUMMARY =
 export function llms(site, pages) {
   const list = pages
     .filter((p) => !p.noindex)
-    .map((p) => `- [${p.title || p.nav || "Home"}](${url(p.path)}): ${p.summary || ""}`.trimEnd())
+    .map((p) => `- [${p.title}](${url(p.path)}): ${p.summary}`)
     .join("\n");
   return `# ${site.name}
 
@@ -53,7 +53,7 @@ ${list}
 export function llmsFull(site, rendered) {
   const body = rendered
     .filter((r) => r.text)
-    .map((r) => `## ${r.page.title || "Home"} (${url(r.page.path)})\n\n${r.text.trim()}\n`)
+    .map((r) => `## ${r.page.title} (${url(r.page.path)})\n\n${r.text.trim()}\n`)
     .join("\n---\n\n");
   return `# ${site.name}: full site text
 

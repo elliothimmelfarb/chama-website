@@ -17,14 +17,17 @@
         var m = q.get("motion") || localStorage.getItem("chama-motion");
         if (m === "low" || (m !== "full" && matchMedia("(prefers-reduced-motion: reduce)").matches)) d.dataset.motion = "low";
       } catch (e) {}
-      if (d.dataset.motion !== "low" && matchMedia("(min-height: 501px)").matches) d.classList.add("pin");
+      if (d.dataset.motion !== "low" && matchMedia("(min-height: 501px)").matches) {
+        d.classList.add("pin");
+        addEventListener("DOMContentLoaded", function () { setTimeout(function () { if (!d.dataset.engine) d.classList.remove("pin"); }, 4e3); });
+      }
     })();
   </script>
   <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
-  <link rel="stylesheet" href="/assets/base.css?v=44e11ef289">
+  <link rel="stylesheet" href="/assets/base.css?v=10fdbe416d">
   <link rel="stylesheet" href="/assets/worlds.css?v=9e7dc430db">
   <script src="/assets/sky.js?v=ae8aeb9b3f" defer></script>
-  <script src="/assets/worlds.js?v=464127a826" defer></script>
+  <script src="/assets/worlds.js?v=7fe9c3a6be" defer></script>
   <style>
     /* The fixture's own figures. Every rule that reads var(--p) sits on a
        [data-p] element, as on the real pages. */

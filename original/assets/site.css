@@ -1,0 +1,1335 @@
+/* The public pages' shared stylesheet: index, coaching, about.
+   Extracted from index.html on 2026-09-03 so the three pages share one
+   design. The agent room keeps its own sheet (agent.css); the section
+   figures keep theirs (figures.css). */
+
+:root {
+  --paper: #f3f0e8;
+  --ink: #141412;
+  --quiet: #66635c;
+  --ember: #f4581f;
+  --line: rgba(20, 20, 18, 0.18);
+  --rule: rgba(20, 20, 18, 0.32);
+  --pad: clamp(1.25rem, 4vw, 4.5rem);
+  --frame: 92rem;
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* The rubber band ground: paper past the top, the flame room's dark
+     past the bottom, so neither overscroll flashes the wrong world. The
+     gradient is painted against the document, not the viewport: a fixed
+     attachment makes the browser repaint a screen sized gradient on every
+     scrolled frame, which on a phone is most of a frame's budget. The
+     seam lands mid document, under opaque content either way, so only the
+     two ends of the gradient are ever seen and they are unchanged. */
+  background: linear-gradient(to bottom, var(--paper) 50%, #0e0c0a 50%);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--paper);
+}
+
+::selection {
+  background: var(--ember);
+  color: #fff;
+}
+
+/* one focus ring everywhere; components only move it */
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
+.skip-link {
+  position: fixed;
+  z-index: 20;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  transform: translateY(-180%);
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.frame {
+  width: min(100%, var(--frame));
+  margin: 0 auto;
+  padding-inline: var(--pad);
+}
+
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: auto;
+  gap: 2rem;
+  align-items: start;
+  padding-top: clamp(1.2rem, 2.4vw, 2.3rem);
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.masthead-name {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: clamp(0.45rem, 1.2vw, 0.85rem);
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.mark {
+  flex: none;
+  display: block;
+}
+
+.masthead-name .mark {
+  width: clamp(1.5rem, 2.4vw, 2.2rem);
+  height: clamp(1.5rem, 2.4vw, 2.2rem);
+  align-self: center;
+}
+
+.outcome .mark {
+  width: clamp(2.4rem, 4vw, 3.4rem);
+  height: clamp(2.4rem, 4vw, 3.4rem);
+  margin-bottom: clamp(1.6rem, 3vw, 2.6rem);
+}
+
+.footer-inner .mark {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: inline-block;
+  vertical-align: -0.14em;
+  margin-right: 0.45rem;
+}
+
+.wordmark {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.2vw, 2.05rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.wordmark-translation {
+  margin: 0;
+  color: var(--quiet);
+  font-size: clamp(0.62rem, 1vw, 0.72rem);
+  letter-spacing: 0.015em;
+  line-height: 1.25;
+}
+
+.masthead-notes {
+  display: grid;
+  gap: clamp(1.3rem, 3vw, 3.4rem);
+  color: var(--quiet);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.masthead-notes p {
+  margin: 0;
+}
+
+.masthead-notes strong {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* The way into the Hearth, the members' room. A word with an ember, top
+   right, on every viewport: on phones it holds that corner while the
+   masthead stacks beneath it. */
+.members-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  align-self: start;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.members-link::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 8px var(--ember);
+}
+
+.members-link:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+}
+@media (hover: hover) {
+  .members-link:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+}
+
+.hero {
+  /* Two columns: the idea on the left, the shape on the right. The room
+     is the page's second panel, so the hero is sized by its content and
+     stops well short of the fold on a desktop. */
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(14rem, 0.75fr);
+  gap: clamp(2rem, 6vw, 7rem);
+  align-items: center;
+  padding-top: clamp(2.6rem, 6vh, 5rem);
+  padding-bottom: clamp(2rem, 4vw, 3.2rem);
+}
+
+.hero-copy {
+  max-width: 40rem;
+}
+
+.hero-figure {
+  width: 100%;
+  max-width: 25rem;
+  margin: 0 0 0 auto;
+  grid-column: 2;
+  grid-row: 1 / 3;
+  justify-self: end;
+  align-self: center;
+}
+
+.hero .start-label {
+  grid-column: 1;
+}
+
+/* The seam into the room: a small label sitting on the paper's last line. */
+.start-label {
+  margin: clamp(1.8rem, 3vw, 2.4rem) 0 0;
+  color: var(--quiet);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.start-label::after {
+  content: " \2193";
+  color: var(--ember);
+}
+
+.hero h1 {
+  margin: 0 0 clamp(1.4rem, 2.4vw, 2rem);
+  max-width: 14ch;
+  font-size: clamp(2.5rem, 5.4vw, 4.9rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.ember-line {
+  position: relative;
+  height: 1px;
+  margin-top: 0.85rem;
+  background: var(--line);
+}
+
+.ember-line::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: min(38%, 9rem);
+  background: var(--ember);
+}
+
+.hero-deck {
+  margin: 0;
+  max-width: 34rem;
+  font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+
+.content-section {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.55fr) minmax(0, 3.2fr);
+  gap: clamp(1.6rem, 5vw, 5.5rem);
+  padding-top: clamp(2rem, 4vw, 3.6rem);
+  padding-bottom: clamp(3.4rem, 6vw, 6rem);
+  border-top: 1px solid var(--rule);
+}
+
+.section-label {
+  margin: 0;
+  padding-top: 0.42rem;
+  color: var(--quiet);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.section-copy {
+  max-width: 65rem;
+}
+
+.section-copy h2 {
+  margin: 0 0 clamp(1.8rem, 3.2vw, 3rem);
+  max-width: 18ch;
+  font-size: clamp(2rem, 3.9vw, 3.5rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.ember-accent {
+  color: var(--ember);
+}
+
+.section-copy p {
+  max-width: 46ch;
+  margin: 0 0 1.2rem;
+  font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+  letter-spacing: -0.015em;
+  line-height: 1.42;
+  text-wrap: pretty;
+}
+
+/* The offer as three parts, read across on a desktop and down on a
+   phone. Each part is a heading and one or two sentences. */
+.offer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.4rem, 3vw, 2.6rem);
+  margin-bottom: clamp(2rem, 3.6vw, 3rem);
+}
+
+.offer-item {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--rule);
+}
+
+/* The three glyphs tell the offer in shapes: drawn, fitted, yours. They
+   ride the figure motion system, so they draw in the first time they
+   are seen. */
+.section-copy .offer-glyph {
+  width: 2.6rem;
+  max-width: none;
+  margin: 0 0 0.9rem;
+}
+
+.offer-item h3 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.25rem, 1.7vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.section-copy .offer-item p {
+  max-width: none;
+  margin: 0;
+  font-size: clamp(1.02rem, 1.25vw, 1.2rem);
+  line-height: 1.45;
+}
+
+.section-copy .offer-note {
+  max-width: 52ch;
+}
+
+/* The offer is the page's main block, so it gets the most room below. */
+.content-section.offer {
+  padding-bottom: clamp(4.5rem, 8vw, 8rem);
+}
+
+.section-copy p:last-child {
+  margin-bottom: 0;
+}
+
+.founder .section-copy p {
+  font-size: clamp(1.2rem, 1.75vw, 1.6rem);
+  line-height: 1.3;
+}
+
+.shape .section-copy {
+  max-width: 68rem;
+}
+
+.shape .shape-lead {
+  max-width: 22ch;
+  margin: 0;
+  font-size: clamp(2rem, 3.9vw, 3.5rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.shape-details {
+  /* max-width, not width: a full-width block with a left margin runs
+     past its column, which is what pushed the figure off a tablet. */
+  max-width: 38rem;
+  margin-top: clamp(1.8rem, 3.2vw, 3rem);
+  margin-left: 0;
+}
+
+.shape .shape-details p {
+  max-width: 46ch;
+  margin-bottom: 1.2rem;
+  font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+  letter-spacing: -0.015em;
+  line-height: 1.42;
+}
+
+.founder-role {
+  margin: 0.55rem 0 0;
+  color: var(--quiet);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.founder-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.05rem;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-decoration: none;
+  transition: border-color 140ms ease, color 140ms ease;
+}
+
+.social-link svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: currentColor;
+  display: block;
+}
+
+.social-link:focus-visible {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+@media (hover: hover) {
+  .social-link:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
+}
+
+.footer-social {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.footer-social .social-link {
+  padding: 0.6rem;
+  color: var(--quiet);
+}
+
+.footer-social .social-link:focus-visible {
+  color: var(--ember);
+}
+@media (hover: hover) {
+  .footer-social .social-link:hover {
+    color: var(--ember);
+  }
+}
+
+.founder-photo {
+  display: block;
+  width: min(100%, 15rem);
+  height: auto;
+  margin-top: 1.7rem;
+  border-radius: 12px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(13rem, 21rem);
+  gap: clamp(2.4rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.about-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.about-copy p {
+  max-width: 44ch;
+  font-size: clamp(1.2rem, 1.55vw, 1.5rem);
+  line-height: 1.4;
+}
+
+/* The page goes dark twice: here, and again in the flame room. Both use
+   the same ground, so the dark reads as one material the page returns
+   to rather than as two nearly matching blacks. */
+.outcome {
+  background: #0e0c0a;
+  color: var(--paper);
+}
+
+.outcome-inner {
+  min-height: min(26rem, 54svh);
+  display: grid;
+  align-content: center;
+  padding-top: clamp(5rem, 11vw, 11rem);
+  padding-bottom: clamp(5rem, 11vw, 11rem);
+}
+
+.outcome p {
+  margin: 0;
+  max-width: 18ch;
+  font-size: clamp(2.2rem, 4.6vw, 4.4rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+.outcome .equation {
+  max-width: 22ch;
+}
+
+.outcome .eq-line {
+  display: block;
+}
+
+.outcome .eq-op {
+  opacity: 0.45;
+  font-weight: 400;
+}
+
+.outcome .outcome-badge {
+  max-width: none;
+  margin-bottom: 1.6rem;
+  color: #8d867c;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.outcome em {
+  color: var(--ember);
+  font-style: normal;
+}
+
+.footer-inner a {
+  color: inherit;
+  text-underline-offset: 0.18em;
+}
+
+/* The agent, embedded. The room is full bleed and its ground is the
+   agent's own ground colour, so the app has no visible box: the page
+   simply goes dark for the height of the conversation.
+
+   The lead-in stands on that same ground rather than on paper, so the
+   page makes one cut into the dark instead of two, and the headline is
+   the ceiling of the room instead of an orphan title card above it.
+   The cut itself is the move the outcome block already makes, so the
+   room arrives in the page's own language. */
+.flame-room {
+  width: 100%;
+  height: max(36rem, min(100svh, 58rem));
+  background: #0e0c0a;
+  overflow: hidden;
+}
+
+/* The room as a sheet, on a phone.
+
+   A touch device never stacks two scrollers: sitting in the page the room
+   is a panel and only the page scrolls; engaged, agent.js pins the room to
+   the visual viewport as a sheet (.kb-pin) and parks the document behind
+   it (.room-pinned), so a pull past the transcript's edge has nowhere to
+   go. The pin ends with Back to page, which restores the scroll position. */
+
+html.room-pinned {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* The mounted room sizes itself (agent.css owns .chama-agent-mode-embed),
+   and it has to be able to leave that size behind when a phone keyboard
+   pins it to the visual viewport. An id rule here would outrank every
+   class rule in agent.css and hold it at the room's height. */
+
+.flame-noscript {
+  margin: 0;
+  padding: clamp(2rem, 6vw, 4rem);
+  color: #ece7dc;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+footer {
+  padding-bottom: 2rem;
+}
+
+/* The footer that follows the flame room stands on the room's own
+   ground and needs no rule above it: the page ends inside the dark
+   rather than cutting back to paper for four lines of small print.
+   The About section still gets the borderless treatment for free
+   where it meets the outcome block, because an ink border on an ink
+   ground is invisible. */
+.footer-quiet .footer-inner {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.footer-quiet {
+  padding-top: clamp(2.6rem, 5vw, 4.4rem);
+  background: #0e0c0a;
+  color: #8d867c;
+}
+
+.footer-quiet .footer-inner {
+  color: #8d867c;
+}
+
+.footer-quiet .footer-social .social-link {
+  color: #8d867c;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--rule);
+  color: var(--quiet);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.footer-inner p {
+  margin: 0;
+}
+
+/* The site map: the same four links on every page, the current page
+   named but not underlined, so the reader can see where they stand. */
+.footer-map a {
+  /* a link's words stay together; the padding reaches past the line for a finger without moving it */
+  padding-block: 0.9em;
+  white-space: nowrap;
+}
+
+.footer-map a[aria-current="page"] {
+  text-decoration: none;
+  color: #ece7dc;
+}
+
+/* The About photo sits beside its copy only when the copy column is
+   wide enough to keep a readable measure next to a 21rem picture. On a
+   tablet the two columns of the section already take most of the width,
+   so the photo steps under the words instead of squeezing them. */
+@media (max-width: 1000px) {
+  /* Three offer columns need about 30ch each; below that they stack. */
+  .offer-grid {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+}
+
+@media (max-width: 1100px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-photo {
+    max-width: 24rem;
+  }
+}
+
+@media (max-width: 760px) {
+  /* Phones: the lockup and the Members pill share the first row as
+     real grid neighbours, so neither can ever sit on the other. The
+     lockup stacks its translation under the wordmark, with the mark
+     centred on the pair, and the wordmark scales with the viewport so
+     it always stops short of the pill. The notes take the row below. */
+  .masthead {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-auto-flow: row;
+    column-gap: clamp(0.9rem, 3vw, 1.5rem);
+    row-gap: 1.15rem;
+    align-items: center;
+  }
+
+  .masthead-name {
+    display: grid;
+    grid-template-columns: auto minmax(0, max-content);
+    justify-content: start;
+    column-gap: clamp(0.45rem, 1.8vw, 0.85rem);
+    row-gap: 0.15rem;
+    align-items: baseline;
+    white-space: normal;
+  }
+
+  .masthead-name .mark {
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .wordmark {
+    font-size: clamp(1.05rem, 5.3vw, 1.35rem);
+  }
+
+  .wordmark-translation {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .members-link {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    padding: 0.36rem 0.68rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+  }
+
+  .masthead-notes {
+    grid-column: 1 / -1;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: clamp(2rem, 6vh, 3rem);
+  }
+
+  .hero h1 {
+    max-width: 12ch;
+    font-size: clamp(2.3rem, 10vw, 3.2rem);
+  }
+
+  .hero-copy {
+    grid-row: 1;
+  }
+
+  .hero-figure {
+    max-width: 11rem;
+    margin: 0;
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .hero .start-label {
+    grid-row: 3;
+    margin-top: 0.4rem;
+  }
+
+  .content-section {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    padding-top: 2.6rem;
+    padding-bottom: 3.2rem;
+  }
+
+  .section-copy h2,
+  .shape .shape-lead {
+    margin-bottom: 1.3rem;
+  }
+
+  .offer-grid {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+
+  .offer-item {
+    padding-top: 0;
+    padding-left: 1rem;
+    border-top: 0;
+    border-left: 2px solid var(--ember);
+  }
+
+  .section-copy .offer-glyph {
+    width: 2.2rem;
+  }
+
+  .offer-item h3 {
+    font-size: 1.2rem;
+  }
+
+  .section-copy p {
+    max-width: none;
+  }
+
+  .shape .shape-lead {
+    max-width: 16ch;
+    font-size: clamp(1.8rem, 8vw, 2.4rem);
+    line-height: 1.06;
+  }
+
+  .section-copy h2 {
+    font-size: clamp(1.8rem, 8vw, 2.4rem);
+  }
+
+  .shape-details {
+    width: auto;
+    margin-top: 1.8rem;
+    margin-left: 0;
+  }
+
+  .shape .shape-details p {
+    max-width: none;
+    font-size: 1.08rem;
+    line-height: 1.45;
+  }
+
+  .outcome-inner {
+    min-height: 42svh;
+  }
+
+  .about-photo {
+    margin-inline: auto;
+  }
+
+  .founder-photo {
+    margin-inline: auto;
+  }
+
+  .flame-room {
+    height: 100svh;
+  }
+
+  .footer-inner {
+    display: grid;
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero {
+    min-height: auto;
+  }
+}
+
+/* The four questions of the first conversations. */
+.steps {
+  margin: 0 0 1.55rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.steps li {
+  position: relative;
+  padding-left: 2.6rem;
+  margin-bottom: 0.8rem;
+  font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+  letter-spacing: -0.015em;
+  line-height: 1.42;
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: "0" counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.32em;
+  color: var(--ember);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* The quiet links to the other pages. */
+.also-links {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.also-links a {
+  display: inline-block;
+  max-width: 34ch;
+  color: var(--ink);
+  font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.also-links a::after {
+  content: " \2197";
+  color: var(--ember);
+}
+
+.also-links a:focus-visible {
+  color: var(--ember);
+  border-color: var(--ember);
+}
+@media (hover: hover) {
+  .also-links a:hover {
+    color: var(--ember);
+    border-color: var(--ember);
+  }
+}
+
+/* Sub pages: the wordmark is the way home, and the page ends on paper
+   with a dark footer band rather than inside the flame room. */
+/* the lockup's own box (not display: contents, which Chrome leaves out of
+   the tab order), laid out as .masthead-name lays out its children */
+.masthead-name a {
+  display: flex;
+  align-items: baseline;
+  gap: inherit;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.masthead-name a:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+/* on a phone the link keeps the mark and the wordmark in their places in
+   the lockup's grid (see the phone block), the translation beside them */
+@media (max-width: 760px) {
+  .masthead-name a {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / 3;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+  }
+}
+
+.section-copy a,
+.shape-details a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--ember);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+}
+
+@media (hover: hover) {
+  .section-copy a:hover,
+  .shape-details a:hover {
+    color: var(--ember);
+  }
+}
+
+.page-end {
+  padding-top: clamp(2.6rem, 5vw, 4.4rem);
+  padding-bottom: 2rem;
+  background: #0e0c0a;
+  color: #8d867c;
+}
+
+.page-end .footer-inner {
+  padding-top: 0;
+  border-top: 0;
+  color: #8d867c;
+}
+
+.page-end .footer-social .social-link {
+  color: #8d867c;
+}
+
+/* The subpages' way in to the conversation: a dark band with one link. */
+.talk-band {
+  background: #0e0c0a;
+  color: #ece7dc;
+}
+
+.talk-band .content-section {
+  border-top: 0;
+  padding-top: clamp(4rem, 8vw, 8rem);
+  padding-bottom: clamp(3rem, 6vw, 6rem);
+}
+
+.talk-band .section-label {
+  color: #8d867c;
+}
+
+.talk-band .section-copy h2 {
+  margin-bottom: clamp(1.4rem, 2.6vw, 2.4rem);
+}
+
+.talk-band .section-copy p {
+  color: #b9b2a6;
+}
+
+.talk-band .also-links a {
+  color: #ece7dc;
+  border-color: rgba(236, 231, 220, 0.3);
+}
+
+/* Words and Worlds.
+
+   Every public page comes in two versions of the same copy. These pages
+   (/simple, /simple/coaching, /simple/about) are the low motion version,
+   the page as written. The animated version (/, /coaching, /about) is
+   the same copy as one scroll through animated worlds that burn into each
+   other; it has its own stylesheet and engine, worlds.css and worlds.js.
+   Both versions carry the same Low motion switch in the same corner: off
+   on the animated pages, on here. It is a link to the other version, so
+   it works without JavaScript; with it, the switch flips off before the
+   animated page loads. The look matches .motion-toggle in worlds.css
+   (on its paper theme); change one, change the other. It replaced the
+   two-option Low motion | Animated switch on 2026-10-06. */
+.motion-toggle {
+  display: inline-flex;
+  align-items: center;
+  align-self: start;
+  gap: 0.5rem;
+  min-height: 32px;
+  padding: 0 0.8rem 0 0.45rem;
+  border-radius: 999px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(20, 20, 18, 0.1);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.3s ease, scale 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* pressing, in the animated pages' language (worlds.css): a control sinks,
+   a link dims, and no tap box */
+.motion-toggle:active { scale: 0.96; }
+:is(main, body > footer) a:not(.chama-agent a) { -webkit-tap-highlight-color: transparent; }
+:is(main, body > footer) a:not(.chama-agent a):active { opacity: 0.6; }
+
+.motion-track {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 22%, transparent);
+  transition: background 0.3s ease;
+}
+
+.motion-track i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease;
+}
+
+@media (hover: hover) {
+  .motion-toggle:hover {
+    color: var(--ember);
+  }
+}
+
+@media (hover: hover) {
+  .motion-toggle:hover .motion-track i {
+    transform: translateX(3px);
+  }
+}
+
+.motion-toggle.on .motion-track {
+  background: var(--ember);
+  box-shadow: none;
+}
+
+.motion-toggle.on .motion-track i {
+  transform: translateX(12px);
+  background: #fff;
+}
+
+/* On, the knob leans back toward off under the pointer. */
+@media (hover: hover) {
+  .motion-toggle.on:hover .motion-track i {
+    transform: translateX(9px);
+  }
+}
+
+.motion-toggle:focus {
+  outline: none;
+}
+
+.motion-toggle:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+.masthead .motion-toggle {
+  justify-self: end;
+}
+
+/* Named the same on both versions, so crossing between them carries the
+   switch from one page to the other instead of dissolving it. */
+.motion-toggle {
+  view-transition-name: motion-toggle;
+}
+
+@media (max-width: 760px) {
+  /* The switch shares the first row with the lockup on every page. On
+     the coaching page the Members pill moves to the end of the notes
+     row, so the switch is in the same corner everywhere. */
+  .masthead {
+    column-gap: 0.75rem;
+  }
+
+  .masthead .motion-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: center;
+  }
+
+  .masthead-members .masthead-notes {
+    grid-column: 1;
+    font-size: 0.66rem;
+  }
+
+  .masthead-members .members-link {
+    grid-row: 2;
+    align-self: center;
+    justify-self: end;
+  }
+
+  /* On a phone the switch keeps its knob and drops its words, as on
+     the animated pages. */
+  .motion-toggle {
+    min-height: 30px;
+    padding: 0 0.4rem;
+  }
+
+  .motion-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* ---- the pages, under the lockup ----------------------------------------- */
+/* The same five pages as the animated header, held still: Software and
+   Coaching share one switch with the current one filled, Coaching wears
+   its ember dot wherever it is not the page, and the other pages are
+   marked by an ember line. Each link's target reaches past its pill, to
+   44px on a phone. */
+.masthead > :not(.site-nav) { grid-row: 1; }
+.masthead .site-nav {
+  grid-row: 2;
+  grid-column: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: -0.85rem;
+}
+.site-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms ease;
+}
+.site-nav a::after { content: ""; position: absolute; inset: -6px 0; }
+.site-nav .offer-switch {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(20, 20, 18, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(20, 20, 18, 0.1);
+}
+.offer-switch a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+.offer-switch a[href="/original/simple/coaching"]:not([aria-current])::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--ember);
+}
+.site-nav > a[aria-current="page"] {
+  background: linear-gradient(var(--ember), var(--ember)) no-repeat 50% calc(100% - 5px) / calc(100% - 1.7rem) 2px;
+}
+@media (hover: hover) {
+  .site-nav a:not([aria-current="page"], .nav-talk):hover { color: var(--ember); }
+}
+/* the way to the conversation, ember as on the animated header */
+.site-nav .nav-talk {
+  margin-left: 4px;
+  background: var(--ember);
+  color: #1a0a03;
+  font-weight: 700;
+  box-shadow: 0 6px 20px -8px rgba(244, 88, 31, 0.6);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+.site-nav .nav-talk:active { scale: 0.97; }
+.site-nav .nav-talk:focus-visible { outline-color: var(--ink); }
+.talk-glyph { display: none; width: 18px; height: 18px; flex: none; }
+/* on a phone the pages fill their rows, so it is a disc with a speech
+   bubble at the end of the lockup's row, beside the switch, its words kept
+   for screen readers */
+@media (max-width: 760px) {
+  .masthead { position: relative; }
+  .masthead:has(.nav-talk) .motion-toggle { margin-right: 38px; }
+  .site-nav .nav-talk { position: absolute; top: calc(clamp(1.2rem, 2.4vw, 2.3rem) + 2px); right: var(--pad); width: 30px; min-height: 30px; height: 30px; margin: 0; padding: 0; justify-content: center; }
+  .talk-glyph { display: block; }
+  .talk-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (hover: hover) {
+  .site-nav .nav-talk:hover { background: color-mix(in srgb, var(--ember) 88%, #fff); box-shadow: 0 0 0 4px rgba(244, 88, 31, 0.18), 0 6px 20px -8px rgba(244, 88, 31, 0.6); }
+}
+/* where the row has room (the home page's masthead has no notes), the
+   pages stand beside the switch, as on the animated header */
+@media (min-width: 1180px) {
+  .masthead:not(:has(.masthead-notes)) .site-nav { grid-row: 1; grid-column: auto; margin-top: 0; }
+}
+
+@media (max-width: 760px) {
+  .masthead > .masthead-notes,
+  .masthead-members > .members-link { grid-row: 3; }
+  .masthead .site-nav { grid-column: 1 / -1; gap: 6px 2px; margin-top: -0.35rem; }
+  .site-nav a { min-height: 34px; padding: 0 0.5rem; font-size: 0.78rem; }
+  .site-nav a::after { inset: -5px 0; }
+}
+
+/* ---- clients in the hero, and the /clients ledger ----------------------- */
+/* The hero's row of client marks is ink, not colour: each opens its entry
+   on /simple/clients, where the marks are shown as they are. */
+.clients { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.6rem; margin: 1.8rem 0 0; }
+.clients-all { flex-basis: 100%; color: var(--quiet); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; }
+@media (hover: hover) { .clients-all:hover { color: var(--ember); } }
+.clients a { display: inline-flex; align-items: center; min-height: 44px; border-radius: 6px; }
+.clients img { display: block; width: auto; height: 26px; filter: grayscale(1) brightness(0.62) contrast(1.5); opacity: 0.62; mix-blend-mode: multiply; transition: filter 0.3s ease, opacity 0.3s ease; }
+.clients img.round { height: 44px; }
+.clients img.tall { height: 36px; }
+.clients a:focus-visible img { filter: none; opacity: 1; }
+@media (hover: hover) { .clients a:hover img { filter: none; opacity: 1; } }
+.clients a:focus-visible { outline: 2px solid var(--ember); outline-offset: 4px; }
+/* the clients and our friends, one line each: a label, then their marks */
+.worked { display: grid; gap: 0.7rem; margin: 1.9rem 0 0; }
+.worked .clients { display: grid; grid-template-columns: 16rem; grid-auto-flow: column; justify-content: start; align-items: center; gap: 0 1.6rem; margin: 0; }
+.clients img.mark-wide { height: 30px; }
+
+.ledger-aside { margin: 0.5rem 0 0; max-width: 18ch; color: var(--quiet); font-size: 0.9rem; line-height: 1.45; }
+.ledger-list { display: grid; }
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  align-items: start;
+  padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 2rem;
+}
+.entry:first-child { border-top: 0; padding-top: 0; }
+.entry:target h3 { color: var(--ember); }
+.plate {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  padding: 12% 14%;
+  background: #faf8f3;
+  border: 1px solid rgba(20, 20, 18, 0.08);
+  border-radius: 4px;
+  box-shadow: 0 18px 40px -26px rgba(20, 20, 18, 0.35);
+}
+.plate img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.peer .plate { aspect-ratio: 2 / 1; padding: 9% 12%; }
+/* the open place after the clients, for the next one */
+.entry-open .plate { background: none; border: 1px dashed var(--ember); box-shadow: none; color: var(--ink); font-size: clamp(1.4rem, 2.4vw, 2rem); letter-spacing: -0.04em; }
+.section-copy .entry-text .entry-quote { font-size: clamp(1.1rem, 1.6vw, 1.3rem); letter-spacing: -0.02em; line-height: 1.35; color: var(--ink); }
+.entry-open .entry-text h3 { margin-bottom: 0.8rem; }
+.entry-text { min-width: 0; }
+.entry-text h3 { margin: 0 0 0.2rem; font-size: clamp(1.35rem, 2vw, 1.7rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; }
+.section-copy .entry-text p { margin: 0 0 0.8em; }
+.section-copy .entry-text .entry-kind { margin-bottom: 0.6rem; color: var(--ember); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.section-copy .entry-text .entry-place { margin-bottom: 1rem; color: var(--quiet); font-size: 0.9rem; }
+.section-copy .entry-text .entry-link { margin: 0; }
+.section-copy .ledger-note { margin: 2rem 0 0; color: var(--quiet); font-size: 0.9rem; }
+
+@media (max-width: 760px) {
+  .clients { gap: 0.4rem 0.9rem; }
+  .clients img { height: 18px; }
+  .clients img.round { height: 32px; }
+  .clients img.tall { height: 26px; }
+  .clients img.mark-wide { height: 22px; }
+  .worked { gap: 0.5rem; }
+  .worked .clients { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; }
+  .entry { grid-template-columns: minmax(0, 1fr); }
+  .plate { max-width: 26rem; }
+}
+
+/* ---- /simple/built: what we have built, as a still list ------------------ */
+/* Each thing's pictures are the top of its real pages, at computer and at
+   phone width, in plain frames. */
+.hero-plain { grid-template-columns: minmax(0, 1fr); }
+.shots { position: relative; padding: 0 9% 7% 0; }
+.shot, .shot-phone { overflow: hidden; background: #faf8f3; box-shadow: 0 18px 40px -26px rgba(20, 20, 18, 0.35); }
+.shot { aspect-ratio: 16 / 10; border: 1px solid rgba(20, 20, 18, 0.12); border-radius: 4px; }
+.shot-phone { position: absolute; right: 0; bottom: 0; width: 24%; aspect-ratio: 9 / 18; border: 3px solid #17181a; border-radius: 12px; }
+.shot img, .shot-phone img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.section-copy .entry-text .entry-link.private { color: var(--quiet); }
+.section-copy .entry-text .also-links { margin-top: 0.9rem; }

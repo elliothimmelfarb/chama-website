@@ -11,9 +11,12 @@ export const SITE = {
   // Elliot decides when LA Metal can be named. Until then the proof is
   // described without the name.
   laMetalNamed: false,
-  // Measured 2026-11-16 from 127 LA Metal requests: median 30 minutes
-  // from note to live, 88% within an hour since 2026-09-29.
+  // Measured 2026-11-16 on LA Metal: 127 requests paired with their
+  // shipped changes, 123 of them since the first full day (2026-09-29).
+  // Every claim about change time on the site comes from here.
   changeTime: "Most changes are live in under an hour.",
+  changeCaption:
+    "Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.",
   ogImage: "/og-2026-11-16.png",
 };
 
