@@ -216,10 +216,14 @@ const CATCH = `(function () {
       if (b.top < 0 || b.bottom > innerHeight || a.bottom < 0 || a.top > innerHeight) return;
       moves.push([to, a.left + a.width / 2 - b.left - b.width / 2, a.top + a.height / 2 - b.top - b.height / 2, a.width / b.width]);
     });
-    d.setAttribute("data-catch", moves.length ? "caught" : "off");
+    // under reduced motion the icons fade in where they are (data-catch="off")
+    var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    d.setAttribute("data-catch", moves.length && !still ? "caught" : "off");
+    if (still) return;
+    var cs = getComputedStyle(document.documentElement), dur = parseFloat(cs.getPropertyValue("--dur-carry")) || 700, gap = parseFloat(cs.getPropertyValue("--stagger-ms")) || 50;
     moves.forEach(function (m, i) {
       if (m[0].animate) m[0].animate([{ transform: "translate(" + m[1] + "px, " + m[2] + "px) scale(" + m[3] + ")" }, { transform: "none" }],
-        { duration: 700, delay: i * 60, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "backwards" });
+        { duration: dur, delay: i * gap, easing: cs.getPropertyValue("--ease-in-out").trim(), fill: "backwards" });
     });
   }
   function change(st) {

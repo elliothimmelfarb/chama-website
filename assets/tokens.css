@@ -54,9 +54,22 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ease-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+  /* the six moves (docs/DESIGN.md section 5): arrivals rise, exits lift,
+     arrivals are slower than exits */
+  --rise: 16px;
+  --lift: 8px;
+  --dur-arrive-ui: 450ms;
+  --dur-leave: 200ms;
+  --dur-swap-in: 340ms;
+  --dur-swap-out: 220ms;
+  --swap-gap: 120ms;
+  --stagger-ms: 50ms;
+  --dur-carry: 700ms;
 
   color-scheme: light dark;
 }
+/* fewer and gentler: the same fades, no distance */
+@media (prefers-reduced-motion: reduce) { :root { --rise: 0px; --lift: 0px; } }
 
 /* ---- 2. Semantic colours ----------------------------------------------
    Light is the base. Dark applies when the visitor chose it, or when the

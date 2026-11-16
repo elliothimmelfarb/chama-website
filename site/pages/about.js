@@ -129,7 +129,7 @@ export function render(p) {
       <h2 class="r">${t.name.h2}</h2>
       <p class="lead r">${t.name.lead}</p>
     </div>
-    <div class="ab-name-fig r">${markDraw()}</div>
+    <div class="ab-name-fig r fig">${markDraw()}</div>
   </div></div>
 </section>
 

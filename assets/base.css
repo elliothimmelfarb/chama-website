@@ -107,10 +107,12 @@ p { margin: 0; }
   box-shadow: var(--shadow-float);
   opacity: 0;
   translate: 0 -12px;
-  transition: opacity var(--dur-base) var(--ease-out), translate var(--dur-base) var(--ease-out), overlay var(--dur-base) allow-discrete, display var(--dur-base) allow-discrete;
+  /* closing is quicker than opening */
+  transition: opacity var(--dur-quick) var(--ease-exit), translate var(--dur-quick) var(--ease-exit), overlay var(--dur-quick) allow-discrete, display var(--dur-quick) allow-discrete;
 }
-.pop:popover-open { opacity: 1; translate: 0 0; }
+.pop:popover-open { opacity: 1; translate: 0 0; transition: opacity var(--dur-base) var(--ease-out), translate var(--dur-base) var(--ease-out), overlay var(--dur-base) allow-discrete, display var(--dur-base) allow-discrete; }
 @starting-style { .pop:popover-open { opacity: 0; translate: 0 -12px; } }
+@media (prefers-reduced-motion: reduce) { .pop { translate: none !important; } }
 .menu { inset: 8px 8px auto; width: auto; max-height: calc(100svh - 16px); overflow: auto; }
 .menu::backdrop { background: var(--scrim-sheet); }
 .menu { padding-top: var(--s3); }
@@ -248,6 +250,8 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 @keyframes h1-arrive { from { opacity: 0.01; translate: 0 12px; } }
 :root:not([data-motion="low"]) h1 .half { animation: h1-arrive 600ms var(--ease-out) both; }
 :root:not([data-motion="low"]) h1 .half + .half { animation-delay: 400ms; animation-duration: 800ms; }
+@keyframes h1-appear { from { opacity: 0.01; } }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) h1 .half, :root:not([data-motion="low"]) h1 .half + .half { animation-name: h1-appear; animation-duration: 200ms; } }
 .first-words .talk-field { margin-top: var(--s5); }
 .more { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--s5); font-weight: 600; color: var(--accent-text); text-decoration: none; }
 .more .arr { width: 18px; height: 18px; transition: translate var(--dur-quick) var(--ease-spring); }
@@ -314,6 +318,8 @@ html:not(.pin):not([data-motion]) .top::before { opacity: 1; }
 html.field-in-view .top .talk-btn { opacity: 0; pointer-events: none; }
 /* on desktop the hidden pill gives its room back, so Display sits at the edge */
 @media (min-width: 1100px) {
-  .top .talk-btn { max-width: 12rem; overflow: hidden; transition: opacity var(--dur-quick) var(--ease-out), max-width var(--dur-base) var(--ease-out), padding var(--dur-base) var(--ease-out), margin var(--dur-base) var(--ease-out), scale var(--dur-press) var(--ease-out); }
-  html.field-in-view .top .talk-btn { max-width: 0; padding-inline: 0; margin-left: calc(-1 * var(--s2)); }
+  /* only the fade animates: the room goes once the pill has faded, and
+     comes back before it fades in */
+  .top .talk-btn { max-width: 12rem; overflow: hidden; transition: opacity var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out), max-width 0s, padding 0s, margin 0s; }
+  html.field-in-view .top .talk-btn { max-width: 0; padding-inline: 0; margin-left: calc(-1 * var(--s2)); transition: opacity var(--dur-quick) var(--ease-exit), max-width 0s var(--dur-quick), padding 0s var(--dur-quick), margin 0s var(--dur-quick); }
 }

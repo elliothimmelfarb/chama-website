@@ -125,7 +125,7 @@ export function render(p) {
         <p class="build-link"><a href="${t.partnership.proof.href}" rel="noopener" target="_blank">${t.partnership.proof.link}${OUT}</a></p>
       </div>
     </div>
-    <div class="r" role="img" aria-label="${t.partnership.proof.alt}"><div class="build-shots build-rise" data-p>${rig("shopintake", { desktop: SHOPINTAKE_TOP })}</div></div>
+    <div class="r fig" role="img" aria-label="${t.partnership.proof.alt}"><div class="build-shots build-rise" data-p>${rig("shopintake", { desktop: SHOPINTAKE_TOP })}</div></div>
   </div></div>
 </section>
 

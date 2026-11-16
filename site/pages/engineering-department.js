@@ -99,6 +99,8 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
 .loop-ledger .num { font-weight: 600; color: var(--accent-text); }
 .loop-ledger span:first-child { color: var(--fg-2); }
 .ed-after { font: 600 var(--t-h3)/1.2 var(--display); letter-spacing: -0.015em; }
+/* the closing line arrives late in the loop's hold, whole by 70% */
+.ed-after[data-p] { --t: clamp(0, (var(--p) - 0.62) / 0.08, 1); --a: calc(var(--t) * (2 - var(--t))); opacity: max(0.01, var(--a)); translate: 0 calc((1 - var(--a)) * var(--rise)); }
 .ed-loop .more { margin-top: var(--s2); }
 
 /* The numbers */
@@ -259,7 +261,7 @@ ${STYLE}
       <h2>${t.contrast.h2}</h2>
       <p class="lead">${t.contrast.lead}</p>
     </div>
-    <div class="ed-figbox r">${contrast({ them: t.contrast.them, you: t.contrast.you, label: t.contrast.h2 })}</div>
+    <div class="ed-figbox r fig">${contrast({ them: t.contrast.them, you: t.contrast.you, label: t.contrast.h2 })}</div>
   </div></div>
 </section>
 
@@ -269,18 +271,18 @@ ${STYLE}
       <h2 class="r">${t.loop.h2}</h2>
       <div class="r loop-ledger-box">${L.ledger}</div>
       <div class="r ed-close">
-        <p class="ed-after" data-p style="opacity:clamp(0.01, (var(--p) - 0.82) / 0.05, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.82) / 0.05, 1))">${t.loop.after}</p>
+        <p class="ed-after" data-p>${t.loop.after}</p>
         <a class="more" href="/agent" data-talk>${t.loop.cta}${ARROW}</a>
       </div>
     </div>
-    <div class="ed-figbox r">${L.figure}</div>
+    <div class="ed-figbox r fig">${L.figure}</div>
   </div></div>
 </section>
 
 <section id="numbers" class="world ed-numbers" data-world="grid" style="--h:200" data-label="${t.rail.numbers}">
   <div class="pin"><div class="ed-hold">
     <div class="ed-words r"><h2>${t.numbers.h2}</h2></div>
-    <div class="ed-figbox r"><div class="backed">${proofChart({ caption: t.numbers.caption })}</div></div>
+    <div class="ed-figbox r fig"><div class="backed">${proofChart({ caption: t.numbers.caption })}</div></div>
   </div></div>
 </section>
 
@@ -307,7 +309,7 @@ ${STYLE}
       <p class="lead">${t.own.lead}</p>
       <p class="lead">${t.own.disappear}</p>
     </div>
-    <div class="ed-figbox r">${own({ ours: t.own.ours, yours: t.own.yours })}</div>
+    <div class="ed-figbox r fig">${own({ ours: t.own.ours, yours: t.own.yours })}</div>
   </div></div>
 </section>
 
