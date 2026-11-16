@@ -1,6 +1,6 @@
 // The site's one list of public pages and the facts every page shares.
 // Adding a page: an entry here, site/pages/<id>.js, its copy in
-// site/content/en/<id>.js, then npm run build.
+// site/content/en/<id>.js, then npm run pages.
 
 export const SITE = {
   origin: "https://chamainteligente.com",

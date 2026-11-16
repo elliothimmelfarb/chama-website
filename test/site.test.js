@@ -29,7 +29,7 @@ const visible = (doc) =>
 test("every page in site/site.js has a source and a built file", () => {
   for (const p of PAGES) {
     assert.ok(existsSync(path.join(ROOT, "site/pages", p.id + ".js")), `site/pages/${p.id}.js is missing`);
-    assert.ok(existsSync(path.join(ROOT, p.file)), `${p.file} is missing. Run npm run build.`);
+    assert.ok(existsSync(path.join(ROOT, p.file)), `${p.file} is missing. Run npm run pages.`);
   }
 });
 

@@ -43,9 +43,9 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 
 ## How the pages are made
 
-Vercel runs no build. `npm run build` writes every page, `sitemap.xml`, `llms.txt` and `llms-full.txt` from `site/`, then stamps them (see [Caching](#caching)), and the generated files are committed. `test/build.test.js` fails while any committed file differs from what the build makes, so what is committed is what is deployed. `node scripts/build.js --out <dir>` builds into another folder, unstamped, for a preview.
+Vercel runs no build. `npm run pages` writes every page, `sitemap.xml`, `llms.txt` and `llms-full.txt` from `site/`, then stamps them (see [Caching](#caching)), and the generated files are committed. `test/build.test.js` fails while any committed file differs from what the build makes, so what is committed is what is deployed. `node scripts/build.js --out <dir>` builds into another folder, unstamped, for a preview.
 
-To add a page: an entry in `PAGES` in `site/site.js`, its source in `site/pages/<id>.js` (export `render(page, site)`, and `text()` for its words in `llms-full.txt`), its copy in `site/content/en/<id>.js`, a line in `lib/site-pages.js` with `live: true`, then `npm run build`. A `nav` label puts it in the header, menu and footer, and `inRouter: true` lets the router swap it (add it to `PAGES` in `worlds.js` too; the test checks they agree). In the same change as any page's copy, bump its `lastmod`. A new page is a new public surface, so it is Elliot's call.
+To add a page: an entry in `PAGES` in `site/site.js`, its source in `site/pages/<id>.js` (export `render(page, site)`, and `text()` for its words in `llms-full.txt`), its copy in `site/content/en/<id>.js`, a line in `lib/site-pages.js` with `live: true`, then `npm run pages`. A `nav` label puts it in the header, menu and footer, and `inRouter: true` lets the router swap it (add it to `PAGES` in `worlds.js` too; the test checks they agree). In the same change as any page's copy, bump its `lastmod`. A new page is a new public surface, so it is Elliot's call.
 
 **Theme.** `html[data-theme="light"|"dark"]` when the visitor chose one, otherwise the system's. **Motion.** `html[data-motion="low"]` when the visitor chose low or the system asks for reduced motion and they have not chosen full. Low motion is the same page, designed in its own right (`docs/DESIGN.md` section 10): no pinning, no router, no autoplay, every figure complete, stages as steppers. `site/parts/boot.js` sets both before the first stylesheet, from `localStorage` (`chama-theme`, `chama-motion`), so the first paint is already right, and adds `html.pin` (the pinned layout) when there is room for it.
 
@@ -280,7 +280,7 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 
 ## Checking and deploying
 
-`npm run build` after changing anything in `site/`, and `npm run stamp` after changing anything in `assets/` or a hand-written page (`npm run build` already stamps). Both rewrite nothing on a tree that is already right. `npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network, and fails while a generated file is out of date or any address is unstamped or stale. The tests that hold the public site:
+`npm run pages` after changing anything in `site/`, and `npm run stamp` after changing anything in `assets/` or a hand-written page (`npm run pages` already stamps). Both rewrite nothing on a tree that is already right. `npm run check` syntax-checks every shipped script and runs every unit test against a fake database, with no network, and fails while a generated file is out of date or any address is unstamped or stale. The tests that hold the public site:
 
 | Test | What it holds |
 |---|---|
