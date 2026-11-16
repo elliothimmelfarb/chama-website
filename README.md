@@ -11,10 +11,11 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `assets/worlds.css`, `assets/worlds.js`, `assets/sky.js` | The animated version's engine. Each `<section class="world">` names its ground (`data-world`) and figure (`data-scene`). `sky.js` paints the ground with one WebGL shader, `worlds.js` draws the figures and writes each section's `--u` on the elements in it that read it (it is not inherited), and every `.r` element reads it against its own `--in` and `--out`, so the choreography lives in the markup. Where the words cannot fit on one screen (under 500px of height), without JavaScript, and in print, the worlds are one column of sections instead. `worlds.js` also runs the site nav and moves between the five pages without a full load: the old words lift away (0.2s), the fetched page is swapped in, and the sky burns into it (0.85s) while its words rise. A fetch still out when the words have gone shows `.nav-wait` on the header, and one that hangs for 8s falls back to a full load. The animated pages' speculation rules fetch the plain public pages they link to (privacy, the flame's page, the media kit, the Hearth's door, the low motion version) on hover or press, and never the router's five or anything under `/api`. |
 | `assets/site.css` | The low motion pages' shared stylesheet. The footer is repeated in each low motion page and `privacy.html`; change all four together. |
 | `assets/figures.css`, `assets/figures.js` | The section figures' motion system for the low motion pages and `privacy.html`. Without JavaScript or under reduced motion every figure is drawn complete. |
-| `agent.html`, `assets/agent.js`, `assets/agent.css` | The intelligent flame, the live chat agent: full screen at `/agent`, embedded in the home page with `ChamaAgent.mount(root, { mode: "page" \| "embed" })`. Vanilla, no libraries. Every page's header has a "Talk to us" link to it (`.nav-talk`): the room (`#talk`) on `/` and `/simple`, `/agent` everywhere else. |
+| `agent.html`, `assets/agent.js`, `assets/agent.css` | "Talk to us", the live chat agent and the only way to reach us from the site: full screen at `/agent`, embedded in the home page with `ChamaAgent.mount(root, { mode: "page" \| "embed" })`. Vanilla, no libraries. Every page's header has a "Talk to us" link to it (`.nav-talk`): the room (`#talk`) on `/` and `/simple`, `/agent` everywhere else. |
 | `assets/flame.js`, `assets/flame-worker.js` | The fire engine. On touch devices with OffscreenCanvas it runs in a Web Worker so it never shares a thread with scrolling or typing. |
-| `api/chat.js`, `api/chat-prompt.js` | The agent endpoint (same origin, SSE streaming, two tools: `send_note_to_elliot` and `adjust_experience`) and its frozen system prompt, which is reviewed like copy. |
-| `evals/` | The flame's evals: single replies against rubrics (`npm run evals`) and whole simulated conversations (`npm run evals:conversations`). Both spend API credit and are not part of `npm run check`. |
+| `api/chat.js`, `api/chat-prompt.js` | The agent endpoint (same origin, SSE streaming, one tool: `send_note_to_elliot`, a visitor asking to be contacted) and its frozen system prompt, which is reviewed like copy. |
+| `lib/site-pages.js` | The site's pages as the agent knows them: path, title, what each covers, and whether it is live. The prompt lists the live ones, and the agent links only to those. |
+| `evals/` | The agent's evals: single replies against rubrics (`npm run evals`) and whole simulated conversations (`npm run evals:conversations`). Both spend API credit and are not part of `npm run check`. |
 | `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
 | `api/watchdog.js` | The cron job that reviews conversations and can put the flame out. |
 | `lib/flame-health.js` | Run by the watchdog's cron: emails when the flame cannot reach its model. |
@@ -55,16 +56,61 @@ To add a thing: its two pictures in `assets/built/` and their copies, all WebP r
 
 ## The flame
 
+The flame is the brand: the name, the logo and the Hearth. The chat agent is not a character; it is the "Talk to us" box, and its code, logs and watchdog still say "flame" in places.
+
 ### What it is for, and how that is measured
 
-A conversation has gone well when we know the visitor's problem, every question they asked got a straight answer, and they left a name and a way to be reached. The prompt (`api/chat-prompt.js`) is written to that, and its replies are sized to the visitor's last message: a greeting gets a line, a long message gets a full answer. Its one call to action is "talk to us".
+The site shows no email address or phone number: this chat is how people reach us. A conversation has gone well when every question the visitor asked got a straight answer, we know what they need, and, if they want to hear from us, they left a name and a way to be reached and confirmed it. The prompt (`api/chat-prompt.js`) speaks in the approved brand language (the brain's `strategy/2026-11-16-brand-reframing/brand-language.md`) and claims nothing that is not there or on the site. Its replies are sized to the visitor's last message.
+
+### Pages it links to
+
+`lib/site-pages.js` is the one list of pages and what each covers. The prompt carries the live ones, built once at load so the prompt stays byte-identical for caching. `test/site-pages.test.js` fails when a page is marked live but nothing serves it or `vercel.json` redirects it, and when a page's file exists but it is not marked live. So landing a page means setting `live: true` and checking its line, and redirecting one away means setting it to `false`. The eval runner also fails any reply that links to an address on our domain that is not live, or that gives out an email address or phone number other than the visitor's own.
+
+### How fast it answers
+
+The model reads the whole prompt before its first word, and the API caches what it read for five minutes. Visitors arrive further apart than that, so `assets/agent.js` sends `{ "warm": true }` to `/api/chat` when someone looks ready to talk (the composer gets focus, or `/agent` opens), at most once per 4.5 minutes, and a real message counts as one. A warm-up without an `Origin` header is refused, and each one logs its cache use as `Chat warm-up`. The server answers it with a `max_tokens: 0` request built from the same prefix as a real one (`warmRequest` and `chatRequest` in `api/chat.js`), so it costs one cache write and no output. Measured 2026-11-16: a first message on a cold cache started in about 1.8 s in production, on a warm one about 1.1 s. Sonnet 5 at low effort had the steadiest first word; Sonnet 5.5 and Haiku 5.5 were faster on short messages and slower on the slowest one in ten.
 
 Two runners measure it, both with tool execution stubbed so nothing is stored or emailed:
 
 - `npm run evals` plays the cases in `evals/cases.js`: `attack` (injection and tool abuse), `quality` (facts, tools, Elliot's voice) and `conversation` (openings modelled on the saved conversations). Reply length and question count are asserted in code (`expectReply`, `evals/shape.js`); a judge model scores the rest against the case's rubric.
-- `npm run evals:conversations` plays the visitors in `evals/personas.js` through whole conversations. A second model is the visitor and decides each turn whether to keep typing. Patience is counted in code: a wall of text next to a short message, or two questions at once, is a strike. It reports how many got in contact, how much of their situation the flame learned, and how many of their questions were answered.
+- `npm run evals:conversations` plays the visitors in `evals/personas.js` through whole conversations. A second model is the visitor and decides each turn whether to keep typing. Patience is counted in code: a wall of text next to a short message, or two questions at once, is a strike. It reports how many got in contact, how much of their situation the agent learned, and how many of their questions were answered.
 
 Both take `--prompt path/to/another/chat-prompt.js` to run an earlier prompt for comparison (`git show main:api/chat-prompt.js > api/_old.js`; the file has to sit in `api/` for its imports) and `--json file` to keep the transcripts. Change the prompt only with both runs before and after.
+
+### Chat event contract
+
+What the widget and `/api/chat` agree on. It is frozen: a change to it is agreed with whoever owns the widget first, and `api/chat.test.js` holds it.
+
+**Request.** `POST /api/chat`, same origin, `Content-Type: application/json`.
+
+| Body | Meaning |
+|---|---|
+| `{ "conversationId": "<uuid>", "messages": [{ "role": "user" \| "assistant", "content": "<text>" }, ...] }` | One exchange. `messages` is the whole conversation as text, oldest first, starting and ending with the visitor's turn: at most 40 entries, 4000 characters each, 32000 in all, 30 visitor turns. `conversationId` is made once per page load (8 to 64 letters, digits or dashes; anything else is replaced). The page sends the agent's earlier replies back exactly as they were streamed, because the contact tool checks that the visitor was shown their details in the reply just before their latest message. |
+| `{ "warm": true }` | Fills the prompt cache so the next real message starts faster. Answers `204` with no body. Send it when a visitor looks ready to talk (composer focus, the full-screen page opening), at most once per 4.5 minutes; a real message counts as one. It needs an `Origin` header (a browser POST always has one) or it gets `403`. Failures are silent. |
+
+**Refusals before streaming.** A JSON body `{ "error": "<text to show>", "kind": "offline" | "retry" | "final" }`:
+
+| Status | `kind` | When | `error` |
+|---|---|---|---|
+| 503 | `offline` | `CHAT_DISABLED`, no API key, or the watchdog's kill switch | `MESSAGES.offline` |
+| 400 | `final` | The body or the conversation could not be read | `MESSAGES.unreadable` |
+| 429 | `final` | More than 30 visitor turns | `MESSAGES.tooLong` |
+| 403 | `final` | Cross-origin request | "This request could not be accepted." |
+| 405 | none | Not a POST | plain text |
+| 429, no JSON | none | Vercel's firewall (10 requests per IP per minute, warm-ups included). Treat as `retry` and show `MESSAGES.overwhelmed`. | none |
+
+**The stream.** Otherwise `200`, `text/event-stream`. Each event is one `data: <json>` line followed by a blank line:
+
+| Event | Meaning |
+|---|---|
+| `{ "type": "text", "text": "<delta>" }` | The next piece of the reply. Append it. A reply can arrive in several stretches with a tool event between them. |
+| `{ "type": "tool", "name": "send_note_to_elliot", "ok": true \| false }` | The agent asked to send the visitor's contact request. `ok: true`: it was stored (and normally emailed), so Elliot will see it; the agent's next words say so. `ok: false`: it was refused or could not be saved, and the agent's next words say what happens instead. Once this event has arrived, never resend the same message automatically: that could send a second request. |
+| `{ "type": "error", "error": "<text to show>", "kind": "offline" \| "retry" }` | The model call failed. `offline` (the API spend limit) shows `MESSAGES.offline`; `retry` shows `MESSAGES.overwhelmed` or `MESSAGES.failed`. Text already received stays on screen. |
+| `{ "type": "done", "usage": { "model", "effort", "inputTokens", "outputTokens", "cacheReadTokens" } }` | The exchange is over and the transcript is saved. `usage` is missing when an error came first. Always the last event. |
+
+**What the page shows.** Only the `error` strings above, which come from `MESSAGES` in `api/chat.js`: `offline`, `unreadable`, `tooLong`, `overwhelmed` and `failed`. None of them names an email address or phone number. The other `MESSAGES` entries are tool results the model reads and the visitor never sees. When `kind` is `offline`, the page offers the plain contact form below (it says the chat is offline; the words pointing at the form belong to the widget).
+
+**When the chat is down.** `/api/intake` takes the same contact request from a plain HTML form, so the widget's fallback and its `<noscript>` twin can post straight to it. Fields: `name`, `email`, `whatsappNumber` (at least one of the two), `request`, plus `company` (a honeypot: leave it empty and hidden) and `startedAt` (milliseconds since the epoch when the form was shown; a submission under a second later is treated as a bot). A urlencoded or multipart post is answered with a `303` to `/#thanks`, or a plain-text error: `400` (a field is missing or wrong), `403` (cross-origin), `500` (nothing was saved) or `502` (saved, so Elliot will see it, but the email to him did not go out). Send `Accept: application/json` to get `{ "ok": true }` or `{ "error": "<text>" }` instead.
 
 ### Saved conversations
 
@@ -96,7 +142,7 @@ A Vercel Firewall rule in the dashboard (not in this repo) limits `/api/chat` to
 
 ## Intake
 
-The flame's `send_note_to_elliot` tool and a direct POST to `/api/intake` both go through `api/intake.js`. A note has a name, one way to reach the visitor (email, or a number in `whatsappNumber`; a phone that is not WhatsApp ends the request with "Phone, not WhatsApp."), and the request. Records are private JSON blobs (schema version 2) in the EU Blob store, with no IP address. Resend then emails the note to `contact@chamainteligente.com` from `website@chamainteligente.com`, with the visitor's email as `Reply-To` and the visitor's text marked as untrusted. If the email fails, the record stays stored and the visitor is told to write directly. A honeypot and a minimum fill time absorb basic spam.
+The agent's `send_note_to_elliot` tool and a direct POST to `/api/intake` both go through `api/intake.js`. Before the tool stores anything, `consentProblem` in `api/chat.js` checks the conversation the page sent, not the model's word: the name, email and number must be ones the visitor typed, and the agent's message just before the visitor's latest one must have shown them, so that latest message is the visitor's yes. Anything else goes back to the model as a refusal saying what to do. A note has a name, one way to reach the visitor (email, or a number in `whatsappNumber`; a phone that is not WhatsApp ends the request with "Phone, not WhatsApp."), and the request. Records are private JSON blobs (schema version 2) in the EU Blob store, with no IP address. Resend then emails `contact@chamainteligente.com` from `website@chamainteligente.com`, "Someone asked to be contacted: <name>", with the visitor's email as `Reply-To` and the chat's conversation id, so the transcript can be read in `/admin` first. Every field is visitor text: it sits between two rules under a line saying so, names and numbers are flattened to one line, the request is quoted line by line, and control and bidirectional characters are removed, so nothing a visitor types can pose as a line of ours. If the email fails, the record stays stored and Elliot sees it in storage. A honeypot and a minimum fill time absorb basic spam.
 
 ## Admin area
 

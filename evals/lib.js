@@ -6,7 +6,8 @@ import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { MESSAGES, clampExperience } from "../api/chat.js";
+import { MESSAGES, consentProblem } from "../api/chat.js";
+import { validate } from "../api/intake.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -76,9 +77,27 @@ export function textOf(content) {
     .trim();
 }
 
+// The conversation as the page would send it: text turns only.
+function pageHistory(messages) {
+  return messages
+    .map((entry) => ({ role: entry.role, content: textOf(entry.content) }))
+    .filter((entry) => entry.content);
+}
+
+// What the real tool would answer, without storing or sending anything: the
+// same validation and the same consent check against the conversation.
+function noteOutcome(input, conversation) {
+  const checked = validate(input || {});
+  if (checked.error) return { ok: false, text: checked.error };
+  const refusal = consentProblem(checked.submission, conversation);
+  return refusal ? { ok: false, text: refusal } : { ok: true, text: MESSAGES.sent };
+}
+
 // Answers the last visitor message in `messages` and appends everything the
-// agent said and did to it. The note tool always reports the happy path.
+// agent said and did to it. The note tool runs its real checks and stores
+// nothing.
 export async function agentTurn(client, agent, messages, totals) {
+  const conversation = pageHistory(messages);
   const said = [];
   const toolCalls = [];
 
@@ -110,16 +129,15 @@ export async function agentTurn(client, agent, messages, totals) {
 
       toolCalls.push({ name: block.name, input: block.input });
 
-      if (block.name === "adjust_experience") {
-        const { changed } = clampExperience(block.input);
+      if (block.name === "send_note_to_elliot") {
+        const outcome = noteOutcome(block.input, conversation);
+        toolCalls[toolCalls.length - 1].ok = outcome.ok;
         toolResults.push({
           type: "tool_result",
           tool_use_id: block.id,
-          is_error: !changed,
-          content: changed ? MESSAGES.applied : MESSAGES.nothingAdjusted
+          is_error: !outcome.ok,
+          content: outcome.text
         });
-      } else if (block.name === "send_note_to_elliot") {
-        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: MESSAGES.sent });
       } else {
         toolResults.push({
           type: "tool_result",

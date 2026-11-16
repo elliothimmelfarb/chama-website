@@ -4,7 +4,7 @@
 // conversations: a second model is each visitor in personas.js, decides turn
 // by turn whether to keep typing or close the tab, and hands over a name and a
 // way to be reached only if the conversation earns it. It measures what the
-// flame is for: did the visitor stay, did the flame learn what their problem
+// agent is for: did the visitor stay, did the agent learn what their problem
 // is, were their questions answered, and did they get in contact.
 //
 // Tool execution is stubbed exactly as in run.js. This spends real API money:
@@ -97,7 +97,7 @@ async function playPersona(client, agent, persona, totals) {
 
     const { reply, toolCalls } = await agentTurn(client, agent, messages, totals);
     turns.push({ role: "agent", text: reply });
-    if (toolCalls.some((call) => call.name === "send_note_to_elliot")) {
+    if (toolCalls.some((call) => call.name === "send_note_to_elliot" && call.ok)) {
       noteSent = true;
       leftBecause = "Their details were sent.";
       break;
