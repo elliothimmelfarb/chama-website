@@ -111,15 +111,18 @@
     var h = top.offsetHeight, on = false, ground = "";
     if (scrollY > 4) {
       var pinned = root.classList.contains("pin");
-      var under = null;
+      // Any flowing content that overlaps the header's band turns it on,
+      // even a sliver at the end of a section whose pinned neighbour has
+      // already reached the header.
+      var any = false;
       document.querySelectorAll("main > section, main > .world, footer").forEach(function (s) {
         var r = s.getBoundingClientRect();
-        if (r.top < h && r.bottom > 0) under = s;
+        if (r.top >= h || r.bottom <= 0) return;
+        any = true;
+        var flows = !pinned || s.tagName === "FOOTER" || !s.classList.contains("world") || s.dataset.pin === "off";
+        if (flows && !on) { on = true; ground = getComputedStyle(s).getPropertyValue("--ground"); }
       });
-      if (!under || !pinned || under.tagName === "FOOTER" || !under.classList.contains("world") || under.dataset.pin === "off") {
-        on = true;
-        if (under) ground = getComputedStyle(under).getPropertyValue("--ground");
-      }
+      if (!any) on = true;
     }
     top.classList.toggle("top-strip", on);
     if (ground && ground.trim()) top.style.setProperty("--strip", ground.trim()); else top.style.removeProperty("--strip");

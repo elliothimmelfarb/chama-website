@@ -191,8 +191,9 @@ html:not(.pin) .ed-hold { height: auto; padding: 0; max-width: 46rem; margin: 0;
   .ed-loop .ed-figbox { order: 1; }
   .ed-loop .ed-words { display: contents; }
   .ed-loop .loop-ledger-box { order: 2; }
-  .ed-loop .ed-after { order: 3; font-size: var(--t-lead); }
-  .ed-loop .more { order: 4; }
+  .ed-loop .ed-close { order: 3; }
+  .ed-loop .ed-after { font-size: var(--t-lead); }
+
   .loop-fig { width: min(100%, calc((100svh - 390px) * 480 / 340)); }
 }
 </style>`);
@@ -225,8 +226,10 @@ ${STYLE}
     <div class="ed-words">
       <h2 class="r">${t.loop.h2}</h2>
       <div class="r loop-ledger-box">${L.ledger}</div>
-      <p class="ed-after" data-p style="opacity:clamp(0, (var(--p) - 0.92) / 0.06, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.92) / 0.06, 1))">${t.loop.after}</p>
-      <a class="more" href="/agent" data-talk>${t.loop.cta}${ARROW}</a>
+      <div class="r ed-close">
+        <p class="ed-after" data-p style="opacity:clamp(0, (var(--p) - 0.92) / 0.06, 1);translate:0 calc(8px - 8px * clamp(0, (var(--p) - 0.92) / 0.06, 1))">${t.loop.after}</p>
+        <a class="more" href="/agent" data-talk>${t.loop.cta}${ARROW}</a>
+      </div>
     </div>
     <div class="ed-figbox r">${L.figure}</div>
   </div></div>
