@@ -774,9 +774,16 @@ for (const g of groups) {
   const p = await sheetCtx.newPage();
   await p.goto(pathToFileURL(file).href, { waitUntil: "load" });
   const png = path.join(OUT, `sheet-${g}.png`);
-  await p.screenshot({ path: png, fullPage: true });
+  // a contact sheet is a convenience: on a loaded machine its screenshot can
+  // time out, and that must never lose the run's results (the html stays)
+  try {
+    await p.screenshot({ path: png, fullPage: true, timeout: 120000 });
+    sheets.push(png);
+  } catch (err) {
+    console.log(`sheet ${g}: no png (${err.name}); see ${path.relative(process.cwd(), file)}`);
+    sheets.push(file);
+  }
   await p.close();
-  sheets.push(png);
 }
 await sheetCtx.close();
 await browser.close();
