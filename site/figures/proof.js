@@ -1,6 +1,5 @@
-// The note-to-live chart: four real, measured LA Metal requests on an
-// hour-long axis (docs/DESIGN.md, "Proof"). Bars grow with --p in full
-// motion; without --p they are drawn at their value.
+// The measured requests: the four that the loop's ledger names, and the
+// summary of all of them on /engineering-department.
 import { html, raw } from "../html.js";
 import { n, c, out, place, label as arrive, ARRIVE } from "./kit.js";
 import { VIEW as SUM_VIEW } from "./contrast.js";
@@ -12,18 +11,6 @@ export const EXAMPLES = [
   { label: "A new report", minutes: 33 },
   { label: "Download to Excel", minutes: 42 },
 ];
-
-export function proofChart({ caption, captionClass = "", label = "Time from request to live, in minutes" } = {}) {
-  return html`<figure class="bars" aria-label="${label}">
-  <div class="bars-axis" aria-hidden="true"><span>0</span><span>15 min</span><span>30 min</span><span>45 min</span><span>1 hour</span></div>
-  <ol class="bars-list">
-    ${EXAMPLES.map(
-      (e, i) => html`<li style="--v:${e.minutes / 60};--i:${i}"><span class="bars-label">${e.label}</span><span class="bars-value num" data-p>${e.minutes} min</span><span class="bars-bar" data-p aria-hidden="true"></span></li>`,
-    )}
-  </ol>
-  ${caption ? html`<figcaption class="small${captionClass ? ` ${captionClass}` : ""}">${caption}</figcaption>` : ""}
-</figure>`;
-}
 
 // The summary on /engineering-department (docs/DESIGN.md section 7, row 4):
 // every measured request as one dot on one sheet, the day, in the order

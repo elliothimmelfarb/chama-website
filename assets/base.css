@@ -262,18 +262,6 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
 .copy .lead { margin-top: var(--s4); }
 .copy .lead + .lead { margin-top: var(--s3); }
 
-.bars { margin: 0; }
-.bars-axis { display: flex; justify-content: space-between; font-size: var(--t-fine); color: var(--fg-2); margin-bottom: var(--s3); font-variant-numeric: tabular-nums; }
-.bars-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); }
-.bars-list li { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; font-size: var(--t-small); }
-.bars-value { font-weight: 600; }
-.bars-bar { grid-column: 1 / -1; height: 10px; border-radius: 0 5px 5px 0; background: var(--accent); width: calc(var(--v) * 100%); transform-origin: left; }
-/* each bar grows in turn and the last is whole by 60% of the hold; its value
-   arrives over the last third of its growth, so a bar never contradicts it */
-.bars-bar[data-p] { scale: clamp(0, (var(--p) - 0.08 - var(--i) * 0.1) / 0.22, 1) 1; }
-.bars-value[data-p] { opacity: clamp(0.01, (var(--p) - 0.23 - var(--i) * 0.1) / 0.07, 1); }
-.bars figcaption { margin-top: var(--s5); max-width: 52ch; }
-
 .logos { list-style: none; margin: 0; padding: var(--s7) 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s6); }
 .logo { display: block; width: calc(var(--lw) * 0.8px); height: calc(var(--lh) * 0.8px); background: var(--fg-2); -webkit-mask: var(--logo) center / contain no-repeat; mask: var(--logo) center / contain no-repeat; transition: background-color var(--dur-quick) var(--ease-out); }
 @media (hover: hover) { .logo:hover { background: var(--fg); } }
@@ -294,7 +282,6 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
   .split { grid-template-columns: repeat(12, 1fr); column-gap: 24px; }
   .split > :first-child { grid-column: 1 / span 5; }
   .split > :last-child { grid-column: 7 / span 6; }
-  .bars-bar { height: 14px; border-radius: 0 7px 7px 0; }
   .logos { gap: var(--s7) 56px; }
   .logo { width: calc(var(--lw) * 1px); height: calc(var(--lh) * 1px); }
 }

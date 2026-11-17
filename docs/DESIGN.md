@@ -108,7 +108,7 @@ Each ground sets `--fg`, `--fg-2`, `--accent-text` and `--line-strong` for the t
 | Ember | light | `#f3dfcd` / `#eecfb8` | `#1f120b` 14.13 / 12.33 | `#674637` 6.48 / 5.65 | `#a1360a` 5.33 / 4.65 | `#a08474` 2.92 / 2.50 * |
 | Ember | dark | `#0f0b09` / `#2a140b` | `#fff4e8` 18.06 / 16.09 | `#cdb8a4` 10.25 / 9.13 | `#ff8a55` 8.41 / 7.49 | `#6e5546` 2.85 / 2.54 * |
 
-All text pairs pass AA (4.5:1) on both the base and the brightest text region. `*` The `--line-strong` values are hairlines for figures and dividers; they are decorative. Any outline that defines a control (an input, a segmented control, a quiet button) uses `--fg-2` on grounds where `--line-strong` is under 3:1, and controls that sit on a ground always have a `--surface` fill, which carries them. Ember fills used as data (the bars) are 2.7 to 2.9:1 on the light grounds; every bar's value is also printed as text beside it, so the bar is never the only carrier of the number.
+All text pairs pass AA (4.5:1) on both the base and the brightest text region. `*` The `--line-strong` values are hairlines for figures and dividers; they are decorative. Any outline that defines a control (an input, a segmented control, a quiet button) uses `--fg-2` on grounds where `--line-strong` is under 3:1, and controls that sit on a ground always have a `--surface` fill, which carries them. Ember fills used as data (the change-time dots) are 2.7 to 2.9:1 on the light grounds; the counts are also printed as text beside them, so colour is never the only carrier of the number.
 
 Text selection is ember with ink text on every ground. The caret is `--accent-text`. Scrollbars (where styled) use `--line-strong` on `--bg`.
 
@@ -307,7 +307,7 @@ Nothing on this page moves with the scroll, so no world is pinned.
 
 ### Proof
 
-Proof is shown as measured data, not as a row of big numbers, on `/engineering-department` only (home names the plant in one line and links there). The note-to-live chart is the centrepiece: four horizontal bars on an hour-long axis (0, 15, 30, 45 minutes, 1 hour), one per real example (a fix 14 min, a new filter 31 min, a new report 33 min, download to Excel 42 min), sorted shortest first, each labelled on the left and valued on the right in Funnel Sans 600 tabular figures. Bars are ember, 10px high on phone and 14px on desktop, square at the start and rounded at the end (5px). A caption under it gives the median and the sample in one sentence. The unnamed fallback is used until the `laMetalNamed` flag is on: "an 88-person metal stamping plant in Toronto". When it flips, the name appears in the caption and the heading does not change.
+Proof is shown as measured data, not as a row of big numbers, on `/engineering-department` only (home names the plant in one line and links there). The loop's ledger names four real requests with their times (a fix 14 min, a new filter 31 min, a new report 33 min, download to Excel 42 min), and the numbers section shows every measured request as one dot, ember for those live within the hour and ink for the rest of the same day, with the counts read from `SITE.changeCaption`. The unnamed fallback is used until the `laMetalNamed` flag is on: "an 88-person metal stamping plant in Toronto". When it flips, the name appears in the lead and the heading does not change.
 
 The engineering department page does not repeat the bars: the loop's ledger shows its four requests, and the numbers section shows all of them as one dot each (see section 7). It adds the plant's week: 19 users and about 15 changes a week, set as one sentence with the figures in `--fg` and the rest in `--fg-2`, beside a before and after figure (an old system's window, a second app and four spreadsheets in a pile, gathered into one warm business). No card grid of stats, no icons beside numbers.
 
@@ -373,7 +373,7 @@ Low motion (`html[data-motion="low"]`) is a calm printed edition of the same sit
 - **The hairline:** where the full site blends one ground into the next, low motion draws a 1px `--line-strong` line across the full width, 64px above the next section, so the visitor sees the world has changed.
 - **The stage** becomes a stepper: the same eight scenes as still pictures, each with its words, with previous and next buttons (44px) and "4 of 8 · The loop" between them. It opens on scene 1. Arrow keys step when the stepper has focus.
 - **Figures** are drawn complete (`--p` unset). The loop shows the full picture with all four stations and the four real examples as labels around the outer ring.
-- **No pinning, no rail, no router,** no photo settle, no bar growth (bars drawn at their value). The chat sheet opens with a 200ms fade instead of a slide. The cycling phrases crossfade or hold.
+- **No pinning, no rail, no router,** no photo settle, no figure growth (every figure drawn whole). The chat sheet opens with a 200ms fade instead of a slide. The cycling phrases crossfade or hold.
 - **Switching** from the Display control reloads in the other mode; the choice is stored (`chama-motion`) and a system reduced-motion setting picks low on a first visit.
 
 ---
