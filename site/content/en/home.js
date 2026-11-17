@@ -12,17 +12,17 @@ export const home = {
   sub: "You talk to a person. AI does the heavy work behind us, so a small team can take on any problem software can solve.",
 
   stageLabel: "How Chama works, in eight short scenes",
-  // The opening stage: each beat's sentence, cut into the phrases it says
-  // one after another (site/figures/stage.js times them).
+  // The opening stage: one sentence a scene, each shown whole for its
+  // reading time (site/figures/stage.js).
   stageBeats: [
-    { name: "The old way", say: ["Software companies have engineers,", "and their customers wait in line."] },
-    { name: "The turn", say: ["Here the engineers", "work only for you."] },
-    { name: "A small team", say: ["A small, family-owned,", "AI-native business."] },
-    { name: "The loop", say: ["Tell us what you need.", "It gets built.", "You use it.", "You find what's next."] },
-    { name: "Fit", say: ["Fits your process,", "and changes when you do."] },
-    { name: "Breadth", say: ["If it can be solved with something", "on a phone,", "a computer", "or in the cloud,", "we can do it."] },
-    { name: "Learning", say: ["When AI can do something new,", "so can you."] },
-    { name: "More time", say: ["More time for human things,", "and for each other."] },
+    { name: "The old way", say: "Software companies have engineers, and their customers wait in line." },
+    { name: "The turn", say: "Here the engineers work only for you." },
+    { name: "A small team", say: "A small, family-owned, AI-native business." },
+    { name: "The loop", say: "Tell us what you need. It gets built. You use it. You find what's next." },
+    { name: "Fit", say: "Fits your process, and changes when you do." },
+    { name: "Breadth", say: "If it can be solved with something on a phone, a computer or in the cloud, we can do it." },
+    { name: "Learning", say: "When AI can do something new, so can you." },
+    { name: "More time", say: "More time for human things, and for each other." },
   ],
 
   // No door's line repeats the stage beat its glyph comes from.

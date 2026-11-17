@@ -388,7 +388,7 @@ test("words arrive on one scale: --arrive-at, --arrive-k, --stagger and the figu
   for (const [name, want] of [["--arrive-at", "-0.6"], ["--arrive-k", "4"], ["--stagger", "0.05"], ["--fig-at", "-0.4"]]) {
     assert.equal(rootVar(CSS, name), want, `worlds.css :root sets ${name}`);
   }
-  for (const name of ["--rise", "--lift", "--dur-arrive-ui", "--dur-leave", "--dur-swap-in", "--dur-swap-out", "--swap-gap", "--stagger-ms", "--dur-carry"]) {
+  for (const name of ["--rise", "--lift", "--dur-arrive-ui", "--dur-leave", "--dur-swap-in", "--dur-swap-out", "--swap-gap", "--stagger-ms"]) {
     assert.ok(rootVar(TOKENS, name), `tokens.css sets ${name}`);
   }
   const r = RULES.find((x) => x.selectors.length === 1 && x.selectors[0] === ".r");

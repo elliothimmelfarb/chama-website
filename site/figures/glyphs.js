@@ -1,21 +1,36 @@
-// The three door glyphs: the opening stage's end frames (docs/DESIGN.md,
-// "The doors"). One 1.5px stroke, one ember part each; the business has a
-// body and the ember phone its tint, as the figures do. The doors are not
-// an .fx, so the fills are mixed here from the semantic tokens (base.css's
-// ".g *" clears every fill, so they are inline).
+// The three door glyphs, drawn as technical drawings (docs/DESIGN.md, "The
+// doors"): one 1.5px ink stroke, hairline construction lines (.h), and one
+// ember part each (.e, .dot). base.css's ".g *" clears every fill, so the
+// hatch is drawn as strokes and nothing hides what is behind it.
 import { raw } from "../html.js";
 
-const BODY = `style="fill:color-mix(in srgb, currentColor 7%, transparent)"`;
-const TINT = `style="fill:color-mix(in srgb, var(--accent) 12%, transparent)"`;
+// The lens two circles share, hatched at 45 degrees: each hatch line is
+// cut to the part of it inside both circles.
+const A = [12.5, 18], B = [23.5, 18], RAD = 10;
+const inside = (x, y) => Math.hypot(x - A[0], y - A[1]) <= RAD && Math.hypot(x - B[0], y - B[1]) <= RAD;
+const hatch = [];
+for (let k = -12; k <= 12; k += 2.6) {
+  // the line y - 18 = (x - 18) + k, walked in small steps
+  let from = null, to = null;
+  for (let x = 6; x <= 30; x += 0.05) {
+    const y = 18 + (x - 18) + k;
+    if (inside(x, y)) { if (!from) from = [x, y]; to = [x, y]; }
+  }
+  if (from && Math.hypot(to[0] - from[0], to[1] - from[1]) > 1.2) hatch.push(`M${from[0].toFixed(2)} ${from[1].toFixed(2)}L${to[0].toFixed(2)} ${to[1].toFixed(2)}`);
+}
+const top = 18 - Math.sqrt(RAD * RAD - 5.5 * 5.5), bot = 36 - top;
 
 export const GLYPHS = {
+  // a compass drawing an arc: engineering, made to measure
   "engineering-department": raw(
-    `<svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path ${BODY} d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg>`,
+    `<svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path class="h" d="M2 30.5h32"/><path class="e" d="M5 28.5a14.5 14.5 0 0 1 26 0"/><path d="M18 7.6 9.4 28.5M18 7.6l8.6 20.9M12.6 20.6h10.8"/><circle cx="18" cy="5.6" r="2"/><circle class="dot" cx="26.6" cy="28.5" r="1.6"/></svg>`,
   ),
+  // two circles that share what they know: taught
   coaching: raw(
-    `<svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg>`,
+    `<svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path class="h" d="M1 18h34"/><path class="h" d="${hatch.join("")}"/><circle cx="${A[0]}" cy="18" r="${RAD}"/><circle cx="${B[0]}" cy="18" r="${RAD}"/><path class="e" d="M18 ${top.toFixed(2)}A${RAD} ${RAD} 0 0 1 18 ${bot.toFixed(2)}"/></svg>`,
   ),
+  // a screen and a phone in elevation, with a dimension line over them
   build: raw(
-    `<svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect ${BODY} x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" ${TINT} x="24.5" y="12" width="9" height="16" rx="2"/></svg>`,
+    `<svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path class="h" d="M2 3.5h32M2 1.8v3.4M34 1.8v3.4"/><path d="M23 24.5H3.6A1.6 1.6 0 0 1 2 22.9V9.6A1.6 1.6 0 0 1 3.6 8h19.8a1.6 1.6 0 0 1 1.6 1.6v3.9"/><path d="M10 30h8M14 24.5V30"/><rect x="23" y="13.5" width="11" height="19" rx="2.2"/><path class="e" d="M26.4 28.5h4.2"/></svg>`,
   ),
 };
