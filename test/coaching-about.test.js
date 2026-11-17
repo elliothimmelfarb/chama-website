@@ -93,7 +93,10 @@ for (const [id, doc] of Object.entries(html)) {
     }
   });
 
-  test(`each figure on /${id} restyles at most 24 elements a frame`, () => {
+  // This counts the parts that read --p. The whole figure box restyles too
+  // whenever its world's --u changes (it is a .fig.r), which only the frame
+  // cost rig in pages.md measures.
+  test(`each figure on /${id} has at most 24 parts that read --p`, () => {
     const figs = [...main(doc).matchAll(/<figure\b[\s\S]*?<\/figure>/g)].map((m) => m[0]);
     assert.ok(figs.length >= 1);
     for (const fig of figs) {
@@ -108,7 +111,7 @@ for (const [id, doc] of Object.entries(html)) {
         if (reads) cost++;
         if (!self) stack.push(reads);
       }
-      assert.ok(cost <= 24, `${/class="([^"]*)"/.exec(fig)[1]} restyles ${cost} elements a frame`);
+      assert.ok(cost <= 24, `${/class="([^"]*)"/.exec(fig)[1]} has ${cost} parts that read --p`);
     }
   });
 
