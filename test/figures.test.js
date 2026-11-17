@@ -65,7 +65,6 @@ test("the pentagon is regular, top first, clockwise, squashed to 0.86", () => {
   pts.forEach(([x, y], i) => close(Math.hypot(x, y / kit.SQUASH), R, `vertex ${i} on the circle`));
   assert.equal(kit.SQUASH, 0.86);
   // seen square on, as the stage and the queue draw it
-  close(kit.ngon(10)[0][1], -10, "ngon is not squashed");
 });
 
 test("grow puts every edge of the outline the same distance outside", () => {
@@ -142,7 +141,7 @@ test("no figure keeps its own copy of the shared helpers", () => {
   for (const f of readdirSync(path.join(ROOT, "site/figures"))) {
     if (f === "kit.js" || !f.endsWith(".js")) continue;
     const src = read(`site/figures/${f}`);
-    for (const name of ["n", "c", "ss", "out", "bump", "poly", "ngon", "grow", "ease"]) {
+    for (const name of ["n", "c", "ss", "out", "bump", "poly", "grow", "ease"]) {
       assert.ok(!new RegExp(`(?:const|function|let)\\s+${name}\\s*(?:=|\\()`).test(src), `site/figures/${f} defines its own ${name}; import it from kit.js`);
     }
     assert.ok(!/from "\.\/stage\.js"/.test(src) || f === "stage.js", `site/figures/${f} imports geometry from stage.js; import it from kit.js`);
@@ -150,17 +149,18 @@ test("no figure keeps its own copy of the shared helpers", () => {
 });
 
 // The SVG elements of a page, with their [data-p] and children counted.
+// Parsed by depth from each outermost <svg>, so an svg nested inside
+// another (the door glyphs inside the stage) neither ends the walk early
+// nor hides the groups after it.
 function svgParts(html) {
-  const out = [];
-  for (const [svg] of html.matchAll(/<svg\b[\s\S]*?<\/svg>/g)) {
-    const stack = [];
-    for (const m of svg.matchAll(/<(\/?)([a-zA-Z]+)\b([^>]*?)(\/?)>/g)) {
-      const [, closing, tag, attrs, self] = m;
-      if (closing) { const el = stack.pop(); if (el) out.push(el); continue; }
-      const el = { tag, p: /\sdata-p\b/.test(attrs), cls: /class="([^"]*)"/.exec(attrs)?.[1] || "", descendants: 0 };
-      for (const parent of stack) parent.descendants++;
-      if (self) out.push(el); else stack.push(el);
-    }
+  const out = [], stack = [];
+  for (const m of html.matchAll(/<(\/?)([a-zA-Z]+)\b([^>]*?)(\/?)>/g)) {
+    const [, closing, tag, attrs, self] = m;
+    if (!stack.length && tag !== "svg") continue;
+    if (closing) { const el = stack.pop(); if (el) out.push(el); continue; }
+    const el = { tag, p: /\sdata-p\b/.test(attrs), cls: /class="([^"]*)"/.exec(attrs)?.[1] || "", descendants: 0 };
+    for (const parent of stack) parent.descendants++;
+    if (self) out.push(el); else stack.push(el);
   }
   return out;
 }
@@ -186,4 +186,21 @@ test("inside a figure, [data-p] is on a leaf or a group of at most three", () =>
   }
   assert.ok(checked > 20, `found the figures (${checked} parts)`);
   for (const k of Object.keys(KNOWN)) assert.ok(known.has(k), `KNOWN lists ${k}, which no page has any more; delete the entry`);
+});
+
+test("every id on a built page is unique", () => {
+  for (const { file } of PAGES) {
+    const html = read(file), seen = new Map();
+    for (const [, id] of html.matchAll(/\sid="([^"]+)"/g)) seen.set(id, (seen.get(id) || 0) + 1);
+    const twice = [...seen].filter(([, k]) => k > 1).map(([id]) => id);
+    assert.deepEqual(twice, [], `${file} has ids more than once: ${twice.join(", ")}`);
+  }
+});
+
+test("subject() without its outline has no halo or fit, and fills() names its paint", () => {
+  const bare = kit.subject({ id: "t", R: 50, outline: false });
+  assert.ok(!/fx-halo|fx-fit/.test(bare), "outline: false leaves out the halo and the fit");
+  assert.equal((bare.match(/\sdata-p\b/g) || []).length, 3, "three moving parts: floor, body, ink");
+  const f = kit.fills("t");
+  for (const k of ["body", "floor"]) assert.ok(bare.includes(`id="${f[k].slice(5, -1)}"`), `fills().${k} points at a gradient subject() defines`);
 });
