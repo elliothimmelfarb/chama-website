@@ -366,6 +366,31 @@ async function holdPoints(page) {
   });
 }
 
+// A word that stands as its pin leaves (data-stand, held on the scroll's
+// own timeline) is in the same place at the start and the middle of its
+// stretch. Run after the page has been scrolled around, so a measure taken
+// past a stretch is held to it too (2026-11-17: one measured every stand
+// from where it stood and gave 3px instead of 284).
+async function checkStands(pg, state, page, dir, stem) {
+  const stands = await page.evaluate(() => [...document.querySelectorAll("[data-stand]")].map((e, i) => {
+    e.dataset.standProbe = i;
+    return { i, rel: parseFloat(e.style.getPropertyValue("--rel")), stand: parseFloat(e.style.getPropertyValue("--stand")), text: e.textContent.trim().slice(0, 40) };
+  }));
+  for (const s of stands) {
+    const at = async (y) => { await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y); await page.waitForTimeout(120); return page.evaluate((i) => {
+      // its place without the exit's lift (transform), which is meant to move
+      const e = document.querySelector(`[data-stand-probe="${i}"]`), m = getComputedStyle(e).transform;
+      return e.getBoundingClientRect().top - (m && m !== "none" ? new DOMMatrix(m).m42 : 0);
+    }, s.i); };
+    const a = await at(s.rel), b = await at(s.rel + s.stand / 2);
+    if (Math.abs(a - b) > 1.5) {
+      const shot = path.join(dir, `${stem}-stand-${s.i}.png`);
+      await page.screenshot({ path: shot });
+      fail(pg, state, "stand", `"${s.text}" moved ${Math.round(b - a)}px in the first half of its ${s.stand}px stand`, shot);
+    }
+  }
+}
+
 // Viewport positions every half screen between the shots: the
 // text-under-header check at each, a shot only where it fails.
 async function sweepHeader(pg, state, page, dir, stem) {
@@ -617,6 +642,7 @@ async function runState(pg, theme, motion, vp) {
         }
       }
       await sweepHeader(pg.id, state, page, dir, stem);
+      await checkStands(pg.id, state, page, dir, stem);
       if (theme === "light") { page.__vp = vp; await sweepDead(pg.id, state, page, dir, stem); }
     } else {
       const shot = path.join(dir, `${stem}-full.png`);

@@ -46,6 +46,9 @@
    a .r inside another would add the pin's travel twice */
 @property --sx { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --pl { syntax: "<length>"; inherits: false; initial-value: 0px; }
+/* the same stand on the scroll's timeline (below, where supported) */
+@property --rel { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --stand { syntax: "<length>"; inherits: false; initial-value: 0px; }
 
 :root {
   --pad: clamp(16px, 4.6vw, 4.5rem);
@@ -214,8 +217,25 @@ main { position: relative; z-index: 2; }
    last place) and no earlier than --fig-at. Later than -0.4 leaves a phone
    showing a heading alone on bare ground for a third of a screen. */
 .r.fig { --in: max(var(--fig-at), calc(var(--arrive-at) + var(--i, 0) * var(--stagger))); }
+/* Where the scroll can drive an animation, worlds.js writes --rel (the
+   scroll offset where the pin lets go) and --stand (how far the word stands
+   still past it) instead of --sx and --pl, and the hold runs on the root's
+   scroll timeline. A phone scrolls on its compositor, ahead of any frame:
+   a hold written each frame rides up with the page and snaps back. */
+@supports (animation-timeline: scroll()) {
+  .r[data-stand] {
+    animation: stand linear both;
+    animation-duration: auto;
+    animation-timeline: scroll(root);
+    animation-range: var(--rel) calc(var(--rel) + var(--stand));
+  }
+}
+@keyframes stand {
+  from { translate: 0 0; }
+  to { translate: 0 var(--stand); }
+}
 html:not(.pin) .r,
-.world[data-pin="off"] .r { opacity: 1; transform: none; }
+.world[data-pin="off"] .r { opacity: 1; transform: none; animation: none; }
 
 /* where the words stand in a pin; their type is base.css's (a page places
    its own figure box) */
@@ -300,6 +320,24 @@ html.routed h1 .half { animation-duration: 400ms; animation-delay: 60ms; }
 html.routed h1 .half + .half { animation-duration: 450ms; animation-delay: 110ms; }
 @keyframes rise { from { opacity: 0.01; translate: 0 var(--rise); filter: blur(3px); } }
 @keyframes arrive { from { opacity: 0.01; } }
+/* A standing word keeps its stand while it rises in (Back can land inside
+   its stretch). The stand stays first in the list, or the browser starts it
+   afresh and the word shows a frame without it; the rise adds on top. */
+@supports (animation-timeline: scroll()) {
+  html.nav-enter main .world > .pin .r[data-stand]:not(.r .r) {
+    animation: stand linear both, rise var(--dur-arrive-ui) var(--ease-out) backwards;
+    animation-duration: auto, var(--dur-arrive-ui);
+    animation-delay: 0s, calc(var(--i, 0) * var(--stagger-ms));
+    animation-timeline: scroll(root), auto;
+    animation-range: var(--rel) calc(var(--rel) + var(--stand)), normal;
+    animation-composition: replace, add;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @supports (animation-timeline: scroll()) {
+    html.nav-enter main .world > .pin .r[data-stand]:not(.r .r) { animation-name: stand, arrive; animation-duration: auto, var(--dur-quick); }
+  }
+}
 /* reduced motion under full mode: the words appear, nothing moves */
 @media (prefers-reduced-motion: reduce) {
   html.nav-enter main > .world[data-pin="off"]:first-child :is(.descriptor, .lead, .talk-field, .stage, .doors, .home-also),
