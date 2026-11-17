@@ -1,7 +1,7 @@
 // A laptop and a phone with a tall picture of a real page on each screen
 // (the .rig that assets/worlds.css draws and drawDevices in assets/worlds.js
 // scrolls). The pictures are in assets/built/<name>-desktop-* and -phone-*.
-import { html } from "../html.js";
+import { html, raw } from "../html.js";
 
 // Each picture's widths on disk and its full size. The largest width is
 // the file without a width suffix, except where `top` names it.
@@ -37,14 +37,20 @@ function screenImg(pic, lazy, first) {
   return html`<img data-src="${pic.src}" data-srcset="${pic.srcset}" sizes="${pic.sizes}" alt="" width="${pic.w}" height="${pic.h}" decoding="async"><noscript><img src="${pic.src}" srcset="${pic.srcset}" sizes="${pic.sizes}" alt="" width="${pic.w}" height="${pic.h}" loading="lazy" decoding="async"></noscript>`;
 }
 
-export function rig(name, { lazy = false, first = false, desktop } = {}) {
+// A rig is a figure (.fx), so its floor shadow takes the figure tokens.
+// rise: the phone reads the world's --p (the page styles how it moves).
+export function rig(name, { lazy = false, first = false, desktop, rise = false } = {}) {
   const d = desktop || picture(name, "desktop");
   const p = picture(name, "phone");
-  return html`<div class="rig" aria-hidden="true">
+  return html`<div class="rig fx" aria-hidden="true">
   <div class="laptop"><div class="lid"><div class="screen">${screenImg(d, lazy, first)}</div></div><div class="base"></div></div>
-  <div class="phone"><div class="screen">${screenImg(p, lazy, first)}</div></div>
+  <div class="phone"${rise ? raw(" data-p") : ""}><div class="screen">${screenImg(p, lazy, first)}</div></div>
 </div>`;
 }
+
+// A rig's width over its height (the laptop on its base, and the phone
+// standing in front of it), for a frame that sizes a figure from its cell.
+export const RIG_AR = 1.58;
 
 // ShopIntake's own first screen, 16:10, which fills the laptop's screen.
 export const SHOPINTAKE_TOP = {

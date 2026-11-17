@@ -46,6 +46,8 @@ The engine is `assets/worlds.js`, `assets/worlds.css` and `assets/sky.js`; the h
 - Pictures after the first are `data-src`/`data-srcset`, set when their thing is next, with `<noscript>` copies (real elements after the router parses a page: select `.screen > img`). Neighbours load only once the pair on screen has arrived. Desktop pictures are 1800 wide, phones get copies through `srcset`; check `srcset` picks in the installed Chrome, since Playwright's Chromium picks differently.
 - The last thing's pictures run on `devicesLast` until the pin lets go, ending at the page's own speed, so the scroll never has a dead stretch (Elliot, 2026-11-12). Measure it as numbers per scroll step, not by eye.
 - The things not showing are `inert`; the progress bar's bars are links to each thing.
+- The devices world opens the page (2026-11-16, Elliot: "a lot of awkward empty space"; the H1 alone sat over a laptop peeking from the bottom edge). The H1, line and field are the `.made-open`, beside the first thing's devices, and the opening stretch is the section's `data-open` (40, against 135 a thing): a long still opening at the very top of a page reads as a scroll that does nothing. `--h` is 100 + `data-open` + 135 a thing (the test checks).
+- When the devices may leave is set by the foot of the last thing (its rig and words): they must be gone before the next world's words reach it, and those words only come into view from near the screen's bottom. A taller rig or longer last words leave bare ground between the worlds (on a 364x610 phone, 60px more foot made a half screen under the fill floor). So the last thing's words are kept short on a phone, and on a short desktop the rig is capped by height.
 
 ## Content and logos
 

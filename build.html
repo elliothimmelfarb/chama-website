@@ -10,10 +10,10 @@
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/tokens.css?v=e4a59e9718">
   <link rel="stylesheet" href="/assets/base.css?v=62c4032636">
-  <link rel="stylesheet" href="/assets/worlds.css?v=cfd1ddaaaf">
+  <link rel="stylesheet" href="/assets/worlds.css?v=0f8e9eb99c">
   <link rel="stylesheet" href="/assets/talk.css?v=658634970f">
   <script src="/assets/sky.js?v=f524e540c3" defer></script>
-  <script src="/assets/worlds.js?v=1b88494db3" defer></script>
+  <script src="/assets/worlds.js?v=02dd7af56a" defer></script>
   <script src="/assets/chrome.js?v=18940e8963" defer></script>
   <script src="/assets/talk.js?v=88c238f845" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
@@ -96,11 +96,9 @@
 </header>
 <main id="main">
 <style>
-.build-first { padding-bottom: var(--s6); }
-.build-first .lead { margin-top: var(--s4); }
-.build-first .talk-field { margin-top: var(--s6); }
-.build-dev .made-open h2 { max-width: 14ch; }
+.build-dev .made-open h1 { max-width: 11ch; }
 .build-dev .made-open .lead { margin-top: var(--s4); }
+.build-dev .made-open .talk-field { margin-top: var(--s6); }
 .build-dev .made-words h2 { font-size: var(--t-h2); max-width: 16ch; margin-bottom: var(--s5); }
 .build-dev .made-words h3 { font-size: var(--t-h2); line-height: 1.08; letter-spacing: -0.025em; }
 .build-dev .made-words h2 + h3 { font-size: var(--t-h3); line-height: 1.15; letter-spacing: -0.015em; }
@@ -113,86 +111,87 @@
 .build-private { display: flex; align-items: flex-start; gap: var(--s2); margin-top: var(--s4); max-width: 40ch; font-size: var(--t-small); font-weight: 500; color: var(--fg); }
 .build-private svg { margin-top: 0.15em; color: var(--accent-text); }
 .made-ticks a:focus-visible { border-radius: 2px; }
-.build-ghost, .build-kind-apps { display: none; }
-html:not(.pin) .build-dev .made-stage { max-width: var(--max); padding: var(--s7) var(--gutter) calc(var(--s8) + 20vh); }
-html:not(.pin) .build-dev .made:first-of-type { margin-top: var(--s7); }
+.build-ghost { display: none; }
+html:not(.pin) .build-dev .made-stage { max-width: var(--max); padding: calc(56px + var(--s6)) var(--gutter) calc(var(--s8) + 20vh); }
 
-.build-partner-in { display: grid; gap: var(--s6); align-content: safe center; height: 100%; padding-top: calc(56px + var(--s4)); padding-bottom: var(--s6); }
-html:not(.pin) .build-partner-in { height: auto; padding: 0; }
-.build-partner h2 { max-width: 20ch; }
+/* product partnership: the device run's last thing, on a new ground. The
+   words stand level with the laptop's top, as the devices' words do. */
+.build-partner .frame { align-items: start; }
+/* the words start where the devices' words start, high enough to be in
+   view while the devices leave (centred, they came after a bare stretch) */
+html.pin .build-partner .frame { align-content: start; padding-top: clamp(6.5rem, 17svh, 13rem); }
+.build-partner h2 { max-width: 18ch; }
 .build-partner .lead { margin-top: var(--s4); }
-.build-proof { margin-top: var(--s5); padding-top: var(--s4); border-top: 1px solid var(--line); max-width: 46ch; }
+.build-proof { margin-top: var(--s6); padding-top: var(--s4); border-top: 1px solid var(--line); max-width: 44ch; }
 .build-proof h3 { font-size: var(--t-h3); }
 .build-proof p { margin-top: var(--s2); color: var(--fg-2); }
-.build-shots { max-width: 40rem; width: 100%; }
-html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; width: 100%; transform: none; }
-.build-rise { transform: translateY(calc((1 - clamp(0, var(--p) * 2.5, 1)) * 16px)); }
+.build-proof .build-link { margin-top: var(--s3); }
+html.pin .build-partner .rig { opacity: 1; visibility: visible; max-width: none; }
+/* ShopIntake's phone rises in beside the laptop in the hold's first half */
+.build-partner .rig .phone[data-p] {
+  opacity: clamp(0, (var(--p) - 0.04) * 4, 1);
+  translate: 0 calc((1 - clamp(0, (var(--p) - 0.04) / 0.44, 1)) * 14%);
+}
 
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  .build-dev .made-words h2 { margin-bottom: var(--s3); }
-  .build-dev .made-words h3 { font-size: 1.5rem; }
-  .build-what { margin-top: var(--s2); font-size: 0.9375rem; line-height: 1.4; }
+  html.pin .build-dev .made-open { row-gap: 0; }
+  .build-dev .made-open h1 { max-width: none; }
+  .build-dev .made-open .lead { margin-top: var(--s3); font-size: 0.9375rem; line-height: 1.45; }
+  .build-dev .made-open .talk-field { margin-top: var(--s4); }
+  /* the opening heading of a run reads as the line above the thing's name */
+  .build-dev .made-words h2 { margin-bottom: 2px; font: 600 var(--t-small)/1.4 var(--text); letter-spacing: 0; color: var(--fg-2); max-width: none; }
+  .build-dev .made-words h3, .build-dev .made-words h2 + h3 { font-size: 1.5rem; line-height: 1.1; letter-spacing: -0.02em; }
+  .build-what { margin-top: var(--s2); font-size: var(--t-small); line-height: 1.4; }
+  /* a little under the column, so the last thing's foot stays high (below) */
+  html.pin .build-dev .rig { width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1) * 0.94); }
   .build-kind { margin-top: 2px; }
   .build-link, .build-private { margin-top: var(--s2); }
-  /* the opening words stand right under where the first thing's devices
-     are, not at the foot of the screen: an invisible rig of the same size
-     holds the place (after the h2 in the markup, since drawDevices measures
-     the open's first child against the first rig) */
-  html.pin .build-dev .made-open { align-content: start; padding-bottom: 0; }
-  /* smaller devices, and the apps heading left to one column, so every
-     thing's words sit above the grid's horizon */
-  html.pin .build-dev .rig { width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1) * 0.72); }
-  html.pin .build-dev .made-words h2 { display: none; }
-  html.pin .build-dev .build-kind-apps { display: block; }
-  html.pin .build-dev .made-open > .build-ghost { display: block; order: -1; opacity: 0; visibility: hidden; margin-bottom: var(--s3); }
-  .build-partner-in { gap: var(--s4); padding-top: calc(56px + var(--s3)); padding-bottom: var(--s4); }
+  /* the last thing's words are kept short: the devices must be gone before
+     the partnership words reach their foot, so the higher it is, the less
+     bare ground between the worlds. A private thing's kind is said again by
+     its private line, which fits on one line at label size. */
+  .build-kind-said { display: none; }
+  .build-private { font-size: var(--t-label); max-width: none; }
+  /* the opening words stand under an invisible rig of the first thing's
+     size, so they sit right under its devices (after the h1 in the markup:
+     drawDevices measures the open's first child against the first rig) */
+  html.pin .build-dev .made-open > .build-ghost { display: block; order: -1; opacity: 0; visibility: hidden; margin-bottom: var(--s4); }
+  .build-partner .frame { --fig-h: min(34svh, calc(100svh - 56px - 23.5rem)); row-gap: var(--s4); }
+  html.pin .build-partner .frame { padding-top: calc(env(safe-area-inset-top) + 3.9rem); }
   .build-proof { margin-top: var(--s4); padding-top: var(--s3); }
   .build-proof p { font-size: 0.9375rem; line-height: 1.4; }
-  .build-shots { max-width: 13.5rem; }
 }
-@media (min-width: 1100px) {
-  .build-first { padding-top: calc(72px + var(--s9)); }
-  /* in the upper part of the screen, so the words come into view as the
-     devices before them leave, with no bare ground between */
-  .build-partner-in { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: center; align-content: start; padding-top: calc(72px + 9svh); }
-  .build-partner-in > :first-child { grid-column: 1 / span 5; }
-  .build-partner-in > :last-child { grid-column: 7 / span 6; }
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
+  html:not(.pin) .build-dev .made-stage { padding-top: calc(72px + var(--s8)); }
 }
 </style>
-<section class="world first build-first" data-world="grid" data-pin="off" data-label="Websites, apps and products">
-  <div class="wrap">
-    <h1><span class="half">Websites, apps and products.</span></h1>
-    <p class="lead">If it can be solved with something on a phone, a computer or in the cloud, we can do it.</p>
-    <form class="talk-field" action="/agent" method="get" data-talk-form>
-  <label class="cycle" for="ask-build"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
-  <div class="field"><input id="ask-build" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
-</form>
-  </div>
-</section>
-
-<section class="world devices-world build-dev" data-world="grid" data-pad="off" style="--h:730" data-label="Websites built to be found." aria-labelledby="build-websites">
+<section class="world devices-world build-dev" data-world="grid" data-pad="off" data-open="40" style="--h:680" data-label="Websites, apps and products." aria-labelledby="build-h1">
   <div class="pin">
     <div class="made-stage">
       <div class="made-open on">
-        <h2 id="build-websites">Websites built to be found.</h2>
-        <p class="lead">Fast, clear, and set up for search from the first day.</p>
+        <h1 id="build-h1"><span class="half">Websites, apps and products.</span></h1>
+        <p class="lead">If it can be solved with something on a phone, a computer or in the cloud, we can do it.</p>
+        <form class="talk-field" action="/agent" method="get" data-talk-form>
+  <label class="cycle" for="ask-build"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
+  <div class="field"><input id="ask-build" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
+</form>
         <div class="rig build-ghost" aria-hidden="true"><div class="laptop"><div class="lid"><div class="screen"></div></div><div class="base"></div></div><div class="phone"><div class="screen"></div></div></div>
       </div>
       <article class="made" id="toraya" aria-labelledby="toraya-name">
-  <div class="rig" aria-hidden="true">
+  <div class="rig fx" aria-hidden="true">
   <div class="laptop"><div class="lid"><div class="screen"><img src="/assets/built/toraya-lisboa-desktop.webp" srcset="/assets/built/toraya-lisboa-desktop-640.webp 640w, /assets/built/toraya-lisboa-desktop-960.webp 960w, /assets/built/toraya-lisboa-desktop-1200.webp 1200w, /assets/built/toraya-lisboa-desktop-1440.webp 1440w, /assets/built/toraya-lisboa-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async" fetchpriority="high"></div></div><div class="base"></div></div>
   <div class="phone"><div class="screen"><img src="/assets/built/toraya-lisboa-phone.webp" srcset="/assets/built/toraya-lisboa-phone-160.webp 160w, /assets/built/toraya-lisboa-phone-240.webp 240w, /assets/built/toraya-lisboa-phone-320.webp 320w, /assets/built/toraya-lisboa-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async" fetchpriority="high"></div></div>
 </div>
   <div class="made-words">
-    
+    <h2>Websites built to be found.</h2>
     <h3 id="toraya-name">Toraya Lisboa</h3>
-    <p class="build-kind">Website and staff app</p>
+    
     <p class="build-what">We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour.</p>
     <p class="build-link"><a href="https://toraya.pt" rel="noopener" target="_blank">toraya.pt<svg class="arr arr-out" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 14 14 6M7.5 6H14v6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
     
   </div>
 </article><article class="made" id="original" aria-labelledby="original-name">
-  <div class="rig" aria-hidden="true">
+  <div class="rig fx" aria-hidden="true">
   <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/original-site-desktop.webp" data-srcset="/assets/built/original-site-desktop-640.webp 640w, /assets/built/original-site-desktop-960.webp 960w, /assets/built/original-site-desktop-1200.webp 1200w, /assets/built/original-site-desktop-1440.webp 1440w, /assets/built/original-site-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/original-site-desktop.webp" srcset="/assets/built/original-site-desktop-640.webp 640w, /assets/built/original-site-desktop-960.webp 960w, /assets/built/original-site-desktop-1200.webp 1200w, /assets/built/original-site-desktop-1440.webp 1440w, /assets/built/original-site-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
   <div class="phone"><div class="screen"><img data-src="/assets/built/original-site-phone.webp" data-srcset="/assets/built/original-site-phone-160.webp 160w, /assets/built/original-site-phone-240.webp 240w, /assets/built/original-site-phone-320.webp 320w, /assets/built/original-site-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async"><noscript><img src="/assets/built/original-site-phone.webp" srcset="/assets/built/original-site-phone-160.webp 160w, /assets/built/original-site-phone-240.webp 240w, /assets/built/original-site-phone-320.webp 320w, /assets/built/original-site-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" loading="lazy" decoding="async"></noscript></div></div>
 </div>
@@ -205,28 +204,28 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
     
   </div>
 </article><article class="made" id="vsf" aria-labelledby="vsf-name">
-  <div class="rig" aria-hidden="true">
+  <div class="rig fx" aria-hidden="true">
   <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/vsf-lead-automation-desktop.webp" data-srcset="/assets/built/vsf-lead-automation-desktop-640.webp 640w, /assets/built/vsf-lead-automation-desktop-960.webp 960w, /assets/built/vsf-lead-automation-desktop-1200.webp 1200w, /assets/built/vsf-lead-automation-desktop-1440.webp 1440w, /assets/built/vsf-lead-automation-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" decoding="async"><noscript><img src="/assets/built/vsf-lead-automation-desktop.webp" srcset="/assets/built/vsf-lead-automation-desktop-640.webp 640w, /assets/built/vsf-lead-automation-desktop-960.webp 960w, /assets/built/vsf-lead-automation-desktop-1200.webp 1200w, /assets/built/vsf-lead-automation-desktop-1440.webp 1440w, /assets/built/vsf-lead-automation-desktop.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="4500" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
   <div class="phone"><div class="screen"><img data-src="/assets/built/vsf-lead-automation-phone.webp" data-srcset="/assets/built/vsf-lead-automation-phone-160.webp 160w, /assets/built/vsf-lead-automation-phone-240.webp 240w, /assets/built/vsf-lead-automation-phone-320.webp 320w, /assets/built/vsf-lead-automation-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3809" decoding="async"><noscript><img src="/assets/built/vsf-lead-automation-phone.webp" srcset="/assets/built/vsf-lead-automation-phone-160.webp 160w, /assets/built/vsf-lead-automation-phone-240.webp 240w, /assets/built/vsf-lead-automation-phone-320.webp 320w, /assets/built/vsf-lead-automation-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3809" loading="lazy" decoding="async"></noscript></div></div>
 </div>
   <div class="made-words">
     <h2>Apps made for one business.</h2>
     <h3 id="vsf-name">VSF Lead Automation</h3>
-    <p class="build-kind build-kind-apps">App for one business</p>
+    
     <p class="build-what">Vivir Sin Fronteras helps students get into universities abroad. When someone enquires, a bot messages them on WhatsApp, asks the questions the team would ask, and books the meeting straight into the team&#39;s calendar when it&#39;s worth it.</p>
     
     <p class="build-private"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3.2" y="7" width="9.6" height="6.8" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span>This is private software, built for one business.</span></p>
   </div>
 </article><article class="made" id="alves" aria-labelledby="alves-name">
-  <div class="rig" aria-hidden="true">
+  <div class="rig fx" aria-hidden="true">
   <div class="laptop"><div class="lid"><div class="screen"><img data-src="/assets/built/alves-teamwear-desktop-1800.webp" data-srcset="/assets/built/alves-teamwear-desktop-640.webp 640w, /assets/built/alves-teamwear-desktop-960.webp 960w, /assets/built/alves-teamwear-desktop-1200.webp 1200w, /assets/built/alves-teamwear-desktop-1440.webp 1440w, /assets/built/alves-teamwear-desktop-1800.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="2248" decoding="async"><noscript><img src="/assets/built/alves-teamwear-desktop-1800.webp" srcset="/assets/built/alves-teamwear-desktop-640.webp 640w, /assets/built/alves-teamwear-desktop-960.webp 960w, /assets/built/alves-teamwear-desktop-1200.webp 1200w, /assets/built/alves-teamwear-desktop-1440.webp 1440w, /assets/built/alves-teamwear-desktop-1800.webp 1800w" sizes="(max-width: 759px) calc(83vw - 27px), (max-aspect-ratio: 9/10) calc(83vw - 27px), (min-width: 1680px) 770px, 47vw" alt="" width="1800" height="2248" loading="lazy" decoding="async"></noscript></div></div><div class="base"></div></div>
   <div class="phone"><div class="screen"><img data-src="/assets/built/alves-teamwear-phone.webp" data-srcset="/assets/built/alves-teamwear-phone-160.webp 160w, /assets/built/alves-teamwear-phone-240.webp 240w, /assets/built/alves-teamwear-phone.webp 360w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="360" height="4674" decoding="async"><noscript><img src="/assets/built/alves-teamwear-phone.webp" srcset="/assets/built/alves-teamwear-phone-160.webp 160w, /assets/built/alves-teamwear-phone-240.webp 240w, /assets/built/alves-teamwear-phone.webp 360w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="360" height="4674" loading="lazy" decoding="async"></noscript></div></div>
 </div>
   <div class="made-words">
     
     <h3 id="alves-name">Alves Teamwear</h3>
-    <p class="build-kind">App for one business</p>
-    <p class="build-what">Alves Teamwear sells custom kits to sports teams. We built an app where a team designs its own kit and places the order, and a command center where the operators and the supplier keep track of everything.</p>
+    <p class="build-kind build-kind-said">App for one business</p>
+    <p class="build-what">We built an app where a team designs its own kit and places the order, and a command center where the operators and the supplier keep track of everything.</p>
     
     <p class="build-private"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="3.2" y="7" width="9.6" height="6.8" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span>This is private software, built for one business.</span></p>
   </div>
@@ -236,9 +235,9 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
   </div>
 </section>
 
-<section class="world build-partner" data-world="ember" style="--h:170" data-label="Product partnership" id="partnership">
-  <div class="pin"><div class="wrap build-partner-in">
-    <div>
+<section class="world build-partner" data-world="ember" style="--h:140" data-fill data-label="Product partnership" id="partnership">
+  <div class="pin"><div class="frame" data-layout="split">
+    <div class="words">
       <h2 class="r">Have an idea? We&#39;ll build it with you, as a partner or co-founder.</h2>
       <p class="lead r">We build our own products too, so we know the road from an idea to something people use.</p>
       <div class="build-proof r">
@@ -247,10 +246,10 @@ html.pin .build-shots .rig { opacity: 1; visibility: visible; max-width: none; w
         <p class="build-link"><a href="https://shop-intake.com" rel="noopener" target="_blank">shop-intake.com<svg class="arr arr-out" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 14 14 6M7.5 6H14v6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
       </div>
     </div>
-    <div class="r fig" role="img" aria-label="ShopIntake&#39;s website and its app on a phone."><div class="build-shots build-rise" data-p><div class="rig" aria-hidden="true">
+    <div class="fig r" role="img" aria-label="ShopIntake&#39;s website and its app on a phone." style="--ar:1.58"><div class="rig fx" aria-hidden="true">
   <div class="laptop"><div class="lid"><div class="screen"><img src="/assets/built/shopintake-thumb-1080.webp" srcset="/assets/built/shopintake-thumb-320.webp 320w, /assets/built/shopintake-thumb-640.webp 640w, /assets/built/shopintake-thumb-1080.webp 1080w" sizes="(min-width: 1100px) 40vw, calc(100vw - 32px)" alt="" width="1080" height="675" decoding="async" loading="lazy"></div></div><div class="base"></div></div>
-  <div class="phone"><div class="screen"><img src="/assets/built/shopintake-phone.webp" srcset="/assets/built/shopintake-phone-160.webp 160w, /assets/built/shopintake-phone-240.webp 240w, /assets/built/shopintake-phone-320.webp 320w, /assets/built/shopintake-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async" loading="lazy"></div></div>
-</div></div></div>
+  <div class="phone" data-p><div class="screen"><img src="/assets/built/shopintake-phone.webp" srcset="/assets/built/shopintake-phone-160.webp 160w, /assets/built/shopintake-phone-240.webp 240w, /assets/built/shopintake-phone-320.webp 320w, /assets/built/shopintake-phone.webp 440w" sizes="(max-width: 759px) calc(17.4vw - 6px), (max-aspect-ratio: 9/10) calc(17.4vw - 6px), (min-width: 1680px) 162px, 9.8vw" alt="" width="440" height="3836" decoding="async" loading="lazy"></div></div>
+</div></div>
   </div></div>
 </section>
 

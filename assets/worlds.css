@@ -339,7 +339,7 @@ main h1:focus { outline: none; }
    faded in, so the bezels never thin), scrolls the pictures inside the
    screens, and fills the .made-ticks, which are also links to each thing.
    Without JavaScript the things are a plain list. */
-.rig { position: relative; width: 100%; padding-right: 13%; padding-bottom: 5%; }
+.rig { position: relative; isolation: isolate; width: 100%; padding-right: 13%; padding-bottom: 5%; }
 .rig .laptop { position: relative; }
 .rig .lid {
   position: relative;
@@ -367,6 +367,11 @@ main h1:focus { outline: none; }
 }
 .rig .phone .screen { height: 100%; border-radius: 13% / 6%; }
 .rig .phone::after { content: ""; position: absolute; z-index: 2; top: 4.4%; left: 50%; width: 30%; height: 3%; border-radius: 99px; background: var(--ink); transform: translateX(-50%); }
+/* the pair stands on the ground: a soft floor shadow under the laptop's
+   base and a smaller one under the phone (a .rig is an .fx, for the token) */
+.rig .laptop::after, .rig .phone::before { content: ""; position: absolute; z-index: -1; top: 100%; background: radial-gradient(closest-side, var(--fx-shadow), transparent); pointer-events: none; }
+.rig .laptop::after { left: 15%; width: 70%; height: 14px; margin-top: -4px; }
+.rig .phone::before { left: -12%; width: 124%; height: 10px; margin-top: -4px; }
 .made-ticks { display: none; }
 
 /* without JavaScript: the things, one under another */
@@ -379,7 +384,7 @@ html:not(.pin) .devices-world > .pin { position: static; }
 
 /* with it: one pair of devices holds still, and every thing's words start
    on the same line as the top of the laptop */
-html.pin .made-stage { --made-top: clamp(6.5rem, 20svh, 13rem); position: absolute; inset: 0; width: auto; padding: 0; }
+html.pin .made-stage { --made-top: clamp(6.5rem, 17svh, 13rem); position: absolute; inset: 0; width: auto; padding: 0; }
 html.pin .made, html.pin .made-open {
   position: absolute;
   inset: 0;
@@ -397,7 +402,9 @@ html.pin .made-open > * { grid-column: 1; }
 html.pin .made-open { row-gap: 0; }
 html.pin .made { pointer-events: none; }
 html.pin .made.on { pointer-events: auto; }
-html.pin .rig { max-width: calc((100svh - var(--made-top) - 5rem) * 1.6); justify-self: end; opacity: 0; visibility: hidden; }
+/* the devices end high enough that the next world's words are in view as
+   they leave (worlds.js lets them stand only until those words reach them) */
+html.pin .rig { max-width: calc((100svh - var(--made-top) - 12rem) * 1.6); justify-self: end; opacity: 0; visibility: hidden; }
 html.pin .made.rig-on .rig { z-index: 2; opacity: 1; visibility: visible; transition: opacity var(--dur-swap-in) var(--ease-out); }
 html.pin .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
 /* the words Swap, as the cycling phrases do: the outgoing lift and fade,
@@ -423,7 +430,16 @@ html.pin .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100v
 .made-ticks a:active::before,
 .made-ticks a:active::after { scale: 1 1.8; }
 @media (hover: hover) { .made-ticks a:hover::before { background: var(--line-strong); } }
+/* after a page change the opening's words and the first devices rise in by
+   their order, as a first screen's do (the H1 has its own arrival) */
+html.nav-enter .made-open.on > :not(h1, [aria-hidden]),
+html.nav-enter .made.rig-on .rig { animation: rise var(--dur-arrive-ui) var(--ease-out) backwards; }
+html.nav-enter .made-open.on > :nth-child(2) { animation-delay: var(--stagger-ms); }
+html.nav-enter .made-open.on > :nth-child(3) { animation-delay: calc(2 * var(--stagger-ms)); }
+html.nav-enter .made.rig-on .rig { animation-delay: calc(3 * var(--stagger-ms)); }
 @media (prefers-reduced-motion: reduce) {
+  html.nav-enter .made-open.on > :not(h1, [aria-hidden]),
+  html.nav-enter .made.rig-on .rig { animation-name: arrive; animation-duration: var(--dur-quick); }
   /* the rig before goes at once under reduced motion (worlds.js), so the new one cannot fade over it */
   html.pin .rig, html.pin .made.rig-on .rig { transition: none; }
   html.pin .made-words, html.pin .made-open > *, html.pin .made.on .made-words, html.pin .made-open.on > * { transition: opacity var(--dur-quick) var(--ease-out), visibility 0s; transform: none; translate: none; }
@@ -437,7 +453,8 @@ html.pin .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100v
   .made .rig { grid-row: 1; }
   .made .made-words { grid-row: 2; }
   html.pin .made, html.pin .made-open { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; padding: calc(env(safe-area-inset-top) + 3.9rem) 16px 2.4rem; }
-  html.pin .made-open { align-content: end; padding-bottom: 3.4rem; }
+  /* the opening words stand under the first thing's devices, as every thing's do */
+  html.pin .made-open { align-content: start; }
   html.pin .rig { max-width: none; justify-self: center; width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1)); }
   html.pin .made-ticks { left: 16px; right: 16px; bottom: 0.1rem; width: auto; }
 }

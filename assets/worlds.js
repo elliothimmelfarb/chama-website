@@ -298,8 +298,9 @@
   // while the page scrolls: within a thing's stretch its pictures scroll
   // inside the screens, and at the end the next thing's rig fades in over it
   // and the words change. The opening words stand beside the first thing's
-  // devices. The stretches are the --h on the section: 90
-  // for the opening and 135 for each thing, after the 100 of the pin.
+  // devices. The stretches are the --h on the section: its data-open (90
+  // without one) for the opening and 135 for each thing, after the 100 of
+  // the pin.
   var DEV_OPEN = 90, DEV_EACH = 135;
   function devicesOf(sec) {
     if (sec._dev) return sec._dev;
@@ -309,12 +310,13 @@
       // the <noscript> copies are real elements after the router parses a page, so only the screen's own picture
       shots: items.map(function (it) { return [].slice.call(it.querySelectorAll(".screen > img")); }),
       ticks: [].slice.call(sec.querySelectorAll(".made-ticks a")), bar: sec.querySelector(".made-ticks"),
-      rooms: [], words: -2, rig: -1, was: -1, wasAt: 0, fitted: ""
+      rooms: [], words: -2, rig: -1, was: -1, wasAt: 0, fitted: "",
+      opening: +sec.getAttribute("data-open") || DEV_OPEN
     });
     D.shots.forEach(function (pair, i) { pair.forEach(function (img) { img.addEventListener("load", function () { D.rooms[i] = null; }); }); });
     return D;
   }
-  function devicesIntro(n) { return DEV_OPEN / (DEV_OPEN + DEV_EACH * n); }
+  function devicesIntro(D) { return D.opening / (D.opening + DEV_EACH * D.items.length); }
   // a picture is fetched when its thing is next, so a long page costs a
   // visitor only what they scroll to. The things either side wait until the
   // one on the screens has arrived, so they never compete with it.
@@ -378,7 +380,7 @@
     var dy = (stand || 0) - (1 - ex) * liftPx;
     put(D.stage, "translate", dy ? "0 " + dy.toFixed(1) + "px" : "");
     if (D.bar) put(D.bar, "opacity", gone);
-    var a = devicesIntro(n), opening = l < a;
+    var a = devicesIntro(D), opening = l < a;
     var q = opening ? 0 : clamp((l - a) / (1 - a)) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
     devicesLoad(D, i);
     if (i !== D.rig) {
@@ -421,7 +423,7 @@
   function devicesY(el) {
     var sec = el.closest(".world"), k = sections.indexOf(sec);
     if (k < 0 || !held[k]) return null;
-    var items = devicesOf(sec).items, n = items.length, i = items.indexOf(el), a = devicesIntro(n);
+    var D = devicesOf(sec), items = D.items, n = items.length, i = items.indexOf(el), a = devicesIntro(D);
     return i < 0 ? null : tops[k] + (hs[k] - pins[k]) * (a + (1 - a) * (i + 0.25) / n);
   }
   // an anchor inside a pinned world is reached by scrolling to where it is
