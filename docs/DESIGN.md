@@ -169,7 +169,7 @@ Every transition is one of six moves, the same in scroll and in time. Arrivals a
 | Arrive | fade up and rise `--rise`, eased out over 0.25 from `--arrive-at` (-0.6) | `--dur-arrive-ui`, `--ease-out` |
 | Stagger | 0.05 per word in reading order (`--i`, written by the engine); a figure box (`.fig`) after its words, from `--fig-at` (-0.4) | `--stagger-ms` |
 | Draw, then the figure's own timeline | `--p`, per the figure kit | stage beats |
-| Leave | the whole world: stands `EXIT_AT` (0.12), then each part fades over `EXIT_SPAN` (0.2), `EXIT_STAGGER` (0.03) apart, lifting `--lift`; a part goes sooner only where the next words or its pin's edge would reach it, and the next world's words then come as it fades | `--dur-leave`, `--ease-exit` |
+| Leave | the whole world: stands `EXIT_AT` (0.12), then each part fades over `EXIT_SPAN` (0.2), `EXIT_STAGGER` (0.03) apart, lifting `--lift`; a part goes sooner only where the next words or its pin's edge would reach it, and the next world's words then come as it fades; a world stacked in one column stands as one, as far as its least able part, then rides up whole | `--dur-leave`, `--ease-exit` |
 | Swap | `--in`/`--out` beats in a hold | out `--dur-swap-out` `--ease-exit`, in `--dur-swap-in` `--ease-out` after `--swap-gap` |
 
 A page writes only `--in` (0 to 0.5) and `--out` for a beat inside a hold; never `--k`, `--i` or `!important`. Popovers and the desktop Talk panel open on `--dur-base --ease-out` and close on `--dur-quick --ease-exit`; the header's Talk pill only fades; the rail and press use `--dur-quick` and `--dur-press` on `--ease-out`.
@@ -216,7 +216,7 @@ Ground: the page's last world continues into it; on a non-world page it sits on 
 
 ## 7. Pages, sections, grounds and motion
 
-"Pinned" means the section holds while its figure plays from `--p`, for the hold its `--h` sets (in screens times 100; 150 by default). A pinned section without enough hold never shows its words. At most three changes of ground per page, and never two within about two screens: merge short sections onto a neighbour's ground. Consecutive sections on the same ground scroll as one world with no blend. As a pinned section leaves, its words stand still and fade in place before the next section's words, rising from below, would reach them, so no stretch of scroll is bare ground (`test/shots` checks it). Every page ends with a Talk to us block and the footer.
+"Pinned" means the section holds while its figure plays from `--p`, for the hold its `--h` sets (in screens times 100; 150 by default). A pinned section without enough hold never shows its words. At most three changes of ground per page, and never two within about two screens: merge short sections onto a neighbour's ground. Consecutive sections on the same ground scroll as one world with no blend. As a pinned section leaves, its words stand still and fade in place before the next section's words, rising from below, would reach them, so no stretch of scroll is bare ground (`test/shots` checks it). Where a section's parts are stacked in one column (a phone), they stand together, only as far as the lowest can, then the section scrolls away whole, each part fading before the header, with the next section's words fading in as it goes. Every page ends with a Talk to us block and the footer.
 
 ### `/` Home
 

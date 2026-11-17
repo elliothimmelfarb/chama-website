@@ -478,7 +478,7 @@
   // Where things are on the page, read once per layout rather than every
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
-  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [], goneEls = [], devStay = [], devGone = [], places = [], liftPx = 8, arriveAt = -0.6, arriveK = 4, arrives = [];
+  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [], goneEls = [], devStay = [], devGone = [], places = [], liftPx = 8, arriveAt = -0.6, arriveK = 4, arrives = [], rides = [];
   var docH = 0, vh = 0;
   // ---- leaving: a world leaves as one ----------------------------------------
   // A world's --u runs from 1 to 2 while its pin scrolls away. Its .r all
@@ -607,9 +607,24 @@
       var r = el.getBoundingClientRect(), y = r.top - shiftOf(el) - pt;
       box[j] = { y: y, foot: y + r.height, l: r.left, r: r.right };
     });
+    // Where the parts are stacked in one column (a phone, or a figure set
+    // under the words), they stand together: each as far as the one that
+    // can stand least (its guard without riding), then the world rides up
+    // with its pin as plain scroll, each part gone before the header. A part
+    // standing on its own guard here leaves the others alone on bare ground.
+    var stand = Infinity, n = 0, stacked = blend;
+    box.forEach(function (b) {
+      n++;
+      stacked = stacked && box.every(function (o) { return o.l < b.r && b.l < o.r; });
+      stand = Math.min(stand, mustGo(len, b.y, b.foot, blend, nextOver(nb, b.l, b.r), top, false));
+    });
+    var whole = stacked && n > 1;
+    stand = Math.max(0, stand);
     box.forEach(function (b, j) {
       b.ride = !box.some(function (o) { return o !== b && o.foot <= b.y + 1 && o.l < b.r && b.l < o.r; });
-      by[j] = mustGo(len, b.y, b.foot, blend, nextOver(nb, b.l, b.r), top, b.ride);
+      // (a part reaching past its pin is cut as soon as the pin moves, so it
+      // goes by the pin's edge, as before)
+      by[j] = whole ? (b.foot > len ? len - b.foot : stand + b.y - top) : mustGo(len, b.y, b.foot, blend, nextOver(nb, b.l, b.r), top, b.ride);
       first = Math.min(first, by[j]);
     });
     if (sec.classList.contains("devices-world")) {
@@ -631,15 +646,17 @@
     var gone = readers[k].map(function (el, j) {
       var o = el.classList.contains("r") && el.parentElement.closest(".world > .pin .r"), at = o ? readers[k].indexOf(o) : j;
       var own = start + (place[j] || 0) * step + span;
-      return by[at] === undefined ? own : Math.min(own, by[at]);
+      if (by[at] === undefined) return whole ? Math.min(own, first) : own;
+      return Math.min(own, by[at]);
     });
     return {
       world: Math.min(start + span, first),
       els: gone,
       // a .r with its own guard stands until it is gone or its pin's edge
       // reaches it; a nested one rides with its outer one
-      stay: gone.map(function (g, j) { return blend && box[j] ? clamp(Math.min(g, len - box[j].foot) / len) : 0; }),
-      devices: null
+      stay: gone.map(function (g, j) { return !box[j] ? 0 : whole ? clamp(stand / len) : blend ? clamp(Math.min(g, len - box[j].foot) / len) : 0; }),
+      devices: null,
+      whole: whole
     };
   }
   // A unit of --u is a screen of scroll once a pin has let go (the last
@@ -690,13 +707,14 @@
         return { fig: el.classList.contains("fig"), inN: /^-?[\d.]+$/.test(inS) ? +inS : NaN, out: parseFloat(cs.getPropertyValue("--out")) || 2, k: parseFloat(cs.getPropertyValue("--k")) || arriveK };
       });
     });
-    goneEls = []; devStay = []; devGone = [];
+    goneEls = []; devStay = []; devGone = []; rides = [];
     var stays = [];
     gones = sections.map(function (s, k) {
       if (!held[k]) return undefined;
       var g = goneOf(k);
       goneEls[k] = g.els.map(function (r) { return reach(k, r); });
       stays[k] = g.stay;
+      rides[k] = !!g.whole && held[k + 1];
       if (g.devices) { devStay[k] = g.devices.stay; devGone[k] = reach(k, g.devices.gone); }
       return reach(k, g.world);
     });
@@ -725,6 +743,10 @@
       if (k > 0 && held[k] && held[k - 1] && goneEls[k - 1]) {
         var last = devGone[k - 1] !== undefined ? devGone[k - 1] : Math.max.apply(null, goneEls[k - 1].concat([gones[k - 1]]));
         var want = Math.max(ARRIVE_EARLIEST, base - (1 - SEEN), -1 + (last - ARRIVE_OVERLAP * AH) / (pins[k - 1] || AH));
+        // after a world that rides up as plain scroll (nothing stands for
+        // them to meet), the next one's words come in like plain scroll too:
+        // whole by the time they show
+        if (rides[k - 1]) want = Math.max(ARRIVE_EARLIEST, base - (1 - SEEN) - 1 / arriveK);
         if (want < base - 0.001) at = String(round3(want));
       }
       setVar(pinOf[k], "--arrive-at", at);

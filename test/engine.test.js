@@ -461,6 +461,26 @@ test("a leaving part waits for the next world's words only where they share its 
   assert.match(gone, /mustGo\(len, b\.y, b\.foot, blend, nextOver\(/, "each part's guard reads the next world's top over its own columns");
 });
 
+// On a phone the parts are stacked, so a figure under standing words could
+// not stand as long (the next words rise through it) and went half a screen
+// early: home's "How we work" showed a heading alone over bare ground, worst
+// when scrolling back up (Elliot, 2026-11-17). A stacked world now stands as
+// one, as far as its least able part, then rides up as plain scroll.
+// test/shots checks the result on every page ("stacked world split").
+test("a world stacked in one column stands as one, then rides up whole", () => {
+  const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(gone, /stacked = stacked && box\.every\(function \(o\) \{ return o\.l < b\.r && b\.l < o\.r; \}\)/, "stacked: every part shares a column with every other");
+  assert.match(gone, /stand = Math\.min\(stand, mustGo\(len, b\.y, b\.foot, blend, nextOver\(nb, b\.l, b\.r\), top, false\)\)/, "the shared stand is the least any part can stand without riding");
+  assert.match(gone, /by\[j\] = whole \? \(b\.foot > len \? len - b\.foot : stand \+ b\.y - top\) : mustGo\(/, "then each part rides up and is gone before the header, or by its pin's edge if it reaches past it");
+  assert.match(gone, /whole \? clamp\(stand \/ len\)/, "every part stands the same distance");
+  assert.match(gone, /whole \? Math\.min\(own, first\) : own/, "and the shade goes with its first part");
+  assert.match(gone, /whole: whole/, "goneOf reports it");
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(measure, /rides\[k\] = !!g\.whole && held\[k \+ 1\]/, "measure() keeps which worlds ride into a pinned one");
+  assert.match(measure, /if \(rides\[k - 1\]\) want = Math\.max\(ARRIVE_EARLIEST, base - \(1 - SEEN\) - 1 \/ arriveK\)/, "after a riding world, the next words are whole as they come into view");
+  assert.ok(!/RIDE_GAP/.test(JS), "no threshold decides it");
+});
+
 test("a settled reader is not written while its --u changes nothing", () => {
   const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
   assert.match(measure, /settle\[k\] = /, "measure() works out, per reader, the stretch of --u in which its style cannot change");

@@ -372,6 +372,15 @@ async function holdPoints(page) {
 // past a stretch is held to it too (2026-11-17: one measured every stand
 // from where it stood and gave 3px instead of 284).
 async function checkStands(pg, state, page, dir, stem) {
+  // A world whose parts are stacked in one column leaves as one: every part
+  // stands the same distance (2026-11-17: on a phone the figure under home's
+  // "How we work" went half a screen before its heading, which sat alone).
+  const split = await page.evaluate(() => [...document.querySelectorAll(".world > .pin")].flatMap((pin) => {
+    const parts = [...pin.querySelectorAll(".r")].filter((e) => e.offsetHeight && !e.parentElement.closest(".world > .pin .r") && !(parseFloat(getComputedStyle(e).getPropertyValue("--out")) < 1)).map((e) => ({ b: e.getBoundingClientRect(), stand: e.style.getPropertyValue("--stand") || "0px", text: e.textContent.trim().slice(0, 30) }));
+    const stacked = parts.length > 1 && parts.every((p) => parts.every((o) => o.b.left < p.b.right && p.b.left < o.b.right));
+    return stacked && new Set(parts.map((p) => p.stand)).size > 1 ? [`${pin.parentElement.dataset.label}: ${parts.map((p) => `"${p.text}" ${p.stand}`).join(", ")}`] : [];
+  }));
+  for (const s of split) fail(pg, state, "stacked world split", s, null);
   const stands = await page.evaluate(() => [...document.querySelectorAll("[data-stand]")].map((e, i) => {
     e.dataset.standProbe = i;
     return { i, rel: parseFloat(e.style.getPropertyValue("--rel")), stand: parseFloat(e.style.getPropertyValue("--stand")), text: e.textContent.trim().slice(0, 40) };
