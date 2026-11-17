@@ -36,8 +36,9 @@ const STYLE = `
 .hfx-new { stroke-dasharray: 7 7; }
 .hfx-call::before { content: ""; position: absolute; left: var(--ax); top: var(--ay); width: var(--len); height: 1px; margin-top: -0.5px; background: var(--fg-2); transform-origin: 0 50%; rotate: var(--ang); }
 .hfx-call::after { content: ""; position: absolute; left: calc(var(--ax) - 2.5px); top: calc(var(--ay) - 2.5px); width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
-.hfx-top { fill: var(--fx-body); }
-.hfx-front { fill: var(--fx-old); }
+/* the step is a plinth drawn in hairlines, its top face lit like a body */
+.hfx-top { fill: var(--fx-light); stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); stroke-linejoin: round; }
+.hfx-front { fill: var(--fx-platform); stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); }
 .hfx-path { fill: none; stroke: var(--fx-ink-2); stroke-width: calc(1.25px * var(--sw)); stroke-linecap: round; }
 /* on a phone the line under the heading names the reasons, so the callouts go */
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
@@ -80,7 +81,9 @@ export const reasonStyle = (k) => `color:color-mix(in srgb, ${k < 3 ? "var(--fg)
 
 export function beliefFigure(reasons) {
   const CALL = 30;
-  const body = withoutFit(subject({ id: "bl", R, warm: WARM }))
+  // the business stands from the start of the hold; only its fit, side by
+  // side, and the reasons draw
+  const body = withoutFit(subject({ id: "bl", R, drawn: true, warm: WARM }))
     + sides.map((s, k) => `<path class="fx-fit" data-p pathLength="1" d="${s.d}" style="${stroke(...SIDE(k))};scale:calc(1.03 - 0.03 * ${out(0.62, 0.72)})"/>`).join("");
   // each reason is one element: the word, with its dot and hairline drawn
   // back to the side from it (.hfx-call), so a callout costs one restyle
@@ -109,14 +112,14 @@ const NEW_FLOOR = [222, FLOOR_Y + 8];
 const slide = (a) => `translate:calc(48px * (1 - ${out(a, a + 0.12)})) calc(${-RISE}px * ${ss(0.56, 0.68)})`;
 // the step: its top face, and a front face that grows up from the ground
 const TOP_Y = Math.max(...FIT.map((p) => p[1])) + 10 - RISE;
-const TOP = `M-246 ${n(TOP_Y - 84)} H290 L276 ${n(TOP_Y)} H-260 Z`;
-const FRONT = `M-260 ${n(TOP_Y)} H276 V${n(TOP_Y + RISE)} H-260 Z`;
+const TOP = `M-174 ${n(TOP_Y - 48)} H292 L282 ${n(TOP_Y)} H-184 Z`;
+const FRONT = `M-184 ${n(TOP_Y)} H282 V${n(TOP_Y + RISE)} H-184 Z`;
 
 export function canDoFigure({ fresh, dayOne }) {
   const keep = { floor: rise, body: rise, ink: rise, halo: rise, fit: rise };
   const body = `<defs><radialGradient id="cd-new-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient></defs>
   <path class="hfx-top" data-p d="${TOP}" style="opacity:${c(0.48, 0.56)};translate:0 calc(${RISE}px * (1 - ${ss(0.56, 0.68)}))"/>
-  <path class="hfx-front" data-p d="${FRONT}" style="transform-box:fill-box;transform-origin:bottom;scale:1 calc(0.001 + 0.999 * ${ss(0.56, 0.68)})"/>
+  <path class="hfx-front" data-p d="${FRONT}" style="opacity:${c(0.5, 0.56)};transform-box:fill-box;transform-origin:bottom;scale:1 calc(0.001 + 0.999 * ${ss(0.56, 0.68)})"/>
   ${subject({ id: "cd", R, owned: true, st: keep })}
   <ellipse class="fx-floor" data-p fill="url(#cd-floor)" cx="${NEW_FLOOR[0]}" cy="${n(NEW_FLOOR[1])}" rx="54" ry="10" style="opacity:${c(0.1, 0.18)};${slide(0.1)}"/>
   <path class="fx-body" data-p fill="url(#cd-new-body)" d="${poly(NEW)}" style="opacity:${c(0.34, 0.42)};${rise}"/>
@@ -125,7 +128,7 @@ export function canDoFigure({ fresh, dayOne }) {
   <path class="fx-fit" data-p pathLength="1" d="${poly(NEW_FIT)}" style="${stroke(0.24, 0.38)};${rise}"/>`;
   const labels = [
     lb(fresh, [222, NEW[1][1] - RISE - 22], label(0.22), "is-live"),
-    lb(dayOne, [6, TOP_Y + RISE / 2], label(0.64), "is-live"),
+    lb(dayOne, [49, TOP_Y + RISE + 16], label(0.64), "is-live"),
   ];
   return fx("hfx-cando", body, labels);
 }

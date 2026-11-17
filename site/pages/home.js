@@ -20,6 +20,8 @@ const photo = (alt) => html`<img class="photo" data-p src="/assets/family-2026-7
 const goals = () => beliefPhrases(t.belief.line).map((p) => (p.k === undefined ? p.text : html`<span data-p style="${reasonStyle(p.k)}">${p.text}</span>`));
 
 const plant = SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line;
+// the line's last word keeps its arrow on the same line
+const plantHead = plant.slice(0, plant.lastIndexOf(" ") + 1), plantEnd = plant.slice(plant.lastIndexOf(" ") + 1);
 
 // Home's own section styles. Every pinned world is a .frame (worlds.css);
 // what is here sizes home's words and figures inside it.
@@ -40,8 +42,9 @@ const STYLE = `
 .home-plant { display: inline; color: var(--fg); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
 .home-plant .arr { display: inline-block; width: 18px; height: 18px; margin-left: 4px; vertical-align: -3px; color: var(--accent-text); }
 @media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
-.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s7) var(--s8); }
-.home-clients .logo { width: calc(var(--lw) * 1.15px); height: calc(var(--lh) * 1.15px); }
+.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s6) var(--s7); }
+.home-clients .logo { width: calc(var(--lw) * 1.7px); height: calc(var(--lh) * 1.7px); background: color-mix(in srgb, var(--fg) 82%, transparent); }
+.home-plant .end { white-space: nowrap; }
 .home-clients .more { margin-top: var(--s6); }
 /* the next world's words arrive as this short section ends: the flow
    padding's fifth of a screen for the ground's soft edge would leave a
@@ -62,6 +65,8 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
 .home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }
 .home-photo figcaption { margin-top: var(--s3); }
 .home-people .frame { --ar: 1.05; }
+/* the people's heading is the page's last claim: set large beside the photo */
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) { .home-people h2 { font-size: var(--t-display); line-height: 1.02; letter-spacing: -0.03em; } }
 
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
   /* the words each world's figure leaves room for, measured at 364x610 with 17px text */
@@ -70,8 +75,8 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
   .home-approach .frame { --words-h: 14rem; }
   .home-belief h2 { font-size: 1.5rem; }
   /* on a phone the photo is the width of the column, cropped to the faces */
-  .home-people .frame { --ar: 1.6; }
-  .home-photo-crop { aspect-ratio: 16 / 10; }
+  .home-people .frame { --ar: 1.33; }
+  .home-photo-crop { aspect-ratio: 4 / 3; }
   .home-photo .photo { height: 100%; object-fit: cover; object-position: 50% 30%; }
 }
 ${homeFigureStyle}`;
@@ -131,7 +136,7 @@ export function render(p) {
     <div class="frame home-frame" data-layout="split">
       <div class="words backed">
         <h2 class="r">${t.clients.h2}</h2>
-        <p class="lead r"><a class="home-plant" href="/engineering-department">${plant}${ARROW}</a></p>
+        <p class="lead r"><a class="home-plant" href="/engineering-department">${plantHead}<span class="end">${plantEnd}${ARROW}</span></a></p>
         <a class="more r" href="/work">${common.workLink}${ARROW}</a>
       </div>
       <div class="r backed">${logoStrip(CLIENTS)}</div>
@@ -139,7 +144,7 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world home-approach" data-world="ember" style="--h:180" data-label="${t.approach.label}" data-fill>
+<section class="world home-approach" data-world="ember" style="--h:170" data-label="${t.approach.label}" data-fill>
   <div class="pin">
     <div class="frame home-frame" data-layout="split">
       <div class="words">
@@ -151,7 +156,7 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world home-people" data-world="ember" style="--h:140" data-label="${t.people.h2.replace(/\.$/, "")}" data-fill>
+<section class="world home-people" data-world="ember" style="--h:130" data-label="${t.people.h2.replace(/\.$/, "")}" data-fill>
   <div class="pin">
     <div class="frame home-frame" data-layout="split" data-flip>
       <div class="words">

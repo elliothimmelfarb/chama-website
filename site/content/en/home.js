@@ -57,8 +57,8 @@ export const home = {
 
   clients: {
     h2: "Who we have worked with",
-    line: "Including the software an 88-person metal stamping plant in Toronto runs on.",
-    lineNamed: "Including the software LA Metal Stamping runs on.",
+    line: "Including an 88-person metal stamping plant in Toronto, which runs on software we built.",
+    lineNamed: "Including LA Metal Stamping in Toronto, which runs on software we built.",
   },
 
   approach: {

@@ -34,7 +34,7 @@ const STILLS = [2.6, 6.9, 10.2, 11.8, 17.3, 18.6, 24.2, T];
 const STATIONS = ["Tell us", "It gets built", "You use it", "What's next"];
 
 // ---- geometry, in the viewBox's units ------------------------------------
-const VW = 400, VH = 260, RX = 160, RY = 74;
+const VW = 400, VH = 260, RX = 132, RY = 70;
 const f = (n) => +n.toFixed(2);
 const R = 44;
 const PENT = pent(R);
@@ -48,7 +48,7 @@ const TILT = f((Math.atan2(EDGE[1], EDGE[0]) * 180) / Math.PI);
 const HEX = [PENT[0], CORNER, ...PENT.slice(1)];
 const GAP = FIT_GAP * R;
 // the queue, standing on the software company's ground line
-const Q = 13, QY = 22, QPENT = poly(pent(Q));
+const Q = 15, QY = 22, QPENT = poly(pent(Q));
 // the learner, up and to the right of the ring
 const LR = 18, LRN = pent(LR), LRN_FIT = poly(grow(LRN, 4)), LRN_AT = [150, -88];
 const ELLIPSE = (rx, ry) => `M0 ${-ry} A${rx} ${ry} 0 1 1 0 ${ry} A${rx} ${ry} 0 1 1 0 ${-ry}`;
@@ -77,7 +77,7 @@ const strokeRule = (cls, d1, u1, d2, extra) => `.stage .${cls} { ${k("d", ...d1)
 // place in the ring, a little smaller while the outline draws the devices.
 const YOU = `${k(1, 1.6, 2.3)} ${k(2, 3.7, 4.2)} ${k(3, 4.2, 5.2)} ${k(6, 7.0, 7.8)} ${k(4, 17.5, 17.9)} ${k(5, 20.2, 20.6)}
   --z: calc(0.3 + 1.6 * ${e(3)} - 0.9 * ${e(6)} - 0.15 * ${e(4)} + 0.15 * ${e(5)});`;
-const YOUT = `translate(calc(-8px + 30px * ${e(1)} - 22px * ${e(3)}), calc((${QY}px + 24px * ${e(2)}) * (1 - ${e(3)}))) scale(var(--z))`;
+const YOUT = `translate(calc(-13px + 33px * ${e(1)} - 20px * ${e(3)}), calc((${QY}px + 24px * ${e(2)}) * (1 - ${e(3)}))) scale(var(--z))`;
 // the fit lands 3.5% large and settles in
 const settle = (a, b) => `scale(calc(1.035 - 0.035 * ${w(a, b)}))`;
 const LRN_ON = `${w(22.4, 22.9)} * (1 - ${w(26.2, 26.6)})`;
@@ -90,8 +90,8 @@ const scene = `
 .stage [data-p], .stage-words { --t: calc(var(--p) * ${T}); }
 .stage-sq, .stage-qr, .stage-qfloor { opacity: calc(1 - 0.9 * ${w(3.6, 4.2)} - 0.1 * ${w(7.0, 7.4)}); }
 .stage-sq { translate: 0 calc(8px * (1 - ${w(0, 0.6)})); }
-.stage-qr { ${k(1, 1.6, 2.3)} transform: translate(calc(30px * ${e(1)}), ${QY}px); }
-.stage-qf { ${k(1, 1.6, 2.3)} transform: translate(calc(82px + 42px * ${e(1)}), ${QY}px) scale(calc(1 - 0.5 * ${e(1)})); opacity: calc(1 - ${w(1.9, 2.3)}); }
+.stage-qr { ${k(1, 1.6, 2.3)} transform: translate(calc(33px * ${e(1)}), ${QY}px); }
+.stage-qf { ${k(1, 1.6, 2.3)} transform: translate(calc(86px + 40px * ${e(1)}), ${QY}px) scale(calc(1 - 0.5 * ${e(1)})); opacity: calc(1 - ${w(1.9, 2.3)}); }
 .stage-you, .stage-yf { ${YOU} ${LOOP} transform: ${LOOPT} ${YOUT}; opacity: var(--lo); }
 /* the business keeps its line weight at every size it takes */
 .stage-you .stage-ink { stroke-width: calc(1.5 * var(--sw) / var(--z)); }
@@ -108,7 +108,9 @@ ${strokeRule("stage-cloud", [19.6, 19.95], [20.35, 20.55], null, `transform: ${L
 .stage-dev { fill: var(--fx-tint); fill-opacity: clamp(0, var(--v) * 1.5 - 0.5, 1); }
 .stage-people { ${k(1, 7.2, 7.7)} ${LOOP} opacity: calc(${w(7.2, 7.7)} * var(--lo)); transform: ${LOOPT} translate(-100px, 0) scale(calc(0.6 + 0.4 * ${e(1)})); }
 ${strokeRule("stage-link", [7.8, 8.4])}
-${strokeRule("stage-ringm", [8.6, 9.8], null, null, "")}
+/* the masks that draw the rings stay drawn: one that faded with the loop
+   would hide the ring in the still after the catch */
+.stage .stage-ringm { ${k("d", 8.6, 9.8)} stroke-dashoffset: calc(1 - ${e("d")}); opacity: clamp(0, ${e("d")} * 50, 1); }
 .stage-ringg, .stage-plat { ${LOOP} transform: ${LOOPT}; opacity: var(--lo); }
 .stage-plat { opacity: calc(${w(8.6, 9.8)} * var(--lo)); }
 .stage-ticks { ${k(1, 24.5, 26)} opacity: ${w(9.3, 9.9)}; stroke-dashoffset: calc(-0.04 * min(var(--t), 24.5) - 0.03 * ${e(1)}); }
@@ -118,7 +120,7 @@ ${strokeRule("stage-ringm", [8.6, 9.8], null, null, "")}
 .stage-head { stroke-dashoffset: calc(-1 * var(--s)); }
 .stage-tail { stroke-dashoffset: calc(0.05 - var(--s)); }
 .stage-lrn { ${LRN_MOVE} opacity: calc(${LRN_ON}); }
-${strokeRule("stage-lrnm", [22.9, 24.0], null, null, "")}
+.stage .stage-lrnm { ${k("d", 22.9, 24.0)} stroke-dashoffset: calc(1 - ${e("d")}); opacity: clamp(0, ${e("d")} * 50, 1); }
 /* the learner's own marker draws its own fit, then rests on it */
 .stage-lrnfit { ${k("d", 23.0, 24.2)} ${LRN_MOVE} stroke-dashoffset: calc(1 - ${e("d")}); opacity: calc(clamp(0, ${e("d")} * 50, 1) * ${LRN_ON}); }
 .stage-lrnmk { ${k("d", 23.0, 24.2)} ${LRN_MOVE} offset-distance: calc(${e("d")} * 100%); opacity: calc(${w(22.9, 23.1)} * ${LRN_ON}); }
@@ -137,7 +139,7 @@ ${strokeRule("stage-lrnm", [22.9, 24.0], null, null, "")}
 `;
 
 const CSS = `
-.stage { position: relative; margin: var(--s5) 0 0; height: clamp(16rem, 46svh, 24rem); display: flex; flex-direction: column; gap: var(--s2); }
+.stage { position: relative; margin: var(--s4) 0 0; height: clamp(18rem, 52svh, 27rem); display: flex; flex-direction: column; gap: var(--s2); }
 .stage-words { display: grid; margin: 0; font: 500 var(--t-stage)/1.3 var(--display); letter-spacing: -0.01em; color: var(--fg-2); max-width: 32ch; }
 .stage-say { grid-area: 1 / 1; margin: 0; }
 .stage-ph { display: inline-grid; }
@@ -160,7 +162,7 @@ const CSS = `
 .stage-sq .stage-door { fill: color-mix(in srgb, var(--fx-ink) 70%, transparent); }
 .stage-hot { fill: none; stroke: var(--accent); stroke-width: calc(2.5 * var(--sw)); stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1 1; }
 .stage-ring { fill: none; stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1.25 * var(--sw)); stroke-dasharray: 2 6; stroke-linecap: round; }
-.stage-ticks { fill: none; stroke: var(--fx-ink); stroke-width: calc(2.5 * var(--sw)); stroke-linecap: round; stroke-dasharray: 0.012 0.113; }
+.stage-ticks { fill: none; stroke: var(--fx-ink); stroke-width: calc(2.5 * var(--sw)); stroke-linecap: round; stroke-dasharray: 0.008 0.117; }
 .stage-mask { fill: none; stroke: var(--fg); stroke-width: 16; stroke-dasharray: 1 1; }
 .stage-people { fill: var(--fx-ink); }
 .stage-st { stroke: var(--fx-ink); stroke-width: calc(1.5 * var(--sw)); }
@@ -172,12 +174,14 @@ const CSS = `
 .stage-lrnmk { fill: var(--accent); stroke: var(--fx-halo); stroke-width: calc(2 * var(--sw)); paint-order: stroke; offset-rotate: 0deg; }
 .stage-gl { color: var(--fg); }
 .stage-lb { position: absolute; font: 600 var(--t-label)/1.2 var(--text); letter-spacing: 0.01em; white-space: nowrap; }
+/* every label stands outside the ring, clear of its line and its nodes; the
+   side ones take the room beside it and wrap there on a narrow picture */
 .stage-lb0 { left: 50%; bottom: calc(50% + ${f((RY / VH) * 100)}% + 10px); translate: -50% 0; }
-/* the side stations' labels stand above them, inside the picture's width,
-   on a knockout of the ground so the ring's line never crosses a word */
-.stage-lb1, .stage-lb3 { bottom: calc(50% + 12px); translate: -50% 0; text-shadow: 0 0 2px var(--ground, var(--bg)), 0 0 6px var(--ground, var(--bg)); }
-.stage-lb1 { left: calc(50% + ${f((RX / VW) * 100)}%); }
-.stage-lb3 { left: calc(50% - ${f((RX / VW) * 100)}%); }
+.stage-lb2 { left: 50%; top: calc(50% + ${f((RY / VH) * 100)}% + 10px); translate: -50% 0; }
+.stage-lb1, .stage-lb3 { top: 50%; translate: 0 -50%; max-width: calc(${f(50 - (RX / VW) * 100)}% - 14px); white-space: normal; line-height: 1.15; }
+.stage-lb1 { left: calc(50% + ${f((RX / VW) * 100)}% + 12px); }
+.stage-lb3 { right: calc(50% + ${f((RX / VW) * 100)}% + 12px); text-align: right; }
+@container stage-box (max-width: 440px) { .stage-lb { font-size: 0.75rem; } }
 .stage-ctl, .stage-step { flex: none; display: flex; align-items: center; gap: var(--s3); height: 44px; }
 .stage-btn { flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-pill); background: var(--surface); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line-strong); cursor: pointer; transition: box-shadow var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
 .stage-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
@@ -209,7 +213,10 @@ html[data-motion="low"] .stage-ph { --in: 1; }
 /* After the catch the glyphs live in the doors, and the stage keeps the loop
    as a quiet still behind Replay. */
 .stage[data-caught] .stage-gl { opacity: 0 !important; }
-.stage[data-caught] :is(.stage-ringg, .stage-plat, .stage-st, .stage-people, .stage-link, .stage-you, .stage-yf) { --lo: 0.4 !important; --eL: 0 !important; transition: opacity 600ms var(--ease-out); }
+/* the doors' icons never stand blank while the stage waits or plays (base.css
+   hides them for the catch); the catch still flies them in from the stage */
+.first [data-doors] .g { opacity: 1 !important; }
+.stage[data-caught] :is(.stage-ringg, .stage-plat, .stage-st, .stage-people, .stage-link, .stage-you, .stage-yf) { --lo: 0.85 !important; --eL: 0 !important; transition: opacity 600ms var(--ease-out); }
 
 @media (min-width: 1100px) {
   .stage { grid-column: 7 / span 6; margin: 0; height: auto; gap: var(--s4); container-type: inline-size; }
@@ -220,7 +227,8 @@ ${scene}
 `;
 
 // The doors catch (docs/DESIGN.md, "the doors catch"): while the stage plays,
-// the door icons wait (data-catch="wait" on [data-doors], hidden in base.css);
+// the door icons wait (data-catch="wait" on [data-doors]; base.css would hide
+// them, but the stage's CSS keeps them shown, so no row is ever blank);
 // when it ends, each icon flies from its glyph in the stage to its door.
 // A pause, or scrolling past a stage that never played, shows them where they
 // are. It watches data-state from document, so a stage the router swaps in
@@ -291,10 +299,10 @@ const FIG = `<svg class="stage-fig" viewBox="${-VW / 2} ${-VH / 2} ${VW} ${VH}" 
     <mask id="stage-ring-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-200" y="-130" width="400" height="260"><path class="stage-mask stage-ringm" data-p pathLength="1" d="${RING}"/></mask>
     <mask id="stage-lrn-m" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="-60" y="-35" width="120" height="70"><path class="stage-mask stage-lrnm" data-p pathLength="1" d="${ELLIPSE(40, 18)}"/></mask>
   </defs>
-  <g class="stage-sq" data-p><path class="stage-top" d="M110 -33 L124 -47 H190 L176 -33 Z"/><rect x="110" y="-33" width="66" height="66" rx="2"/><rect class="stage-door" x="116" y="7" width="16" height="26" rx="1"/></g>
+  <g class="stage-sq" data-p><path class="stage-top" d="M112 -33 L126 -47 H192 L178 -33 Z"/><rect x="112" y="-33" width="66" height="66" rx="2"/><rect class="stage-door" x="118" y="7" width="16" height="26" rx="1"/></g>
   <ellipse class="stage-qfloor" data-p fill="url(#stage-floor)" cx="22" cy="${f(QY + 12)}" rx="120" ry="6"/>
   <path class="stage-ink stage-qf" data-p d="${QPENT}"/>
-  <g class="stage-qr" data-p>${[52, 22, -38].map((x) => `<path class="stage-ink" transform="translate(${x} 0)" d="${QPENT}"/>`).join("")}</g>
+  <g class="stage-qr" data-p>${[53, 20, -46].map((x) => `<path class="stage-ink" transform="translate(${x} 0)" d="${QPENT}"/>`).join("")}</g>
   <ellipse class="fx-plat stage-plat" data-p rx="${RX}" ry="${RY}"/>
   <g class="stage-ringg" data-p mask="url(#stage-ring-m)"><path class="stage-ring" d="${RING}"/><path class="stage-ticks" data-p pathLength="1" d="${RING}"/></g>
   ${[[0, -RY], [RX, 0], [0, RY], [-RX, 0]].map(([x, y], i) => `<circle class="stage-st" data-p cx="${x}" cy="${y}" r="5.5" style="--a:${SAID[3][i]}"/>`).join("")}

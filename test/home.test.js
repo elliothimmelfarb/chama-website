@@ -60,7 +60,9 @@ test("who we have worked with: a visible heading, the plant line to the engineer
   assert.equal(w.h2, "Who we have worked with");
   assert.ok(!/class="[^"]*sr-only[^"]*"[^>]*>Who we have/.test(w.body), "the heading is visible");
   const plant = SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line;
-  assert.match(w.body, new RegExp(`<a [^>]*href="/engineering-department"[^>]*>\\s*${plant.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+  const link = /<a [^>]*href="\/engineering-department"[^>]*>([\s\S]*?)<\/a>/.exec(w.body);
+  assert.ok(link, "the plant line links to the engineering page");
+  assert.equal(words(link[1]), plant);
   assert.match(w.body, /<ul class="logos">/);
   assert.match(w.body, /<a [^>]*href="\/work"[^>]*>Everything we(&#39;|')ve built/);
 });
