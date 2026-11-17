@@ -34,6 +34,8 @@ const STYLE = `
 @container fx (min-width: 480px) { .hfx .fx-svg { --sw: calc(600 / 520); } }
 @container fx (min-width: 600px) { .hfx .fx-svg { --sw: calc(600 / 680); } }
 .hfx-new { stroke-dasharray: 7 7; }
+.hfx-call::before { content: ""; position: absolute; left: var(--ax); top: var(--ay); width: var(--len); height: 1px; margin-top: -0.5px; background: var(--fg-2); transform-origin: 0 50%; rotate: var(--ang); }
+.hfx-call::after { content: ""; position: absolute; left: calc(var(--ax) - 2.5px); top: calc(var(--ay) - 2.5px); width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
 .hfx-top { fill: var(--fx-body); }
 .hfx-front { fill: var(--fx-old); }
 .hfx-path { fill: none; stroke: var(--fx-ink-2); stroke-width: calc(1.25px * var(--sw)); stroke-linecap: round; }
@@ -80,11 +82,16 @@ export function beliefFigure(reasons) {
   const CALL = 30;
   const body = withoutFit(subject({ id: "bl", R, warm: WARM }))
     + sides.map((s, k) => `<path class="fx-fit" data-p pathLength="1" d="${s.d}" style="${stroke(...SIDE(k))};scale:calc(1.03 - 0.03 * ${out(0.62, 0.72)})"/>`).join("");
+  // each reason is one element: the word, with its dot and hairline drawn
+  // back to the side from it (.hfx-call), so a callout costs one restyle
   const labels = sides.map((s, k) => {
     const a = SIDE(k)[1] - 0.03, rad = (s.ang * Math.PI) / 180, x = n(Math.cos(rad) * CALL), y = n(Math.sin(rad) * CALL);
-    const tx = Math.abs(x) < 4 ? "-50%" : x > 0 ? `${x + 6}px` : `calc(${x - 6}px - 100%)`;
-    const ty = Math.abs(x) < 4 ? `${y + 2}px` : `calc(${y}px - 50%)`;
-    return html`<span class="fx-lb fx-call is-wide" data-p style="${place(VB, ...s.mid)};--ang:${n(s.ang)}deg;--len:${CALL}px;${label(a)}" aria-hidden="true"></span>${lb(reasons[k], s.mid, `--tx:${tx};--ty:${ty};${label(a)}`, `is-wide ${k < 3 ? "is-live" : "is-hot"}`)}`;
+    const at = Math.abs(x) < 4
+      ? `--tx:-50%;--ty:${y + 2}px;--ax:50%;--ay:${-(y + 2)}px`
+      : x > 0
+        ? `--tx:${x + 6}px;--ty:calc(${y}px - 50%);--ax:${-(x + 6)}px;--ay:calc(50% - ${y}px)`
+        : `--tx:calc(${x - 6}px - 100%);--ty:calc(${y}px - 50%);--ax:calc(100% + ${-x + 6}px);--ay:calc(50% - ${y}px)`;
+    return lb(reasons[k], s.mid, `${at};--ang:${n(s.ang)}deg;--len:${CALL}px;${label(a)}`, `hfx-call is-wide ${k < 3 ? "is-live" : "is-hot"}`);
   });
   return fx("hfx-belief", body, labels);
 }
