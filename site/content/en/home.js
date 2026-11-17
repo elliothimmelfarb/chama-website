@@ -4,12 +4,12 @@
 export const home = {
   title: "Chama Inteligente | Custom software and AI coaching, from a family business in Lisbon",
   description:
-    "A small, family-owned, AI-native business in Lisbon, working worldwide. We can solve any software problem, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.",
+    "A small, family-owned, AI-native business in Lisbon, working worldwide. We're ready to solve any problem that can be solved with software, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.",
   ogAlt: "What you have to do, made easier. What you wish you could do, made possible. Chama Inteligente, Lisbon.",
 
   descriptor: "Custom software and AI coaching, from a family business in Lisbon.",
   h1: ["What you have to do, made easier.", "What you wish you could do, made possible."],
-  sub: "You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem.",
+  sub: "You talk to a person. AI does the heavy work behind us, so a small team can take on any problem software can solve.",
 
   stageLabel: "How Chama works, in eight short scenes",
   // The opening stage: each beat's sentence, cut into the phrases it says
@@ -45,8 +45,8 @@ export const home = {
   // One pinned world, two beats of words that take turns.
   cando: {
     label: "What we can do",
-    h2: "We can solve any software problem.",
-    line: "We take on things we haven't done before.",
+    h2: "We're ready to solve any problem that can be solved with software.",
+    line: "We take on things no one has ever done before.",
     fig: "Something new",
   },
   dayOne: {
