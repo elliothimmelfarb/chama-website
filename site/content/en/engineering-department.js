@@ -44,13 +44,14 @@ export const ed = {
       { value: "about 15", text: "changes go live in a typical week" },
     ],
     // the summary figure: every request as a dot, those live within the
-    // hour in ember. Its caption is the sentence's first half and its two
-    // labels the second half, so nothing in the frame is said twice.
+    // hour in ember. Its caption is the sentence's first half; its labels
+    // are the share, in ember, and "every one the same day", because the
+    // heading above already says "within the hour".
     summary: {
       requests: +REQUESTS,
       within: Math.round((+REQUESTS * +WITHIN) / 100),
       caption: CAPTION_FIRST,
-      hour: `${WITHIN}% were live within the hour`,
+      share: `${WITHIN}%`,
       day: "Every one the same day",
       label: SITE.changeCaption,
     },
@@ -72,18 +73,18 @@ export const ed = {
     lead: "We manage it for you, and you can take it anywhere.",
     ours: "We manage it",
     yours: "You own it",
-    disappear: "If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.",
   },
 
   price: {
     h2: "A setup fee and a fixed monthly fee, quoted after a first conversation.",
     guarantee: "The setup fee is due only when you switch off your old system.",
-    // the timeline under it is how it starts, step by step. The third step
-    // stops at the switch: the guarantee above already says the fee is due then.
+    // the timeline under it is how it starts, step by step, saying only
+    // what the page says nowhere else: how soon is in the questions, and
+    // the guarantee above already says the fee is due at the switch.
     line: {
       steps: [
         "A first conversation about how your business works today.",
-        "A first version your team can use, usually within days.",
+        "A first version your team can use.",
         "You switch off the old system when you're ready.",
       ],
       old: "Your old system",

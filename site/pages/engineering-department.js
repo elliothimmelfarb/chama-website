@@ -12,6 +12,7 @@ import { contrast, VIEW } from "../figures/contrast.js";
 import { loop, LAPS } from "../figures/loop.js";
 import { beforeAfter, priceLine } from "../figures/plant.js";
 import { own } from "../figures/own.js";
+import { subject } from "../figures/kit.js";
 
 const MEDIA = "/assets/media/note-to-change-2026-11-16";
 const CAPTIONS = JSON.parse(readFileSync(new URL("../../assets/media/captions.json", import.meta.url), "utf8"));
@@ -48,8 +49,13 @@ function recording() {
 
 // The contrast, the loop and the numbers share one box, so in the same
 // cell their figures stand on the same spot: the loop's business is the
-// contrast's "Yours", and the numbers' dots pour from where the loop parked.
+// contrast's "Yours", and the numbers' sheet stands where the ring was.
 const AR = `--ar:${+(VIEW[2] / VIEW[3]).toFixed(4)}`;
+
+// The first screen's picture: your business standing with its software
+// round it, still. The loop is the page's to show once, in its own world.
+const HERO_R = 120, HERO_VIEW = [-160, -136, 320, 264];
+const hero = raw(`<figure class="fx ed-hero" aria-hidden="true"><svg class="fx-svg ed-hero-svg" viewBox="${HERO_VIEW.join(" ")}" focusable="false">${subject({ id: "hero", R: HERO_R, at: [0, -8], drawn: true })}</svg></figure>`);
 
 // Everything inside a figure box (.fig.r) restyles on every frame of its
 // world's hold, because the engine writes --u on the box (pages.md, frame
@@ -82,9 +88,14 @@ const STYLE = raw(`<style>
 
 /* viewBox units per CSS pixel at each figure width (worlds.css, figures) */
 .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 330); }
+.ed-hero-svg { --sw: calc(320 / 330); }
+@container fx (min-width: 480px) { .ed-hero-svg { --sw: calc(320 / 520); } }
 .pl-svg { --sw: calc(440 / 330); }
 @container fx (min-width: 480px) { .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 520); } .pl-svg { --sw: calc(440 / 520); } }
 @container fx (min-width: 600px) { .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 700); } .pl-svg { --sw: calc(440 / 660); } }
+/* the figures' words, a size up: they are read beside large headings */
+.ed-contrast .fx-lb, .ed-loop .fx-lb, .ed-numbers .fx-lb, .ed-own .fx-lb { font-size: var(--t-small); }
+@media (min-width: 1100px) { .ed-contrast .fx-lb, .ed-loop .fx-lb, .ed-numbers .fx-lb, .ed-own .fx-lb { font-size: var(--t-lead); } }
 
 /* The contrast: the company, grey and seen from a little above, and its queue */
 .cx-co, .cx-co-top { stroke: var(--fx-ink-2); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
@@ -115,7 +126,7 @@ const STYLE = raw(`<style>
 .sum-box { position: relative; }
 .sum-sheet { fill: var(--fx-light); stroke: var(--line); stroke-width: calc(1px * var(--sw)); }
 .sum-in { fill: var(--accent); }
-.sum-later { fill: var(--fx-ink-2); fill-opacity: 0.6; }
+.sum-slot { fill: var(--fx-ink-2); fill-opacity: 0.45; }
 .sum-caption { margin-top: var(--s4); max-width: 46ch; }
 
 /* The plant: before and after, beside the week */
@@ -148,8 +159,15 @@ const STYLE = raw(`<style>
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines { list-style: none; padding-left: 0; min-height: 3em; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li:not([data-now]) { display: none; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
-:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong); } }
+/* in dark, the bright app screen sits in a soft frame and is dimmed a little */
+:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px color-mix(in srgb, var(--fg) 6%, transparent), 0 28px 64px -24px color-mix(in srgb, var(--ink) 70%, transparent); }
+:root[data-theme="dark"] .ed-rec-frame :is(img, video) { filter: brightness(0.86); }
+:root[data-theme="dark"] .ed-own .fx { --fx-body: color-mix(in srgb, var(--fg) 12%, var(--ground, var(--bg))); --fx-light: color-mix(in srgb, var(--fg) 24%, var(--ground, var(--bg))); --fx-platform: color-mix(in srgb, var(--fg) 8%, transparent); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px color-mix(in srgb, var(--fg) 6%, transparent), 0 28px 64px -24px color-mix(in srgb, var(--ink) 70%, transparent); }
+  :root:not([data-theme="light"]) .ed-rec-frame :is(img, video) { filter: brightness(0.86); }
+  :root:not([data-theme="light"]) .ed-own .fx { --fx-body: color-mix(in srgb, var(--fg) 12%, var(--ground, var(--bg))); --fx-light: color-mix(in srgb, var(--fg) 24%, var(--ground, var(--bg))); --fx-platform: color-mix(in srgb, var(--fg) 8%, transparent); }
+}
 
 /* You own it */
 .own-plat { stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: 1.5 6; stroke-linecap: round; }
@@ -219,6 +237,11 @@ const STYLE = raw(`<style>
   .ed-loop .loop-ledger-box { order: 2; }
   .ed-loop .more { order: 3; }
   .loop-ledger { gap: 2px; max-width: none; }
+  .loop-stops .at-right { --tx: calc(-100% - 8px); --ty: calc(-100% - 4px); }
+  .loop-stops .at-left { --tx: 8px; --ty: calc(-100% - 4px); }
+  .ed-loop .fx-lb { font-size: var(--t-label); }
+  /* an unpinned world starts where a pinned frame's words would */
+  .ed-more > .pin > .frame:first-child { padding-top: calc(var(--head) + var(--s4)); }
   .loop-ledger li { padding-top: 3px; }
   .ed-rec-frame { aspect-ratio: 9 / 16; width: min(100%, calc(70svh * 9 / 16)); margin-inline: auto; }
   /* how it starts runs down the column */
@@ -248,7 +271,7 @@ ${STYLE}
       <p class="lead">${t.lead}</p>
       ${talkField({ id: "ask-ed" })}
     </div>
-    <div class="fig" style="${AR}" aria-hidden="true">${loop({ id: "loop-a", stations: t.loop.stations, you: t.loop.you, label: t.loop.ledgerLabel }).figure}</div>
+    <div class="fig" style="--ar:${HERO_VIEW[2] / HERO_VIEW[3]}">${hero}</div>
   </div></div>
 </section>
 
@@ -262,7 +285,7 @@ ${STYLE}
   </div></div>
 </section>
 
-<section id="loop" class="world ed-loop" data-world="ember" data-fill style="--h:400" data-label="${t.rail.loop}">
+<section id="loop" class="world ed-loop" data-world="ember" data-fill style="--h:320" data-label="${t.rail.loop}">
   <div class="pin"><div class="frame">
     <div class="words">
       <h2 class="r">${t.loop.h2}</h2>
@@ -309,7 +332,6 @@ ${STYLE}
     <div class="words">
       <h2 class="r">${t.own.h2}</h2>
       <p class="lead r">${t.own.lead}</p>
-      <p class="lead r">${t.own.disappear}</p>
     </div>
     <div class="fig r" style="--ar:${480 / 360}">${own({ ours: t.own.ours, yours: t.own.yours })}</div>
   </div></div>
@@ -363,7 +385,6 @@ export function text() {
     ...CAPTIONS.wide.map((c) => `- ${c.text}`),
     `## ${t.own.h2}`,
     t.own.lead,
-    t.own.disappear,
     `## ${t.price.h2}`,
     t.price.guarantee,
     ...t.price.line.steps.map((s, i) => `${i + 1}. ${s}`),

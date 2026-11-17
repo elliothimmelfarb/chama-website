@@ -112,15 +112,13 @@ A real request and the change it became, recorded on the same app with demo data
 
 We manage it for you, and you can take it anywhere.
 
-If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.
-
 ## A setup fee and a fixed monthly fee, quoted after a first conversation.
 
 The setup fee is due only when you switch off your old system.
 
 1. A first conversation about how your business works today.
 
-2. A first version your team can use, usually within days.
+2. A first version your team can use.
 
 3. You switch off the old system when you're ready.
 

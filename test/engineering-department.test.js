@@ -4,6 +4,8 @@
 //   from SITE.changeTime;
 // - the numbers figure draws the summary of every measured request from
 //   SITE.changeCaption, not the four requests the loop's ledger shows;
+// - nothing the page says is said again further down (Elliot asked for the
+//   repeats to go), and the loop is shown once;
 // - the loop's business continues the contrast's "Yours": the same pentagon
 //   at the same place in the same box, arriving already drawn;
 // - every world sits in a .frame and is held to the fill floor.
@@ -34,11 +36,21 @@ test("the numbers figure draws every measured request, not the loop's four", () 
   const fig = world("numbers");
   assert.ok(!/class="bars/.test(fig), "the four bars are the loop's ledger; this section shows the summary");
   const dots = (cls) => [...fig.matchAll(new RegExp(`<path class="[^"]*\\b${cls}\\b[^"]*"[^>]*\\bd="([^"]*)"`, "g"))].reduce((sum, m) => sum + (m[1].match(/a/g) || []).length / 2, 0);
-  const within = dots("sum-in"), later = dots("sum-later");
-  assert.equal(within + later, +requests, "one dot per request");
+  const within = dots("sum-in"), all = dots("sum-slot");
+  assert.equal(all, +requests, "one grey dot per request, on the sheet from the start");
   assert.equal(within, Math.round((+requests * +share) / 100), "the ones live within the hour are ember");
-  assert.match(text(fig), new RegExp(`${share}% were live within the hour`));
+  assert.match(text(fig), new RegExp(`\\b${share}%`), "the share is in the frame");
+  assert.ok(!/within the hour/.test(text(fig)), "no label repeats the heading's hour");
   assert.match(text(fig), /Every one the same day/);
+});
+
+test("nothing the page says is said again further down", () => {
+  const page = text(MAIN);
+  for (const phrase of ["within days", "any engineer", "the code and the data"]) {
+    assert.equal(page.split(phrase).length - 1, 1, `"${phrase}" is said once`);
+  }
+  // the loop is shown once, in its own world, not again in the first screen
+  assert.equal((MAIN.match(/class="fx-svg loop-svg"/g) || []).length, 1, "one loop on the page");
 });
 
 test("the loop's business continues the contrast's, at the same size and place, already drawn", () => {
