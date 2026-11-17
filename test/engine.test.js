@@ -412,6 +412,15 @@ test("a world's words arrive as they come into view, and the world before waits 
   assert.match(measure, /var base = arrives\[k\]/, "and written on the pin when it differs from --arrive-at");
 });
 
+test("a leaving part waits for the next world's words only where they share its columns", () => {
+  const boxes = /function nextBoxes\(k\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(boxes, /getBoundingClientRect/, "the next world's parts are measured with their columns");
+  const over = /function nextOver\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(over, /o\.l < r && o\.r > l/, "only parts that overlap it horizontally count");
+  const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(gone, /mustGo\(len, b\.y, b\.foot, blend, nextOver\(/, "each part's guard reads the next world's top over its own columns");
+});
+
 test("no page overrides the motion scale", () => {
   for (const [file, text] of [...SOURCES, ...BUILT]) {
     // .ef-now's --k is its own figure's variable, not a .r's

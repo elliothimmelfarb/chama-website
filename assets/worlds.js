@@ -509,6 +509,28 @@
     }
     return y / AH;
   }
+  // the next world's parts as boxes, their tops as a share of the screen
+  // from the top of its pin and their columns in pixels, so a leaving part
+  // is held to the parts that will actually rise into it (on a desktop the
+  // next words often come up in the other column); a world that scrolls in
+  // as flow is one box as wide as the screen at its first words
+  function nextBoxes(k) {
+    var pin = pinOf[k];
+    if (!held[k] || !pin) return [{ y: firstWords(k), l: -1e4, r: 1e4 }];
+    var pt = pin.getBoundingClientRect().top, out = [];
+    [].forEach.call(pin.querySelectorAll(".r"), function (el) {
+      if (!el.offsetHeight) return;
+      var b = el.getBoundingClientRect();
+      out.push({ y: (b.top - shiftOf(el) - pt) / AH, l: b.left, r: b.right });
+    });
+    return out.length ? out : [{ y: 1, l: -1e4, r: 1e4 }];
+  }
+  // the highest of those that overlap [l, r], or none (2: below the screen)
+  function nextOver(nb, l, r) {
+    var y = 2;
+    nb.forEach(function (o) { if (o.l < r && o.r > l) y = Math.min(y, o.y); });
+    return y;
+  }
   // the --u at which a pinned world's words start to arrive: --arrive-at,
   // or later where its first words sit low on its pin (a centred frame), so
   // they arrive as their top comes SEEN down the screen instead of fading in
@@ -565,7 +587,7 @@
     var sec = sections[k], pin = pinOf[k], blend = k < NW - 1, next = blend ? firstWords(k + 1) : 0;
     var top = headBottom() + 8, pt = pin.getBoundingClientRect().top, len = pins[k] || AH;
     var span = EXIT_SPAN * AH, step = EXIT_STAGGER * AH, start = leaveFrom(k, len, next);
-    var place = places[k] || [], by = [], first = Infinity;
+    var place = places[k] || [], by = [], first = Infinity, nb = blend ? nextBoxes(k + 1) : [];
     // everything that leaves with the world, except what is gone before the
     // pin lets go (its --out is under 1); a .r inside another moves and
     // fades with its outer one
@@ -578,7 +600,7 @@
     });
     box.forEach(function (b, j) {
       b.ride = !box.some(function (o) { return o !== b && o.foot <= b.y + 1 && o.l < b.r && b.l < o.r; });
-      by[j] = mustGo(len, b.y, b.foot, blend, next, top, b.ride);
+      by[j] = mustGo(len, b.y, b.foot, blend, nextOver(nb, b.l, b.r), top, b.ride);
       first = Math.min(first, by[j]);
     });
     if (sec.classList.contains("devices-world")) {
