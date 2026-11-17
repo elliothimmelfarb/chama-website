@@ -50,7 +50,14 @@
 :root {
   --pad: clamp(16px, 4.6vw, 4.5rem);
   /* the release of a press */
-  --press: scale 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+  --press: scale var(--dur-press) var(--ease-out);
+  /* Arrive and Stagger in screens of scroll, read only by .r: the first
+     word starts as its pin is 0.6 screen below rest, takes a quarter screen,
+     and each next one starts 0.05 later; a figure box comes last */
+  --arrive-at: -0.6;
+  --arrive-k: 4;
+  --stagger: 0.05;
+  --fig-at: -0.4;
   /* past 120rem the worlds' words and figures keep to a centred stage */
   --stage: min(100vw, 120rem);
   --side: calc((100vw - var(--stage)) / 2);
@@ -90,7 +97,7 @@ html:not(.gl) #sky { display: none; }
   width: 2px;
   color: var(--fg);
   background: var(--line-strong);
-  transition: opacity 0.4s ease;
+  transition: opacity var(--dur-quick) var(--ease-out);
 }
 .worlds ol { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
 /* only the dot takes the pointer: a hidden label would leave a strip of
@@ -129,7 +136,7 @@ html:not(.gl) #sky { display: none; }
   border: 1.5px solid var(--line-strong);
   border-radius: 50%;
   background: var(--bg);
-  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), background 200ms ease, border-color 200ms ease, var(--press);
+  transition: transform var(--dur-quick) var(--ease-out), background var(--dur-quick) var(--ease-out), border-color var(--dur-quick) var(--ease-out), var(--press);
 }
 /* the label takes the rail's label style from base.css's type scale */
 .worlds button span {
@@ -137,7 +144,7 @@ html:not(.gl) #sky { display: none; }
   white-space: nowrap;
   opacity: 0;
   transform: translateX(6px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--dur-quick) var(--ease-out), transform var(--dur-quick) var(--ease-out);
 }
 .worlds button:focus-visible span { opacity: 0.85; transform: none; }
 @media (hover: hover) { .worlds:has(button i:hover) button span { opacity: 0.85; transform: none; } }
@@ -181,24 +188,32 @@ main { position: relative; z-index: 2; }
   width: 85%;
   --scrim: color-mix(in srgb, var(--ground, var(--bg)) 60%, transparent);
   background: radial-gradient(closest-side, var(--scrim), transparent);
-  opacity: calc(clamp(0, (var(--u) + 0.9) * 4, 1) * var(--e));
+  /* in with the first word, out with it (worlds.js writes its --e) */
+  opacity: calc(clamp(0, (var(--u) - var(--arrive-at)) * var(--arrive-k), 1) * var(--e));
   pointer-events: none;
 }
 
-/* A .r fades in as it rises into view with its world's pin (the leaving
-   world's words are gone before it reaches them: worlds.js, goneOf), and
-   leaves by its own exit, --e, rather than at a fixed --u. */
+/* A .r arrives (fades up and rises, eased out) as its pin rises into
+   place, a --stagger after the one before it in reading order: --i, its
+   place, is written by worlds.js and never by a page. It leaves on --e,
+   which worlds.js writes from one exit for the whole world. A beat inside
+   the hold sets only --in (0 to 0.5) and, to leave in the hold, --out. */
 .r {
-  --in: -0.85;
+  --in: calc(var(--arrive-at) + var(--i, 0) * var(--stagger));
   --out: 2;
-  --k: 6;
-  --a: clamp(0, (var(--u) - var(--in)) * var(--k), 1);
+  --k: var(--arrive-k);
+  --t: clamp(0, (var(--u) - var(--in)) * var(--k), 1);
+  --a: calc(var(--t) * (2 - var(--t)));
   --b: min(clamp(0, (var(--out) - var(--u)) * var(--k), 1), var(--e));
   opacity: calc(var(--a) * var(--b));
   /* --sx and --pl (worlds.js, measure): while its pin leaves, a .r gives
      back the pin's travel for the first --sx of it, so it stands still */
-  transform: translate3d(0, calc((1 - var(--a)) * 26px - (1 - var(--b)) * 16px + clamp(0, var(--u) - 1, var(--sx, 0)) * var(--pl, 0px)), 0);
+  transform: translate3d(0, calc((1 - var(--a)) * var(--rise) - (1 - var(--b)) * var(--lift) + clamp(0, var(--u) - 1, var(--sx, 0)) * var(--pl, 0px)), 0);
 }
+/* a figure box arrives after its world's words (worlds.js gives it the
+   last place) and no earlier than --fig-at. Later than -0.4 leaves a phone
+   showing a heading alone on bare ground for a third of a screen. */
+.r.fig { --in: max(var(--fig-at), calc(var(--arrive-at) + var(--i, 0) * var(--stagger))); }
 html:not(.pin) .r,
 .world[data-pin="off"] .r { opacity: 1; transform: none; }
 
@@ -262,28 +277,34 @@ html.nav-leave main,
 html.nav-leave body > footer,
 html.nav-leave .worlds {
   opacity: 0;
-  translate: 0 -2.5vh;
+  translate: 0 calc(-1 * var(--lift));
   pointer-events: none;
   /* the words are still going when the new page arrives, so no frame is bare */
-  transition: opacity 0.22s ease, translate 0.2s cubic-bezier(0.5, 0, 0.75, 0);
+  transition: opacity var(--dur-leave) var(--ease-exit), translate var(--dur-leave) var(--ease-exit);
 }
-html.nav-enter .world .copy > *,
-html.nav-enter main > .world[data-pin="off"]:first-child :is(.descriptor, .lead, .talk-field, .stage, .doors, .home-also) { animation: rise 0.45s cubic-bezier(0.23, 1, 0.32, 1) 0.05s backwards; }
-html.nav-enter .world .copy > :nth-child(2),
-html.nav-enter main > .world:first-child .lead { animation-delay: 0.1s; }
-html.nav-enter .world .copy > :nth-child(3),
-html.nav-enter main > .world:first-child :is(.talk-field, .stage) { animation-delay: 0.15s; }
-html.nav-enter .world .copy > :nth-child(n+4),
-html.nav-enter main > .world:first-child :is(.doors, .home-also) { animation-delay: 0.2s; }
-html.nav-enter .worlds { animation: arrive 0.3s ease 0.3s backwards; }
-html.nav-enter body > footer { animation: arrive 0.3s ease 0.3s backwards; }
+/* Arrive, in time: the first unpinned world's parts in reading order, and
+   every pinned world's words by their place (--i, worlds.js). A .r inside
+   another rises with it, never on its own as well. */
+html.nav-enter main > .world[data-pin="off"]:first-child :is(.descriptor, .lead, .talk-field, .stage, .doors, .home-also),
+html.nav-enter main .world > .pin .r:not(.r .r) { animation: rise var(--dur-arrive-ui) var(--ease-out) backwards; }
+html.nav-enter main .world > .pin .r:not(.r .r) { animation-delay: calc(var(--i, 0) * var(--stagger-ms)); }
+html.nav-enter main > .world:first-child .lead { animation-delay: calc(1 * var(--stagger-ms)); }
+html.nav-enter main > .world:first-child :is(.talk-field, .stage) { animation-delay: calc(2 * var(--stagger-ms)); }
+html.nav-enter main > .world:first-child :is(.doors, .home-also) { animation-delay: calc(3 * var(--stagger-ms)); }
+html.nav-enter .worlds,
+html.nav-enter body > footer { animation: arrive var(--dur-quick) var(--ease-out) calc(6 * var(--stagger-ms)) backwards; }
 /* After a page change the H1 arrives on the dissolve's time, not the first
    load's: done within 0.6s of the swap. .routed stays once set, so the
    rule never changes under a running animation. */
 html.routed h1 .half { animation-duration: 400ms; animation-delay: 60ms; }
-html.routed h1 .half + .half { animation-duration: 450ms; animation-delay: 140ms; }
-@keyframes rise { from { opacity: 0.01; translate: 0 16px; filter: blur(3px); } }
+html.routed h1 .half + .half { animation-duration: 450ms; animation-delay: 110ms; }
+@keyframes rise { from { opacity: 0.01; translate: 0 var(--rise); filter: blur(3px); } }
 @keyframes arrive { from { opacity: 0.01; } }
+/* reduced motion under full mode: the words appear, nothing moves */
+@media (prefers-reduced-motion: reduce) {
+  html.nav-enter main > .world[data-pin="off"]:first-child :is(.descriptor, .lead, .talk-field, .stage, .doors, .home-also),
+  html.nav-enter main .world > .pin .r:not(.r .r) { animation-name: arrive; animation-duration: var(--dur-quick); }
+}
 /* a page slow to come: worlds.js adds .nav-wait once the words have gone */
 html.nav-wait { cursor: progress; }
 main h1:focus { outline: none; }
@@ -294,12 +315,12 @@ main h1:focus { outline: none; }
      clear of the browser's own scroll indicator */
   .worlds { right: calc(4px + env(safe-area-inset-right)); bottom: 12px; pointer-events: none; }
   .worlds ol { display: none; }
-  .rail-mark { display: block; position: absolute; right: 0; top: var(--at, 0); width: 6px; height: 2px; margin-top: -1px; background: var(--line); transition: background 200ms ease; }
+  .rail-mark { display: block; position: absolute; right: 0; top: var(--at, 0); width: 6px; height: 2px; margin-top: -1px; background: var(--line); transition: background var(--dur-quick) var(--ease-out); }
   .rail-mark.is-passed { background: var(--accent); }
   .rail-mark.is-current { width: 10px; }
   /* /build counts its things in its own bar */
   html:has(.devices-world) .worlds { display: none; }
-  .pin-shade { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
+  .pin-shade { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, transparent, var(--scrim) 22%, var(--scrim) 48%, transparent); }
   .copy {
     left: 16px;
     right: 16px;
@@ -318,7 +339,7 @@ main h1:focus { outline: none; }
    faded in, so the bezels never thin), scrolls the pictures inside the
    screens, and fills the .made-ticks, which are also links to each thing.
    Without JavaScript the things are a plain list. */
-.rig { position: relative; width: 100%; padding-right: 13%; padding-bottom: 5%; }
+.rig { position: relative; isolation: isolate; width: 100%; padding-right: 13%; padding-bottom: 5%; }
 .rig .laptop { position: relative; }
 .rig .lid {
   position: relative;
@@ -346,6 +367,11 @@ main h1:focus { outline: none; }
 }
 .rig .phone .screen { height: 100%; border-radius: 13% / 6%; }
 .rig .phone::after { content: ""; position: absolute; z-index: 2; top: 4.4%; left: 50%; width: 30%; height: 3%; border-radius: 99px; background: var(--ink); transform: translateX(-50%); }
+/* the pair stands on the ground: a soft floor shadow under the laptop's
+   base and a smaller one under the phone (a .rig is an .fx, for the token) */
+.rig .laptop::after, .rig .phone::before { content: ""; position: absolute; z-index: -1; top: 100%; background: radial-gradient(closest-side, var(--fx-shadow), transparent); pointer-events: none; }
+.rig .laptop::after { left: 15%; width: 70%; height: 14px; margin-top: -4px; }
+.rig .phone::before { left: -12%; width: 124%; height: 10px; margin-top: -4px; }
 .made-ticks { display: none; }
 
 /* without JavaScript: the things, one under another */
@@ -358,7 +384,7 @@ html:not(.pin) .devices-world > .pin { position: static; }
 
 /* with it: one pair of devices holds still, and every thing's words start
    on the same line as the top of the laptop */
-html.pin .made-stage { --made-top: clamp(6.5rem, 20svh, 13rem); position: absolute; inset: 0; width: auto; padding: 0; }
+html.pin .made-stage { --made-top: clamp(6.5rem, 17svh, 13rem); position: absolute; inset: 0; width: auto; padding: 0; }
 html.pin .made, html.pin .made-open {
   position: absolute;
   inset: 0;
@@ -376,11 +402,22 @@ html.pin .made-open > * { grid-column: 1; }
 html.pin .made-open { row-gap: 0; }
 html.pin .made { pointer-events: none; }
 html.pin .made.on { pointer-events: auto; }
-html.pin .rig { max-width: calc((100svh - var(--made-top) - 5rem) * 1.6); justify-self: end; opacity: 0; visibility: hidden; }
-html.pin .made.rig-on .rig { z-index: 2; opacity: 1; visibility: visible; transition: opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1); }
+/* the devices end high enough that the next world's words are in view as
+   they leave (worlds.js lets them stand only until those words reach them) */
+html.pin .rig { max-width: calc((100svh - var(--made-top) - 12rem) * 1.6); justify-self: end; opacity: 0; visibility: hidden; }
+html.pin .made.rig-on .rig { z-index: 2; opacity: 1; visibility: visible; transition: opacity var(--dur-swap-in) var(--ease-out); }
 html.pin .made.rig-was .rig { z-index: 1; opacity: 1; visibility: visible; }
-html.pin .made-words, html.pin .made-open > * { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity 0.18s linear, transform 0.18s linear, visibility 0s linear 0.18s; }
-html.pin .made.on .made-words, html.pin .made-open.on > * { opacity: 1; visibility: visible; transform: none; transition: opacity 0.34s linear 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, visibility 0s 0.2s; }
+/* the words Swap, as the cycling phrases do: the outgoing lift and fade,
+   then the incoming rise. Going out moves translate; transform jumps back
+   below only once they are gone, so the next arrival rises the full --rise. */
+html.pin .made-words, html.pin .made-open > * {
+  opacity: 0; visibility: hidden; translate: 0 calc(-1 * var(--lift)); transform: translateY(calc(var(--rise) + var(--lift)));
+  transition: opacity var(--dur-swap-out) var(--ease-exit), translate var(--dur-swap-out) var(--ease-exit), transform 0s var(--dur-swap-out), visibility 0s var(--dur-swap-out);
+}
+html.pin .made.on .made-words, html.pin .made-open.on > * {
+  opacity: 1; visibility: visible; translate: 0 0; transform: none;
+  transition: opacity var(--dur-swap-in) var(--ease-out) var(--swap-gap), translate var(--dur-swap-in) var(--ease-out) var(--swap-gap), transform var(--dur-swap-in) var(--ease-out) var(--swap-gap), visibility 0s var(--swap-gap);
+}
 /* each bar is a link to its thing, with a taller target than it looks; the
    stage and the bar leave with the world: worlds.js sets their opacity
    (drawDevices) */
@@ -393,8 +430,19 @@ html.pin .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100v
 .made-ticks a:active::before,
 .made-ticks a:active::after { scale: 1 1.8; }
 @media (hover: hover) { .made-ticks a:hover::before { background: var(--line-strong); } }
+/* after a page change the opening's words and the first devices rise in by
+   their order, as a first screen's do (the H1 has its own arrival) */
+html.nav-enter .made-open.on > :not(h1, [aria-hidden]),
+html.nav-enter .made.rig-on .rig { animation: rise var(--dur-arrive-ui) var(--ease-out) backwards; }
+html.nav-enter .made-open.on > :nth-child(2) { animation-delay: var(--stagger-ms); }
+html.nav-enter .made-open.on > :nth-child(3) { animation-delay: calc(2 * var(--stagger-ms)); }
+html.nav-enter .made.rig-on .rig { animation-delay: calc(3 * var(--stagger-ms)); }
 @media (prefers-reduced-motion: reduce) {
-  html.pin .rig, html.pin .made-words, html.pin .made-open > *, html.pin .made.on .made-words, html.pin .made-open.on > *, html.pin .made.rig-on .rig { transition: none; transform: none; }
+  html.nav-enter .made-open.on > :not(h1, [aria-hidden]),
+  html.nav-enter .made.rig-on .rig { animation-name: arrive; animation-duration: var(--dur-quick); }
+  /* the rig before goes at once under reduced motion (worlds.js), so the new one cannot fade over it */
+  html.pin .rig, html.pin .made.rig-on .rig { transition: none; }
+  html.pin .made-words, html.pin .made-open > *, html.pin .made.on .made-words, html.pin .made-open.on > * { transition: opacity var(--dur-quick) var(--ease-out), visibility 0s; transform: none; translate: none; }
 }
 
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
@@ -405,7 +453,8 @@ html.pin .made-ticks { position: absolute; z-index: 3; left: calc(max(0px, (100v
   .made .rig { grid-row: 1; }
   .made .made-words { grid-row: 2; }
   html.pin .made, html.pin .made-open { grid-template-columns: minmax(0, 1fr); gap: 0.8rem; padding: calc(env(safe-area-inset-top) + 3.9rem) 16px 2.4rem; }
-  html.pin .made-open { align-content: end; padding-bottom: 3.4rem; }
+  /* the opening words stand under the first thing's devices, as every thing's do */
+  html.pin .made-open { align-content: start; }
   html.pin .rig { max-width: none; justify-self: center; width: calc(min(100%, (100svh - 24.5rem) * 1.75) * var(--fit, 1)); }
   html.pin .made-ticks { left: 16px; right: 16px; bottom: 0.1rem; width: auto; }
 }
@@ -433,6 +482,127 @@ html:not([data-motion="low"]) [data-stage] :is([data-stage-step], [data-stage-co
 [data-stage][data-state="ended"] [data-stage-action="play"],
 [data-stage]:not([data-state="ended"]) [data-stage-action="replay"],
 html[data-motion="low"] [data-stage-action] { display: none; }
+
+/* ---- the figure language ------------------------------------------------ */
+/* Every figure is an .fx: an inline .fx-svg whose protagonist and cast are
+   drawn on five layers (floor shadow, body, ink, halo, ember fit) in the
+   colours of tokens.css section 4, with HTML labels placed over it (.fx-lb;
+   their type is base.css's). site/figures/kit.js writes the parts; this is
+   how they are painted. Strokes on paths with pathLength cannot use
+   non-scaling-stroke (Chrome misplaces the dashes), so a figure sets --sw,
+   viewBox units per CSS pixel, on its .fx-svg at three container widths:
+     .x .fx-svg { --sw: calc(VBW / 330); }
+     @container fx (min-width: 480px) { .x .fx-svg { --sw: calc(VBW / 520); } }
+     @container fx (min-width: 600px) { .x .fx-svg { --sw: calc(VBW / 660); } }
+   Nothing here reads --p: each part's --p style is inline, on the part. */
+.fx { position: relative; margin: 0; container: fx / inline-size; }
+.fx-svg { --sw: 1; display: block; width: 100%; height: auto; overflow: visible; }
+.fx-svg [pathLength] { stroke-dasharray: 1 1; }
+.fx-s-light { stop-color: var(--fx-light); }
+.fx-s-body { stop-color: var(--fx-body); }
+.fx-s-owned { stop-color: var(--fx-owned); }
+.fx-s-shadow { stop-color: var(--fx-shadow); }
+.fx-s-clear { stop-color: var(--fx-shadow); stop-opacity: 0; }
+.fx-body, .fx-floor { stroke: none; }
+.fx-ink { fill: none; stroke: var(--fx-ink); stroke-width: calc(1.75px * var(--sw)); stroke-linejoin: round; stroke-linecap: round; }
+.fx-halo { fill: none; stroke: var(--fx-halo); stroke-width: calc(7px * var(--sw)); stroke-linejoin: round; }
+.fx-fit { fill: none; stroke: var(--accent); stroke-width: calc(2.5px * var(--sw)); stroke-linejoin: round; stroke-linecap: round; }
+.fx-tinted { fill: var(--fx-tint); }
+.fx-plat { fill: var(--fx-platform); stroke: none; }
+.fx-ring { fill: none; stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: 1.5 6; stroke-linecap: round; }
+.fx-ring.is-yours { stroke-opacity: 0.8; stroke-dasharray: none; }
+.fx-dot { fill: var(--fx-ink); }
+.fx-mk { fill: var(--accent); stroke: var(--fx-halo); stroke-width: calc(3px * var(--sw)); paint-order: stroke; }
+.fx-hair { fill: none; stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); }
+@media (max-width: 759px) {
+  .fx-ink { stroke-width: calc(1.5px * var(--sw)); }
+  .fx-fit { stroke-width: calc(2.25px * var(--sw)); }
+}
+/* A label sits on its part at --x, --y (kit.js place()), centred unless it
+   sets --tx and --ty. A callout is a 5px dot on the part and a hairline of
+   --len at --ang; its word is a label of its own at the line's end. */
+.fx-lb { position: absolute; left: var(--x); top: var(--y); translate: var(--tx, -50%) var(--ty, -50%); white-space: nowrap; }
+.fx-call { --len: 32px; --ang: -30deg; width: 0; height: 0; }
+.fx-call::before { content: ""; position: absolute; left: 0; top: -0.5px; width: var(--len); height: 1px; background: var(--fg-2); transform-origin: 0 50%; rotate: var(--ang); }
+.fx-call::after { content: ""; position: absolute; left: -2.5px; top: -2.5px; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
+
+/* ---- the frame ---------------------------------------------------------- */
+/* A world's contents live in one .frame: a 12-column grid inside --max, from
+   under the header to the bottom safe edge, whose rows are centred as one
+   group, so words and figure can never drift apart. Its children are
+   .words and .fig (any other child takes the figure's columns); .r stays
+   on them or inside them, so the engine's arrival, stand and exit are
+   unchanged. data-layout names one of five layouts:
+     split      words 1-5, figure 6-12 (the default; data-flip mirrors it)
+     wide       words 1-7, then the figure across 1-12 at 48svh
+     index      a list 1-5 that lights in turn (.qs li), figure 6-12
+     statement  one sentence across 1-10 (type in base.css), a quiet band under it
+     pair       heading and lead 1-4, sticky, content 6-12; for flow worlds
+   The figure fills its cell: by height when the cell is wide, by width when
+   it is tall. A figure sets --ar (its viewBox's width over height) on .fig;
+   its size, and so its protagonist's, comes from the cell, never from a
+   fixed px or vw. A frame never reads --u, --e or --p: it is a container
+   (pages.md). It is positioned so the .pin-shade before it paints under it. */
+.frame {
+  --head: 72px;
+  --fig-h: calc(100svh - var(--head) - var(--s6) - var(--s7) - 2rem);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--s5);
+  row-gap: var(--s6);
+  align-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding: calc(var(--head) + var(--s6)) var(--gutter) var(--s7);
+}
+.world:not([data-pin="off"]) > .pin > .frame { height: 100%; }
+/* flow: the height the content needs. In one column the pin already pads,
+   so a frame there adds none; a world that pads its own (data-pad="off")
+   keeps the frame's. */
+:is(.world[data-pin="off"], html:not(.pin) .world) > .pin > .frame { height: auto; padding-block: var(--s8); }
+:is(.world[data-pin="off"], html:not(.pin) .world):not([data-pad="off"]) > .pin > .frame { padding: 0; }
+
+.frame > * { grid-column: 6 / -1; min-width: 0; }
+.frame > .words { grid-column: 1 / span 5; }
+.frame:where([data-flip]) > .words { grid-column: 8 / -1; grid-row: 1; }
+.frame:where([data-flip]) > :not(.words) { grid-column: 1 / span 7; grid-row: 1; }
+
+.frame:where([data-layout="wide"]) { --fig-h: 48svh; }
+.frame:where([data-layout="wide"]) > .words { grid-column: 1 / span 7; }
+.frame:where([data-layout="wide"]) > :not(.words) { grid-column: 1 / -1; }
+
+.frame:where([data-layout="statement"]) { --fig-h: 30svh; }
+.frame:where([data-layout="statement"]) > .words { grid-column: 1 / span 10; }
+.frame:where([data-layout="statement"]) > :not(.words) { grid-column: 1 / -1; }
+
+.frame:where([data-layout="pair"]) { align-items: start; }
+.frame:where([data-layout="pair"]) > .words { grid-column: 1 / span 4; position: sticky; top: calc(var(--head) + var(--s6)); }
+
+.frame > .fig > :is(svg, img, video, .fx, .fig-box) {
+  display: block;
+  width: min(100%, var(--fig-h) * var(--ar, 1));
+  margin-inline: auto;
+}
+
+/* Phone and portrait: one column, words first, the figure directly under
+   them, the pair centred in the space under the header. The figure takes
+   what the words leave (--words-h, set by a page that knows it), and never
+   less than a third of the screen. */
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  .frame {
+    --head: 56px;
+    --fig-h: max(34svh, calc(100svh - var(--head) - var(--words-h, 18rem) - 6rem));
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--s5);
+    align-content: safe center;
+    padding: calc(var(--head) + env(safe-area-inset-top) + var(--s4)) 16px calc(var(--s5) + env(safe-area-inset-bottom));
+  }
+  .frame > :is(*, .words) { grid-column: 1; grid-row: auto; }
+  .frame:where([data-layout="pair"]) > .words { position: static; }
+}
 
 /* ---- where the ground changes, without a sky ---------------------------- */
 /* Where there is no sky to blend (low motion, no WebGL) and two different

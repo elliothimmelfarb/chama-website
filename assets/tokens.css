@@ -54,9 +54,22 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ease-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+  /* the six moves (docs/DESIGN.md section 5): arrivals rise, exits lift,
+     arrivals are slower than exits */
+  --rise: 16px;
+  --lift: 8px;
+  --dur-arrive-ui: 450ms;
+  --dur-leave: 200ms;
+  --dur-swap-in: 340ms;
+  --dur-swap-out: 220ms;
+  --swap-gap: 120ms;
+  --stagger-ms: 50ms;
+  --dur-carry: 700ms;
 
   color-scheme: light dark;
 }
+/* fewer and gentler: the same fades, no distance */
+@media (prefers-reduced-motion: reduce) { :root { --rise: 0px; --lift: 0px; } }
 
 /* ---- 2. Semantic colours ----------------------------------------------
    Light is the base. Dark applies when the visitor chose it, or when the
@@ -125,3 +138,38 @@
 :root[data-theme="dark"] [data-world="grid"]  { --ground: #0e151c; --fg: #e6edf3; --fg-2: #9cadbc; --accent-text: #ff7a45; --line-strong: #4f6273; --line: rgb(230 237 243 / 0.14); }
 :root[data-theme="dark"] [data-world="tides"] { --ground: #06343a; --fg: #f2fcf9; --fg-2: #b4dcd4; --accent-text: #ff9a6e; --line-strong: #3f7c7a; --line: rgb(242 252 249 / 0.16); }
 :root[data-theme="dark"] [data-world="ember"] { --ground: #0f0b09; --fg: #fff4e8; --fg-2: #cdb8a4; --accent-text: #ff8a55; --line-strong: #6e5546; --line: rgb(255 244 232 / 0.14); }
+
+/* ---- 4. Figures --------------------------------------------------------
+   Every figure's colours, mixed from the semantic tokens and the ground it
+   stands on (docs/DESIGN.md, "The frame and the figure language"). They sit
+   on .fx so they resolve inside each world's ground. In dark the floor
+   shadow is weaker against the ground and the body's light carries the
+   depth. The two dark blocks must stay identical. */
+.fx {
+  --fx-ink: var(--fg);
+  --fx-ink-2: var(--fg-2);
+  --fx-halo: var(--ground, var(--bg));
+  --fx-body: color-mix(in srgb, var(--fg) 6%, var(--ground, var(--bg)));
+  --fx-light: color-mix(in srgb, var(--surface) 80%, var(--ground, var(--bg)));
+  --fx-owned: color-mix(in srgb, var(--accent) 16%, var(--ground, var(--bg)));
+  --fx-shadow: color-mix(in srgb, var(--ink) 14%, transparent);
+  --fx-platform: color-mix(in srgb, var(--fg) 4%, transparent);
+  --fx-tint: color-mix(in srgb, var(--accent) 12%, transparent);
+  --fx-old: color-mix(in srgb, var(--fg-2) 14%, var(--ground, var(--bg)));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .fx {
+    --fx-body: color-mix(in srgb, var(--fg) 5%, var(--ground, var(--bg)));
+    --fx-light: color-mix(in srgb, var(--fg) 11%, var(--ground, var(--bg)));
+    --fx-owned: color-mix(in srgb, var(--accent) 22%, var(--ground, var(--bg)));
+    --fx-shadow: color-mix(in srgb, var(--ink) 55%, transparent);
+    --fx-platform: color-mix(in srgb, var(--fg) 5%, transparent);
+  }
+}
+:root[data-theme="dark"] .fx {
+  --fx-body: color-mix(in srgb, var(--fg) 5%, var(--ground, var(--bg)));
+  --fx-light: color-mix(in srgb, var(--fg) 11%, var(--ground, var(--bg)));
+  --fx-owned: color-mix(in srgb, var(--accent) 22%, var(--ground, var(--bg)));
+  --fx-shadow: color-mix(in srgb, var(--ink) 55%, transparent);
+  --fx-platform: color-mix(in srgb, var(--fg) 5%, transparent);
+}

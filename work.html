@@ -8,14 +8,14 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches){d.classList.add("pin");addEventListener("DOMContentLoaded",function(){setTimeout(function(){if(!d.dataset.engine)d.classList.remove("pin")},4e3)})}})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css?v=b151a136e0">
-  <link rel="stylesheet" href="/assets/base.css?v=2f1034c928">
-  <link rel="stylesheet" href="/assets/worlds.css?v=ed8e5a0e90">
-  <link rel="stylesheet" href="/assets/talk.css?v=1389dcb815">
-  <script src="/assets/sky.js?v=f524e540c3" defer></script>
-  <script src="/assets/worlds.js?v=5d7842046a" defer></script>
+  <link rel="stylesheet" href="/assets/tokens.css?v=e4a59e9718">
+  <link rel="stylesheet" href="/assets/base.css?v=dea8c6c59a">
+  <link rel="stylesheet" href="/assets/worlds.css?v=0f8e9eb99c">
+  <link rel="stylesheet" href="/assets/talk.css?v=658634970f">
+  <script src="/assets/sky.js?v=45dc1f89c6" defer></script>
+  <script src="/assets/worlds.js?v=b2a526354c" defer></script>
   <script src="/assets/chrome.js?v=18940e8963" defer></script>
-  <script src="/assets/talk.js?v=85e7e0d410" defer fetchpriority="low"></script>
+  <script src="/assets/talk.js?v=88c238f845" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -98,10 +98,12 @@
 <style>
 .wk { padding: calc(56px + var(--s7)) 0 0; }
 .wk-head .lead { margin-top: var(--s4); }
-.wk-group { margin-top: var(--s8); scroll-margin-top: 88px; }
-.wk-group h2 { font-size: var(--t-h2); margin-bottom: var(--s5); max-width: 20ch; }
+.wk .frame { padding: 0; margin-top: var(--s7); }
+.wk-group { scroll-margin-top: 88px; }
+.wk .talk-close { padding-top: var(--s8); }
+.wk-group h2 { font-size: var(--t-h2); max-width: 20ch; }
 .wk-offer { display: grid; justify-items: start; gap: var(--s3); text-decoration: none; }
-.wk-offer .g { width: 36px; height: 36px; }
+.wk-offer .g { width: 40px; height: 40px; }
 @media (hover: hover) { .wk-offer { transition: color var(--dur-quick) var(--ease-out); } .wk-offer:hover { color: var(--accent-text); } }
 .wk-list { list-style: none; margin: 0; padding: 0; }
 .wk-row a { display: grid; grid-template-columns: minmax(0, 1fr) 20px; grid-template-areas: "name arr" "line arr" "logo arr"; column-gap: var(--s4); align-items: center; padding: var(--s4) 0; border-top: 1px solid var(--line); text-decoration: none; scroll-margin-top: 88px; }
@@ -121,32 +123,40 @@
 }
 @media (min-width: 1100px) {
   .wk { padding-top: calc(72px + var(--s8)); }
-  .wk-group { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; scroll-margin-top: 104px; }
-  .wk-group h2 { grid-column: 1 / span 4; font-size: var(--t-h3); margin-top: var(--s4); }
-  .wk-list { grid-column: 5 / span 8; }
-  .wk-row a { grid-template-columns: minmax(0, 1fr) 140px 20px; grid-template-areas: "name logo arr" "line logo arr"; padding: var(--s5) var(--s3) var(--s5) 0; }
+  .wk-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--s5); align-items: end; }
+  .wk-head h1 { grid-column: 1 / span 7; }
+  .wk-head .lead { grid-column: 8 / -1; margin: 0 0 0.6em; }
+  .wk .frame { margin-top: var(--s8); }
+  .wk-group { scroll-margin-top: 104px; }
+  .wk-group > .words { top: calc(72px + var(--s7)); padding-top: var(--s5); }
+  .wk-group h2 { font-size: clamp(1.75rem, 0.9rem + 1.5vw, 2.5rem); }
+  .wk-offer { gap: var(--s4); }
+  .wk-offer .g { width: 56px; height: 56px; }
+  .wk-group > .wk-list { grid-column: 5 / -1; }
+  .wk-row a { grid-template-columns: minmax(0, 1fr) 9rem 20px; grid-template-areas: "name logo arr" "line logo arr"; padding: var(--s5) var(--s3) var(--s5) 0; }
+  .wk-line { font-size: var(--t-body); line-height: 1.45; max-width: none; text-wrap: pretty; }
   .wk-logo { margin: 0; justify-self: end; }
   .wk-row .logo { width: calc(var(--lw) * 0.8px); height: calc(var(--lh) * 0.8px); }
 }
 </style>
-<section class="world wk" data-world="paper" data-pin="off">
+<section class="world wk" data-world="paper" data-pin="off" data-fill>
   <div class="wrap">
     <div class="wk-head">
       <h1><span class="half">Everything we&#39;ve built.</span></h1>
       <p class="lead">Every business is a different shape. Here is who we have worked with and what we made.</p>
     </div>
-    <section class="wk-group" id="engineering-department" aria-labelledby="wk-engineering-department">
-      <h2 id="wk-engineering-department"><a class="wk-offer" href="/engineering-department"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg><span>Your own engineering department</span></a></h2>
+    <section class="wk-group frame" data-layout="pair" id="engineering-department" aria-labelledby="wk-engineering-department">
+      <div class="words"><h2 id="wk-engineering-department"><a class="wk-offer" href="/engineering-department"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><ellipse cx="18" cy="18" rx="15" ry="12.5" stroke-dasharray="1.5 3.5"/><path class="e" d="M18 9.5l8 5.8-3 9.4h-10l-3-9.4z"/><path style="fill:color-mix(in srgb, currentColor 7%, transparent)" d="M18 13l4.6 3.3-1.8 5.4h-5.6l-1.8-5.4z"/><circle class="dot" cx="30.5" cy="11" r="2.2"/></svg><span>Your own engineering department</span></a></h2></div>
       <ul class="wk-list">
         <li class="wk-row" id="stamping"><a href="/engineering-department"><h3 class="wk-name">A metal stamping plant in Toronto</h3><p class="wk-line">The software an 88-person plant runs on. It replaced their old system, a second app and four spreadsheets.</p><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
       </ul>
-    </section><section class="wk-group" id="build" aria-labelledby="wk-build">
-      <h2 id="wk-build"><a class="wk-offer" href="/build"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" x="24.5" y="12" width="9" height="16" rx="2"/></svg><span>Websites, apps and products</span></a></h2>
+    </section><section class="wk-group frame" data-layout="pair" id="build" aria-labelledby="wk-build">
+      <div class="words"><h2 id="wk-build"><a class="wk-offer" href="/build"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><rect style="fill:color-mix(in srgb, currentColor 7%, transparent)" x="3" y="8" width="21" height="14" rx="1.5"/><path d="M1 25.5h25"/><rect class="e" style="fill:color-mix(in srgb, var(--accent) 12%, transparent)" x="24.5" y="12" width="9" height="16" rx="2"/></svg><span>Websites, apps and products</span></a></h2></div>
       <ul class="wk-list">
         <li class="wk-row" id="toraya-lisboa"><a href="/build#toraya"><h3 class="wk-name">Toraya Lisboa</h3><p class="wk-line">Website and staff app for a Japanese deli in Rossio station. Changes live within the hour.</p><span class="wk-logo" aria-hidden="true"><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-mask.webp');--lw:46;--lh:44"></span></span><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="original-site"><a href="/original"><h3 class="wk-name">The original chamainteligente.com</h3><p class="wk-line">Our first site, kept online as it was.</p><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="alves-limited-group"><span id="vsf-lead-automation"></span><a href="/build#vsf"><h3 class="wk-name">Alves Limited Group</h3><p class="wk-line">From an ad to a booked call: a landing page and an AI that asks each enquiry the team&#39;s questions.</p><span class="wk-logo" aria-hidden="true"><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></span><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="alves-teamwear"><a href="/build#alves"><h3 class="wk-name">Alves Teamwear</h3><p class="wk-line">Teams design their own kit and order it; the operators and supplier track everything.</p><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="shopintake"><a href="/build#partnership"><h3 class="wk-name">ShopIntake</h3><p class="wk-line">Our own product. Reads emailed purchase orders so nobody types them into the ERP.</p><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="view-the-place"><a href="https://viewtheplace.com" rel="noopener"><h3 class="wk-name">View the Place</h3><p class="wk-line">Our own product. Walk through a home for sale in 3D, on your phone, before you visit.</p><svg class="arr arr-out" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 14 14 6M7.5 6H14v6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="the-hearth"><a href="/hearth"><h3 class="wk-name">The Hearth</h3><p class="wk-line">Our own platform for coaching: booking, session records and an MCP server.</p><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="aimade-games"><a href="https://aimade.games" rel="noopener"><h3 class="wk-name">aimade.games</h3><p class="wk-line">Free to play. An arcade of browser games your AI agent can build and keep changing.</p><svg class="arr arr-out" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 14 14 6M7.5 6H14v6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="wk-row" id="battle-of-mogadishu"><a href="https://battle-of-mogadishu.vercel.app" rel="noopener"><h3 class="wk-name">Battle of Mogadishu</h3><p class="wk-line">Free to explore. A full-scale 3D reconstruction from the historical record.</p><svg class="arr arr-out" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 14 14 6M7.5 6H14v6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
       </ul>
-    </section><section class="wk-group" id="coaching" aria-labelledby="wk-coaching">
-      <h2 id="wk-coaching"><a class="wk-offer" href="/coaching"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg><span>AI fluency coaching and training</span></a></h2>
+    </section><section class="wk-group frame" data-layout="pair" id="coaching" aria-labelledby="wk-coaching">
+      <div class="words"><h2 id="wk-coaching"><a class="wk-offer" href="/coaching"><svg class="g" viewBox="0 0 36 36" aria-hidden="true" focusable="false"><path d="M5 22c0-5 4-7 6.5-5.5S13 23 9.5 23 6 15 11 12.5s9 1 9 5-4 4-4 1.5 3-4.5 6-4.5h9"/><path class="e" d="M28 11.5l3.5 3.5-3.5 3.5"/></svg><span>AI fluency coaching and training</span></a></h2></div>
       <ul class="wk-list">
         <li class="wk-row" id="springlar"><a href="/coaching"><h3 class="wk-name">Springlar</h3><p class="wk-line">Healthy, carbon-neutral timber houses in Cascais. We work with them through coaching.</p><span class="wk-logo" aria-hidden="true"><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-mask.webp');--lw:119;--lh:20"></span></span><svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
       </ul>

@@ -10,7 +10,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `site/pages/<id>.js` | Each page as a function that returns the whole document. Small page-only styles sit in the page's own `<style>`. |
 | `site/content/en/<id>.js` | Each page's words, kept apart from its markup. `common.js` holds the header, menu, footer and Talk to us words; `talk.js` the chat widget's. |
 | `site/parts/` | What pages share: `chrome.js` (head, header, menu, Display popover, Talk to us field, footer, `page()`), `boot.js` (the snippet that sets theme and motion before the first paint), `logos.js` (client and partner logos). |
-| `site/figures/` | The inline SVG figures, drawn from `--p`. |
+| `site/figures/` | The inline SVG figures, drawn from `--p`. `kit.js` holds what they share: the `--p` timing helpers, the pentagon's geometry and `subject()`, the protagonist on its five layers (`docs/DESIGN.md` section 14). |
 | `site/html.js` | The `html` tag every page is written with. Copy is escaped; `inline()` allows only `*emphasis*` and `[links](/path)`. |
 | `site/machine.js` | `sitemap.xml`, `llms.txt` and `llms-full.txt`, built from the same pages and copy as the HTML, and the one-line company `SUMMARY` they open with. |
 | `scripts/build.js` | Writes the pages, sitemap and llms files from `site/`. |
@@ -65,7 +65,7 @@ Copy is written in `site/content/en/`, in the approved brand language (the brain
 
 `/work` is one index of everything we have made, grouped by offer, in `site/content/en/work.js`. Logos are in `CLIENTS` and `PARTNERS` in `site/parts/logos.js`: a transparent image in `assets/work/` whose opaque pixels are the mark, with its natural width and height so every logo gets the same optical weight. `CLIENTS` is the strip on `/` and the logos on `/work`; `PARTNERS` are on `/about`.
 
-`/build` shows each thing's real pages scrolling inside a laptop and a phone (`site/figures/devices.js`, `drawDevices` in `worlds.js`). Each picture is a tall capture in `assets/built/` (`<name>-desktop*.webp`, `<name>-phone*.webp`) with resized copies; `SHOTS` in `devices.js` lists each one's widths and full height, and `PICTURES` in `site/pages/build.js` maps a thing to its pictures. Private work shows seeded demo data, never real records.
+`/build` shows each thing's real pages scrolling inside a laptop and a phone (`site/figures/devices.js`, `drawDevices` in `worlds.js`); the page opens on them, with the H1 beside the first thing's pair. Each picture is a tall capture in `assets/built/` (`<name>-desktop*.webp`, `<name>-phone*.webp`) with resized copies; `SHOTS` in `devices.js` lists each one's widths and full height, and `PICTURES` in `site/pages/build.js` maps a thing to its pictures. Private work shows seeded demo data, never real records.
 
 ## Redirects
 
@@ -287,6 +287,7 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 | `test/build.test.js` | Every generated file is exactly what the build makes, and the build is deterministic. |
 | `test/site.test.js` | Every page exists and asks no other host for anything, sets theme and motion before any stylesheet, keeps the brand rules above, has its own title, description and canonical; the sitemap lists exactly the indexable pages; no colour outside `tokens.css`; every old address redirects to a real page in one step; `/hearth` routing; the media kit's files exist. |
 | `test/engine.test.js` | The engine's contracts (see `pages.md` in the skill). `test/fixtures/engine.html` exercises them in a browser. |
+| `test/figures.test.js` | The figure kit's helpers and protagonist, complete at `--p` 1, no figure keeping its own copies, and `[data-p]` only on leaves or groups of at most three. `test/fixtures/figure.html` shows the language on the real engine. |
 | `test/talk.test.js` | The chat widget's decisions, and its words against `site/content/en/`. |
 | `test/html.test.js` | The `html` tag escapes copy and `inline()` links only to this site. |
 | `test/site-pages.test.js` | The chat's page list agrees with what is served. |

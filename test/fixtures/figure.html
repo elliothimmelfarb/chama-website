@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Figure fixture</title>
+  <!-- Not deployed (test/ is in .vercelignore). The figure language on the
+       real engine: the protagonist from site/figures/kit.js in a .frame,
+       drawn from nothing, then continuing whole into the next world, then a
+       statement frame. Serve the repo root and open
+       /test/fixtures/figure.html; ?theme=light|dark and ?motion=low|full
+       override the stored choices, as in engine.html. -->
+  <script>
+    (function () {
+      var d = document.documentElement, q = new URLSearchParams(location.search);
+      try {
+        var t = q.get("theme") || localStorage.getItem("chama-theme");
+        if (t === "light" || t === "dark") d.dataset.theme = t;
+        var m = q.get("motion") || localStorage.getItem("chama-motion");
+        if (m === "low" || (m !== "full" && matchMedia("(prefers-reduced-motion: reduce)").matches)) d.dataset.motion = "low";
+      } catch (e) {}
+      if (d.dataset.motion !== "low" && matchMedia("(min-height: 501px)").matches) {
+        d.classList.add("pin");
+        addEventListener("DOMContentLoaded", function () { setTimeout(function () { if (!d.dataset.engine) d.classList.remove("pin"); }, 4e3); });
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/assets/tokens.css?v=e4a59e9718">
+  <link rel="stylesheet" href="/assets/base.css?v=dea8c6c59a">
+  <link rel="stylesheet" href="/assets/worlds.css?v=0f8e9eb99c">
+  <!-- before the engine's scripts: module and deferred scripts run in
+       document order, so the figures exist when worlds.js binds -->
+  <script type="module" src="/test/fixtures/figure.js"></script>
+  <script src="/assets/sky.js?v=45dc1f89c6" defer></script>
+  <script src="/assets/worlds.js?v=b2a526354c" defer></script>
+  <style>
+    main { font-family: var(--text); }
+    .words h2 { margin: 0 0 var(--s4); }
+    .words .lead { margin: 0; }
+    /* viewBox 320 wide: viewBox units per CSS pixel at each container width */
+    .hero .fx-svg { --sw: calc(320 / 330); }
+    @container fx (min-width: 480px) { .hero .fx-svg { --sw: calc(320 / 540); } }
+    @container fx (min-width: 640px) { .hero .fx-svg { --sw: calc(320 / 720); } }
+    .band .fx-svg { --sw: calc(600 / 340); }
+    @container fx (min-width: 600px) { .band .fx-svg { --sw: calc(600 / 900); } }
+    .theme-btn { min-height: 32px; padding: 0 12px; border: 1px solid var(--fg-2); border-radius: 999px; background: var(--surface); color: var(--fg); font: inherit; font-size: 0.8rem; }
+    @media (max-width: 759px), (max-aspect-ratio: 9/10) { .frame { --words-h: 11rem; } }
+  </style>
+</head>
+<body>
+  <canvas id="sky" class="layer" aria-hidden="true"></canvas>
+  <header class="top">
+    <a class="mast" href="/test/fixtures/figure.html"><span><b>Figure fixture</b><small>kit.js</small></span></a>
+    <button class="theme-btn" type="button" id="theme">Theme</button>
+    <button class="motion-toggle" type="button" data-motion-toggle><span class="motion-track" aria-hidden="true"><i></i></span><span class="motion-label">Low motion</span></button>
+  </header>
+  <main id="main">
+    <section class="world" data-world="paper" data-label="Drawn" data-fill style="--h:180">
+      <div class="pin">
+        <div class="frame" data-layout="split">
+          <div class="words">
+            <h2 class="r">The business, drawn from nothing</h2>
+            <p class="lead r">Floor, body, ink, then the ember fit a moment behind it. A marker runs the ring, and the business warms as it lands.</p>
+          </div>
+          <div class="fig r" data-fig="drawn"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="world" data-world="tides" data-label="Continued" data-fill style="--h:160">
+      <div class="pin">
+        <div class="frame" data-layout="split">
+          <div class="words">
+            <h2 class="r">The same business, carried on</h2>
+            <p class="lead r">It arrives whole, where the last one stood, and only what is new moves: the ring becomes yours.</p>
+          </div>
+          <div class="fig r" data-fig="continued"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="world" data-world="ember" data-label="Statement" data-pin="off" data-pad="off">
+      <div class="pin">
+        <div class="frame" data-layout="statement">
+          <div class="words">
+            <h2 class="r">One sentence that fills its frame.</h2>
+            <p class="r">And a second one under it, quieter.</p>
+          </div>
+          <div class="fig r" data-fig="band"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="end-row">Figure fixture</div></footer>
+  <script>
+    document.getElementById("theme").addEventListener("click", function () {
+      var d = document.documentElement, dark = d.dataset.theme ? d.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+      d.dataset.theme = dark ? "light" : "dark";
+      try { localStorage.setItem("chama-theme", d.dataset.theme); } catch (e) {}
+      document.dispatchEvent(new CustomEvent("chama:theme"));
+    });
+  </script>
+</body>
+</html>

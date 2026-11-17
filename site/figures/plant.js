@@ -1,46 +1,46 @@
-// Two small figures on /engineering-department that draw what its words
-// say. Both are still: they sit in sections that scroll.
+// Two still figures on /engineering-department that draw what their words
+// say. Both sit in worlds that scroll, so neither reads --p.
 import { html, raw } from "../html.js";
-import { ngon, poly } from "./stage.js";
+import { place, subject } from "./kit.js";
 
-// Before and after (docs/DESIGN.md section 8): the systems the plant ran
-// on (one old system, a second app, four spreadsheets) drawn as outlines
-// in a loose cluster, three lines gathering them, and the one system that
-// replaced them as an ember-outlined pentagon.
-export function beforeAfter({ before, after, label }) {
-  const sheet = (x, y) => `<g transform="translate(${x} ${y})"><rect class="pl-o" width="34" height="26" rx="2"/><path class="pl-l" d="M0 9H34M0 17H34M11 0V26M22 0V26"/></g>`;
-  const one = poly(ngon(30).map(([x, y]) => [x + 330, y + 74]));
-  const fit = poly(ngon(39).map(([x, y]) => [x + 330, y + 74]));
-  return html`<figure class="pl-fig backed" role="img" aria-label="${label}">
-  ${raw(`<svg viewBox="0 0 400 150" aria-hidden="true" focusable="false">
-    <rect class="pl-o" x="8" y="14" width="78" height="52" rx="3"/><path class="pl-l" d="M8 26H86"/>
-    <rect class="pl-o" x="100" y="22" width="24" height="42" rx="4"/>
-    ${sheet(10, 84)}${sheet(52, 92)}${sheet(94, 80)}${sheet(136, 96)}
-    <path class="pl-gather" d="M176 40C220 40 240 70 270 74M176 74H270M176 112C220 112 240 78 270 74"/>
-    <path class="pl-biz" d="${one}"/>
-    <path class="pl-fit" d="${fit}"/>
+// Before and after (docs/DESIGN.md section 8): what the plant ran on, an
+// old system's window, a second app and four spreadsheets in a loose pile
+// on one shadow, three lines gathering them into one point, and the one
+// system that replaced them: the protagonist, owned, so it is warm.
+const BA_VIEW = [0, 0, 440, 330];
+const SHEETS = [[22, 176, -6], [70, 196, 3], [116, 172, -2], [64, 236, 5]];
+const sheet = ([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r} 32 23)"><rect class="pl-sheet" width="64" height="46"/><path class="pl-grid" d="M0 12H64M0 23H64M0 34H64M21 0V46M42 0V46"/></g>`;
+const ONE = { R: 64, at: [346, 168] };
+
+export function beforeAfter({ after, label }) {
+  const bottom = ONE.at[1] + 0.86 * ONE.R * Math.cos(Math.PI / 5);
+  return html`<figure class="fx pl-fig" role="img" aria-label="${label}">
+  ${raw(`<svg class="fx-svg pl-svg" viewBox="${BA_VIEW.join(" ")}" aria-hidden="true" focusable="false">
+    <defs><radialGradient id="pl-pile"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs>
+    <ellipse class="fx-floor" fill="url(#pl-pile)" cx="104" cy="292" rx="104" ry="13"/>
+    <rect class="pl-old" x="20" y="72" width="132" height="88"/><rect class="pl-bar" x="20" y="72" width="132" height="15"/>
+    <rect class="pl-old" x="168" y="96" width="38" height="66" rx="7"/>
+    ${SHEETS.map(sheet).join("")}
+    <path class="fx-hair pl-gather" d="M156 116C196 116 208 150 238 166M212 166H238M186 236C212 236 216 182 238 166"/>
+    <path class="pl-head" d="M238 159L252 166L238 173Z"/>
+    ${subject({ id: "pl", ...ONE, owned: true, drawn: true })}
   </svg>`)}
-  <figcaption class="pl-labels" aria-hidden="true"><span>${before}</span><span>${after}</span></figcaption>
+  <span class="fx-lb is-live" aria-hidden="true" style="${`${place(BA_VIEW, ONE.at[0], bottom + 30)};--ty:0%`}">${after}</span>
 </figure>`;
 }
 
-// How it starts and how it is paid for: the three steps as open circles,
-// the third (you switch off the old system) in ember where the setup fee
-// falls due, then the monthly fee as even ticks running on and fading.
-export function priceLine({ steps, setup, monthly, label }) {
-  const xs = [16, 116, 216];
-  const ticks = Array.from({ length: 9 }, (_, i) => `<path class="pr-tick" d="M${266 + i * 26} 40V52" style="opacity:${(1 - i / 10).toFixed(2)}"/>`).join("");
+// How it starts and how it is paid for, under the price: your old system
+// running as a hatched band until the third step, where you switch it off
+// and the setup fee falls due (an ember tag), then the monthly fee as even
+// ticks on a band that runs on. HTML, so the steps' sentences wrap: across
+// the page on a desktop, down the column on a phone.
+export function priceLine({ steps, old, setup, monthly, label }) {
   return html`<figure class="pr-fig" role="img" aria-label="${label}">
-  ${raw(`<svg viewBox="0 0 500 70" aria-hidden="true" focusable="false">
-    <path class="pr-axis" d="M16 46H492"/>
-    ${xs.map((x, i) => `<circle class="pr-step${i === 2 ? " pr-hot" : ""}" cx="${x}" cy="46" r="8"/>`).join("")}
-    <path class="pr-due" d="M216 30V14"/>
-    ${ticks}
-  </svg>`)}
-  <span class="pr-setup" aria-hidden="true">${setup}</span>
-  <ol class="pr-labels" aria-hidden="true">
-    ${steps.map((s, i) => html`<li style="${`--x:${xs[i] / 5}%`}">${s}</li>`)}
-    <li class="pr-monthly" style="--x:66%">${monthly}</li>
+  <ol class="pr-line" aria-hidden="true">
+    ${steps.map(
+      (s, i) => html`<li class="${`pr-step${i === steps.length - 1 ? " is-due" : ""}`}">${i < steps.length - 1 ? html`<i class="pr-old">${i ? "" : html`<span>${old}</span>`}</i>` : html`<b class="pr-tag">${setup}</b>`}<span class="pr-text">${s}</span></li>`,
+    )}
+    <li class="pr-month"><i class="pr-run"></i><span class="pr-text">${monthly}</span></li>
   </ol>
 </figure>`;
 }

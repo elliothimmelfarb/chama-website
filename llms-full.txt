@@ -14,31 +14,55 @@ Custom software and AI coaching, from a family business in Lisbon.
 
 # What you have to do, made easier. What you wish you could do, made possible.
 
-You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem. If you'd like to learn it yourself, we teach that too.
+You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem.
 
-- Your own engineering department: Fits your process, and changes when you do.
+How Chama works, in eight short scenes:
 
-- AI fluency coaching and training: When AI can do something new, so can you.
+Software companies have engineers, and their customers wait in line.
+
+Here the engineers work only for you.
+
+A small, family-owned, AI-native business.
+
+Tell us what you need. It gets built. You use it. You find what's next.
+
+Fits your process, and changes when you do.
+
+If it can be solved with something on a phone, a computer or in the cloud, we can do it.
+
+When AI can do something new, so can you.
+
+More time for human things, and for each other.
+
+- Your own engineering department: You get what a software company has, without becoming one.
+
+- AI fluency coaching and training: Time with someone who knows AI deeply and makes it simple.
 
 - Websites, apps and products: Websites built to be found.
 
 We also partner with founders on new products, and help leadership teams with AI enablement.
 
-## Most changes are live in under an hour.
+## We believe that through using and teaching AI we can enable people to spend more time doing human things and accomplish more of their goals.
 
-Measured on the software we run for an 88-person metal stamping plant in Toronto.
+We help you make money, save money and stay compliant, while you enjoy your business more and do things with it you couldn't before.
 
-Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.
+## We can solve any software problem.
+
+We take on things we haven't done before.
+
+## Every new AI capability is ours on day one.
+
+AI is levelling up fast. We level up with it, and we help you level up too.
+
+## Who we have worked with
+
+Including an 88-person metal stamping plant in Toronto, which runs on software we built.
+
+## Done for you, and taught.
+
+We give you access to AI beyond your current abilities, and teach you to make it yours, if you want.
 
 ## Real people you can reach.
-
-You talk to a person. AI does the heavy work behind us.
-
-We're a small, family-owned, AI-native business, based in Lisbon and working worldwide.
-
-We believe mastery of AI can give people more time for the things they want to do.
-
-More time for human things, and for each other.
 
 ---
 
@@ -58,11 +82,13 @@ Here the engineers work only for you. You get what a software company has, witho
 
 Four real requests, from request to live: A new filter, 31 min; A fix, 14 min; Download to Excel, 42 min; A new report, 33 min.
 
-## Measured on real requests.
+## Most changes are live in under an hour.
+
+Measured on the software we run for an 88-person metal stamping plant in Toronto.
 
 Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.
 
-Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.
+It replaced their old system, a second app and four spreadsheets.
 
 19 people use it every day, and about 15 changes go live in a typical week.
 
@@ -86,11 +112,15 @@ A real request and the change it became, recorded on the same app with demo data
 
 We manage it for you, and you can take it anywhere.
 
-If we ever stopped, you keep the code and the data, on standard tools, and any engineer can pick it up.
-
 ## A setup fee and a fixed monthly fee, quoted after a first conversation.
 
 The setup fee is due only when you switch off your old system.
+
+1. A first conversation about how your business works today.
+
+2. A first version your team can use.
+
+3. You switch off the old system when you're ready.
 
 ## Questions owners ask
 
@@ -117,14 +147,6 @@ In your own database, on standard cloud hosting, backed up every night. It's you
 ### Who checks the AI's work?
 
 Every change is written with its tests first and goes live only after the whole test suite passes and the change has been reviewed. Anything that touches money or another company's system waits for Elliot.
-
-## How it starts
-
-1. A first conversation about how your business works today.
-
-2. A first version your team can use, usually within days.
-
-3. You switch off the old system when you're ready. That's when the setup fee is due.
 
 ---
 
@@ -268,7 +290,7 @@ We're growing this business together. Elliot brings the engineering and the AI. 
 
 Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.
 
-Engineers who learned the craft before AI, weren't afraid of it, and mastered it, can now build anything, fast. Every new AI capability is ours on day one. AI is levelling up fast. We level up with it, and we help you level up too.
+Engineers who learned the craft before AI, weren't afraid of it, and mastered it, can now build anything, fast.
 
 ## Partners
 

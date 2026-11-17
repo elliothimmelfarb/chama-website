@@ -296,25 +296,182 @@ test("a leaving world's words stand still, each gone before the next words or it
   assert.ok(r, "worlds.css styles .r");
   assert.match(r.body, /clamp\(0, var\(--u\) - 1, var\(--sx, 0\)\) \* var\(--pl, 0px\)/, "a .r gives back its pin's travel for the first --sx of the exit");
   const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
-  assert.match(gone, /1 \+ next - foot - MEET_GAP/, "a word stays only until the next world's first words would reach it");
-  assert.match(gone, /1 - foot\)/, "and never past the moment its own pin's clipping edge would reach it");
+  const must = /function mustGo\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
+  assert.match(must, /len \+ next \* AH - foot - MEET_GAP \* AH/, "a word is gone before the next world's first words would reach it");
+  assert.match(must, /edge = len - foot/, "its own pin's clipping edge reaches its foot");
+  assert.match(must, /!ride \? Math\.min\(meet, edge\)/, "and a part with its world showing above it is gone by then, so nothing rides up across another part");
+  assert.match(gone, /o\.foot <= b\.y \+ 1 && o\.l < b\.r && b\.l < o\.r/, "a part rides only where nothing of its world is above it");
+  assert.match(gone, /mustGo\(/);
   assert.match(gone, /closest\("\.world > \.pin \.r"\)/, "a .r inside another takes the outer one's exit and does not stand on its own");
   assert.match(JS, /setVar\(el, "--sx"/, "measure() writes --sx");
   for (const v of ["--sx", "--pl"]) assert.match(CSS, new RegExp(`@property ${v} \\{[^}]*inherits: false`), `${v} is registered not to inherit, or a nested .r would move twice`);
   assert.match(JS, /setVar\(el, "--pl"/, "measure() writes --pl");
 });
 
+// ---- the motion system: six named moves (docs/DESIGN.md section 5) ----------
+const TOKENS = strip(read("assets/tokens.css"));
+const rootVar = (css, name) => new RegExp(`${name}:\\s*([^;]+);`).exec(css)?.[1]?.trim();
+const STAGGER_MAX = +(/\bSTAGGER_MAX = (\d+)/.exec(JS)?.[1] ?? NaN);
+// a time in a rule, in ms, with the tokens and the engine's longest --i put in
+function timeMs(expr) {
+  const e = expr.replace(/var\(--i, 0\)/g, String(STAGGER_MAX)).replace(/var\((--[\w-]+)\)/g, (_, n) => rootVar(TOKENS, n) ?? rootVar(CSS, n) ?? n).trim();
+  const unit = (u) => (u === "s" ? 1000 : 1);
+  const calc = /^calc\(([\d.]+)\s*\*\s*([\d.]+)(m?s)\)$/.exec(e);
+  if (calc) return +calc[1] * +calc[2] * unit(calc[3]);
+  const t = /^([\d.]+)(m?s)$/.exec(e);
+  return t ? +t[1] * unit(t[2]) : NaN;
+}
+const words = (v) => v.match(/(?:[^\s(]+|\([^)]*\))+/g) ?? [];
+
 test("the new page's words have finished rising before .nav-enter comes off", () => {
   const enter = +/var FADE = \d+, ENTER = (\d+)/.exec(JS)[1];
   let longest = 0;
   for (const { selectors, body } of RULES) {
     if (!selectors.some((x) => x.startsWith("html.nav-enter"))) continue;
-    const a = /animation:\s*\w+\s+([\d.]+)s[^;]*?\s([\d.]+)s/.exec(body);
-    const d = /animation-delay:\s*([\d.]+)s/.exec(body);
-    if (a) longest = Math.max(longest, (+a[1] + +a[2]) * 1000);
-    if (d) longest = Math.max(longest, (+d[1] + 0.45) * 1000);
+    const a = /animation:([^;]+)/.exec(body);
+    const d = /animation-delay:([^;]+)/.exec(body);
+    if (!a && !d) continue;
+    // a rule that only staggers the rise takes the rise's duration
+    const times = a ? words(a[1].replace(/var\(--ease[\w-]*\)/g, "")).map(timeMs).filter((n) => !Number.isNaN(n)) : [timeMs("var(--dur-arrive-ui)")];
+    const delay = d ? timeMs(d[1]) : times[1] ?? 0;
+    assert.ok(times.length >= 1 && !Number.isNaN(delay), `${selectors[0]}: its timing could not be read`);
+    longest = Math.max(longest, times[0] + delay);
   }
   assert.ok(longest > 0, "the .nav-enter animations were found");
   assert.ok(enter >= longest, `ENTER (${enter}ms) ends before the longest .nav-enter animation (${longest}ms)`);
 });
 
+const SOURCES = readdirSync(path.join(ROOT, "site/pages")).filter((f) => f.endsWith(".js")).map((f) => [`site/pages/${f}`, read(`site/pages/${f}`)]);
+const BUILT = readdirSync(ROOT).filter((f) => f.endsWith(".html")).map((f) => [f, read(f)]);
+
+test("words arrive on one scale: --arrive-at, --arrive-k, --stagger and the figure's --fig-at", () => {
+  for (const [name, want] of [["--arrive-at", "-0.6"], ["--arrive-k", "4"], ["--stagger", "0.05"], ["--fig-at", "-0.4"]]) {
+    assert.equal(rootVar(CSS, name), want, `worlds.css :root sets ${name}`);
+  }
+  for (const name of ["--rise", "--lift", "--dur-arrive-ui", "--dur-leave", "--dur-swap-in", "--dur-swap-out", "--swap-gap", "--stagger-ms", "--dur-carry"]) {
+    assert.ok(rootVar(TOKENS, name), `tokens.css sets ${name}`);
+  }
+  const r = RULES.find((x) => x.selectors.length === 1 && x.selectors[0] === ".r");
+  assert.match(r.body, /--in:\s*calc\(var\(--arrive-at\) \+ var\(--i, 0\) \* var\(--stagger\)\)/, "a word's arrival is its place in the ladder");
+  assert.match(r.body, /--k:\s*var\(--arrive-k\)/);
+  assert.match(r.body, /var\(--t\) \* \(2 - var\(--t\)\)/, "the arrival eases out");
+  assert.match(r.body, /var\(--rise\)/);
+  assert.match(r.body, /var\(--lift\)/);
+  assert.ok(!/\d+px/.test(r.body.replace(/var\(--pl, 0px\)/, "")), ".r takes its distances from tokens");
+  const fig = RULES.find((x) => x.selectors.some((s) => /^\.r\.fig$|^\.fig\.r$/.test(s)));
+  assert.match(fig?.body ?? "", /--in:\s*max\(var\(--fig-at\), calc\(var\(--arrive-at\) \+ var\(--i, 0\) \* var\(--stagger\)\)\)/, "a figure box arrives after the words, and no earlier than --fig-at");
+  // the shade behind the words comes in with the first of them
+  const shade = RULES.find((x) => x.selectors.includes(".pin-shade") && /opacity/.test(x.body));
+  assert.match(shade.body, /var\(--arrive-at\)/);
+});
+
+test("the engine writes each word's place, --i, and no page does", () => {
+  assert.equal(STAGGER_MAX, 5);
+  assert.match(JS, /setVar\([^)]*"--i"/, "worlds.js writes --i");
+  // a figure may use --i inside itself; a word (.r) never sets its own
+  for (const [file, text] of [...SOURCES, ...BUILT]) {
+    for (const [tag] of text.matchAll(/<[a-z][^>]*\bclass="[^"]*\br\b[^"]*"[^>]*>/g)) assert.ok(!/--i\s*:/.test(tag), `${file}: ${tag} writes --i; the engine does`);
+    assert.ok(!/\.r\b[^{}]*\{[^}]*--i\s*:/.test(text), `${file} sets a .r's --i in a rule; the engine does`);
+  }
+});
+
+test("a world leaves as one: one start, a short stagger, one span", () => {
+  for (const [name, want] of [["EXIT_AT", 0.12], ["EXIT_SPAN", 0.2], ["EXIT_STAGGER", 0.03]]) {
+    assert.equal(+(new RegExp(`\\b${name} = ([\\d.]+)`).exec(JS)?.[1]), want, `worlds.js sets ${name}`);
+  }
+  for (const gone of ["EXIT_MIN", "STAY_MAX"]) assert.ok(!new RegExp(`\\b${gone}\\b`).test(JS), `${gone} gave each word its own exit`);
+  const exitOf = /function exitOf\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
+  assert.match(exitOf, /EXIT_SPAN/, "every fade lasts EXIT_SPAN");
+  const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  const from = /function leaveFrom\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(from, /EXIT_AT/, "a world starts to leave at EXIT_AT after its release");
+  assert.match(from, /arriveAt/, "or later, with the next world's arriving words, when that world scrolls in as flow");
+  assert.match(gone, /leaveFrom\(/);
+  assert.match(gone, /Math\.min\(own, by\[at\]\)/, "and a part leaves earlier only where its own guard needs it");
+  assert.match(gone, /EXIT_STAGGER/, "and its words go in their order");
+  assert.ok(!/ex \* ex/.test(JS), "/build's devices leave on the words' curve");
+});
+
+test("where a world must leave early, the next one's words come as it fades, never before they can be seen", () => {
+  assert.equal(+(/ARRIVE_EARLIEST = (-[\d.]+)/.exec(JS)?.[1]), -0.85);
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(measure, /Math\.max\(ARRIVE_EARLIEST, /, "no earlier than ARRIVE_EARLIEST");
+  assert.match(measure, /if \(want < base - 0\.001\) at = /, "and only ever earlier than the world's own arrival");
+  assert.match(measure, /setVar\(pinOf\[k\], "--arrive-at", at\)/, "written once per layout on the pin, through setVar");
+  assert.ok(!/setProperty\("--arrive-at"/.test(JS), "no frame writes --arrive-at");
+});
+
+test("a world's words arrive as they come into view, and the world before waits for them", () => {
+  assert.equal(+(/SEEN = ([\d.]+)/.exec(JS)?.[1]), 0.9, "words count as seen once their top is 90% down the screen");
+  const of = /function arriveOf\(k\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(of, /Math\.max\(arriveAt, firstWords\(k\) - SEEN\)/, "a world whose first words sit low on its pin arrives later, when they show");
+  const from = /function leaveFrom\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(from, /arrives\[k \+ 1\]/, "the world before leaves on the next world's own arrival");
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(measure, /arrives = sections\.map/, "measured in the read phase");
+  assert.match(measure, /var base = arrives\[k\]/, "and written on the pin when it differs from --arrive-at");
+});
+
+test("a leaving part waits for the next world's words only where they share its columns", () => {
+  const boxes = /function nextBoxes\(k\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(boxes, /getBoundingClientRect/, "the next world's parts are measured with their columns");
+  const over = /function nextOver\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(over, /o\.l < r && o\.r > l/, "only parts that overlap it horizontally count");
+  const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(gone, /mustGo\(len, b\.y, b\.foot, blend, nextOver\(/, "each part's guard reads the next world's top over its own columns");
+});
+
+test("a settled reader is not written while its --u changes nothing", () => {
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(measure, /settle\[k\] = /, "measure() works out, per reader, the stretch of --u in which its style cannot change");
+  const set = /function setU\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
+  assert.match(set, /settle\[k\]/, "setU() holds a settled reader's --u at the start of that stretch");
+  assert.match(set, /lastV\[k\]\[j\]/, "and writes --u only when the held value changes");
+});
+
+test("no page overrides the motion scale", () => {
+  for (const [file, text] of [...SOURCES, ...BUILT]) {
+    // .ef-now's --k is its own figure's variable, not a .r's
+    assert.ok(!/--k\s*:\s*\d/.test(text), `${file} sets --k; the arrival has one speed`);
+    assert.ok(!/--(in|out)\s*:[^;"]*!important/.test(text), `${file} forces --in or --out`);
+    for (const m of text.matchAll(/style="[^"]*--in:\s*(-?[\d.]+)/g)) {
+      assert.ok(+m[1] >= 0 && +m[1] <= 0.5, `${file}: --in ${m[1]} is outside the hold's beats (0 to 0.5)`);
+    }
+  }
+});
+
+test("timed moves in worlds.css use the motion tokens", () => {
+  for (const { selectors, body } of RULES) {
+    // the H1's two halves are their own focal entrance (base.css), replayed shorter after a page change
+    if (selectors[0].startsWith("html.routed h1")) continue;
+    for (const m of body.matchAll(/(?:transition|animation)(?:-[a-z]+)?:([^;]+)/g)) {
+      assert.ok(!/cubic-bezier|\bease\b|\blinear\b|\d+m?s\b/.test(m[1].replace(/var\([^)]*\)/g, "").replace(/(?<![\d.])0s\b/g, "")), `${selectors[0]}: "${m[1].trim()}" names its own timing`);
+    }
+  }
+  assert.equal(rootVar(CSS, "--press"), "scale var(--dur-press) var(--ease-out)");
+});
+
+test("after a page change every pinned word rises in, in its order", () => {
+  const pinned = RULES.filter((x) => x.selectors.some((s) => s.startsWith("html.nav-enter main .world > .pin .r")));
+  assert.ok(pinned.length, "the router's rise reaches the words of every pin");
+  assert.ok(pinned.some((x) => /animation: rise var\(--dur-arrive-ui\) var\(--ease-out\)/.test(x.body)), "they rise on Arrive's time");
+  assert.match(pinned.map((x) => x.body).join(""), /animation-delay:\s*calc\(var\(--i, 0\) \* var\(--stagger-ms\)\)/);
+});
+
+
+test("/build's opening stretch is the devices world's data-open, and its hold agrees", () => {
+  // The H1 opens the devices world, so the stretch before the first thing
+  // is short (data-open, in hundredths of a screen) and drawDevices reads it
+  // from the section rather than a constant only that page could use.
+  const intro = /function devicesIntro\(([^)]*)\) \{([^\n]*)\}/.exec(JS);
+  assert.ok(intro, "worlds.js has devicesIntro");
+  assert.match(JS, /getAttribute\("data-open"\)/, "the opening stretch comes from the section");
+  assert.ok(!/devicesIntro\(n\)/.test(JS), "every caller passes the world's own opening");
+  const html = read("build.html");
+  const tag = /<section\b[^>]*\bdevices-world\b[^>]*>/.exec(html)[0];
+  const open = +(/\sdata-open="(\d+)"/.exec(tag)?.[1]);
+  const h = +(/--h:\s*(\d+)/.exec(tag)?.[1]);
+  const n = (html.match(/<article class="made"/g) || []).length;
+  assert.ok(open > 0 && open < 90, `the opening is shorter than a thing's stretch (${open})`);
+  assert.equal(h, 100 + open + 135 * n, "--h is the pin, the opening and 135 for each thing");
+});
