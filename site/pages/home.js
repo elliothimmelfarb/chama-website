@@ -17,7 +17,7 @@ const doors = () => html`<ul class="doors" data-doors>
 const photo = (alt) => html`<img class="photo" data-p src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 50vw, 100vw" width="2048" height="1804" alt="${alt}" loading="lazy" decoding="async">`;
 
 // the goals under Elliot's sentence, each reason lit as its side is drawn
-const goals = () => beliefPhrases(t.belief.line).map((p) => (p.k === undefined ? p.text : html`<span data-p style="${reasonStyle(p.k)}">${p.text}</span>`));
+const goals = () => beliefPhrases(t.belief.line).map((p) => (p.k === undefined ? p.text : html`<span data-p data-n="0${p.k + 1}" style="${reasonStyle(p.k)}">${p.text}</span>`));
 
 const plant = SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line;
 // the line's last word keeps its arrow on the same line
@@ -74,6 +74,8 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
   .home-cando .frame { --words-h: 12rem; }
   .home-approach .frame { --words-h: 14rem; }
   .home-belief h2 { font-size: 1.5rem; }
+  /* the figure's callouts are numbers on a phone; the reasons carry them */
+  .home-belief .lead [data-n]::before { content: attr(data-n); margin-right: 0.3em; font-size: 0.6875rem; letter-spacing: 0.04em; vertical-align: 0.35em; font-variant-numeric: tabular-nums; }
   /* on a phone the photo is the width of the column, cropped to the faces */
   .home-people .frame { --ar: 1.33; }
   .home-photo-crop { aspect-ratio: 4 / 3; }
@@ -108,7 +110,7 @@ export function render(p) {
         <h2 class="r">${t.belief.h2}</h2>
         <p class="lead r">${goals()}</p>
       </div>
-      <div class="fig r">${beliefFigure(t.belief.reasons)}</div>
+      <div class="fig r">${beliefFigure(t.belief.reasons, t.belief.label)}</div>
     </div>
   </div>
 </section>
@@ -126,7 +128,7 @@ export function render(p) {
           <p class="lead r" style="--in:0.5">${t.dayOne.line}</p>
         </div>
       </div>
-      <div class="fig r">${canDoFigure({ fresh: t.cando.fig, dayOne: t.dayOne.fig })}</div>
+      <div class="fig r">${canDoFigure({ fresh: t.cando.fig, dayOne: t.dayOne.fig }, t.cando.label)}</div>
     </div>
   </div>
 </section>
@@ -151,7 +153,7 @@ export function render(p) {
         <h2 class="r">${t.approach.h2}</h2>
         <p class="lead r">${t.approach.line}</p>
       </div>
-      <div class="fig r">${approachFigure(t.approach.paths)}</div>
+      <div class="fig r">${approachFigure(t.approach.paths, t.approach.label)}</div>
     </div>
   </div>
 </section>
@@ -180,7 +182,7 @@ export function text() {
     `# ${t.h1.join(" ")}`,
     t.sub,
     `${t.stageLabel}:`,
-    ...t.stageBeats.map((b) => b.say.join(" ")),
+    ...t.stageBeats.map((b) => b.say),
     ...t.doors.map((d) => `- ${d.title}: ${d.line}`),
     t.also,
     `## ${t.belief.h2}`,

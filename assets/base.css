@@ -188,17 +188,12 @@ p { margin: 0; }
 .door a { display: grid; grid-template-columns: 36px 1fr 20px; align-items: center; gap: var(--s3); min-height: 64px; padding: 12px 0; text-decoration: none; border-top: 1px solid var(--line); }
 .door:last-child a { border-bottom: 1px solid var(--line); }
 .door .g { width: 36px; height: 36px; }
-/* The door icons wait for the opening stage to hand them over (the catch,
-   site/figures/stage.js): hidden while it is about to play or playing, shown
-   in low motion, without JavaScript, and once it is paused or passed. */
-html.pin:not([data-motion="low"]) .first:has([data-stage]:not([data-state])) [data-doors]:not([data-catch]) .g,
-html:not([data-motion="low"]) [data-doors][data-catch="wait"] .g { opacity: 0; }
-[data-doors][data-catch="off"] .g { transition: opacity var(--dur-base) var(--ease-out); }
 .door h2 { font-size: 1.125rem; line-height: 1.15; letter-spacing: -0.015em; }
 .door p { margin-top: 2px; font-size: 0.9375rem; line-height: 1.35; color: var(--fg-2); }
 .door .arr { width: 20px; height: 20px; color: var(--accent-text); transition: translate var(--dur-quick) var(--ease-spring); }
 .g * { fill: none; stroke: currentColor; stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
-.g .e { stroke: var(--accent); }
+.g .e { stroke: var(--accent); stroke-width: 2; }
+.g .h { stroke: var(--line-strong); stroke-width: 1; }
 .g .dot { fill: var(--accent); stroke: none; }
 @media (hover: hover) {
   .door a { transition: background-color var(--dur-quick) var(--ease-out); }

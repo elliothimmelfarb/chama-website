@@ -28,7 +28,7 @@ The current site is the evidence, not something to replace. People praise it for
 
 **Grammar.** Chaptered worlds: each section is a world on one of four grounds, pinned while its figure plays, and handed to the next by a soft blend of grounds. Hard rules that follow from it: the ground changes only between sections; a section never changes theme; the rail on the right is the progress readout.
 
-**Signature move (new): the doors catch.** The opening stage ends by collapsing its whole picture into three small glyphs (the rings, the spiral, the devices), which drop into the three door rows directly below and become their icons. The visitor watches the explanation turn into the navigation. The door glyphs in the mockup are those end frames.
+**Signature move: one hand.** The opening stage is drawn by one continuous ember line, as if by one hand, over quiet ink drawings, and every figure on home is a technical drawing (section 14). Elliot chose both from a board of samples on 2026-11-17, after calling the earlier pictures amateur. The doors catch that once ended the stage is gone.
 
 ---
 
@@ -57,7 +57,7 @@ Root is 100% so the visitor's text size scales everything (Elliot's phone is at 
 | `--t-display` | Display 600 | `clamp(2rem, 1.15rem + 4vw, 4.5rem)` | 1.02 | -0.03em | The H1 on every page. 35px on Elliot's phone, 72px at 1440. |
 | `--t-h2` | Display 600 | `clamp(1.625rem, 1rem + 2.6vw, 3rem)` | 1.08 | -0.025em | Section headings. |
 | `--t-h3` | Display 600 | `clamp(1.125rem, 1rem + 0.5vw, 1.375rem)` | 1.15 | -0.015em | Door titles, objection questions, menu rows. |
-| `--t-stage` | Display 500 (600 for the live phrase) | `clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem)` | 1.3 | -0.01em | Words inside the stage and the loop. |
+| `--t-stage` | Display 500 | `clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem)` | 1.3 | -0.01em | Words inside the loop figure. The opening stage sets its own: 1.25rem on a phone, 1.5rem on desktop (section 11). |
 | `--t-lead` | Sans 400 | `clamp(1.0625rem, 1rem + 0.2vw, 1.1875rem)` | 1.5 | 0 | The one paragraph under a heading. |
 | `--t-body` | Sans 400 | 1rem | 1.5 | 0 | Body, disclosures, chat messages. |
 | `--t-small` | Sans 400 or 500 | 0.875rem | 1.4 | 0 | Captions, door lines on phone, footer. |
@@ -153,12 +153,11 @@ One rule, followed everywhere: anything you press is a pill (`--r-pill: 999px`):
 | `--dur-arrive-ui`, `--stagger-ms` | 450ms, 50ms | A timed arrival and the step between items (at most five). |
 | `--dur-leave` | 200ms | A timed exit (the router's lift). |
 | `--dur-swap-out`, `--swap-gap`, `--dur-swap-in` | 220ms, 120ms, 340ms | One thing replacing another in place: the cycling phrases, /build's words. |
-| `--dur-carry` | 700ms | The stage's glyphs flying to the doors. |
 | Page change | 200ms lift, 300ms dissolve | The words in view lift away (`LIFT`), the sky dissolves into the new page's ground (`FADE`), and the new words rise in by their place, done within 0.7s of the swap (`ENTER`). |
-| `--dur-beat` | 3500ms | One stage beat. |
+| Stage scene | max(3.2s, 1.4s + 0.35s a word) | One stage scene: its sentence's reading time (section 11). |
 | `--dur-phrase` | 2800ms hold, 560ms swap | The cycling phrases. |
 | `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Everything that enters or responds. The default. |
-| `--ease-in-out` | `cubic-bezier(0.65, 0, 0.35, 1)` | Things that move from one place to another on screen (the stage actors, the door glyphs dropping). |
+| `--ease-in-out` | `cubic-bezier(0.65, 0, 0.35, 1)` | Things that move from one place to another on screen (the stage's line, the steps changing). |
 | `--ease-exit` | `cubic-bezier(0.4, 0, 1, 1)` | Things that leave (sheet close, outgoing phrase). |
 | `--ease-spring` | `cubic-bezier(0.34, 1.45, 0.5, 1)` | Only the door arrow's 3px nudge on hover. |
 | Scroll-driven | linear in `--p` | Figures read `--p` (0 to 1); easing is authored into the figure's keyframes, never added on top of scroll. |
@@ -170,13 +169,12 @@ Every transition is one of six moves, the same in scroll and in time. Arrivals a
 | Arrive | fade up and rise `--rise`, eased out over 0.25 from `--arrive-at` (-0.6) | `--dur-arrive-ui`, `--ease-out` |
 | Stagger | 0.05 per word in reading order (`--i`, written by the engine); a figure box (`.fig`) after its words, from `--fig-at` (-0.4) | `--stagger-ms` |
 | Draw, then the figure's own timeline | `--p`, per the figure kit | stage beats |
-| Hand off | the stage catch | `--dur-carry`, `--ease-in-out` |
 | Leave | the whole world: stands `EXIT_AT` (0.12), then each part fades over `EXIT_SPAN` (0.2), `EXIT_STAGGER` (0.03) apart, lifting `--lift`; a part goes sooner only where the next words or its pin's edge would reach it, and the next world's words then come as it fades | `--dur-leave`, `--ease-exit` |
 | Swap | `--in`/`--out` beats in a hold | out `--dur-swap-out` `--ease-exit`, in `--dur-swap-in` `--ease-out` after `--swap-gap` |
 
 A page writes only `--in` (0 to 0.5) and `--out` for a beat inside a hold; never `--k`, `--i` or `!important`. Popovers and the desktop Talk panel open on `--dur-base --ease-out` and close on `--dur-quick --ease-exit`; the header's Talk pill only fades; the rail and press use `--dur-quick` and `--dur-press` on `--ease-out`.
 
-Rules: hover effects sit under `@media (hover: hover)`; nothing animates when it was triggered from the keyboard except focus rings; content is visible by default and motion starts from an already-visible state; reduced motion (or `data-motion="low"`) keeps colour and opacity changes up to 200ms and drops all movement: under the system setting in full mode the same arrivals and exits run as fades (`--rise` and `--lift` are 0), the router fades the words in and still dissolves the sky, the H1 and /build's words fade, and the stage catch becomes a fade of the icons in place.
+Rules: hover effects sit under `@media (hover: hover)`; nothing animates when it was triggered from the keyboard except focus rings; content is visible by default and motion starts from an already-visible state; reduced motion (or `data-motion="low"`) keeps colour and opacity changes up to 200ms and drops all movement: under the system setting in full mode the same arrivals and exits run as fades (`--rise` and `--lift` are 0), the router fades the words in and still dissolves the sky, and the H1 and /build's words fade.
 
 ---
 
@@ -226,7 +224,7 @@ Home says, in order, who we are, what we believe and want for you, what we can d
 
 | # | Section | Ground | What moves |
 |---|---|---|---|
-| 1 | First screen: descriptor, H1 in two halves, one sub paragraph, the chat field; the stage beside it (desktop, columns 7 to 12) or under it (phone); the three doors and the "also" line under both | Paper | The H1 halves arrive by CSS (first half 0 to 0.6s, second 0.4s to 1.2s, each a 12px rise and fade from 0.01). The phrase above the field cycles. The stage self-plays at 60% in view; the doors' icons stand in their rows from the start, and at its last beat the stage's glyphs fly into them. Not pinned. |
+| 1 | First screen: descriptor, H1 in two halves, one sub paragraph, the chat field; the stage beside it (desktop, columns 7 to 12) or under it (phone); the three doors and the "also" line under both | Paper | The H1 halves arrive by CSS (first half 0 to 0.6s, second 0.4s to 1.2s, each a 12px rise and fade from 0.01). The phrase above the field cycles. The stage self-plays at 60% in view (section 11); the doors' icons stand in their rows from the start. Not pinned. |
 | 2 | What we believe: Elliot's sentence as the heading, "We help you make money, save money and stay compliant, while you enjoy your business more and do things with it you couldn't before." under it | Tides | Pinned, `--h` 180, split frame. The business stands from the start of the hold (its body and ink are there at `--p` 0, so the heading is never alone), then its ember fit draws one side at a time, each side one of the five reasons, called out beside it (desktop) and lit in the line under the heading as it draws (the three must-haves in ink, the two hopes in ember). It lands warm. |
 | 3 | What we can do, then day one: "We're ready to solve any problem that can be solved with software." / "We take on things no one has ever done before.", then "Every new AI capability is ours on day one." / "AI is levelling up fast..." | Grid | Pinned, `--h` 220, split frame, one `.slot` whose two beats take turns (the first leaves by 0.5 of the hold, the second arrives from 0.5). The business continues from the belief at the same size and place, whole and warm. A shape it has never seen arrives dashed, its fit draws and it turns solid ("Something new"); then a plinth, drawn in hairlines with a lit top face, grows up under both and they rise on it together ("Day one"). |
 | 4 | Who we have worked with: the heading, the plant line, "Including an 88-person metal stamping plant in Toronto, which runs on software we built." (a link to `/engineering-department`; it names LA Metal only behind `SITE.laMetalNamed`; its last word keeps the arrow), "Everything we've built" to `/work`, and the client logos: on desktop a list beside the words, one to a row between hairlines at twice the strip's size, on a phone the strip at 1.7 times; the logos are ink at 82% so they hold in dark | Grid | Not pinned. |
@@ -329,8 +327,8 @@ Every client and partner logo becomes a single-colour alpha mask, so one asset w
 Three rows on phone, a band of three on desktop, never cards.
 
 - **Phone:** each row is a full-width link, 12px vertical padding, a 36px glyph, the title in `--t-h3`, one line in `--t-small` `--fg-2`, and an ember arrow on the right. Hairlines between rows and above the first and below the last. The whole row is the tap target (at least 64px tall).
-- **Desktop:** one band under the first screen, a top hairline, three columns at 1.35 : 1 : 1 (the engineering department is the widest, because that is the pipeline), separated by vertical hairlines, no fill, no shadow. On hover the column's ground warms with a 6% ember wash over `--dur-quick`, the arrow nudges 3px with `--ease-spring`, and the glyph plays its small motion (the marker runs a quarter lap; the spiral straightens; the phone slides in beside the laptop).
-- **Glyphs** are the stage's end frames, drawn in one 1.5px stroke with one ember part each: the rings with the business pentagon (with a 7% body) and the marker; the spiral resolving into an arrow; the laptop (with a body) and an ember phone (with the ember tint inside).
+- **Desktop:** one band under the first screen, a top hairline, three columns at 1.35 : 1 : 1 (the engineering department is the widest, because that is the pipeline), separated by vertical hairlines, no fill, no shadow. On hover the column's ground warms with a 6% ember wash over `--dur-quick`, the arrow nudges 3px with `--ease-spring`, and the glyph stays still.
+- **Glyphs** are small technical drawings (`site/figures/glyphs.js`): one 1.5px ink stroke, 1px construction hairlines in `--line-strong`, and one 2px ember part each. The engineering department is a compass drawing an arc on its ground line; coaching is two circles whose shared lens is hatched and edged in ember; websites, apps and products are a screen and a phone in elevation under a dimension line, with an ember home bar. Nothing in them is filled, so they sit on any ground.
 - **Titles and lines:** "Your own engineering department" with "You get what a software company has, without becoming one."; "AI fluency coaching and training" with "Time with someone who knows AI deeply and makes it simple."; "Websites, apps and products" with "Websites built to be found." No door's line repeats the stage beat its glyph comes from.
 
 ---
@@ -371,31 +369,35 @@ Low motion (`html[data-motion="low"]`) is a calm printed edition of the same sit
 - **Layout:** one column of sections on desktop and phone, the same type, tokens and section order. Desktop keeps the two-column first screen (words left, stage right) and the door band; everything after is a centred 12-column flow.
 - **Grounds:** no WebGL. Each world is its base colour with a still version of its motif drawn in CSS or a small inline SVG: paper gets a very soft top-right warmth; the grid gets a 40px square grid at 6% (as in the mockup); tides get three long curves at 8% across the top of the section; ember gets a soft warm gradient rising from the bottom at 10%. All in both themes, from the same ground tokens.
 - **The hairline:** where the full site blends one ground into the next, low motion draws a 1px `--line-strong` line across the full width, 64px above the next section, so the visitor sees the world has changed.
-- **The stage** becomes a stepper: the same eight scenes as still pictures, each with its words, with previous and next buttons (44px) and "4 of 8 · The loop" between them. It opens on scene 1. Arrow keys step when the stepper has focus.
+- **The stage** becomes a stepper: the same eight scenes as still pictures, each with its words, with previous and next buttons (44px) and "4 of 8" between them. It opens on scene 1. Arrow keys step when the stepper has focus.
 - **Figures** are drawn complete (`--p` unset). The loop shows the full picture with all four stations and the four real examples as labels around the outer ring.
 - **No pinning, no rail, no router,** no photo settle, no figure growth (every figure drawn whole). The chat sheet opens with a 200ms fade instead of a slide. The cycling phrases crossfade or hold.
 - **Switching** from the Display control reloads in the other mode; the choice is stored (`chama-motion`) and a system reduced-motion setting picks low on a first visit.
 
 ---
 
-## 11. The opening stage, beat by beat
+## 11. The opening stage, scene by scene
 
-One inline SVG (`site/figures/stage.js`, viewBox 400x260), about 52svh on a phone, so the picture takes nearly the column's full width, and columns 7 to 12 of the first screen on desktop (the picture up to 56svh tall). Words sit at the stage's top-left in `--t-stage`: the phrase being said is `--fg` 600, the rest of the sentence `--fg-2` 500, and words arrive a few at a time. Under it: a play/pause button and an eight-segment beat bar (the current segment fills in ember across its 3.5 seconds; tapping a segment jumps to that beat). It starts when 60% in view and no earlier than 1.4s after load (after the H1), pauses out of view, never loops, ends on a still, and has a replay button in place of pause at the end.
+Rebuilt 2026-11-17. Elliot said the old stage's text "disappears too quickly to read" and that parts of it felt low effort, and picked "one continuous line" from a board of samples. `site/figures/stage.js` draws it; `test/stage.test.js` holds the timing.
 
-The actors, all present from the start and reused, drawn in the figure language (section 14): **the business** (the protagonist pentagon, R 44, on its floor shadow with a lit body), **the outline** (ember, the software, 0.14 R outside it), **the ring** (a dotted ellipse on a faint platform, the AI system; its station labels stand outside it, wrapping beside it on a phone), **the people** (three small ink dots), **the marker** (an ember dot with a short tail), **the devices** (a laptop, a phone and a cloud in ember outline, tinted inside), **the software company** (a grey block seen from above, with a dark doorway). Each part moves on its own: no group whose transform changes holds more than three parts, so the loop collapses into the first glyph part by part.
+**Reading pace.** Each scene shows its whole sentence from its first moment and holds it for max(3.2s, 1.4s + 0.35s a word), so the eight scenes run about 41 seconds. The engine's clock, the seek points and the scene bar's segments (each as long as its scene) all come from those times. Sentences cross-fade (out over 0.25s, in over 0.35s), in Funnel Display at 1.25rem on a phone and 1.5rem beside the headline on desktop.
 
-| Beat | Time | Words (from brand-language) | Picture |
-|---|---|---|---|
-| 1. The old way | 0 to 3.5s | "Software companies have engineers, and their customers wait in line." | The software company, a grey block seen from above, on the right. Five small pentagons queue to its left on one shared shadow; ours is fourth. The queue steps forward once and the front one walks into the doorway; ours does not reach the front. |
-| 2. The turn | 3.5 to 7s | "Here the engineers work only for you." | The block and the queue fade to 10%. Ours steps out of line and grows to the centre at the old site's scale (1.9 times), and an ember outline draws around it, close-fitting, following its corners, then settles. |
-| 3. A small team | 7 to 10.5s | "A small, family-owned, AI-native business." | The business settles to its place in the ring. Three ink dots (us) appear beside it. Behind them the dotted ring and its platform draw a full circle around everything, with small ticks travelling along it (the AI doing the work). One dot connects to the pentagon with a short line (the person you talk to). |
-| 4. The loop | 10.5 to 14s | "Tell us what you need. It gets built. You use it. You find what's next." | The ring becomes the loop: four stations appear at the top, right, bottom and left, labelled. The marker runs one lap; each station fills ember and its label turns `--fg` as it passes, in step with the words. |
-| 5. Fit | 14 to 17.5s | "Fits your process, and changes when you do." | The pentagon grows a sixth corner. The marker runs a quick lap and the ember outline refits to the new shape (dashoffset redraw), tight again. |
-| 6. Breadth | 17.5 to 21s | "If it can be solved with something on a phone, a computer or in the cloud, we can do it." | The outline lifts off and draws, in turn, a phone, a laptop and a cloud, each filling with the ember tint as it closes and held for a moment, then returns to the shape. |
-| 7. Taught | 21 to 24.5s | "When AI can do something new, so can you." | A second, smaller pentagon (you, learning) appears up to the side. A small dotted ring of its own draws around it, smaller than ours but the same kind, and its own ember marker draws its own fit. |
-| 8. Belief, then the doors | 24.5 to 28s | "More time for human things, and for each other." | Everything settles and quiets for 1.5s. Then the picture collapses into three glyphs (the rings, the spiral, the devices), which drop with `--ease-in-out` over 700ms into the three door rows below and become their icons. The stage keeps a still of the loop at 85% opacity, with Replay. |
+**The drawing.** One inline SVG on a 640x360 sheet, showing the part from x 100 and y 52 (540x260), with a hairline ground across it. In each scene quiet ink parts draw first (1.6px `--fg`, 1.3px at 50% `--fg`, tone fills at 7%), and one ember line (3.25px) is drawn by a pen, a round nib that rides its drawing end, eased out so it runs quickly along the ground and slows into its figure. A scene's drawing is paced to finish at 78% of its hold. Every scene after the first starts drawing 0.35s before its sentence, while the last scene's ember runs off its tail and fades, so the sheet is never blank and two finished drawings never share it. The loop's ring runs off inside its own scene, after its still. Scenes drawn small (2, 6, 7, 8) are scaled up about their ground, their strokes held at width by `--zs`. Stroke widths hold their pixel size at each width through `--sw`.
 
-Words are the lead's to finalise from `brand-language.md`; these are all approved phrases. The low-motion stepper uses the same eight pictures as stills.
+| Scene | Words | Drawing |
+|---|---|---|
+| 1 | "Software companies have engineers, and their customers wait in line." | A tall company with engineers in its windows, six people queued at its door; the ember line becomes you, at the back. |
+| 2 | "Here the engineers work only for you." | Two engineers at a table with a laptop; the line becomes you across from them, and a speech bubble appears. |
+| 3 | "A small, family-owned, AI-native business." | The line builds a house with a family in its window and rises into a spark. |
+| 4 | "Tell us what you need. It gets built. You use it. You find what's next." | A dot runs one lap of a ring round a small house, lighting the four stations and their labels as it passes. |
+| 5 | "Fits your process, and changes when you do." | Three steps with the line traced snug round them; then the steps change height and the line changes with them (it becomes five straight runs that move, so it stays one crisp line). |
+| 6 | "If it can be solved with something on a phone, a computer or in the cloud, we can do it." | One stroke draws a phone, a laptop and a cloud. |
+| 7 | "When AI can do something new, so can you." | A spark on a screen, carried by the line to a spark over a person's head. |
+| 8 | "More time for human things, and for each other." | The line becomes two people side by side, with a child beside them and a low sun. It stays, with Replay. |
+
+**Controls.** A play, pause or replay button (a 32px ring in a 44px target) and the scene bar: 2px segments, seen scenes in ink, the scene in play filling in ember, each a button to that scene. Low motion is a stepper with "N of 8" and each scene's finished drawing (`test/stage.test.js` evaluates every part at each still: its own scene whole, nothing of another).
+
+**Cost.** Every moving part is a leaf with `data-p`, 77 in all, written only while the stage plays; a Chrome trace at 1440x900 while it played counted 32 elements restyled and 0.38 ms of style a frame. Nothing uses `offset-path` on a long path. The first build rode a nib along each scene's path that way, and frames slowed badly (measured while the machine was under heavy load, so how much is uncertain). The nib is now the round cap of a dash too short to see, moved by `stroke-dashoffset`.
 
 ---
 
@@ -482,6 +484,8 @@ No two worlds in a row use the same layout. On a phone the frame is one column, 
 An owned or complete business warms: its body turns to ember at 16% on the ground (22% in dark). Only Why, Own and Approach use the warmth, so it keeps its meaning. The supporting cast (the platform, people, the marker, devices, the off-the-shelf company) is drawn in the same family; anything that holds content gets a body and a floor shadow, hairlines and rings never do. Every colour is a token in `assets/tokens.css` section 4, mixed from the ground, so both themes come free.
 
 **Motion.** Inside a figure there is one timeline, on the world's `--p`: arrive (0 to 0.10, floor and body rise into place), draw (the ink, from the top vertex, clockwise), fit (the ember a moment behind it, the old site's lag), act (0.22 to 0.62, the figure's story), land (0.62 to 0.72, the fit settles from 1.035, end labels and the warmth arrive), then hold, still. No part or label fades in over less than 0.05 of the hold. A protagonist that continues from the world before, at the same size and place, arrives drawn and animates only what is new; a pentagon is drawn from nothing only where it first appears on a page. Labels are HTML on their part (`.fx-lb`), never a row of captions under the figure.
+
+**Home draws in technical drawing** (2026-11-17, Elliot's pick from samples). The protagonist keeps its geometry and timeline, but on home its body is paper (`--fx-body`) in an 85% ink outline, its owned warmth is an ember hatch (0.75px at 55%, 9 units apart), and its floor shadow gives way to a hatched ground line on the fit's bottom edge. Each figure carries the same furniture, all still so it costs nothing a frame: dash-dot centre lines through the business, corner marks at its box's corners, and a title block in the bottom right corner with the figure's number and its section's name. Callouts are small capitals, numbered. On a phone the belief's callouts shrink to their numbers on 16px leaders, and the line under its heading carries the same numbers; the title block is hidden. A supporting person is drawn as shoulders and a head, and the taught ring is ember. `site/figures/home-figures.js` holds it; the other pages still use the shaded language above.
 
 **Cost.** `data-p` goes on each moving leaf, or a group of at most three; a figure restyles at most 24 elements a frame (the protagonist costs five, none when it arrives drawn); only opacity, transforms, dash offset, offset distance and fill opacity change with `--p`. `site/figures/kit.js` holds the helpers and `subject()`, the protagonist; `test/figures.test.js` holds these rules, and `test/fixtures/figure.html` shows the language on the real engine.
 

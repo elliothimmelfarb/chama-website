@@ -120,7 +120,8 @@
     S.el.setAttribute("data-state", state);
   }
   function stageWrite(S, p) {
-    p = round3(clamp(p));
+    // to 0.0001: a stage runs up to 45s, and 0.001 of that steps the drawing at 22Hz
+    p = Math.round(clamp(p) * 10000) / 10000;
     if (p === S.p) return;
     S.p = p;
     S.readers.forEach(function (el) { el.style.setProperty("--p", p); });
