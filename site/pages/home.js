@@ -31,7 +31,7 @@ const PEN = {
 const marked = (half) => {
   for (const [kind, phrase] of Object.entries(t.h1Marks)) {
     const at = half.indexOf(phrase);
-    if (at >= 0) return [half.slice(0, at), html`<span class="mark mark-${kind}">${phrase}${raw(PEN[kind])}</span>`, half.slice(at + phrase.length)];
+    if (at >= 0) return [half.slice(0, at), html`<span class="pen pen-${kind}">${phrase}${raw(PEN[kind])}</span>`, half.slice(at + phrase.length)];
   }
   return half;
 };
@@ -47,20 +47,21 @@ const STYLE = `
 /* the pen marks up the H1 once its halves have arrived, then the stage plays */
 .first { overflow-x: clip; }
 .first h1 { line-height: 1.06; }
-.mark { position: relative; white-space: nowrap; }
-.mark svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
-.mark path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
-.mark-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
-.mark-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
+.pen { position: relative; white-space: nowrap; }
+.pen svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
+.pen path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
+.pen-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
+.pen-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
 @keyframes pen { from { stroke-dashoffset: 1; } }
-:root:not([data-motion="low"]) .mark-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
-:root:not([data-motion="low"]) .mark-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
-:root.routed:not([data-motion="low"]) .mark-under path { animation-delay: 450ms; }
-:root.routed:not([data-motion="low"]) .mark-ring path { animation-delay: 900ms; }
-@media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .mark path { animation: none; } }
-/* one column: the headline, the stage under it, then the field; the
-   descriptor and the sub follow, before the doors */
-@media (max-width: 1099px) {
+:root:not([data-motion="low"]) .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
+:root:not([data-motion="low"]) .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
+:root.routed:not([data-motion="low"]) .pen-under path { animation-delay: 450ms; }
+:root.routed:not([data-motion="low"]) .pen-ring path { animation-delay: 900ms; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .pen path { animation: none; } }
+/* on a phone: the headline, the stage under it, then the field; the
+   descriptor and the sub follow, before the doors (from 760px the stage is
+   so tall it would push the field off a tablet's first screen) */
+@media (max-width: 759px) {
   .first-grid { display: flex; flex-direction: column; }
   .first-grid h1 { font-size: max(var(--t-display), 2.25rem); }
   .first-words { display: contents; }
@@ -69,6 +70,8 @@ const STYLE = `
   .first-grid .talk-field { order: 3; }
   .first-grid .descriptor { order: 4; margin: var(--s6) 0 0; }
   .first-grid .home-sub { order: 5; margin-top: var(--s3); }
+  html.nav-enter main > .world:first-child .descriptor { animation-delay: calc(3 * var(--stagger-ms)); }
+  html.nav-enter main > .world:first-child .home-sub { animation-delay: calc(4 * var(--stagger-ms)); }
 }
 @media (min-width: 1100px) {
   .home-sub { margin-top: var(--s5); }

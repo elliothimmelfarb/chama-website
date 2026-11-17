@@ -61,9 +61,17 @@ test("what we can do and day one share one pinned world whose words take turns",
 test("the H1 is the ready-to-solve line, with the pen's two marks on it", () => {
   const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/.exec(main)[1];
   assert.equal(words(h1.replace(/<svg[\s\S]*?<\/svg>/g, "")), "We're ready to solve any problem that can be solved with software.");
-  const marks = [...h1.matchAll(/<span class="mark mark-(\w+)">([^<]*)<svg [^>]*aria-hidden="true"/g)].map((m) => [m[1], m[2]]);
+  const marks = [...h1.matchAll(/<span class="pen pen-(\w+)">([^<]*)<svg [^>]*aria-hidden="true"/g)].map((m) => [m[1], m[2]]);
   assert.deepEqual(marks, [["under", "any problem"], ["ring", "software"]]);
   assert.match(text(), /^# We're ready to solve any problem that can be solved with software\.$/m);
+});
+
+// The header's logo is <svg class="mark">: a home rule on .mark once
+// turned it into a dashed outline (2026-11-17 review).
+test("home's own styles never reach the header logo", () => {
+  const logo = /<svg class="([^"]+)"[^>]*viewBox="0 0 64 64"/.exec(doc)[1].split(/\s+/);
+  const css = [...main.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n").replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const c of logo) assert.doesNotMatch(css, new RegExp(`\\.${c}(?![\\w-])`), `home styles select .${c}, the logo's class`);
 });
 
 test("who we have worked with: a visible heading, the plant line to the engineering page, the logos and the work page", () => {

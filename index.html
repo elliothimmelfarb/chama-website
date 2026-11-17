@@ -101,20 +101,21 @@
 /* the pen marks up the H1 once its halves have arrived, then the stage plays */
 .first { overflow-x: clip; }
 .first h1 { line-height: 1.06; }
-.mark { position: relative; white-space: nowrap; }
-.mark svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
-.mark path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
-.mark-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
-.mark-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
+.pen { position: relative; white-space: nowrap; }
+.pen svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
+.pen path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
+.pen-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
+.pen-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
 @keyframes pen { from { stroke-dashoffset: 1; } }
-:root:not([data-motion="low"]) .mark-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
-:root:not([data-motion="low"]) .mark-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
-:root.routed:not([data-motion="low"]) .mark-under path { animation-delay: 450ms; }
-:root.routed:not([data-motion="low"]) .mark-ring path { animation-delay: 900ms; }
-@media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .mark path { animation: none; } }
-/* one column: the headline, the stage under it, then the field; the
-   descriptor and the sub follow, before the doors */
-@media (max-width: 1099px) {
+:root:not([data-motion="low"]) .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
+:root:not([data-motion="low"]) .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
+:root.routed:not([data-motion="low"]) .pen-under path { animation-delay: 450ms; }
+:root.routed:not([data-motion="low"]) .pen-ring path { animation-delay: 900ms; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .pen path { animation: none; } }
+/* on a phone: the headline, the stage under it, then the field; the
+   descriptor and the sub follow, before the doors (from 760px the stage is
+   so tall it would push the field off a tablet's first screen) */
+@media (max-width: 759px) {
   .first-grid { display: flex; flex-direction: column; }
   .first-grid h1 { font-size: max(var(--t-display), 2.25rem); }
   .first-words { display: contents; }
@@ -123,6 +124,8 @@
   .first-grid .talk-field { order: 3; }
   .first-grid .descriptor { order: 4; margin: var(--s6) 0 0; }
   .first-grid .home-sub { order: 5; margin-top: var(--s3); }
+  html.nav-enter main > .world:first-child .descriptor { animation-delay: calc(3 * var(--stagger-ms)); }
+  html.nav-enter main > .world:first-child .home-sub { animation-delay: calc(4 * var(--stagger-ms)); }
 }
 @media (min-width: 1100px) {
   .home-sub { margin-top: var(--s5); }
@@ -264,7 +267,7 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
     <div class="first-words">
       <p class="thanks" id="thanks" role="status">Thank you. We have your details, and a person will reach out soon.</p>
       <p class="descriptor">Custom software and AI coaching, from a family business in Lisbon.</p>
-      <h1><span class="half">We&#39;re ready to solve <span class="mark mark-under">any problem<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span></span> <span class="half">that can be solved with <span class="mark mark-ring">software<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M379 15C211 -1 29 17 17 56C7 92 178 111 322 102C437 95 475 67 463 39C451 21 418 13 370 11"/></svg></span>.</span></h1>
+      <h1><span class="half">We&#39;re ready to solve <span class="pen pen-under">any problem<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span></span> <span class="half">that can be solved with <span class="pen pen-ring">software<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M379 15C211 -1 29 17 17 56C7 92 178 111 322 102C437 95 475 67 463 39C451 21 418 13 370 11"/></svg></span>.</span></h1>
       <p class="lead home-sub">You talk to a person, and AI does the heavy work behind us.</p>
       <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-home"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
