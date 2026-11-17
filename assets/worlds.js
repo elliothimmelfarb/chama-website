@@ -670,6 +670,17 @@
     arriveAt = parseFloat(rootStyle.getPropertyValue("--arrive-at")) || -0.6;
     arriveK = parseFloat(rootStyle.getPropertyValue("--arrive-k")) || 4;
     arrives = sections.map(function (s, k) { return held[k] ? arriveOf(k) : arriveAt; });
+    var figAt = parseFloat(rootStyle.getPropertyValue("--fig-at")) || -0.4, stagger = parseFloat(rootStyle.getPropertyValue("--stagger")) || 0.05;
+    // what each reader's style does with --u, read once per layout: a .r's
+    // own --in (a number only where a page set one), --out and --k
+    readKind = sections.map(function (s, k) {
+      return (readers[k] || []).map(function (el) {
+        if (el.classList.contains("pin-shade")) return { shade: true };
+        if (!el.classList.contains("r")) return null;
+        var cs = getComputedStyle(el), inS = cs.getPropertyValue("--in").trim();
+        return { fig: el.classList.contains("fig"), inN: /^-?[\d.]+$/.test(inS) ? +inS : NaN, out: parseFloat(cs.getPropertyValue("--out")) || 2, k: parseFloat(cs.getPropertyValue("--k")) || arriveK };
+      });
+    });
     goneEls = []; devStay = []; devGone = [];
     var stays = [];
     gones = sections.map(function (s, k) {
@@ -700,10 +711,29 @@
         if (want < base - 0.001) at = String(round3(want));
       }
       setVar(pinOf[k], "--arrive-at", at);
+      // The stretch of --u, inside the hold (0 to 1), in which a reader's
+      // style cannot change: a .r once it is fully in and before its --out
+      // (its exit is --e, written apart), the shade once it is in. setU
+      // holds --u at the stretch's start there, so a figure box does not
+      // restyle its whole subtree every frame of the hold.
+      var pa = at === "" ? arriveAt : +at;
+      settle[k] = (readKind[k] || []).map(function (r, j) {
+        if (!r) return null;
+        var from, to = 1;
+        if (r.shade) from = pa + 1 / arriveK;
+        else {
+          var inV = !isNaN(r.inN) ? r.inN : r.fig ? Math.max(figAt, pa + (places[k][j] || 0) * stagger) : pa + (places[k][j] || 0) * stagger;
+          from = inV + 1 / r.k;
+          to = Math.min(1, r.out - 1 / r.k);
+        }
+        from = Math.max(0, from);
+        return from <= to ? [round3(from), to] : null;
+      });
     });
     if (nav) placeRail();
     // the exits may have moved: the next frame writes every --u, --e and --p again
     lastU = [];
+    lastV = [];
     lastP = [];
   }
   // The world on screen (i), how far through its hold (l), how far the next
@@ -740,7 +770,7 @@
   // while its world leaves.
   var U_READERS = ".pin-shade, .r, .ticks b, .qs li";
   var P_READERS = "[data-p]";
-  var lastU = [], readers = [], lastE = [], pReaders = [], lastP = [];
+  var lastU = [], readers = [], lastE = [], pReaders = [], lastP = [], settle = [], lastV = [], readKind = [];
   function setU(i, l, x) {
     for (var k = 0; k < NW; k++) {
       if (!held[k]) continue;
@@ -748,9 +778,11 @@
       if (u === lastU[k]) continue;
       lastU[k] = u;
       var own = goneEls[k] || [];
+      var st = settle[k] || [], lv = lastV[k] || (lastV[k] = []);
       for (var j = 0; j < readers[k].length; j++) {
         var el = readers[k][j], e = round3(exitOf(k, own[j] === undefined ? gones[k] : own[j], u));
-        el.style.setProperty("--u", u);
+        var s = st[j], v = s && u >= s[0] && u <= s[1] ? s[0] : u;
+        if (v !== lastV[k][j]) { lv[j] = v; el.style.setProperty("--u", v); }
         if (e !== lastE[k][j]) { lastE[k][j] = e; el.style.setProperty("--e", e); }
       }
     }
@@ -879,7 +911,7 @@
     });
     places = sections.map(function (s, k) { return placeWords(k); });
     lastE = readers.map(function () { return []; });
-    tops = []; hs = []; pins = []; held = []; gones = []; goneEls = []; lastU = []; lastP = [];
+    tops = []; hs = []; pins = []; held = []; gones = []; goneEls = []; lastU = []; lastV = []; lastP = []; settle = [];
     shown = worldOf[0] || 0;
     tBind = performance.now();
     if (!LOW) buildIndex();

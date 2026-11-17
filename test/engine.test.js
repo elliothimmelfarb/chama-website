@@ -421,6 +421,14 @@ test("a leaving part waits for the next world's words only where they share its 
   assert.match(gone, /mustGo\(len, b\.y, b\.foot, blend, nextOver\(/, "each part's guard reads the next world's top over its own columns");
 });
 
+test("a settled reader is not written while its --u changes nothing", () => {
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(measure, /settle\[k\] = /, "measure() works out, per reader, the stretch of --u in which its style cannot change");
+  const set = /function setU\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)[1];
+  assert.match(set, /settle\[k\]/, "setU() holds a settled reader's --u at the start of that stretch");
+  assert.match(set, /lastV\[k\]\[j\]/, "and writes --u only when the held value changes");
+});
+
 test("no page overrides the motion scale", () => {
   for (const [file, text] of [...SOURCES, ...BUILT]) {
     // .ef-now's --k is its own figure's variable, not a .r's
