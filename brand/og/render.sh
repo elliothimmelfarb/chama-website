@@ -7,8 +7,8 @@
 # a new filename or old recipients keep seeing the old card. Chrome is the
 # only renderer needed; nothing is fetched from the network.
 set -e
-OUT="${1:-og-2026-11-16.png}"
-SRC="${2:-brand/og/og-2026-11-16.html}"
+OUT="${1:-og-2026-11-17.png}"
+SRC="${2:-brand/og/og-2026-11-17.html}"
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 "$CHROME" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
   --window-size=1200,630 --screenshot="$PWD/$OUT" \

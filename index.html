@@ -34,15 +34,15 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Chama Inteligente">
   <meta property="og:locale" content="en_US">
-  <meta property="og:image" content="https://chamainteligente.com/og-2026-11-16.png">
+  <meta property="og:image" content="https://chamainteligente.com/og-2026-11-17.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="What you have to do, made easier. What you wish you could do, made possible. Chama Inteligente, Lisbon.">
+  <meta property="og:image:alt" content="We&#39;re ready to solve any problem that can be solved with software. Chama Inteligente, Lisbon.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Chama Inteligente | Custom software and AI coaching, from a family business in Lisbon">
   <meta name="twitter:description" content="A small, family-owned, AI-native business in Lisbon, working worldwide. We&#39;re ready to solve any problem that can be solved with software, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.">
-  <meta name="twitter:image" content="https://chamainteligente.com/og-2026-11-16.png">
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"https://chamainteligente.com/#organization","name":"Chama Inteligente","alternateName":"Chama","legalName":"Chama Inteligente, Lda.","url":"https://chamainteligente.com/","logo":"https://chamainteligente.com/apple-touch-icon.png","image":"https://chamainteligente.com/og-2026-11-16.png","email":"info@chamainteligente.com","address":{"@type":"PostalAddress","addressLocality":"Lisbon","addressCountry":"PT"},"areaServed":"Worldwide","founder":{"@type":"Person","name":"Elliot Himmelfarb"}},{"@type":"WebSite","@id":"https://chamainteligente.com/#website","url":"https://chamainteligente.com/","name":"Chama Inteligente","publisher":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"},{"@type":"WebPage","@id":"https://chamainteligente.com/#webpage","url":"https://chamainteligente.com/","name":"Chama Inteligente | Custom software and AI coaching, from a family business in Lisbon","description":"A small, family-owned, AI-native business in Lisbon, working worldwide. We're ready to solve any problem that can be solved with software, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.","isPartOf":{"@id":"https://chamainteligente.com/#website"},"about":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"}]}</script>
+  <meta name="twitter:image" content="https://chamainteligente.com/og-2026-11-17.png">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"https://chamainteligente.com/#organization","name":"Chama Inteligente","alternateName":"Chama","legalName":"Chama Inteligente, Lda.","url":"https://chamainteligente.com/","logo":"https://chamainteligente.com/apple-touch-icon.png","image":"https://chamainteligente.com/og-2026-11-17.png","email":"info@chamainteligente.com","address":{"@type":"PostalAddress","addressLocality":"Lisbon","addressCountry":"PT"},"areaServed":"Worldwide","founder":{"@type":"Person","name":"Elliot Himmelfarb"}},{"@type":"WebSite","@id":"https://chamainteligente.com/#website","url":"https://chamainteligente.com/","name":"Chama Inteligente","publisher":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"},{"@type":"WebPage","@id":"https://chamainteligente.com/#webpage","url":"https://chamainteligente.com/","name":"Chama Inteligente | Custom software and AI coaching, from a family business in Lisbon","description":"A small, family-owned, AI-native business in Lisbon, working worldwide. We're ready to solve any problem that can be solved with software, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.","isPartOf":{"@id":"https://chamainteligente.com/#website"},"about":{"@id":"https://chamainteligente.com/#organization"},"inLanguage":"en"}]}</script>
 </head>
 <body data-page="home">
 <canvas id="sky" class="layer" aria-hidden="true"></canvas>
@@ -98,6 +98,32 @@
 
 <style>
 .home-sub { margin-top: var(--s4); }
+/* the pen marks up the H1 once its halves have arrived, then the stage plays */
+.first { overflow-x: clip; }
+.first h1 { line-height: 1.06; }
+.mark { position: relative; white-space: nowrap; }
+.mark svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
+.mark path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
+.mark-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
+.mark-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
+@keyframes pen { from { stroke-dashoffset: 1; } }
+:root:not([data-motion="low"]) .mark-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
+:root:not([data-motion="low"]) .mark-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
+:root.routed:not([data-motion="low"]) .mark-under path { animation-delay: 450ms; }
+:root.routed:not([data-motion="low"]) .mark-ring path { animation-delay: 900ms; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .mark path { animation: none; } }
+/* one column: the headline, the stage under it, then the field; the
+   descriptor and the sub follow, before the doors */
+@media (max-width: 1099px) {
+  .first-grid { display: flex; flex-direction: column; }
+  .first-grid h1 { font-size: max(var(--t-display), 2.25rem); }
+  .first-words { display: contents; }
+  .first-grid h1 { order: 1; }
+  .first-grid .stage { order: 2; margin-top: var(--s5); }
+  .first-grid .talk-field { order: 3; }
+  .first-grid .descriptor { order: 4; margin: var(--s6) 0 0; }
+  .first-grid .home-sub { order: 5; margin-top: var(--s3); }
+}
 @media (min-width: 1100px) {
   .home-sub { margin-top: var(--s5); }
   .first-words { grid-column: 1 / span 6; }
@@ -238,14 +264,14 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
     <div class="first-words">
       <p class="thanks" id="thanks" role="status">Thank you. We have your details, and a person will reach out soon.</p>
       <p class="descriptor">Custom software and AI coaching, from a family business in Lisbon.</p>
-      <h1><span class="half">What you have to do, made easier.</span> <span class="half">What you wish you could do, made possible.</span></h1>
-      <p class="lead home-sub">You talk to a person. AI does the heavy work behind us, so a small team can take on any problem software can solve.</p>
+      <h1><span class="half">We&#39;re ready to solve <span class="mark mark-under">any problem<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span></span> <span class="half">that can be solved with <span class="mark mark-ring">software<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M379 15C211 -1 29 17 17 56C7 92 178 111 322 102C437 95 475 67 463 39C451 21 418 13 370 11"/></svg></span>.</span></h1>
+      <p class="lead home-sub">You talk to a person, and AI does the heavy work behind us.</p>
       <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-home"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-home" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
     </div>
-    <figure class="stage" data-stage data-duration="40.3" data-delay="1.4" tabindex="-1" aria-label="How Chama works, in eight short scenes">
+    <figure class="stage" data-stage data-duration="40.3" data-delay="2.6" tabindex="-1" aria-label="How Chama works, in eight short scenes">
   <style>
 .stage { position: relative; margin: var(--s4) 0 0; display: flex; flex-direction: column; gap: var(--s3); }
 .stage-words { display: grid; margin: 0; min-height: calc(3 * 1.25em); font: 500 1.25rem/1.25 var(--display); letter-spacing: -0.015em; color: var(--fg); max-width: 30ch; text-wrap: pretty; }
@@ -362,7 +388,7 @@ html[data-motion="low"] .stage[data-state] .stage-step { display: flex; }
     <div class="frame home-frame" data-layout="split">
       <div class="words slot">
         <div>
-          <h2 class="r" style="--out:0.5">We&#39;re ready to solve any problem that can be solved with software.</h2>
+          <h2 class="r" style="--out:0.5">What you have to do, made easier. What you wish you could do, made possible.</h2>
           <p class="lead r" style="--out:0.5">We take on things no one has ever done before.</p>
         </div>
         <div>
