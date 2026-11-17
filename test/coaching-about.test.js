@@ -93,7 +93,10 @@ for (const [id, doc] of Object.entries(html)) {
     }
   });
 
-  test(`each figure on /${id} restyles at most 24 elements a frame`, () => {
+  // This counts the parts that read --p. The whole figure box restyles too
+  // whenever its world's --u changes (it is a .fig.r), which only the frame
+  // cost rig in pages.md measures.
+  test(`each figure on /${id} has at most 24 parts that read --p`, () => {
     const figs = [...main(doc).matchAll(/<figure\b[\s\S]*?<\/figure>/g)].map((m) => m[0]);
     assert.ok(figs.length >= 1);
     for (const fig of figs) {
@@ -108,7 +111,7 @@ for (const [id, doc] of Object.entries(html)) {
         if (reads) cost++;
         if (!self) stack.push(reads);
       }
-      assert.ok(cost <= 24, `${/class="([^"]*)"/.exec(fig)[1]} restyles ${cost} elements a frame`);
+      assert.ok(cost <= 24, `${/class="([^"]*)"/.exec(fig)[1]} has ${cost} parts that read --p`);
     }
   });
 
@@ -126,4 +129,21 @@ test("/about keeps Elliot's #15 sentence and leaves 'ours on day one' to the hom
   assert.ok(text.includes("Engineers who learned the craft before AI, weren't afraid of it, and mastered it, can now build anything, fast."));
   assert.ok(!/ours on day one/i.test(text), "the home page carries #13");
   assert.ok(!/levelling up fast/i.test(text), "the home page carries #13");
+});
+
+test("/coaching's first figure is the finished picture from the first paint", () => {
+  // the first screen is seen before anything plays: no stage, nothing that waits for --p
+  const first = /<section\b[^>]*\bcoaching-first\b[\s\S]*?<\/section>/.exec(main(html.coaching))[0];
+  const fig = /<figure\b[\s\S]*?<\/figure>/.exec(first)[0];
+  assert.ok(!/\sdata-stage\b/.test(fig), "the hero figure is a stage, so it opens empty");
+  assert.ok(!/var\(--p\)/.test(fig), "a part of the hero figure waits for --p");
+  for (const label of ["Where you are", "A session", "Where you&#39;re going"]) assert.ok(fig.includes(label), `${label} is not on the figure`);
+});
+
+test("/about names each partner once: its wordmark is its heading", () => {
+  const text = main(html.about).replace(/<[^>]+>/g, " ");
+  for (const name of ["TLC Automation", "Alves Limited Group"]) {
+    assert.ok(!text.includes(name), `"${name}" is written out beside its wordmark`);
+    assert.match(main(html.about), new RegExp(`<h3><a [^>]*><span class="logo" role="img" aria-label="${name}"`), `${name}'s wordmark is not its heading`);
+  }
 });

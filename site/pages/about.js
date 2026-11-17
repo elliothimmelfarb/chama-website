@@ -2,8 +2,7 @@ import { html, raw } from "../html.js";
 import { page, talkClose } from "../parts/chrome.js";
 import { about as t } from "../content/en/about.js";
 import { logo, PARTNERS } from "../parts/logos.js";
-import { markDraw } from "../figures/about.js";
-import { STAGE_BUTTONS_CSS } from "../figures/coaching.js";
+import { markDraw, STAGE_BUTTONS_CSS } from "../figures/about.js";
 
 const photo = (alt) => html`<img class="photo ab-photo" src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 1100px) 40vw, calc(100vw - 32px)" width="2048" height="1804" alt="${alt}" fetchpriority="high" decoding="async">`;
 
@@ -43,14 +42,15 @@ const STYLE = raw(`<style>
 
 /* ember: two pairs, each heading standing while its text scrolls */
 .ab-elliot > .pin > .frame + .frame { margin-top: var(--s9); }
-.ab-plist { list-style: none; margin: var(--s6) 0 0; padding: 0; }
-.ab-plist li { display: grid; gap: var(--s2); padding: var(--s5) 0; border-top: 1px solid var(--line); }
-.ab-plist li:last-child { border-bottom: 1px solid var(--line); }
+/* the partners, side by side under their heading, each named once: its
+   wordmark is the heading and the link */
+.ab-plist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s6); }
+.ab-plist li { display: grid; align-content: start; gap: var(--s2); padding-top: var(--s5); border-top: 1px solid var(--line); }
 /* Sized by area, as the logo strip is, with a taller cap: these marks
    carry a partner's name, not a row of clients. */
-.ab-plist .logo { width: calc(var(--lw) * 1.3px); height: calc(var(--lh) * 1.3px); max-height: 32px; max-width: calc(32px * var(--lw) / var(--lh)); margin-bottom: var(--s2); }
-.ab-plist h3 a { text-decoration: none; }
-.ab-plist h3 a:focus-visible, .ab-plist h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent-text); text-underline-offset: 3px; }
+.ab-plist .logo { display: block; width: calc(var(--lw) * 1.5px); height: calc(var(--lh) * 1.5px); max-height: 40px; max-width: calc(40px * var(--lw) / var(--lh)); transition: opacity var(--dur-quick) var(--ease-out); }
+.ab-plist h3 a { display: inline-block; padding: var(--s1) 0; }
+@media (hover: hover) { .ab-plist h3 a:hover .logo { opacity: 0.75; } }
 .ab-where { color: var(--fg-2); font-size: var(--t-small); }
 .ab-plist p.ab-text { color: var(--fg-2); max-width: 60ch; margin-top: var(--s1); }
 
@@ -74,9 +74,10 @@ ${STAGE_BUTTONS_CSS}
   .ab-first .frame > .words { grid-column: 1 / span 6; grid-row: 1; }
   .ab-first .frame > .ab-family { grid-column: 1 / span 6; grid-row: 2; }
   .ab-first .frame > .fig { grid-column: 8 / -1; grid-row: 1 / span 2; align-self: start; position: sticky; top: calc(var(--head) + var(--s6)); }
-  .ab-elliot .frame > .words { grid-column: 1 / span 5; }
-  .ab-elliot .frame > :not(.words) { grid-column: 7 / -1; }
-  .ab-plist .logo { width: calc(var(--lw) * 1.6px); height: calc(var(--lh) * 1.6px); max-height: 44px; max-width: calc(44px * var(--lw) / var(--lh)); }
+  .ab-elliot .frame[data-layout="pair"] > .words { grid-column: 1 / span 5; }
+  .ab-elliot .frame[data-layout="pair"] > :not(.words) { grid-column: 7 / -1; }
+  .ab-plist { grid-template-columns: 1fr 1fr; column-gap: var(--s7); }
+  .ab-plist .logo { width: calc(var(--lw) * 1.8px); height: calc(var(--lh) * 1.8px); max-height: 52px; max-width: calc(52px * var(--lw) / var(--lh)); }
   /* the mark fills its cell, by height: the cell is wider than the mark is */
   .ab-name .frame { --fig-h: min(56svh, 30rem); }
 }
@@ -114,7 +115,7 @@ export function render(p) {
       </div>
       <div class="ab-text">${t.elliot.paras.map((x) => html`<p>${x}</p>`)}</div>
     </div>
-    <div class="frame" data-layout="pair">
+    <div class="frame" data-layout="split">
       <div class="words">
         <h2>${t.partners.h2}</h2>
         <p class="lead">${t.partners.lead}</p>
@@ -122,7 +123,7 @@ export function render(p) {
       <ul class="ab-plist">
         ${t.partners.items.map((it) => {
           const l = partnerOf(it.id);
-          return html`<li>${l ? logo(l) : ""}<h3><a href="${it.href}" rel="noopener">${it.name}</a></h3><p class="ab-where">${it.where}</p><p class="ab-text">${it.text}</p></li>`;
+          return html`<li><h3><a href="${it.href}" rel="noopener">${l ? logo(l) : it.name}</a></h3><p class="ab-where">${it.where}</p><p class="ab-text">${it.text}</p></li>`;
         })}
       </ul>
     </div>

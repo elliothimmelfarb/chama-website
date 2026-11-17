@@ -20,8 +20,6 @@ export const bump = (m, w) => `clamp(0, 1 - max((var(--p) - ${n(m)}) / ${w}, (${
 // ---- geometry ------------------------------------------------------------
 const f = (v) => +v.toFixed(2);
 export const poly = (pts) => "M" + pts.map(([x, y]) => `${f(x)} ${f(y)}`).join(" L") + " Z";
-// a regular pentagon of circumradius r, first vertex at the top, seen square on
-export const ngon = (r) => [0, 1, 2, 3, 4].map((i) => [r * Math.cos(((i * 72 - 90) * Math.PI) / 180), r * Math.sin(((i * 72 - 90) * Math.PI) / 180)]);
 // The business, seen slightly from above: its height squashed to SQUASH.
 export const SQUASH = 0.86;
 export const pent = (R, k = 5) =>
@@ -66,11 +64,16 @@ export const WARM = `opacity:${c(0.62, 0.7)}`;
 // owned: true paints the body warm from the start; warm: a style string
 // (WARM, or the figure's own) cross-fades the warm body in, one element more.
 // drawn: true is a protagonist that continues from the world before, at the
-// same size and place: it arrives whole with its world and reads no --p, so
-// it costs nothing a frame (its warmth, if it has one, still arrives). A
-// pentagon is drawn from nothing only where it first appears on a page.
-// Five elements carry data-p (six with warm); the defs and the group do not.
-export function subject({ id, R, pts = pent(R), at = [0, 0], fit = FIT_GAP * R, st = {}, owned = false, warm = null, drawn = false }) {
+// same size and place: it arrives whole with its world and none of its parts
+// reads --p (its warmth, if it has one, still arrives). It is not free: the
+// .fig.r box around it reads --u, so its whole subtree restyles every frame
+// its world is on screen. A pentagon is drawn from nothing only where it
+// first appears on a page. outline: false leaves out the halo and the fit
+// (a business before it has its software). Five elements carry data-p (six
+// with warm, three without the outline); the defs and the group do not.
+// Fill a part of your own with the pentagon's paint through fills(id).
+export const fills = (id) => ({ body: `url(#${id}-body)`, owned: `url(#${id}-owned)`, floor: `url(#${id}-floor)` });
+export function subject({ id, R, pts = pent(R), at = [0, 0], fit = FIT_GAP * R, st = {}, owned = false, warm = null, drawn = false, outline = true }) {
   const d = poly(pts), g = poly(grow(pts, fit));
   const bottom = Math.max(...pts.map((p) => p[1]));
   const P = (style) => (drawn ? "" : ` data-p style="${style}"`);
@@ -86,8 +89,8 @@ export function subject({ id, R, pts = pent(R), at = [0, 0], fit = FIT_GAP * R, 
     <path class="fx-body"${P(st.body || ARRIVE.body)} fill="url(#${id}-${owned ? "owned" : "body"})" d="${d}"/>
     ${warmth ? `<path class="fx-body" data-p style="${warm}" fill="url(#${id}-owned)" d="${d}"/>` : ""}
     <path class="fx-ink"${P(st.ink || DRAW)} pathLength="1" d="${d}"/>
-    <path class="fx-halo"${P(st.halo || st.fit || FIT)} pathLength="1" d="${g}"/>
-    <path class="fx-fit"${P(st.fit || FIT)} pathLength="1" d="${g}"/>
+    ${outline ? `<path class="fx-halo"${P(st.halo || st.fit || FIT)} pathLength="1" d="${g}"/>
+    <path class="fx-fit"${P(st.fit || FIT)} pathLength="1" d="${g}"/>` : ""}
   </g>`;
 }
 
