@@ -48,12 +48,30 @@ test("the belief section's heading is Elliot's values sentence, word for word, w
 
 test("what we can do and day one share one pinned world whose words take turns", () => {
   const w = worlds[2], h2s = [...w.body.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => words(m[1]));
-  assert.deepEqual(h2s, ["We're ready to solve any problem that can be solved with software.", "Every new AI capability is ours on day one."]);
+  assert.deepEqual(h2s, ["What you have to do, made easier. What you wish you could do, made possible.", "Every new AI capability is ours on day one."]);
   assert.ok(words(w.body).includes("We take on things no one has ever done before."));
   assert.match(w.body, /class="[^"]*\bslot\b/, "the two beats stand in one .slot");
   // the second beat comes in inside the hold, after the first has gone
   const ins = [...w.body.matchAll(/--in:\s*([\d.]+)/g)].map((m) => +m[1]), outs = [...w.body.matchAll(/--out:\s*([\d.]+)/g)].map((m) => +m[1]);
   assert.ok(ins.length && outs.length && Math.min(...ins) >= Math.max(...outs), "the day one words arrive once the first beat's have left");
+});
+
+// Elliot, 2026-11-17: "ready to solve any problem" is the main line, and the
+// ember pen marks it up (concept C on the phone first screen board).
+test("the H1 is the ready-to-solve line, with the pen's two marks on it", () => {
+  const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/.exec(main)[1];
+  assert.equal(words(h1.replace(/<svg[\s\S]*?<\/svg>/g, "")), "We're ready to solve any problem that can be solved with software.");
+  const marks = [...h1.matchAll(/<span class="pen pen-(\w+)">([^<]*)<svg [^>]*aria-hidden="true"/g)].map((m) => [m[1], m[2]]);
+  assert.deepEqual(marks, [["under", "any problem"], ["ring", "software"]]);
+  assert.match(text(), /^# We're ready to solve any problem that can be solved with software\.$/m);
+});
+
+// The header's logo is <svg class="mark">: a home rule on .mark once
+// turned it into a dashed outline (2026-11-17 review).
+test("home's own styles never reach the header logo", () => {
+  const logo = /<svg class="([^"]+)"[^>]*viewBox="0 0 64 64"/.exec(doc)[1].split(/\s+/);
+  const css = [...main.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n").replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const c of logo) assert.doesNotMatch(css, new RegExp(`\\.${c}(?![\\w-])`), `home styles select .${c}, the logo's class`);
 });
 
 test("who we have worked with: a visible heading, the plant line to the engineering page, the logos and the work page", () => {

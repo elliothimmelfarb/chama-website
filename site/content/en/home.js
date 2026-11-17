@@ -5,11 +5,14 @@ export const home = {
   title: "Chama Inteligente | Custom software and AI coaching, from a family business in Lisbon",
   description:
     "A small, family-owned, AI-native business in Lisbon, working worldwide. We're ready to solve any problem that can be solved with software, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.",
-  ogAlt: "What you have to do, made easier. What you wish you could do, made possible. Chama Inteligente, Lisbon.",
+  ogAlt: "We're ready to solve any problem that can be solved with software. Chama Inteligente, Lisbon.",
 
   descriptor: "Custom software and AI coaching, from a family business in Lisbon.",
-  h1: ["What you have to do, made easier.", "What you wish you could do, made possible."],
-  sub: "You talk to a person. AI does the heavy work behind us, so a small team can take on any problem software can solve.",
+  // Elliot, 2026-11-17: the ready-to-solve line is the main line, marked up
+  // by the ember pen (the underline, then the ring).
+  h1: ["We're ready to solve any problem", "that can be solved with software."],
+  h1Marks: { under: "any problem", ring: "software" },
+  sub: "You talk to a person, and AI does the heavy work behind us.",
 
   stageLabel: "How Chama works, in eight short scenes",
   // The opening stage: one sentence a scene, each shown whole for its
@@ -45,7 +48,7 @@ export const home = {
   // One pinned world, two beats of words that take turns.
   cando: {
     label: "What we can do",
-    h2: "We're ready to solve any problem that can be solved with software.",
+    h2: "What you have to do, made easier. What you wish you could do, made possible.",
     line: "We take on things no one has ever done before.",
     fig: "Something new",
   },

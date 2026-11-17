@@ -270,7 +270,7 @@ export function stage({ label, beats }) {
 
   const FIG = `<svg class="stage-fig" viewBox="${VB.join(" ")}" aria-hidden="true" focusable="false"><line class="stage-ground" x1="${L}" y1="${Y}" x2="${R}" y2="${Y}"/>${parts.join("")}</svg>`;
 
-  return html`<figure class="stage" data-stage data-duration="${n(T)}" data-delay="1.4" tabindex="-1" aria-label="${label}">
+  return html`<figure class="stage" data-stage data-duration="${n(T)}" data-delay="2.6" tabindex="-1" aria-label="${label}">
   <style>${raw(CSS)}</style>
   <div class="stage-words">${words}</div>
   <div class="stage-pic"><div class="stage-box">${raw(FIG)}${labels}</div></div>

@@ -19,6 +19,23 @@ const photo = (alt) => html`<img class="photo" data-p src="/assets/family-2026-7
 // the goals under Elliot's sentence, each reason lit as its side is drawn
 const goals = () => beliefPhrases(t.belief.line).map((p) => (p.k === undefined ? p.text : html`<span data-p data-n="0${p.k + 1}" style="${reasonStyle(p.k)}">${p.text}</span>`));
 
+// The pen's marks on the H1: an underline, then a ring, each an inline svg
+// over its words (the words stay plain text for search and screen readers).
+// Each viewBox is in hundredths of an em at the box's usual size, so the
+// stroke is real path units: Safari mis-dashes pathLength under
+// vector-effect: non-scaling-stroke.
+const PEN = {
+  under: '<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg>',
+  ring: '<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M379 15C211 -1 29 17 17 56C7 92 178 111 322 102C437 95 475 67 463 39C451 21 418 13 370 11"/></svg>',
+};
+const marked = (half) => {
+  for (const [kind, phrase] of Object.entries(t.h1Marks)) {
+    const at = half.indexOf(phrase);
+    if (at >= 0) return [half.slice(0, at), html`<span class="pen pen-${kind}">${phrase}${raw(PEN[kind])}</span>`, half.slice(at + phrase.length)];
+  }
+  return half;
+};
+
 const plant = SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line;
 // the line's last word keeps its arrow on the same line
 const plantHead = plant.slice(0, plant.lastIndexOf(" ") + 1), plantEnd = plant.slice(plant.lastIndexOf(" ") + 1);
@@ -27,6 +44,35 @@ const plantHead = plant.slice(0, plant.lastIndexOf(" ") + 1), plantEnd = plant.s
 // what is here sizes home's words and figures inside it.
 const STYLE = `
 .home-sub { margin-top: var(--s4); }
+/* the pen marks up the H1 once its halves have arrived, then the stage plays */
+.first { overflow-x: clip; }
+.first h1 { line-height: 1.06; }
+.pen { position: relative; white-space: nowrap; }
+.pen svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
+.pen path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
+.pen-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
+.pen-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
+@keyframes pen { from { stroke-dashoffset: 1; } }
+:root:not([data-motion="low"]) .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
+:root:not([data-motion="low"]) .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
+:root.routed:not([data-motion="low"]) .pen-under path { animation-delay: 450ms; }
+:root.routed:not([data-motion="low"]) .pen-ring path { animation-delay: 900ms; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .pen path { animation: none; } }
+/* on a phone: the headline, the stage under it, then the field; the
+   descriptor and the sub follow, before the doors (from 760px the stage is
+   so tall it would push the field off a tablet's first screen) */
+@media (max-width: 759px) {
+  .first-grid { display: flex; flex-direction: column; }
+  .first-grid h1 { font-size: max(var(--t-display), 2.25rem); }
+  .first-words { display: contents; }
+  .first-grid h1 { order: 1; }
+  .first-grid .stage { order: 2; margin-top: var(--s5); }
+  .first-grid .talk-field { order: 3; }
+  .first-grid .descriptor { order: 4; margin: var(--s6) 0 0; }
+  .first-grid .home-sub { order: 5; margin-top: var(--s3); }
+  html.nav-enter main > .world:first-child .descriptor { animation-delay: calc(3 * var(--stagger-ms)); }
+  html.nav-enter main > .world:first-child .home-sub { animation-delay: calc(4 * var(--stagger-ms)); }
+}
 @media (min-width: 1100px) {
   .home-sub { margin-top: var(--s5); }
   .first-words { grid-column: 1 / span 6; }
@@ -91,7 +137,7 @@ export function render(p) {
     <div class="first-words">
       <p class="thanks" id="thanks" role="status">${t.thanks}</p>
       <p class="descriptor">${t.descriptor}</p>
-      <h1><span class="half">${t.h1[0]}</span> <span class="half">${t.h1[1]}</span></h1>
+      <h1><span class="half">${marked(t.h1[0])}</span> <span class="half">${marked(t.h1[1])}</span></h1>
       <p class="lead home-sub">${t.sub}</p>
       ${talkField({ id: "ask-home" })}
     </div>

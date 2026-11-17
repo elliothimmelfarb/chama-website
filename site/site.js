@@ -17,7 +17,7 @@ export const SITE = {
   changeTime: "Most changes are live in under an hour.",
   changeCaption:
     "Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.",
-  ogImage: "/og-2026-11-16.png",
+  ogImage: "/og-2026-11-17.png",
 };
 
 // nav: the label in the header, in order. inRouter: swapped by worlds.js
