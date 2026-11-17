@@ -2,10 +2,17 @@ import { SITE } from "../../site.js";
 // /engineering-department. It stands alone for a referral link, so its first
 // screen says who we are without the home page.
 
+// The numbers the summary figure draws, read from the one sentence every
+// change-time claim comes from, so the figure and its words never differ.
+const CAUGHT = /^(Median \d+ minutes from request to live, across (\d+) requests since \d{4}-\d\d-\d\d\.) (\d+)% were live within the hour, and every one the same day\.$/.exec(SITE.changeCaption);
+if (!CAUGHT) throw new Error("SITE.changeCaption no longer reads as the numbers figure expects; update site/content/en/engineering-department.js");
+const [, CAPTION_FIRST, REQUESTS, WITHIN] = CAUGHT;
+
 export const ed = {
   title: "Your own engineering department | Chama Inteligente",
   description:
-    "Software that fits how your business works and changes when you do. Tell us what you need and it gets built: most changes are live in under an hour. You own the code. From a small, family-owned, AI-native business in Lisbon.",
+    "Software that fits how your business works and changes when you do. Tell us what you need and it gets built. You own the code, and we manage it for you. From a small, family-owned, AI-native business in Lisbon.",
+  // the sharing card prints the change-time line, so its alt says it too
   ogAlt: "Your own engineering department. Most changes are live in under an hour. Chama Inteligente.",
 
   who: "A small, family-owned, AI-native business in Lisbon, working worldwide.",
@@ -24,22 +31,31 @@ export const ed = {
     stations: ["Tell us", "It gets built", "You use it", "What's next"],
     you: "You",
     ledgerLabel: "Four real requests, from request to live",
-    after: "Most changes are live in under an hour.",
     cta: "Tell us yours",
   },
 
   numbers: {
-    h2: "Measured on real requests.",
-    lead: "Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.",
-    leadNamed: "Measured on the software we run for LA Metal Stamping, an 88-person plant in Toronto. It replaced their old system, a second app and four spreadsheets.",
+    h2: SITE.changeTime,
+    lead: "Measured on the software we run for an 88-person metal stamping plant in Toronto.",
+    leadNamed: "Measured on the software we run for LA Metal Stamping, an 88-person plant in Toronto.",
+    replaced: "It replaced their old system, a second app and four spreadsheets.",
     week: [
       { value: "19", text: "people use it every day" },
       { value: "about 15", text: "changes go live in a typical week" },
     ],
-    caption:
-      SITE.changeCaption,
-    // the before and after figure: its labels restate the lead
-    figure: { before: "Their old system, a second app and four spreadsheets", after: "One system", label: "Their old system, a second app and four spreadsheets, replaced by one system." },
+    // the summary figure: every request as a dot, those live within the
+    // hour in ember. Its caption is the sentence's first half and its two
+    // labels the second half, so nothing in the frame is said twice.
+    summary: {
+      requests: +REQUESTS,
+      within: Math.round((+REQUESTS * +WITHIN) / 100),
+      caption: CAPTION_FIRST,
+      hour: `${WITHIN}% were live within the hour`,
+      day: "Every one the same day",
+      label: SITE.changeCaption,
+    },
+    // the before and after figure, beside the sentence it draws
+    figure: { after: "One system", label: "Their old system, a second app and four spreadsheets, replaced by one system." },
     finds: "Ask it anything. Why don't these two numbers add up? It finds the step someone forgot two months ago, and offers to fix it for you.",
   },
 
@@ -62,9 +78,15 @@ export const ed = {
   price: {
     h2: "A setup fee and a fixed monthly fee, quoted after a first conversation.",
     guarantee: "The setup fee is due only when you switch off your old system.",
-    // the timeline beside it: the three steps of How it starts, in a word or two
+    // the timeline under it is how it starts, step by step. The third step
+    // stops at the switch: the guarantee above already says the fee is due then.
     line: {
-      steps: ["First conversation", "First version", "Old system off"],
+      steps: [
+        "A first conversation about how your business works today.",
+        "A first version your team can use, usually within days.",
+        "You switch off the old system when you're ready.",
+      ],
+      old: "Your old system",
       setup: "Setup fee",
       monthly: "Then the monthly fee",
       label: "A first conversation, then a first version, then the old system is switched off, which is when the setup fee is due. After that, the fixed monthly fee.",
@@ -83,15 +105,6 @@ export const ed = {
     ],
   },
 
-  starts: {
-    h2: "How it starts",
-    steps: [
-      "A first conversation about how your business works today.",
-      "A first version your team can use, usually within days.",
-      "You switch off the old system when you're ready. That's when the setup fee is due.",
-    ],
-  },
-
   close: "Tell us what gets in your way.",
 
   // The names of the sections on the rail (assistive tech and the rail's labels).
@@ -103,6 +116,6 @@ export const ed = {
     recording: "The recording",
     own: "You own it",
     price: "Price",
-    starts: "How it starts",
+    close: "Talk to us",
   },
 };

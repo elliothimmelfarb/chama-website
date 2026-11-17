@@ -420,8 +420,6 @@ test("no page overrides the motion scale", () => {
     for (const m of text.matchAll(/style="[^"]*--in:\s*(-?[\d.]+)/g)) {
       assert.ok(+m[1] >= 0 && +m[1] <= 0.5, `${file}: --in ${m[1]} is outside the hold's beats (0 to 0.5)`);
     }
-    // the loop's closing line is timed in a rule, where the scale can be read
-    assert.ok(!/class="ed-after"[^>]*style=/.test(text), `${file} times .ed-after in an inline style`);
   }
 });
 

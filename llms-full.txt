@@ -82,11 +82,13 @@ Here the engineers work only for you. You get what a software company has, witho
 
 Four real requests, from request to live: A new filter, 31 min; A fix, 14 min; Download to Excel, 42 min; A new report, 33 min.
 
-## Measured on real requests.
+## Most changes are live in under an hour.
+
+Measured on the software we run for an 88-person metal stamping plant in Toronto.
 
 Median 30 minutes from request to live, across 123 requests since 2026-09-29. 88% were live within the hour, and every one the same day.
 
-Measured on the software we run for an 88-person metal stamping plant in Toronto. It replaced their old system, a second app and four spreadsheets.
+It replaced their old system, a second app and four spreadsheets.
 
 19 people use it every day, and about 15 changes go live in a typical week.
 
@@ -116,6 +118,12 @@ If we ever stopped, you keep the code and the data, on standard tools, and any e
 
 The setup fee is due only when you switch off your old system.
 
+1. A first conversation about how your business works today.
+
+2. A first version your team can use, usually within days.
+
+3. You switch off the old system when you're ready.
+
 ## Questions owners ask
 
 ### What if you disappear?
@@ -141,14 +149,6 @@ In your own database, on standard cloud hosting, backed up every night. It's you
 ### Who checks the AI's work?
 
 Every change is written with its tests first and goes live only after the whole test suite passes and the change has been reviewed. Anything that touches money or another company's system waits for Elliot.
-
-## How it starts
-
-1. A first conversation about how your business works today.
-
-2. A first version your team can use, usually within days.
-
-3. You switch off the old system when you're ready. That's when the setup fee is due.
 
 ---
 
