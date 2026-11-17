@@ -27,7 +27,7 @@ ${entries}
 }
 
 export const SUMMARY =
-  "Chama Inteligente is a small, family-owned, AI-native business in Lisbon, working worldwide. It solves any software problem, gives businesses their own engineering department, builds websites, apps and products, and coaches individuals and teams in AI fluency.";
+  "Chama Inteligente is a small, family-owned, AI-native business in Lisbon, working worldwide. It solves any problem that can be solved with software, gives businesses their own engineering department, builds websites, apps and products, and coaches individuals and teams in AI fluency.";
 
 export function llms(site, pages) {
   const list = pages

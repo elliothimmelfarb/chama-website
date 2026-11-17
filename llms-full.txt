@@ -1,6 +1,6 @@
 # Chama Inteligente: full site text
 
-> Chama Inteligente is a small, family-owned, AI-native business in Lisbon, working worldwide. It solves any software problem, gives businesses their own engineering department, builds websites, apps and products, and coaches individuals and teams in AI fluency.
+> Chama Inteligente is a small, family-owned, AI-native business in Lisbon, working worldwide. It solves any problem that can be solved with software, gives businesses their own engineering department, builds websites, apps and products, and coaches individuals and teams in AI fluency.
 
 This file is the complete visible text of https://chamainteligente.com, in reading order, for AI crawlers and agents that prefer plain text to HTML. It adds nothing the pages do not say.
 
@@ -14,7 +14,7 @@ Custom software and AI coaching, from a family business in Lisbon.
 
 # What you have to do, made easier. What you wish you could do, made possible.
 
-You talk to a person. AI does the heavy work behind us, which is how a small team can take on any software problem.
+You talk to a person. AI does the heavy work behind us, so a small team can take on any problem software can solve.
 
 How Chama works, in eight short scenes:
 
@@ -46,9 +46,9 @@ We also partner with founders on new products, and help leadership teams with AI
 
 We help you make money, save money and stay compliant, while you enjoy your business more and do things with it you couldn't before.
 
-## We can solve any software problem.
+## We're ready to solve any problem that can be solved with software.
 
-We take on things we haven't done before.
+We take on things no one has ever done before.
 
 ## Every new AI capability is ours on day one.
 

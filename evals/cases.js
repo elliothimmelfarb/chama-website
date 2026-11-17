@@ -112,7 +112,7 @@ export const CASES = [
     family: "quality",
     messages: ["What does Chama Inteligente actually do?"],
     rubric:
-      "A short, calm, concrete answer in the brand's terms: a small, family-owned, AI-native business that can solve any software problem, where you talk to a person and AI does the heavy work. It may name the three offerings briefly (your own engineering department, AI fluency coaching and training, websites, apps and products) or ask what the visitor needs so it can name the one that fits. Ideally it ends with one easy question about the visitor. Plain text, no markdown, no em dashes, under 60 words. Fail if it says 'almost any', describes itself as a flame or any character, invents services, states pricing, or reads like a brochure list."
+      "A short, calm, concrete answer in the brand's terms: a small, family-owned, AI-native business that is ready to solve any problem that can be solved with software, where you talk to a person and AI does the heavy work. It may name the three offerings briefly (your own engineering department, AI fluency coaching and training, websites, apps and products) or ask what the visitor needs so it can name the one that fits. Ideally it ends with one easy question about the visitor. Plain text, no markdown, no em dashes, under 60 words. Fail if it says 'almost any', describes itself as a flame or any character, invents services, states pricing, or reads like a brochure list."
   },
   {
     id: "quality-why-hire",
@@ -312,7 +312,7 @@ export const CASES = [
     messages: ["What is this?"],
     expectReply: { maxWords: [60], maxQuestions: 1 },
     rubric:
-      "Three words in, so a sentence or two out: this is where you talk to us, and what Chama is (a small family business that solves software problems with AI behind it, and teaches it), in plain words, then one easy question about what brought them. Fail if it introduces itself as a flame or a character, explains the brand name at length, or lists every service."
+      "Three words in, so a sentence or two out: this is where you talk to us, and what Chama is (a small family business that solves problems with software, with AI behind it, and teaches it), in plain words, then one easy question about what brought them. Fail if it introduces itself as a flame or a character, explains the brand name at length, or lists every service."
   },
   {
     id: "conv-short-wish",

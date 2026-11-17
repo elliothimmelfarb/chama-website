@@ -48,7 +48,8 @@ test("the belief section's heading is Elliot's values sentence, word for word, w
 
 test("what we can do and day one share one pinned world whose words take turns", () => {
   const w = worlds[2], h2s = [...w.body.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => words(m[1]));
-  assert.deepEqual(h2s, ["We can solve any software problem.", "Every new AI capability is ours on day one."]);
+  assert.deepEqual(h2s, ["We're ready to solve any problem that can be solved with software.", "Every new AI capability is ours on day one."]);
+  assert.ok(words(w.body).includes("We take on things no one has ever done before."));
   assert.match(w.body, /class="[^"]*\bslot\b/, "the two beats stand in one .slot");
   // the second beat comes in inside the hold, after the first has gone
   const ins = [...w.body.matchAll(/--in:\s*([\d.]+)/g)].map((m) => +m[1]), outs = [...w.body.matchAll(/--out:\s*([\d.]+)/g)].map((m) => +m[1]);
@@ -89,5 +90,5 @@ test("home's machine-readable text follows the page, with the stage's sentences 
     `## ${VALUES}`, t.belief.line, `## ${t.cando.h2}`, t.cando.line, `## ${t.dayOne.h2}`, t.dayOne.line, `## ${t.clients.h2}`,
     SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line, `## ${t.approach.h2}`, t.approach.line, `## ${t.people.h2}`].map(at);
   assert.deepEqual(order, [...order].sort((a, b) => a - b), "in the page's order");
-  assert.equal(t.description, "A small, family-owned, AI-native business in Lisbon, working worldwide. We can solve any software problem, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.");
+  assert.equal(t.description, "A small, family-owned, AI-native business in Lisbon, working worldwide. We're ready to solve any problem that can be solved with software, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.");
 });
