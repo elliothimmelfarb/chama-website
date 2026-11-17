@@ -377,7 +377,7 @@ async function checkStands(pg, state, page, dir, stem) {
     return { i, rel: parseFloat(e.style.getPropertyValue("--rel")), stand: parseFloat(e.style.getPropertyValue("--stand")), text: e.textContent.trim().slice(0, 40) };
   }));
   for (const s of stands) {
-    const at = async (y) => { await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y); await page.waitForTimeout(120); return page.evaluate((i) => {
+    const at = async (y) => { await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y); await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))); return page.evaluate((i) => {
       // its place without the exit's lift (transform), which is meant to move
       const e = document.querySelector(`[data-stand-probe="${i}"]`), m = getComputedStyle(e).transform;
       return e.getBoundingClientRect().top - (m && m !== "none" ? new DOMMatrix(m).m42 : 0);
