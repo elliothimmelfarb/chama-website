@@ -396,9 +396,20 @@ test("where a world must leave early, the next one's words come as it fades, nev
   assert.equal(+(/ARRIVE_EARLIEST = (-[\d.]+)/.exec(JS)?.[1]), -0.85);
   const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
   assert.match(measure, /Math\.max\(ARRIVE_EARLIEST, /, "no earlier than ARRIVE_EARLIEST");
-  assert.match(measure, /if \(want < arriveAt - 0\.001\) at = /, "and only ever earlier than --arrive-at");
+  assert.match(measure, /if \(want < base - 0\.001\) at = /, "and only ever earlier than the world's own arrival");
   assert.match(measure, /setVar\(pinOf\[k\], "--arrive-at", at\)/, "written once per layout on the pin, through setVar");
   assert.ok(!/setProperty\("--arrive-at"/.test(JS), "no frame writes --arrive-at");
+});
+
+test("a world's words arrive as they come into view, and the world before waits for them", () => {
+  assert.equal(+(/SEEN = ([\d.]+)/.exec(JS)?.[1]), 0.9, "words count as seen once their top is 90% down the screen");
+  const of = /function arriveOf\(k\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(of, /Math\.max\(arriveAt, firstWords\(k\) - SEEN\)/, "a world whose first words sit low on its pin arrives later, when they show");
+  const from = /function leaveFrom\([^)]*\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "";
+  assert.match(from, /arrives\[k \+ 1\]/, "the world before leaves on the next world's own arrival");
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(measure, /arrives = sections\.map/, "measured in the read phase");
+  assert.match(measure, /var base = arrives\[k\]/, "and written on the pin when it differs from --arrive-at");
 });
 
 test("no page overrides the motion scale", () => {

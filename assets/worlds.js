@@ -471,7 +471,7 @@
   // Where things are on the page, read once per layout rather than every
   // frame: a read in the loop forces the browser to finish styling first.
   // sy follows the scroll from its event, so a still page reads nothing.
-  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [], goneEls = [], devStay = [], devGone = [], places = [], liftPx = 8, arriveAt = -0.6;
+  var tops = [], hs = [], pins = [], sy = window.scrollY, gones = [], goneEls = [], devStay = [], devGone = [], places = [], liftPx = 8, arriveAt = -0.6, arriveK = 4, arrives = [];
   var docH = 0, vh = 0;
   // ---- leaving: a world leaves as one ----------------------------------------
   // A world's --u runs from 1 to 2 while its pin scrolls away. Its .r all
@@ -491,7 +491,7 @@
   // /engineering-department, measured by test/shots' dead scroll check).
   // Readers that are not a .r (the shade) leave with the world's first word.
   var EXIT_AT = 0.12, EXIT_SPAN = 0.2, EXIT_STAGGER = 0.03, STAGGER_MAX = 5, MEET_GAP = 0.12;
-  var ARRIVE_EARLIEST = -0.85, ARRIVE_OVERLAP = 0.04;
+  var ARRIVE_EARLIEST = -0.85, ARRIVE_OVERLAP = 0.04, SEEN = 0.9;
   // the slide a .r element is given while it is hidden, which is not its place
   function shiftOf(el) { var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
   // where the next world's first words sit, as a share of the screen from
@@ -506,6 +506,13 @@
       if (first) y = first.getBoundingClientRect().top - sec.getBoundingClientRect().top;
     }
     return y / AH;
+  }
+  // the --u at which a pinned world's words start to arrive: --arrive-at,
+  // or later where its first words sit low on its pin (a centred frame), so
+  // they arrive as their top comes SEEN down the screen instead of fading in
+  // below the fold while the world before has already gone
+  function arriveOf(k) {
+    return Math.max(arriveAt, firstWords(k) - SEEN);
   }
   // the --i of a .r: the world's words in reading order, then its figure
   // boxes (.fig), at most STAGGER_MAX; a .r inside another inherits its
@@ -535,17 +542,19 @@
     var meet = len + next * AH - foot - MEET_GAP * AH, edge = len - foot;
     return meet < edge || !ride ? Math.min(meet, edge) : edge + Math.max(0, y - top);
   }
-  // Where a world starts to leave, before the guards: EXIT_AT after its
-  // release when a pinned world follows (whose words arrive at --arrive-at).
-  // When the next world scrolls in as flow, its words come in plain and
+  // Where a world starts to leave, before the guards: at least EXIT_AT
+  // after its release, and when a pinned world follows, late enough that
+  // its last part fades out as the next world's first words fade in. When the next world scrolls in as flow, its words come in plain and
   // often few (a closing "Say hello"), so the world stays until they reach
   // the middle of the screen, the same lead later: the two always overlap
   // rather than leave bare ground between them.
   function leaveFrom(k, len, next) {
     if (k >= NW - 1) return EXIT_AT * AH;
-    var lead = (1 + arriveAt) * AH - EXIT_AT * AH;
-    var comes = held[k + 1] ? (1 + arriveAt) * len : len + next * AH - 0.5 * AH;
-    return Math.max(EXIT_AT * AH, comes - lead);
+    if (!held[k + 1]) return Math.max(EXIT_AT * AH, len + next * AH - 0.5 * AH - ((1 + arriveAt) * AH - EXIT_AT * AH));
+    // a pinned world follows: this one starts to leave as the next one's
+    // first words are fully in, so a screen never holds only half-faded
+    // words (mustGo still sends a part sooner where they would meet)
+    return Math.max(EXIT_AT * AH, (1 + arrives[k + 1] + 1 / arriveK) * len - EXIT_SPAN * AH);
   }
   // Each .r is gone EXIT_SPAN after the world's start plus its place's
   // stagger, or by its own guard (mustGo) if that is sooner: on a phone the
@@ -635,6 +644,8 @@
     var rootStyle = getComputedStyle(root);
     liftPx = parseFloat(rootStyle.getPropertyValue("--lift")) || 0;
     arriveAt = parseFloat(rootStyle.getPropertyValue("--arrive-at")) || -0.6;
+    arriveK = parseFloat(rootStyle.getPropertyValue("--arrive-k")) || 4;
+    arrives = sections.map(function (s, k) { return held[k] ? arriveOf(k) : arriveAt; });
     goneEls = []; devStay = []; devGone = [];
     var stays = [];
     gones = sections.map(function (s, k) {
@@ -658,11 +669,11 @@
       // (ARRIVE_EARLIEST). Written once per layout on the pin, which holds
       // only what reads it then: no frame writes it.
       if (!pinOf[k]) return;
-      var at = "";
+      var base = arrives[k], at = base > arriveAt + 0.001 ? String(round3(base)) : "";
       if (k > 0 && held[k] && held[k - 1] && goneEls[k - 1]) {
         var last = devGone[k - 1] !== undefined ? devGone[k - 1] : Math.max.apply(null, goneEls[k - 1].concat([gones[k - 1]]));
-        var want = Math.max(ARRIVE_EARLIEST, -1 + (last - ARRIVE_OVERLAP * AH) / (pins[k - 1] || AH));
-        if (want < arriveAt - 0.001) at = String(round3(want));
+        var want = Math.max(ARRIVE_EARLIEST, base - (1 - SEEN), -1 + (last - ARRIVE_OVERLAP * AH) / (pins[k - 1] || AH));
+        if (want < base - 0.001) at = String(round3(want));
       }
       setVar(pinOf[k], "--arrive-at", at);
     });

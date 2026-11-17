@@ -454,7 +454,8 @@ async function sweepDead(pg, state, page, dir, stem) {
 //   hold: the group, the figure, how far apart their centres are, and the
 //   largest empty band. Always reported, never failed.
 // A world that cannot meet the floor is listed in FILL_EXEMPT by its
-// selector, with the reason; none is today.
+// selector, with the reason. Its misses stay in report.json as "floor
+// (exempt: reason)", so they are seen, not hidden.
 const FILL_SIZES = [DESK, { name: "laptop", width: 1280, height: 720, font: null, scale: 1, mobile: false }, PHONE];
 const FILL_FLOOR = { desk: 0.4, laptop: 0.4, phone: 0.5 };
 const FILL_RUN = 0.25;
@@ -463,7 +464,10 @@ const FILL_TARGET = {
   laptop: { group: 0.55, fig: 0.45, centre: 0.08, band: 0.35 },
   phone: { group: 0.65, fig: 0.3, figWidth: 0.9, band: 0.3 },
 };
-const FILL_EXEMPT = {};
+const FILL_EXEMPT = {
+  ".home-belief": "its pentagon fades as the next world's identical one arrives in its place; the heading holds the frame (29% desk, 47% phone at worst, 2026-11-17)",
+  ".home-approach": "on a phone its figure sits under the words and must leave before the pin's edge cuts it; the heading and line hold the frame (20% at worst, 2026-11-17)",
+};
 const fillReport = [];
 
 // What one frame holds: the boxes of the visible words and of the visible

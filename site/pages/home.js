@@ -43,6 +43,11 @@ const STYLE = `
 .home-clients .logos { padding: var(--s6) 0 0; gap: var(--s7) var(--s8); }
 .home-clients .logo { width: calc(var(--lw) * 1.15px); height: calc(var(--lh) * 1.15px); }
 .home-clients .more { margin-top: var(--s6); }
+/* the next world's words arrive as this short section ends: the flow
+   padding's fifth of a screen for the ground's soft edge would leave a
+   quarter screen of bare grid between them */
+main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-bottom: 6vh; }
+.home-clients .frame { padding-bottom: 0; }
 /* on desktop the clients are a list beside the words, one to a row, at
    twice the strip's size, so the section holds its frame */
 @media (min-width: 760px) and (min-aspect-ratio: 9/10) {
@@ -50,12 +55,6 @@ const STYLE = `
   .home-clients .logos li { padding: var(--s6) 0; border-top: 1px solid var(--line); }
   .home-clients .logos li:last-child { border-bottom: 1px solid var(--line); }
   .home-clients .logo { width: calc(var(--lw) * 2px); height: calc(var(--lh) * 2px); }
-}
-/* A world whose words arrive under a figure's top stands them at its top:
-   centred, they would still be below the screen as the world before
-   leaves, and the scroll between them would be bare. */
-@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
-  :is(.home-cando, .home-approach, .home-people) .frame > .words { align-self: start; margin-top: 6svh; }
 }
 /* the photo settles as the world is held (docs/DESIGN.md, home) */
 .home-photo { margin: 0; }

@@ -320,7 +320,7 @@ main h1:focus { outline: none; }
   .rail-mark.is-current { width: 10px; }
   /* /build counts its things in its own bar */
   html:has(.devices-world) .worlds { display: none; }
-  .pin-shade { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, var(--scrim) 30%, transparent); }
+  .pin-shade { top: 38%; bottom: -5%; left: -10%; width: 120%; background: linear-gradient(to top, transparent, var(--scrim) 22%, var(--scrim) 48%, transparent); }
   .copy {
     left: 16px;
     right: 16px;
