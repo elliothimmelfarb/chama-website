@@ -48,6 +48,10 @@
   root.dataset.engine = "on";
 
   var RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // A leaving word that stands still is held by the scroll itself where the
+  // browser can drive an animation from it: a phone scrolls on its
+  // compositor, ahead of any frame, so a hold written each frame shakes.
+  var SCROLL_DRIVEN = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()"));
   var GROUND = { paper: 0, grid: 1, tides: 2, ember: 3 };
 
   function clamp(x, a, b) { if (a === undefined) { a = 0; b = 1; } return x < a ? a : x > b ? b : x; }
@@ -495,7 +499,11 @@
   var EXIT_AT = 0.12, EXIT_SPAN = 0.2, EXIT_STAGGER = 0.03, STAGGER_MAX = 5, MEET_GAP = 0.12;
   var ARRIVE_EARLIEST = -0.85, ARRIVE_OVERLAP = 0.04, SEEN = 0.9;
   // the slide a .r element is given while it is hidden, which is not its place
-  function shiftOf(el) { var m = getComputedStyle(el).transform; return m && m !== "none" ? new DOMMatrix(m).m42 : 0; }
+  // (its transform, and the stand that worlds.css runs on its translate)
+  function shiftOf(el) {
+    var cs = getComputedStyle(el), m = cs.transform, t = (cs.translate || "").split(" ");
+    return (m && m !== "none" ? new DOMMatrix(m).m42 : 0) + (t.length > 1 ? parseFloat(t[1]) || 0 : 0);
+  }
   // where the next world's first words sit, as a share of the screen from
   // the top of its pin (or of the section, when it scrolls)
   function firstWords(k) {
@@ -695,8 +703,16 @@
     sections.forEach(function (s, k) {
       (readers[k] || []).forEach(function (el, j) {
         var x = held[k] && stays[k] ? stays[k][j] || 0 : 0;
-        setVar(el, "--sx", x ? String(round3(x)) : "");
-        setVar(el, "--pl", x ? Math.round(pins[k]) + "px" : "");
+        if (SCROLL_DRIVEN) {
+          // the scroll offset where the pin lets go, and how far the word
+          // stands still past it (worlds.css runs it on the root's scroll)
+          setVar(el, "--rel", x ? Math.round(tops[k] + hs[k] - pins[k]) + "px" : "");
+          setVar(el, "--stand", x ? Math.round(x * pins[k]) + "px" : "");
+          if (!!x !== el.hasAttribute("data-stand")) el.toggleAttribute("data-stand", !!x);
+        } else {
+          setVar(el, "--sx", x ? String(round3(x)) : "");
+          setVar(el, "--pl", x ? Math.round(pins[k]) + "px" : "");
+        }
       });
       // Where a world had to be gone early (a phone, /build's devices under
       // the header), the next pinned world's words start as its last part

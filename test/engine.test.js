@@ -308,6 +308,31 @@ test("a leaving world's words stand still, each gone before the next words or it
   assert.match(JS, /setVar\(el, "--pl"/, "measure() writes --pl");
 });
 
+// A phone scrolls on its compositor, a frame or more ahead of any script, so
+// a word held still by a translate written each frame rides up with the page
+// and snaps back down: it shakes for the whole exit (Elliot, 2026-11-17: "a
+// lot of things bouncing up and down" on home). Where the scroll can drive
+// an animation, the hold is one, on the root's scroll timeline, and the
+// frame writes no position for it.
+test("where the scroll can drive it, a leaving word is held still by the scroll itself, not by a frame", () => {
+  assert.match(JS, /CSS\.supports\("animation-timeline: scroll\(\)"\)/, "the engine asks whether the scroll can drive an animation");
+  const sup = /@supports \(animation-timeline: scroll\(\)\) \{([\s\S]*?)\n\}/.exec(CSS)?.[1] ?? "";
+  assert.match(sup, /\.r\[data-stand\]\s*\{[^}]*animation:\s*stand linear both;[^}]*animation-timeline:\s*scroll\(root\);[^}]*animation-range:\s*var\(--rel\) calc\(var\(--rel\) \+ var\(--stand\)\)/, "a standing .r runs `stand` over its stretch of the root's scroll");
+  assert.match(CSS, /@keyframes stand \{\s*from \{ translate: 0 0; \}\s*to \{ translate: 0 var\(--stand\); \}\s*\}/, "and gives back exactly the pin's travel over it");
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  for (const v of ["--stand", "--rel"]) assert.match(measure, new RegExp(`setVar\\(el, "${v}"`), `measure() writes ${v} once per layout`);
+  assert.match(measure, /setVar\(el, "--rel", x \? Math\.round\(tops\[k\] \+ hs\[k\] - pins\[k\]\)/, "the stretch starts where the sticky pin lets go");
+  assert.match(measure, /toggleAttribute\("data-stand", !!x\)/, "a word that stands is marked, or the animation never applies");
+  for (const v of ["--rel", "--stand"]) assert.match(CSS, new RegExp(`@property ${v} \\{[^}]*inherits: false`), `${v} is registered not to inherit, or a figure box restyles its subtree`);
+  // the router's rise must not replace the stand (Back can land in its stretch)
+  assert.ok(RULES.some((x) => x.selectors.some((t) => t.startsWith("html.nav-enter") && t.includes("[data-stand]")) && /animation-composition:\s*replace, add/.test(x.body) && /scroll\(root\)/.test(x.body)), "a standing word keeps its stand while it rises in");
+  assert.match(/function shiftOf\(el\) \{([\s\S]*?)\n  \}/.exec(JS)?.[1] ?? "", /cs\.translate/, "a measure taken past a stretch subtracts the stand too, or every stand is measured from where it stands");
+  const frame = /function frame\(now\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1] + /function setU\([^)]*\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.ok(!/--stand|--rel|data-stand|--sx|--pl/.test(frame), "no frame writes the hold");
+  // in one column, and where the router's rise is playing, nothing stands
+  assert.ok(RULES.some((x) => x.selectors.includes("html:not(.pin) .r") && /animation:\s*none/.test(x.body)), "a word stops standing when the layout leaves pinned (print keeps data-stand)");
+});
+
 // ---- the motion system: six named moves (docs/DESIGN.md section 5) ----------
 const TOKENS = strip(read("assets/tokens.css"));
 const rootVar = (css, name) => new RegExp(`${name}:\\s*([^;]+);`).exec(css)?.[1]?.trim();
@@ -322,12 +347,27 @@ function timeMs(expr) {
   return t ? +t[1] * unit(t[2]) : NaN;
 }
 const words = (v) => v.match(/(?:[^\s(]+|\([^)]*\))+/g) ?? [];
+// A rule's animation lists with the entries on a scroll timeline left out:
+// those have no time (linear is the scroll itself), and the rest keep theirs.
+const topList = (v) => v.split(/,(?![^(]*\))/).map((x) => x.trim());
+function timedOnly(body) {
+  const tl = /animation-timeline:([^;]+)/.exec(body);
+  if (!tl) return body;
+  const keep = topList(tl[1]).map((t) => !/^scroll\(/.test(t));
+  if (keep.every(Boolean)) return body;
+  if (!keep.some(Boolean)) return "";
+  return body.replace(/(animation(?:-[a-z]+)?):([^;]+)/g, (m, prop, v) => {
+    const parts = topList(v);
+    return parts.length === keep.length ? `${prop}: ${parts.filter((_, i) => keep[i]).join(", ")}` : m;
+  });
+}
 
 test("the new page's words have finished rising before .nav-enter comes off", () => {
   const enter = +/var FADE = \d+, ENTER = (\d+)/.exec(JS)[1];
   let longest = 0;
-  for (const { selectors, body } of RULES) {
+  for (const { selectors, body: all } of RULES) {
     if (!selectors.some((x) => x.startsWith("html.nav-enter"))) continue;
+    const body = timedOnly(all);
     const a = /animation:([^;]+)/.exec(body);
     const d = /animation-delay:([^;]+)/.exec(body);
     if (!a && !d) continue;
@@ -444,7 +484,7 @@ test("timed moves in worlds.css use the motion tokens", () => {
   for (const { selectors, body } of RULES) {
     // the H1's two halves are their own focal entrance (base.css), replayed shorter after a page change
     if (selectors[0].startsWith("html.routed h1")) continue;
-    for (const m of body.matchAll(/(?:transition|animation)(?:-[a-z]+)?:([^;]+)/g)) {
+    for (const m of timedOnly(body).matchAll(/(?:transition|animation)(?:-[a-z]+)?:([^;]+)/g)) {
       assert.ok(!/cubic-bezier|\bease\b|\blinear\b|\d+m?s\b/.test(m[1].replace(/var\([^)]*\)/g, "").replace(/(?<![\d.])0s\b/g, "")), `${selectors[0]}: "${m[1].trim()}" names its own timing`);
     }
   }
