@@ -118,7 +118,7 @@ export function render(p) {
   </div></div>
 </section>
 
-<section class="world coaching-page" data-world="grid" style="--h:160" data-fill data-label="New models">
+<section class="world coaching-page" data-world="grid" style="--h:180" data-fill data-label="New models">
   <div class="pin"><div class="frame" data-layout="split">
     <div class="words backed">
       <h2 class="r">${t.example.h2}</h2>
@@ -138,7 +138,7 @@ export function render(p) {
   </div></div>
 </section>
 
-<section class="world coaching-page" data-world="ember" style="--h:140" data-fill data-label="${t.hearth.h2}" id="hearth">
+<section class="world coaching-page" data-world="ember" style="--h:160" data-fill data-label="${t.hearth.h2}" id="hearth">
   <div class="pin"><div class="frame" data-layout="split">
     <div class="words">
       <h2 class="r">${t.hearth.h2}</h2>
