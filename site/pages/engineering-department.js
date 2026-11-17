@@ -105,8 +105,6 @@ const STYLE = raw(`<style>
 .loop-stops .at-bottom { --ty: 12px; }
 .loop-stops .at-right { --tx: calc(-100% - 10px); --ty: calc(-100% - 14px); }
 .loop-stops .at-left { --tx: 10px; --ty: calc(-100% - 14px); }
-.loop-notes { position: absolute; left: var(--x); top: var(--y); }
-.loop-note { position: absolute; left: 0; top: 0; translate: -50% -50%; white-space: nowrap; margin: 0; padding: 5px 10px; border-radius: var(--r-pill); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
 .loop-ledger { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: var(--t-small); max-width: 22rem; }
 .loop-ledger li { display: flex; justify-content: space-between; gap: var(--s2); padding-top: 6px; border-top: 1px solid var(--line); white-space: nowrap; }
 .loop-ledger .num { font-weight: 600; color: var(--accent-text); }
@@ -222,8 +220,6 @@ const STYLE = raw(`<style>
   .ed-loop .more { order: 3; }
   .loop-ledger { gap: 2px; max-width: none; }
   .loop-ledger li { padding-top: 3px; }
-  /* the ledger sits right under the ring here, so the ring's pill would say it twice */
-  .loop-notes { display: none; }
   .ed-rec-frame { aspect-ratio: 9 / 16; width: min(100%, calc(70svh * 9 / 16)); margin-inline: auto; }
   /* how it starts runs down the column */
   .pr-line { --axis: 9px; grid-template-columns: minmax(0, 1fr); }

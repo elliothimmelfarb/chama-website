@@ -48,7 +48,6 @@ const lapDone = (k) => (k < 3 ? c(START[k], START[k + 1]) : `${c(START[3], PARK)
 const LAPS_RUN = `(${[0, 1, 2, 3].map(lapDone).join(" + ")})`;
 // where in --p the marker passes a fraction f of lap k
 const at = (k, f) => (k < 3 ? START[k] + f * LAP : START[3] + LAP * (1 - Math.sqrt(1 - f)));
-const END = [at(0, 1), at(1, 1), at(2, 1), PARK - 0.02];
 
 // lap k's refit draws as the marker passes "It gets built"; the outline
 // before it goes once the new one is whole
@@ -85,12 +84,11 @@ const pos = (x, y) => place(VIEW, x, y);
 // id: the instance's prefix ("loop-a" on the first screen, "loop-b" in
 // the loop's own world), so the gradients never collide.
 export function loop({ id, stations, you = "You", label }) {
-  const notes = LAPS.map(
-    (e, k) => html`<p class="loop-note" data-p style="${`opacity:calc(${c(START[k] + 0.005, START[k] + 0.05)} - ${c(END[k] - 0.05, END[k])})`}">${e.label}</p>`,
-  );
+  // each lap's row, its request and how long it took, arrives as the
+  // marker passes "It gets built" and the refit draws
   const ledger = html`<ol class="loop-ledger" aria-label="${label}">
     ${LAPS.map(
-      (e, k) => html`<li data-p style="${`opacity:${c(START[k], START[k] + 0.05)}`}"><span>${e.label}</span><span class="num" data-p style="${`opacity:${c(at(k, 0.3), at(k, 0.3) + 0.05)}`}">${e.minutes} min</span></li>`,
+      (e, k) => html`<li data-p style="${`opacity:${c(at(k, 0.25), at(k, 0.25) + 0.05)}`}"><span>${e.label}</span><span class="num">${e.minutes} min</span></li>`,
     )}
   </ol>`;
   const figure = html`<figure class="fx loop-fig">
@@ -102,7 +100,6 @@ export function loop({ id, stations, you = "You", label }) {
       <li class="fx-lb is-live at-bottom" style="${pos(0, RY)}">${stations[2]}</li>
       <li class="fx-lb is-live at-left" style="${pos(-RX, 0)}">${stations[3]}</li>
     </ol>
-    <div class="loop-notes" style="${pos(0, -92)}" aria-hidden="true">${notes}</div>
   </figure>`;
   return { figure, ledger };
 }

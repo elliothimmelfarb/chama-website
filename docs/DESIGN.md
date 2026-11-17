@@ -408,13 +408,13 @@ Words are the lead's to finalise from `brand-language.md`; these are all approve
 | `--p` | What happens |
 |---|---|
 | 0 to 0.08 | The business is already there. The rim fades in around it, then the stations and their names, then the marker. The heading sits beside it (above it on a phone), the ledger under the heading. |
-| 0.08 to 0.27 | Lap 1. The marker leaves "Tell us"; a note appears in a small `--surface` pill: "A new filter", and its ledger row. As it passes "It gets built" the outline refits with a new facet on the right. At "You use it" the business warms once. At "What's next" the lap's time appears in the ledger: "31 min". |
+| 0.08 to 0.27 | Lap 1. The marker leaves "Tell us". As it passes "It gets built" the outline refits with a new facet on the right, and the ledger gains its row: "A new filter, 31 min". At "You use it" the business warms once. |
 | 0.27 to 0.46 | Lap 2: "A fix", 14 min. A facet at the lower left. |
 | 0.46 to 0.65 | Lap 3: "Download to Excel", 42 min. A small sheet (the export) appears inside the business, and the outline makes room at the bottom. |
 | 0.65 to 0.84 | Lap 4: "A new report", 33 min. The outline grows to its fullest shape. The marker slows and parks at "Tell us", and the business stays warm. |
 | 0.84 to 1 | Nothing moves: the finished picture and the ledger with all four laps stand while the pin lets go. The words end on "Tell us yours"; the next section's heading says the change-time line. |
 
-On the phone the figure fills the column, station labels are HTML over it, and the ledger sits under the figure, so the pill is left out. Transforms, opacity and dashoffset only. The four examples are the real, measured ones.
+On the phone the figure fills the column, station labels are HTML over it, and the ledger sits under the figure. The lap's name is said once, in the ledger, not again in a pill on the ring. Transforms, opacity and dashoffset only. The four examples are the real, measured ones.
 
 ---
 
