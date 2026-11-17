@@ -5,7 +5,7 @@
 // and yours warms. A shadow on the ground under it shrinks while it is in
 // the air, which is what tells its height. Complete at --p 1, with the
 // outline round yours.
-import { html, raw } from "../html.js";
+import { html, raw, escape } from "../html.js";
 import { n, c, ss, out, pent, grow, poly, place, label, subject, FIT_GAP, WARM } from "./kit.js";
 
 const VIEW = [-240, -180, 480, 360];
@@ -38,13 +38,13 @@ const svg = raw(`<svg class="fx-svg own-svg" viewBox="${VIEW.join(" ")}" aria-hi
   <ellipse class="fx-floor" fill="url(#own-air)" cx="${OURS.at[0]}" cy="${shadowY(OURS.at, GHOST)}" rx="${n(1.15 * GHOST)}" ry="${n(0.2 * GHOST)}"/>
   <path class="own-ghost" fill="url(#own-ghost)" d="${poly(pent(GHOST))}" transform="translate(${OURS.at.join(" ")})"/>
   ${platform(YOURS.plat, " is-yours")}
-  <g class="fit-moves">${subject({ id: "own", R, at: YOURS.at, drawn: true, warm: WARM })}</g>
+  ${subject({ id: "own", R, at: YOURS.at, drawn: true, warm: WARM, outline: false })}
   <ellipse class="fx-floor own-air" data-p fill="url(#own-air)" rx="${n(1.15 * R)}" ry="${n(0.2 * R)}" style="offset-path:path('${GROUND}');offset-rotate:0deg;offset-distance:calc(${t} * 100%);transform:scale(calc(${SIZE} * (1 - 2.2 * ${AIR})));opacity:calc(${c(0.3, 0.35)} * (1 - ${c(0.55, 0.6)}) * (1 - 1.6 * ${AIR}))"/>
   <path class="fx-halo" data-p pathLength="1" d="${FIT}" style="${travel};${drawn}"/>
   <path class="fx-fit" data-p pathLength="1" d="${FIT}" style="${travel};${drawn};opacity:${c(0.12, 0.17)}"/>
 </svg>`);
 
-const lb = (text, [x, y], style, cls = "") => `<span class="fx-lb${cls}" data-p style="${place(VIEW, x, y)};--ty:0%;${style}">${text}</span>`;
+const lb = (text, [x, y], style, cls = "") => `<span class="fx-lb${cls}" data-p style="${place(VIEW, x, y)};--ty:0%;${style}">${escape(text)}</span>`;
 
 export function own({ ours, yours }) {
   return html`<figure class="fx own-fig">

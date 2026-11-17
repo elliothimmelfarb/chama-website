@@ -100,14 +100,10 @@ const STYLE = raw(`<style>
 /* The contrast: the company, grey and seen from a little above, and its queue */
 .cx-co, .cx-co-top { stroke: var(--fx-ink-2); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 .cx-co { fill: var(--fx-old); fill-rule: evenodd; }
-.cx-co-top { fill: color-mix(in srgb, var(--fg-2) 24%, var(--ground, var(--bg))); }
+.cx-co-top { fill: var(--fx-light); }
 .cx-q { fill: url(#cx-q-body); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 
 /* The loop */
-/* Where the software's outline moves on its own (the loop's refits, the
-   flight in "You own it"), the business arrives drawn but without its
-   static fit, which would stay behind where the moving one has left. */
-.fit-moves .fx-fit, .fit-moves .fx-halo { display: none; }
 .loop-export { fill: var(--fx-light); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 .loop-station { fill: var(--fx-halo); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); }
 .loop-tail { fill: none; stroke: var(--accent); stroke-width: calc(4px * var(--sw)); stroke-linecap: round; }
@@ -160,13 +156,13 @@ const STYLE = raw(`<style>
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li:not([data-now]) { display: none; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
 /* in dark, the bright app screen sits in a soft frame and is dimmed a little */
-:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px color-mix(in srgb, var(--fg) 6%, transparent), 0 28px 64px -24px color-mix(in srgb, var(--ink) 70%, transparent); }
+:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px var(--line); }
 :root[data-theme="dark"] .ed-rec-frame :is(img, video) { filter: brightness(0.86); }
-:root[data-theme="dark"] .ed-own .fx { --fx-body: color-mix(in srgb, var(--fg) 12%, var(--ground, var(--bg))); --fx-light: color-mix(in srgb, var(--fg) 24%, var(--ground, var(--bg))); --fx-platform: color-mix(in srgb, var(--fg) 8%, transparent); }
+:root[data-theme="dark"] .ed-own .fx { --fx-body: var(--fx-old); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px color-mix(in srgb, var(--fg) 6%, transparent), 0 28px 64px -24px color-mix(in srgb, var(--ink) 70%, transparent); }
+  :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px var(--line); }
   :root:not([data-theme="light"]) .ed-rec-frame :is(img, video) { filter: brightness(0.86); }
-  :root:not([data-theme="light"]) .ed-own .fx { --fx-body: color-mix(in srgb, var(--fg) 12%, var(--ground, var(--bg))); --fx-light: color-mix(in srgb, var(--fg) 24%, var(--ground, var(--bg))); --fx-platform: color-mix(in srgb, var(--fg) 8%, transparent); }
+  :root:not([data-theme="light"]) .ed-own .fx { --fx-body: var(--fx-old); }
 }
 
 /* You own it */
@@ -216,21 +212,35 @@ const STYLE = raw(`<style>
   .ed-first .words { grid-column: 1 / span 6; }
   .ed-first h1 { max-width: 12ch; }
   .ed-first .fig { display: block; grid-column: 7 / -1; }
+  /* A figure in a pinned world rides up with its pin when it lets go and
+     must be gone before it reaches the header; held under half the screen
+     tall, it is still there when the next world's words come in. */
+  :is(.ed-contrast, .ed-loop, .ed-numbers, .ed-own) .frame { --fig-h: 48svh; }
+  /* the IP words stand level with the figure's top, so the price's words,
+     rising beside them, do not meet them before they reach the screen */
+  .ed-own .frame > .words { align-self: start; }
   .frame#recording > .words { grid-column: 1 / span 4; }
   .frame#recording > .ed-rec { grid-column: 5 / -1; }
   /* the price and its guarantee side by side, how it starts under both */
   .frame#price > .words { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s5); align-items: start; }
   .frame#price .ed-guarantee { margin-top: 0; }
+  .frame#price { row-gap: var(--s8); }
 }
 @media (min-width: 760px) and (max-width: 1099px) {
   .ed-first .words { grid-column: 1 / span 9; }
 }
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  /* the contrast: the heading, the picture, then the lead, so the picture
+     is not the lowest part, which a phone's pin lets go of first */
   .ed-contrast .frame { --words-h: 12rem; }
+  .ed-contrast .words { display: contents; }
+  .ed-contrast h2 { order: 0; }
+  .ed-contrast .fig { order: 1; }
+  .ed-contrast .lead { order: 2; }
   .ed-numbers .frame { --words-h: 15rem; }
   .ed-own .frame { --words-h: 13rem; }
   /* the loop: the heading, then the picture, then the ledger and the link */
-  .ed-loop .frame { --words-h: 17rem; row-gap: var(--s3); }
+  .ed-loop .frame { --words-h: 13rem; row-gap: var(--s3); }
   .ed-loop .words { display: contents; }
   .ed-loop h2 { order: 0; font-size: clamp(1.25rem, 1rem + 2vw, 1.75rem); }
   .ed-loop .fig { order: 1; }

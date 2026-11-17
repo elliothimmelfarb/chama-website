@@ -63,13 +63,13 @@ const tail = (len, op) =>
   `<path class="loop-tail" data-p pathLength="1" d="${RING}" style="stroke-dasharray:${len} ${1 - len};stroke-dashoffset:calc(${len} - ${LAPS_RUN});opacity:calc(${op} * ${c(0.03, 0.08)} * (1 - ${c(PARK - 0.04, PARK)}))"/>`;
 
 // Each "You use it" warms the business once; after the last lap it stays warm.
-const WARMS = `opacity:min(1, ${[0, 1, 2, 3].map((k) => bump(at(k, 0.5), 0.03)).join(" + ")} + ${c(PARK - 0.06, PARK)})`;
+const WARMS = `opacity:min(1, ${[0, 1, 2, 3].map((k) => bump(at(k, 0.5), 0.05)).join(" + ")} + ${c(PARK - 0.06, PARK)})`;
 const EXPORT_AT = at(2, 0.25);
 
 const figureSvg = (id) => `<svg class="fx-svg loop-svg" viewBox="${VIEW.join(" ")}" aria-hidden="true" focusable="false">
   <ellipse class="fx-plat" rx="${RX}" ry="${RY}"/>
   <path class="fx-ring loop-ring" data-p d="${RING}" style="opacity:${c(0, 0.05)};scale:calc(0.96 + 0.04 * ${c(0, 0.05)})"/>
-  <g class="fit-moves">${subject({ id, ...YOURS, drawn: true, warm: WARMS })}</g>
+  ${subject({ id, ...YOURS, drawn: true, warm: WARMS, outline: false })}
   ${OUTLINES.map(outline).join("\n  ")}
   <path class="loop-export" data-p d="M14 12h26v18h-26z M20 21h14" style="opacity:${c(EXPORT_AT, EXPORT_AT + 0.05)};translate:0 calc(6px - 6px * ${c(EXPORT_AT, EXPORT_AT + 0.05)})"/>
   <path class="loop-station" data-p d="${[[0, -RY], [RX, 0], [0, RY], [-RX, 0]].map(([x, y]) => `M${x - 5.5} ${y}a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0`).join("")}" style="opacity:${c(0.02, 0.07)}"/>

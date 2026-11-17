@@ -124,14 +124,10 @@
 /* The contrast: the company, grey and seen from a little above, and its queue */
 .cx-co, .cx-co-top { stroke: var(--fx-ink-2); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 .cx-co { fill: var(--fx-old); fill-rule: evenodd; }
-.cx-co-top { fill: color-mix(in srgb, var(--fg-2) 24%, var(--ground, var(--bg))); }
+.cx-co-top { fill: var(--fx-light); }
 .cx-q { fill: url(#cx-q-body); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 
 /* The loop */
-/* Where the software's outline moves on its own (the loop's refits, the
-   flight in "You own it"), the business arrives drawn but without its
-   static fit, which would stay behind where the moving one has left. */
-.fit-moves .fx-fit, .fit-moves .fx-halo { display: none; }
 .loop-export { fill: var(--fx-light); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 .loop-station { fill: var(--fx-halo); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); }
 .loop-tail { fill: none; stroke: var(--accent); stroke-width: calc(4px * var(--sw)); stroke-linecap: round; }
@@ -184,13 +180,13 @@
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li:not([data-now]) { display: none; }
 :root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
 /* in dark, the bright app screen sits in a soft frame and is dimmed a little */
-:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px color-mix(in srgb, var(--fg) 6%, transparent), 0 28px 64px -24px color-mix(in srgb, var(--ink) 70%, transparent); }
+:root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px var(--line); }
 :root[data-theme="dark"] .ed-rec-frame :is(img, video) { filter: brightness(0.86); }
-:root[data-theme="dark"] .ed-own .fx { --fx-body: color-mix(in srgb, var(--fg) 12%, var(--ground, var(--bg))); --fx-light: color-mix(in srgb, var(--fg) 24%, var(--ground, var(--bg))); --fx-platform: color-mix(in srgb, var(--fg) 8%, transparent); }
+:root[data-theme="dark"] .ed-own .fx { --fx-body: var(--fx-old); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px color-mix(in srgb, var(--fg) 6%, transparent), 0 28px 64px -24px color-mix(in srgb, var(--ink) 70%, transparent); }
+  :root:not([data-theme="light"]) .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px var(--line); }
   :root:not([data-theme="light"]) .ed-rec-frame :is(img, video) { filter: brightness(0.86); }
-  :root:not([data-theme="light"]) .ed-own .fx { --fx-body: color-mix(in srgb, var(--fg) 12%, var(--ground, var(--bg))); --fx-light: color-mix(in srgb, var(--fg) 24%, var(--ground, var(--bg))); --fx-platform: color-mix(in srgb, var(--fg) 8%, transparent); }
+  :root:not([data-theme="light"]) .ed-own .fx { --fx-body: var(--fx-old); }
 }
 
 /* You own it */
@@ -240,21 +236,35 @@
   .ed-first .words { grid-column: 1 / span 6; }
   .ed-first h1 { max-width: 12ch; }
   .ed-first .fig { display: block; grid-column: 7 / -1; }
+  /* A figure in a pinned world rides up with its pin when it lets go and
+     must be gone before it reaches the header; held under half the screen
+     tall, it is still there when the next world's words come in. */
+  :is(.ed-contrast, .ed-loop, .ed-numbers, .ed-own) .frame { --fig-h: 48svh; }
+  /* the IP words stand level with the figure's top, so the price's words,
+     rising beside them, do not meet them before they reach the screen */
+  .ed-own .frame > .words { align-self: start; }
   .frame#recording > .words { grid-column: 1 / span 4; }
   .frame#recording > .ed-rec { grid-column: 5 / -1; }
   /* the price and its guarantee side by side, how it starts under both */
   .frame#price > .words { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s5); align-items: start; }
   .frame#price .ed-guarantee { margin-top: 0; }
+  .frame#price { row-gap: var(--s8); }
 }
 @media (min-width: 760px) and (max-width: 1099px) {
   .ed-first .words { grid-column: 1 / span 9; }
 }
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  /* the contrast: the heading, the picture, then the lead, so the picture
+     is not the lowest part, which a phone's pin lets go of first */
   .ed-contrast .frame { --words-h: 12rem; }
+  .ed-contrast .words { display: contents; }
+  .ed-contrast h2 { order: 0; }
+  .ed-contrast .fig { order: 1; }
+  .ed-contrast .lead { order: 2; }
   .ed-numbers .frame { --words-h: 15rem; }
   .ed-own .frame { --words-h: 13rem; }
   /* the loop: the heading, then the picture, then the ledger and the link */
-  .ed-loop .frame { --words-h: 17rem; row-gap: var(--s3); }
+  .ed-loop .frame { --words-h: 13rem; row-gap: var(--s3); }
   .ed-loop .words { display: contents; }
   .ed-loop h2 { order: 0; font-size: clamp(1.25rem, 1rem + 2vw, 1.75rem); }
   .ed-loop .fig { order: 1; }
@@ -310,7 +320,7 @@
 
 <section id="contrast" class="world ed-contrast" data-world="paper" data-fill style="--h:190" data-label="Only for you">
   <div class="pin"><svg class="fx ed-defs" aria-hidden="true" focusable="false"><defs><radialGradient id="cx-q-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
-  <radialGradient id="cx-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
+  <radialGradient id="cx-ground"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
     <radialGradient id="cx-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
     <radialGradient id="cx-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
   </defs></svg><div class="frame">
@@ -321,7 +331,7 @@
     <div class="fig r" style="--ar:1.4118"><figure class="fx cx" role="group" aria-label="Software companies have engineers, and their customers wait in line.">
   <svg class="fx-svg cx-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
   
-  <ellipse class="fx-floor" data-p fill="url(#cx-floor)" cx="4" cy="53" rx="226" ry="12" style="opacity:(1 - 0.5 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));translate:calc(-2.2px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-117.9px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.45 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))))"/>
+  <ellipse class="fx-floor" data-p fill="url(#cx-ground)" cx="4" cy="53" rx="226" ry="12" style="opacity:(1 - 0.5 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));translate:calc(-2.2px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-117.9px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.45 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))))"/>
   <path class="cx-co-top" data-p d="M56 -60 L176 -60 L196 -76 L76 -76 Z" style="opacity:(1 - 0.5 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));translate:calc(-2.2px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-117.9px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.45 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))))"/>
   <path class="cx-co" data-p d="M56 -60 H176 V50 H56 Z M68 6 H90 V50 H68 Z" style="opacity:(1 - 0.5 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));translate:calc(-2.2px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-117.9px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.45 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))))"/>
   <path class="cx-q" data-p d="M30 9.55 L54.73 25 L45.28 50 L14.72 50 L5.27 25 Z" style="opacity:calc(1 * (1 - clamp(0, (var(--p) - 0.13) / 0.08, 1)) * (1 - 0.5 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))));translate:calc(-2.2px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1)))) calc(-117.9px * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));scale:calc(1 - 0.45 * (clamp(0, (var(--p) - 0.36) / 0.1, 1) * clamp(0, (var(--p) - 0.36) / 0.1, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.1, 1))));transform:translate(calc(50px * (clamp(0, (var(--p) - 0.1) / 0.12, 1) * clamp(0, (var(--p) - 0.1) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.1) / 0.12, 1)))), 0px)"/>
@@ -363,15 +373,14 @@
     <svg class="fx-svg loop-svg" viewBox="-240 -170 480 340" aria-hidden="true" focusable="false">
   <ellipse class="fx-plat" rx="200" ry="128"/>
   <path class="fx-ring loop-ring" data-p d="M0 -128 A200 128 0 1 1 0 128 A200 128 0 1 1 0 -128 Z" style="opacity:clamp(0, (var(--p) - 0) / 0.05, 1);scale:calc(0.96 + 0.04 * clamp(0, (var(--p) - 0) / 0.05, 1))"/>
-  <g class="fit-moves">
+  
   <g transform="translate(0 0)">
     <ellipse class="fx-floor" fill="url(#loop-b-floor)" cx="0" cy="51.1998" rx="75.9" ry="13.2"/>
     <path class="fx-body" fill="url(#loop-b-body)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
-    <path class="fx-body" data-p style="opacity:min(1, clamp(0, 1 - max((var(--p) - 0.175) / 0.03, (0.175 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.03, (0.365 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.03, (0.555 - var(--p)) / 0.03), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.03, (0.7056 - var(--p)) / 0.03), 1) + clamp(0, (var(--p) - 0.78) / 0.06, 1))" fill="url(#loop-b-owned)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
+    <path class="fx-body" data-p style="opacity:min(1, clamp(0, 1 - max((var(--p) - 0.175) / 0.05, (0.175 - var(--p)) / 0.05), 1) + clamp(0, 1 - max((var(--p) - 0.365) / 0.05, (0.365 - var(--p)) / 0.05), 1) + clamp(0, 1 - max((var(--p) - 0.555) / 0.05, (0.555 - var(--p)) / 0.05), 1) + clamp(0, 1 - max((var(--p) - 0.7056) / 0.05, (0.7056 - var(--p)) / 0.05), 1) + clamp(0, (var(--p) - 0.78) / 0.06, 1))" fill="url(#loop-b-owned)" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
     <path class="fx-ink" pathLength="1" d="M0 -56.76 L62.77 -17.54 L38.79 45.92 L-38.79 45.92 L-62.77 -17.54 Z"/>
-    <path class="fx-halo" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
-    <path class="fx-fit" pathLength="1" d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z"/>
-  </g></g>
+    
+  </g>
   <path class="fx-fit loop-fit" data-p d="M0 -67.66 L74.09 -21.36 L45.18 55.16 L-45.18 55.16 L-74.09 -21.36 Z" style="opacity:calc(1 - clamp(0, (var(--p) - 0.1575) / 0.05, 1))"/>
   <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L42.53 55.16 L-45.18 55.16 L-74.09 -21.36 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.1275) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.3475) / 0.05, 1))"/>
   <path class="fx-fit loop-fit" data-p pathLength="1" d="M0 -67.66 L71.61 -22.91 L75.31 23.46 L42.53 55.16 L-42.8 55.16 L-73.23 22.67 L-71.86 -22.76 Z" style="stroke-dashoffset:calc(1 - clamp(0, (var(--p) - 0.3175) / 0.04, 1));opacity:calc(1 - clamp(0, (var(--p) - 0.5375) / 0.05, 1))"/>
@@ -497,15 +506,14 @@
   <ellipse class="fx-floor" fill="url(#own-air)" cx="-100" cy="-57.8668" rx="50.6" ry="8.8"/>
   <path class="own-ghost" fill="url(#own-ghost)" d="M0 -37.84 L41.85 -11.69 L25.86 30.61 L-25.86 30.61 L-41.85 -11.69 Z" transform="translate(-100 -92)"/>
   <ellipse class="fx-plat own-plat is-yours" cx="70" cy="98" rx="158" ry="54"/>
-  <g class="fit-moves">
+  
   <g transform="translate(70 66)">
     <ellipse class="fx-floor" fill="url(#own-floor)" cx="0" cy="54.3028" rx="80.5" ry="14"/>
     <path class="fx-body" fill="url(#own-body)" d="M0 -60.2 L66.57 -18.6 L41.14 48.7 L-41.14 48.7 L-66.57 -18.6 Z"/>
     <path class="fx-body" data-p style="opacity:clamp(0, (var(--p) - 0.62) / 0.08, 1)" fill="url(#own-owned)" d="M0 -60.2 L66.57 -18.6 L41.14 48.7 L-41.14 48.7 L-66.57 -18.6 Z"/>
     <path class="fx-ink" pathLength="1" d="M0 -60.2 L66.57 -18.6 L41.14 48.7 L-41.14 48.7 L-66.57 -18.6 Z"/>
-    <path class="fx-halo" pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z"/>
-    <path class="fx-fit" pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z"/>
-  </g></g>
+    
+  </g>
   <ellipse class="fx-floor own-air" data-p fill="url(#own-air)" rx="80.5" ry="14" style="offset-path:path('M-100 -57.8668 L70 120.3028');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * 100%);transform:scale(calc((0.6286 + 0.3714 * (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))) * (1 - 2.2 * ((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * (1 - (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))))))));opacity:calc(clamp(0, (var(--p) - 0.3) / 0.05, 1) * (1 - clamp(0, (var(--p) - 0.55) / 0.05, 1)) * (1 - 1.6 * ((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * (1 - (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))))))"/>
   <path class="fx-halo" data-p pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z" style="offset-path:path('M-100 -92 C -70 -176 40 -156 70 66');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * 100%);transform:scale(calc((0.6286 + 0.3714 * (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))) * (1.04 - 0.04 * (1 - pow(1 - clamp(0, (var(--p) - 0.6) / 0.1, 1), 3)))));stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.12) / 0.12, 1) * clamp(0, (var(--p) - 0.12) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.12) / 0.12, 1))))"/>
   <path class="fx-fit" data-p pathLength="1" d="M0 -71.76 L78.58 -22.66 L47.92 58.5 L-47.92 58.5 L-78.58 -22.66 Z" style="offset-path:path('M-100 -92 C -70 -176 40 -156 70 66');offset-rotate:0deg;offset-distance:calc((clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1))) * 100%);transform:scale(calc((0.6286 + 0.3714 * (clamp(0, (var(--p) - 0.3) / 0.3, 1) * clamp(0, (var(--p) - 0.3) / 0.3, 1) * (3 - 2 * clamp(0, (var(--p) - 0.3) / 0.3, 1)))) * (1.04 - 0.04 * (1 - pow(1 - clamp(0, (var(--p) - 0.6) / 0.1, 1), 3)))));stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.12) / 0.12, 1) * clamp(0, (var(--p) - 0.12) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.12) / 0.12, 1))));opacity:clamp(0, (var(--p) - 0.12) / 0.05, 1)"/>

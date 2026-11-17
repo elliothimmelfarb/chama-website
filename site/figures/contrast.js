@@ -9,7 +9,7 @@
 // (VIEW and YOURS are shared with loop.js), so the loop carries it on.
 // Act one stands at --p 0, so the figure arrives with its world already
 // showing the queue. Complete at --p 1.
-import { html, raw } from "../html.js";
+import { html, raw, escape } from "../html.js";
 import { c, ss, out, pent, poly, place, label, subject } from "./kit.js";
 
 // The box and the business, shared with the loop so the two line up.
@@ -77,8 +77,8 @@ const talk = `<path class="fx-hair cx-talk" data-p pathLength="1" d="M104 30 L66
 
 const svg = raw(`<svg class="fx-svg cx-svg" viewBox="${VIEW.join(" ")}" aria-hidden="true" focusable="false">
   <defs><radialGradient id="cx-q-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
-  <radialGradient id="cx-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs>
-  <ellipse class="fx-floor" data-p fill="url(#cx-floor)" cx="4" cy="${GROUND + 3}" rx="226" ry="12" style="${ACT_ONE}"/>
+  <radialGradient id="cx-ground"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs>
+  <ellipse class="fx-floor" data-p fill="url(#cx-ground)" cx="4" cy="${GROUND + 3}" rx="226" ry="12" style="${ACT_ONE}"/>
   <path class="cx-co-top" data-p d="${TOP}" style="${ACT_ONE}"/>
   <path class="cx-co" data-p d="${FRONT}" style="${ACT_ONE}"/>
   ${queue}
@@ -89,7 +89,7 @@ const svg = raw(`<svg class="fx-svg cx-svg" viewBox="${VIEW.join(" ")}" aria-hid
 
 // labels: the company named beside it once the camera has moved on
 // (while it is large, the heading beside it says what it is); yours under yours
-const lb = (text, [x, y], style, cls = "") => `<span class="fx-lb${cls}" data-p style="${place(VIEW, x, y)};${style}">${text}</span>`;
+const lb = (text, [x, y], style, cls = "") => `<span class="fx-lb${cls}" data-p style="${place(VIEW, x, y)};${style}">${escape(text)}</span>`;
 const bottom = 0.86 * R * Math.cos(Math.PI / 5);
 
 export function contrast({ them, you, label: aria }) {
