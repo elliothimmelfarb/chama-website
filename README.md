@@ -65,7 +65,7 @@ Copy is written in `site/content/en/`, in the approved brand language (the brain
 
 `/work` is one index of everything we have made, grouped by offer, in `site/content/en/work.js`. Logos are in `CLIENTS` and `PARTNERS` in `site/parts/logos.js`: a transparent image in `assets/work/` whose opaque pixels are the mark, with its natural width and height so every logo gets the same optical weight. `CLIENTS` is the strip on `/` and the logos on `/work`; `PARTNERS` are on `/about`.
 
-`/build` shows each thing's real pages scrolling inside a laptop and a phone (`site/figures/devices.js`, `drawDevices` in `worlds.js`). Each picture is a tall capture in `assets/built/` (`<name>-desktop*.webp`, `<name>-phone*.webp`) with resized copies; `SHOTS` in `devices.js` lists each one's widths and full height, and `PICTURES` in `site/pages/build.js` maps a thing to its pictures. Private work shows seeded demo data, never real records.
+`/build` shows each thing's real pages scrolling inside a laptop and a phone (`site/figures/devices.js`, `drawDevices` in `worlds.js`); the page opens on them, with the H1 beside the first thing's pair. Each picture is a tall capture in `assets/built/` (`<name>-desktop*.webp`, `<name>-phone*.webp`) with resized copies; `SHOTS` in `devices.js` lists each one's widths and full height, and `PICTURES` in `site/pages/build.js` maps a thing to its pictures. Private work shows seeded demo data, never real records.
 
 ## Redirects
 

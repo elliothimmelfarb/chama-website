@@ -432,3 +432,20 @@ test("after a page change every pinned word rises in, in its order", () => {
   assert.match(pinned.map((x) => x.body).join(""), /animation-delay:\s*calc\(var\(--i, 0\) \* var\(--stagger-ms\)\)/);
 });
 
+
+test("/build's opening stretch is the devices world's data-open, and its hold agrees", () => {
+  // The H1 opens the devices world, so the stretch before the first thing
+  // is short (data-open, in hundredths of a screen) and drawDevices reads it
+  // from the section rather than a constant only that page could use.
+  const intro = /function devicesIntro\(([^)]*)\) \{([^\n]*)\}/.exec(JS);
+  assert.ok(intro, "worlds.js has devicesIntro");
+  assert.match(JS, /getAttribute\("data-open"\)/, "the opening stretch comes from the section");
+  assert.ok(!/devicesIntro\(n\)/.test(JS), "every caller passes the world's own opening");
+  const html = read("build.html");
+  const tag = /<section\b[^>]*\bdevices-world\b[^>]*>/.exec(html)[0];
+  const open = +(/\sdata-open="(\d+)"/.exec(tag)?.[1]);
+  const h = +(/--h:\s*(\d+)/.exec(tag)?.[1]);
+  const n = (html.match(/<article class="made"/g) || []).length;
+  assert.ok(open > 0 && open < 90, `the opening is shorter than a thing's stretch (${open})`);
+  assert.equal(h, 100 + open + 135 * n, "--h is the pin, the opening and 135 for each thing");
+});

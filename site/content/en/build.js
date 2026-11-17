@@ -30,6 +30,8 @@ export const build = {
       short: "We built their website and an app for the staff that goes with it. They circle any part of the site, write what they want changed, and the change is live within the hour.",
       href: "https://toraya.pt",
       link: "toraya.pt",
+      // the first website: the websites heading stands above its name
+      opens: "websites",
     },
     {
       id: "original",
@@ -44,7 +46,7 @@ export const build = {
       name: "VSF Lead Automation",
       kind: "App for one business",
       // the first app: the apps heading stands above its name
-      opensApps: true,
+      opens: "apps",
       text: "Vivir Sin Fronteras helps students get into universities abroad. When someone enquires, a bot messages them on WhatsApp, asks the questions the team would ask, and books the meeting straight into the team's calendar when it's worth it.",
       private: "This is private software, built for one business.",
     },
@@ -53,6 +55,7 @@ export const build = {
       name: "Alves Teamwear",
       kind: "App for one business",
       text: "Alves Teamwear sells custom kits to sports teams. We built an app where a team designs its own kit and places the order, and a command center where the operators and the supplier keep track of everything.",
+      short: "We built an app where a team designs its own kit and places the order, and a command center where the operators and the supplier keep track of everything.",
       private: "This is private software, built for one business.",
     },
   ],

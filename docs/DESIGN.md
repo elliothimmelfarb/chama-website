@@ -267,15 +267,14 @@ Built to stand alone for a referral link: the first screen says what it is witho
 
 | # | Section | Ground | What moves |
 |---|---|---|---|
-| 1 | H1 "Websites, apps and products.", line C.12, Talk to us field | Grid | H1 arrives. |
-| 2 | Websites built to be found: three or four real sites (Toraya Lisboa and others), drawn by `drawDevices` | Grid | Pinned. Each site arrives in a laptop and phone pair, as today. |
-| 3 | Apps | Grid | Continues the same world: the next things in the device sequence. |
-| 4 | Product partnership: "Have an idea? We'll build it with you, as a partner or co-founder." with ShopIntake as proof | Ember | ShopIntake's screens rise into place. |
-| 5 | Talk to us | Paper | The cycling phrase. |
+| 1 | The devices world opens the page: H1 "Websites, apps and products.", line C.12 and the Talk to us field stand beside Toraya Lisboa's laptop and phone (on a phone, under them), so the first screen is the same split as every frame after it | Grid | Pinned, `--h` 100 + 40 + 135 a thing. The H1 arrives; after 0.4 of a screen (`data-open`) its words Swap for the first thing's. |
+| 2 | Websites built to be found (the heading over Toraya Lisboa's name), then Apps made for one business (over VSF Lead Automation's): four real things, drawn by `drawDevices` | Grid | Each thing's pictures scroll inside its screens; the next pair fades in over it and the words Swap. The pair stands on a soft floor shadow. On a phone the devices fill the column and the words sit under them. |
+| 3 | Product partnership: "Have an idea? We'll build it with you, as a partner or co-founder." with ShopIntake as proof | Ember | Pinned, `--h` 140, a split frame whose words start on the devices' line, so it reads as the run's last thing on a new ground. The laptop arrives with the words; ShopIntake's phone rises in beside it in the first half of the hold. On a phone the words come first and the rig under them. |
+| 4 | Talk to us | Ember | The cycling phrase. |
 
 ### `/work`
 
-One scrolling index on paper, not pinned, no figures. Grouped under three h2s (the three offers), each entry a row: name, one line, the offer page link (with `#anchor`). Header strip on. Logos appear here at the entry, in the same mask treatment as the strip. `/built` and `/clients` redirect here with anchors kept.
+One scrolling index on paper, not pinned, no figures: the H1 with its line beside it, then the three offers. Each offer is a pair frame: its glyph and name stand sticky on the left while its rows pass on the right, so no frame is a bare list. Each row is the name, one line at body size, the logo where there is one, and the arrow; the whole row is the link (with `#anchor`). Header strip on. Logos use the same mask treatment as the strip. `/built` and `/clients` redirect here with anchors kept.
 
 ### `/about`
 
