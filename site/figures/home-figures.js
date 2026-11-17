@@ -9,7 +9,7 @@
 //   approach  one person, two paths to the business: one draws its fit
 //             (done for you), the other its own ring (taught).
 import { html, raw } from "../html.js";
-import { subject, pent, grow, poly, c, ss, out, n, place, label, FIT_GAP, WARM } from "./kit.js";
+import { subject, fills, pent, grow, poly, c, ss, out, n, place, label, FIT_GAP, WARM } from "./kit.js";
 
 const VB = [-300, -190, 600, 400];
 const R = 130;
@@ -52,8 +52,6 @@ const svg = (body) => `<svg class="fx-svg" viewBox="${VB.join(" ")}" aria-hidden
 const lb = (text, at, style, cls = "") => html`<span class="fx-lb ${cls}" data-p style="${place(VB, ...at)};${style}" aria-hidden="true">${text}</span>`;
 const fx = (cls, body, labels) => html`<figure class="fx hfx ${cls}"><div class="hfx-in">${raw(svg(body))}${labels}</div></figure>`;
 
-// subject() without its halo and fit, for a figure that draws its own
-const withoutFit = (s) => s.replace(/\s*<path class="fx-halo"[^>]*\/>\s*<path class="fx-fit"[^>]*\/>/, "");
 
 // A drawn stroke: it fades in over its first 0.05, so its round cap never
 // shows as a dot, and draws from a to b.
@@ -83,7 +81,7 @@ export function beliefFigure(reasons) {
   const CALL = 30;
   // the business stands from the start of the hold; only its fit, side by
   // side, and the reasons draw
-  const body = withoutFit(subject({ id: "bl", R, drawn: true, warm: WARM }))
+  const body = subject({ id: "bl", R, drawn: true, warm: WARM, outline: false })
     + sides.map((s, k) => `<path class="fx-fit" data-p pathLength="1" d="${s.d}" style="${stroke(...SIDE(k))};scale:calc(1.03 - 0.03 * ${out(0.62, 0.72)})"/>`).join("");
   // each reason is one element: the word, with its dot and hairline drawn
   // back to the side from it (.hfx-call), so a callout costs one restyle
@@ -121,7 +119,7 @@ export function canDoFigure({ fresh, dayOne }) {
   <path class="hfx-top" data-p d="${TOP}" style="opacity:${c(0.48, 0.56)};translate:0 calc(${RISE}px * (1 - ${ss(0.56, 0.68)}))"/>
   <path class="hfx-front" data-p d="${FRONT}" style="opacity:${c(0.5, 0.56)};transform-box:fill-box;transform-origin:bottom;scale:1 calc(0.001 + 0.999 * ${ss(0.56, 0.68)})"/>
   ${subject({ id: "cd", R, owned: true, st: keep })}
-  <ellipse class="fx-floor" data-p fill="url(#cd-floor)" cx="${NEW_FLOOR[0]}" cy="${n(NEW_FLOOR[1])}" rx="54" ry="10" style="opacity:${c(0.1, 0.18)};${slide(0.1)}"/>
+  <ellipse class="fx-floor" data-p fill="${fills("cd").floor}" cx="${NEW_FLOOR[0]}" cy="${n(NEW_FLOOR[1])}" rx="54" ry="10" style="opacity:${c(0.1, 0.18)};${slide(0.1)}"/>
   <path class="fx-body" data-p fill="url(#cd-new-body)" d="${poly(NEW)}" style="opacity:${c(0.34, 0.42)};${rise}"/>
   <path class="fx-ink hfx-new" data-p d="${poly(NEW)}" style="opacity:calc(0.8 * ${c(0.1, 0.18)} * (1 - ${c(0.36, 0.42)}));${slide(0.1)}"/>
   <path class="fx-ink" data-p d="${poly(NEW)}" style="opacity:${c(0.36, 0.42)};${rise}"/>
@@ -156,9 +154,9 @@ export function approachFigure([doneForYou, taught]) {
   <path class="fx-ring is-yours" data-p pathLength="1" d="${RING_D}" style="${stroke(0.44, 0.6)}"/>
   <path class="hfx-path" data-p pathLength="1" d="${P1}" style="${stroke(0.14, 0.26)}"/>
   <path class="hfx-path" data-p pathLength="1" d="${P2}" style="${stroke(0.32, 0.44)}"/>
-  <ellipse class="fx-floor" data-p fill="url(#ap-floor)" cx="${WHO[0]}" cy="${WHO[1] + 18}" rx="22" ry="5" style="opacity:${c(0.04, 0.12)}"/>
+  <ellipse class="fx-floor" data-p fill="${fills("ap").floor}" cx="${WHO[0]}" cy="${WHO[1] + 18}" rx="22" ry="5" style="opacity:${c(0.04, 0.12)}"/>
   <circle class="fx-dot" data-p cx="${WHO[0]}" cy="${WHO[1]}" r="9" style="opacity:${c(0.04, 0.12)};translate:0 calc(10px * (1 - ${out(0.04, 0.14)}))"/>
-  ${withoutFit(subject({ id: "ap", R, drawn: true, warm: WARM }))}
+  ${subject({ id: "ap", R, drawn: true, warm: WARM, outline: false })}
   <path class="fx-fit" data-p pathLength="1" d="${poly(FIT)}" style="${stroke(0.26, 0.44)};transform-box:fill-box;transform-origin:center;scale:calc(1.035 - 0.035 * ${out(0.62, 0.72)})"/>
   <circle class="fx-mk" data-p r="7" style="${runs(P1 + " " + fitD, P1_LEN / (P1_LEN + FIT_LEN), 0.14, 0.26, 0.44)};opacity:calc(${c(0.12, 0.17)} * (1 - ${c(0.44, 0.5)}))"/>
   <circle class="fx-mk" data-p r="6" style="${runs(P2 + " " + lap(RING_D), P2_LEN / (P2_LEN + RING_LEN), 0.32, 0.44, 0.6)};opacity:calc(${c(0.3, 0.35)} * (1 - ${c(0.6, 0.66)}))"/>`;

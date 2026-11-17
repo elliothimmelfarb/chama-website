@@ -124,10 +124,10 @@ ${strokeRule("stage-link", [7.8, 8.4])}
 /* the learner's own marker draws its own fit, then rests on it */
 .stage-lrnfit { ${k("d", 23.0, 24.2)} ${LRN_MOVE} stroke-dashoffset: calc(1 - ${e("d")}); opacity: calc(clamp(0, ${e("d")} * 50, 1) * ${LRN_ON}); }
 .stage-lrnmk { ${k("d", 23.0, 24.2)} ${LRN_MOVE} offset-distance: calc(${e("d")} * 100%); opacity: calc(${w(22.9, 23.1)} * ${LRN_ON}); }
-.stage-gl { --x: 0px; --a: 26.35; --k1: clamp(0, (var(--t) - var(--a)) / 0.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1)));
-  opacity: var(--k1); transform: translate(var(--x), 0) scale(calc(1.25 - 0.25 * ${e(1)})); }
-.stage-gl1 { --x: -110px; }
-.stage-gl3 { --x: 110px; --a: 26.5; }
+/* each part of a glyph arrives on its own, scaling about the glyph's centre */
+.stage-glp { --a: 26.35; --k1: clamp(0, (var(--t) - var(--a)) / 0.5, 1); --e1: calc(var(--k1) * var(--k1) * (3 - 2 * var(--k1)));
+  opacity: var(--k1); transform-origin: 18px 18px; transform: scale(calc(1.25 - 0.25 * ${e(1)})); }
+.stage-gl3 .stage-glp { --a: 26.5; }
 .stage-lb { ${ON}
   opacity: calc(${w(10.5, 10.9)} * (1 - ${w(26.0, 26.4)})); color: color-mix(in srgb, var(--fg) calc(var(--on) * 100%), var(--fg-2)); }
 .stage-say { opacity: calc(clamp(0, (var(--t) - var(--s)) * 100 + 1, 1) * (1 - clamp(0, (var(--t) - var(--e)) / 0.25 + 1, 1))); }
@@ -212,7 +212,7 @@ html[data-motion="low"] .stage-ph { --in: 1; }
 
 /* After the catch the glyphs live in the doors, and the stage keeps the loop
    as a quiet still behind Replay. */
-.stage[data-caught] .stage-gl { opacity: 0 !important; }
+.stage[data-caught] .stage-glp { opacity: 0 !important; }
 /* the doors' icons never stand blank while the stage waits or plays (base.css
    hides them for the catch); the catch still flies them in from the stage */
 .first [data-doors] .g { opacity: 1 !important; }
@@ -250,7 +250,7 @@ const CATCH = `(function () {
     st.setAttribute("data-caught", "");
     if (!d || d.getAttribute("data-catch") !== "wait") return;
     [].forEach.call(st.querySelectorAll("[data-door]"), function (g) {
-      var to = d.querySelector('[data-door="' + g.getAttribute("data-door") + '"] .g'), from = g.querySelector("svg");
+      var to = d.querySelector('[data-door="' + g.getAttribute("data-door") + '"] .g'), from = g;
       if (!to || !from) return;
       var a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
       if (b.top < 0 || b.bottom > innerHeight || a.bottom < 0 || a.top > innerHeight) return;
@@ -288,9 +288,15 @@ const ICON = {
   next: `<svg viewBox="0 0 18 18" aria-hidden="true"><path d="m7 4 5 5-5 5"/></svg>`,
 };
 
-// A door glyph, drawn inside the stage at a glyph's spot.
-const glyph = (id, n) =>
-  `<g class="stage-gl stage-gl${n}" data-p data-door="${id}">${String(GLYPHS[id]).replace('<svg class="g"', '<svg class="g" x="-28" y="-28" width="56" height="56"')}</g>`;
+// A door glyph, drawn inside the stage at a glyph's spot: its parts in a
+// still group placed and scaled to 56 units, each part moving on its own
+// (a moving group would restyle all of its parts every frame).
+const GLYPH_AT = [-110, 0, 110];
+const glyph = (id, n) => {
+  const inner = /<svg[^>]*>([\s\S]*)<\/svg>/.exec(String(GLYPHS[id]))[1]
+    .replace(/<(\w+)( class="([^"]*)")?/g, (m, tag, _, cls) => `<${tag} class="stage-glp${cls ? ` ${cls}` : ""}" data-p`);
+  return `<g class="g stage-gl stage-gl${n}" data-door="${id}" transform="translate(${GLYPH_AT[n - 1] - 28} -28) scale(${f(56 / 36)})">${inner}</g>`;
+};
 
 const FIG = `<svg class="stage-fig" viewBox="${-VW / 2} ${-VH / 2} ${VW} ${VH}" aria-hidden="true" focusable="false">
   <defs>
