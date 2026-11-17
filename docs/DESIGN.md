@@ -255,16 +255,18 @@ Built to stand alone for a referral link: the first screen says what it is witho
 
 ### `/coaching`
 
-| # | Section | Ground | What moves |
-|---|---|---|---|
-| 1 | H1 "AI fluency coaching and training.", line E.25, Talk to us field | Tides | H1 arrives. |
-| 2 | The coaching figure: you arrive unsure (a tangled line), a session (the mark in a ring), you leave with a direction (a straight ember line) | Tides | Pinned, centred, the figure filling its six columns. The tangle draws (5 to 35%), the ring and the mark arrive, the line runs out (42 to 64%) and its head lands at 62%; each label arrives with its part. |
-| 3 | Who it is for: individuals, executive teams, engineering teams (agentic engineering training, on site or remote), coaching as a company benefit. Four rows, each opens for detail, each with a small group of dots (two, a table of five, a team of nine, a ring), one ember dot for the coach | Tides | Disclosure only; an open row's dots turn `--fg`. |
-| 4 | The model-effort example | Grid | The example's figure plays with `--p` (as today, redrawn in SVG). |
-| 5 | AI enablement: company policy, structure and enablement, one short section, with the three as stacked layers, enablement on top in ember | Grid | None. |
-| 6 | Elliot's coaching video slot | Paper | A 16:9 frame with a poster and a play button; until the video exists, the slot holds a still of Elliot and one line, never an empty box. |
-| 7 | The Hearth, the members' room, with the Members link | Ember | The Hearth screenshot (existing assets) rises 16px into place. |
-| 8 | Talk to us | Tides | The cycling phrase. |
+Every world is a `.frame`; two are pinned, each for a figure that moves.
+
+| # | Section | Ground | Layout | What moves |
+|---|---|---|---|---|
+| 1 | H1 "AI fluency coaching and training.", line E.25, Talk to us field, and beside them (under them on a phone) the session figure | Tides | split, a screen tall | The figure is a stage: it plays once, about 6.5 seconds, when it is in view, and has a pause and play-again button. The session (the mark on a lit coin, on its platform, a dotted ring turning) arrives; a tangled line draws in from the left with a point travelling its head; it goes round the session once in ember and leaves rising to the top right, where its arrow head lands. "Where you are", "A session" and "Where you're going" sit on their parts. |
+| 2 | "Time with someone who knows AI deeply and makes it simple." with its lead, then Who it's for: four rows, each opening for detail, each with a small group of dots (two, a table of five, a team of nine, a ring), the coach's dot in ember | Tides | pair, not pinned | Disclosure only; an open row's dots turn `--fg`. |
+| 3 | Each new model can do more: thinking effort, then and now | Grid | split, pinned 180 | Two grooves with four notches. The older models' ink knob sits at extra high; the current models' ember knob slides to medium (0.12 to 0.44 of the hold), leaving a dashed ghost, and lands with a small settle as "Medium" lights. Whole by 0.56. |
+| 4 | AI enablement: policy, structure and enablement as three slabs, enablement on top in ember and warm, labels on each slab's edge | Grid | split, mirrored, not pinned | None. |
+| 5 | The Hearth, with the Members link: six sessions on a line, each with its record below it on alternating rows, the latest in ember | Ember | split, pinned 160 | Each record, a paper card, rises onto its shadow in turn (0.04 to 0.44 of the hold). |
+| 6 | Talk to us | Ember | statement, not pinned | The cycling phrase. |
+
+The video slot waits for the video; until then the page has no empty box.
 
 ### `/build`
 
@@ -282,14 +284,13 @@ One scrolling index on paper, not pinned, no figures. Grouped under three h2s (t
 
 ### `/about`
 
-| # | Section | Ground | What moves |
-|---|---|---|---|
-| 1 | H1 "A small, family-owned, AI-native business.", the photo | Paper | H1 arrives; the photo settles. |
-| 2 | The family: Elliot, Annie and Rozalie, moving to Portugal in fall 2023 sight unseen, growing it together. The only page that names Rozalie | Paper | None. |
-| 3 | Elliot's background and superpowers (C.15), with his background as a four-point timeline under the heading | Ember | None. |
-| 4 | Partners: TLC Automation and Alves Limited Group, logos plus one line each | Grid | None. |
-| 5 | The name: Chama means flame; it is said "Shama". The only page with "Shama" | Tides | The mark's flame draws itself once. |
-| 6 | Talk to us | Tides | The cycling phrase. |
+Nothing on this page moves with the scroll, so no world is pinned.
+
+| # | Section | Ground | Layout | What moves |
+|---|---|---|---|---|
+| 1 | H1 "A small, family-owned, AI-native business." and its lead, then the family: Elliot, Annie and Rozalie, moving to Portugal in fall 2023 sight unseen, growing it together. The only page that names Rozalie | Paper | pair, mirrored: the photo stands on the right while the words scroll beside it (on a phone, words, photo, family) | The photo settles. |
+| 2 | Elliot's background and superpowers (C.15), whose paragraph ends at "can now build anything, fast." (the home page says "Every new AI capability is ours on day one."), with his background as a four-point timeline under the heading, the latest point in ember. Then the partners: TLC Automation and Alves Limited Group, logos plus one line each | Ember | two pairs: each heading stands while its text scrolls | None. |
+| 3 | The name: Chama means flame; it is said "Shama" (the only page with "Shama"). Then "Say hello." and the Talk to us field | Tides | split; on a phone the mark sits above the words at 60% of the column | The mark is a stage: once in view, its ring draws, fills, and the spark lands with a small overshoot over a soft shadow, about 3 seconds, with a pause and play-again button. |
 
 ### Other pages
 

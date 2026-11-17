@@ -97,23 +97,22 @@
 <main id="main">
 <style>
 .ab-nobr { white-space: nowrap; }
-.ab-first { padding: calc(56px + var(--s7)) 0 var(--s9); }
-.ab-first-grid { display: grid; gap: var(--s6); }
-.ab-first .lead { margin-top: var(--s4); }
+.about-page .words > .lead { margin-top: var(--s4); }
+.ab-text > p { color: var(--fg-2); font-size: var(--t-lead); line-height: 1.5; max-width: 60ch; text-wrap: pretty; }
+.ab-text > * + p { margin-top: var(--s4); }
+.ab-text > h2 + p { margin-top: var(--s4); }
+
+/* paper: the words, then the family, beside the photo, which stands while they scroll */
+.world.ab-first > .pin > .frame { padding-top: calc(var(--head) + var(--s7)); padding-bottom: var(--s9); row-gap: var(--s8); }
+/* the photo stands here, not the words: they scroll with the family under them */
+.ab-first .frame > .words { align-self: end; position: static; }
 .ab-photo-wrap { margin: 0; }
 .ab-photo-wrap figcaption { margin-top: var(--s3); }
 @keyframes ab-settle { from { scale: 1.04; } }
 :root:not([data-motion="low"]) .ab-photo { animation: ab-settle var(--dur-arrive) var(--ease-out) both; }
-.ab-block { margin-top: var(--s8); max-width: 46rem; }
-.ab-block h2 { max-width: 22ch; }
-.ab-block > p { margin-top: var(--s4); max-width: 60ch; color: var(--fg-2); font-size: var(--t-lead); line-height: 1.5; text-wrap: pretty; }
-.ab-block > p + p { margin-top: var(--s3); }
-/* The next ground's soft edge reaches about a fifth of a screen above it. */
-:root:not([data-motion="low"]) :is(.ab-first, .ab-elliot) { padding-bottom: calc(var(--s9) + 160px); }
-:root:not([data-motion="low"]) .ab-elliot { padding-top: calc(var(--s9) + 120px); }
 
-.ab-elliot { padding: var(--s9) 0; }
-.ab-elliot .ab-block:first-child { margin-top: 0; }
+/* ember: two pairs, each heading standing while its text scrolls */
+.ab-elliot > .pin > .frame + .frame { margin-top: var(--s9); }
 .ab-plist { list-style: none; margin: var(--s6) 0 0; padding: 0; }
 .ab-plist li { display: grid; gap: var(--s2); padding: var(--s5) 0; border-top: 1px solid var(--line); }
 .ab-plist li:last-child { border-bottom: 1px solid var(--line); }
@@ -129,68 +128,72 @@
 .ab-line::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1.5px; background: var(--line-strong); }
 .ab-line li { position: relative; display: grid; gap: 2px; font-size: var(--t-small); line-height: 1.35; color: var(--fg-2); }
 .ab-line li::before { content: ""; position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--ground, var(--bg)); box-shadow: inset 0 0 0 1.5px var(--fg); }
-.ab-line li.ab-now::before { background: var(--accent); box-shadow: none; }
+/* the latest point: ember, ringed in the ground so the line stops short of it */
+.ab-line li.ab-now::before { background: var(--accent); box-shadow: 0 0 0 3px var(--ground, var(--bg)); }
 .ab-line b { font: 600 var(--t-label)/1.2 var(--text); color: var(--fg); }
 
-.ab-name > .pin { display: flex; align-items: center; }
-.ab-name-grid { display: grid; gap: var(--s6); align-items: center; }
-.ab-name-fig { width: min(40vw, 160px); }
-.ab-name .lead { margin-top: var(--s4); }
+/* tides: the name and Talk to us, the mark beside them */
+.ab-name .talk-close { padding: 0; margin: var(--s8) 0 0; }
+.md { width: 100%; }
+.md .replay { right: -56px; }
+.md-line { fill: none; stroke: var(--accent); stroke-width: 0.6; }
+.md-fill, .md-spark { fill: var(--accent); }
 
-.mark-draw { display: block; width: 100%; height: auto; overflow: visible; }
-.mark-draw .md-line { fill: none; stroke: var(--accent); stroke-width: 0.6; stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, var(--p) / 0.55, 1)); }
-.mark-draw .md-fill { fill: var(--accent); opacity: clamp(0, (var(--p) - 0.45) * 4, 1); }
-.mark-draw .md-spark { fill: var(--accent); transform-box: fill-box; transform-origin: 20% 80%; opacity: clamp(0, (var(--p) - 0.7) * 5, 1); scale: calc(0.4 + 0.6 * clamp(0, (var(--p) - 0.7) * 5, 1)); }
+.replay { position: absolute; right: 0; bottom: 0; }
+.replay-btn { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-pill); background: color-mix(in srgb, var(--surface) 72%, transparent); color: var(--fg-2); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+.replay-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.replay-btn:active { scale: 0.97; }
+@media (hover: hover) { .replay-btn:hover { color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg-2); } }
 
 
-@media (min-width: 1100px) {
-  .ab-first { padding-top: calc(72px + var(--s8)); }
-  .ab-first-grid { grid-template-columns: repeat(12, 1fr); column-gap: 24px; align-items: end; }
-  .ab-first-words { grid-column: 1 / span 6; padding-bottom: var(--s7); }
-  .ab-photo-wrap { grid-column: 8 / span 5; }
-  /* Ember on desktop: each heading on the left, its words on the right,
-     so the world is not a column with an empty right half. */
-  .ab-split { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 24px; max-width: none; }
-  .ab-split > h2 { grid-column: 1 / span 5; }
-  /* the timeline stands under the heading, in the left half */
-  .ab-split > .ab-line { grid-column: 1 / span 4; grid-row: 2 / span 4; align-self: start; margin-top: var(--s7); }
-  .ab-split > :not(h2) { grid-column: 7 / span 6; }
-  .ab-split > p:first-of-type { margin-top: 0; }
-  .ab-split > h2 + p { grid-row: 1; }
+@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
+  .ab-first .frame > .words { grid-column: 1 / span 6; grid-row: 1; }
+  .ab-first .frame > .ab-family { grid-column: 1 / span 6; grid-row: 2; }
+  .ab-first .frame > .fig { grid-column: 8 / -1; grid-row: 1 / span 2; align-self: start; position: sticky; top: calc(var(--head) + var(--s6)); }
+  .ab-elliot .frame > .words { grid-column: 1 / span 5; }
+  .ab-elliot .frame > :not(.words) { grid-column: 7 / -1; }
   .ab-plist .logo { width: calc(var(--lw) * 1.6px); height: calc(var(--lh) * 1.6px); max-height: 44px; max-width: calc(44px * var(--lw) / var(--lh)); }
-  .ab-name-grid { grid-template-columns: repeat(12, 1fr); column-gap: 24px; }
-  .ab-name-grid > div { grid-column: 1 / span 6; }
-  .ab-name-grid > .ab-name-fig { grid-column: 9 / span 3; width: 100%; max-width: 260px; }
+  /* the mark fills its cell, by height: the cell is wider than the mark is */
+  .ab-name .frame { --fig-h: min(56svh, 30rem); }
+}
+@media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  .world.ab-first > .pin > .frame { padding-top: calc(var(--head) + var(--s6)); row-gap: var(--s6); }
+  /* the mark above its words, at 60% of the column */
+  .ab-name .frame > .fig { order: -1; }
+  .ab-first .frame > .fig > img { width: 100%; }
+  .ab-name .frame { --fig-h: 30svh; }
 }
 </style>
-<section class="world ab-first" data-world="paper" data-pin="off">
-  <div class="wrap">
-    <div class="ab-first-grid">
-      <div class="ab-first-words">
-        <h1><span class="half">A small, <span class="ab-nobr">family-owned,</span> <span class="ab-nobr">AI-native</span> business.</span></h1>
-        <p class="lead">Real people you can reach. Based in Lisbon, working worldwide.</p>
-      </div>
-      <figure class="ab-photo-wrap"><img class="photo ab-photo" src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 1100px) 40vw, calc(100vw - 32px)" width="2048" height="1804" alt="Elliot, Annie and their daughter Rozalie, smiling, in Lisbon." fetchpriority="high" decoding="async"><figcaption class="small">Elliot, Annie and Rozalie.</figcaption></figure>
+<section class="world first ab-first about-page" data-world="paper" data-pin="off" data-pad="off" data-fill>
+  <div class="pin"><div class="frame" data-layout="pair">
+    <div class="words">
+      <h1><span class="half">A small, <span class="ab-nobr">family-owned,</span> <span class="ab-nobr">AI-native</span> business.</span></h1>
+      <p class="lead">Real people you can reach. Based in Lisbon, working worldwide.</p>
     </div>
-    <div class="ab-block">
+    <figure class="fig ab-photo-wrap" style="--ar:1.135"><img class="photo ab-photo" src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 1100px) 40vw, calc(100vw - 32px)" width="2048" height="1804" alt="Elliot, Annie and their daughter Rozalie, smiling, in Lisbon." fetchpriority="high" decoding="async"><figcaption class="small">Elliot, Annie and Rozalie.</figcaption></figure>
+    <div class="ab-text ab-family">
       <h2>Elliot, Annie and Rozalie</h2>
       <p>We moved to Portugal in the fall of 2023, sight unseen, to explore more of the world, enjoy more of what life has to offer, and have our baby. Our daughter, Rozalie, was born in November 2025.</p><p>We&#39;re growing this business together. Elliot brings the engineering and the AI. Annie brings the taste and the organisation that hold it together.</p>
     </div>
-  </div>
+  </div></div>
 </section>
 
-<section class="world ab-elliot" data-world="ember" data-pin="off">
-  <div class="wrap">
-    <div class="ab-block ab-split">
-      <h2>Superpowers to make anything on a computer, a phone or in the cloud.</h2>
-      <p>Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.</p><p>Engineers who learned the craft before AI, weren&#39;t afraid of it, and mastered it, can now build anything, fast. Every new AI capability is ours on day one. AI is levelling up fast. We level up with it, and we help you level up too.</p>
-      <ol class="ab-line" aria-hidden="true">
+<section class="world ab-elliot about-page" data-world="ember" data-pin="off" data-fill>
+  <div class="pin">
+    <div class="frame" data-layout="pair">
+      <div class="words">
+        <h2>Superpowers to make anything on a computer, a phone or in the cloud.</h2>
+        <ol class="ab-line" aria-hidden="true">
   <li><b>2016</b><span>Software engineer</span></li><li><b>Campminder</b><span>Led AI enablement for two and a half years</span></li><li><b>Then</b><span>Built AI platforms as an engineer</span></li><li class="ab-now"><b>Since 2023</b><span>Putting the most capable AI systems to work</span></li>
 </ol>
+      </div>
+      <div class="ab-text"><p>Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.</p><p>Engineers who learned the craft before AI, weren&#39;t afraid of it, and mastered it, can now build anything, fast.</p></div>
     </div>
-    <div class="ab-block ab-split">
-      <h2>Partners</h2>
-      <p>People we work with, and introduce you to when they fit better than we do.</p>
+    <div class="frame" data-layout="pair">
+      <div class="words">
+        <h2>Partners</h2>
+        <p class="lead">People we work with, and introduce you to when they fit better than we do.</p>
+      </div>
       <ul class="ab-plist">
         <li><span class="logo" role="img" aria-label="TLC Automation" style="--logo:url('/assets/work/tlc-automation-mask.webp');--lw:145;--lh:17"></span><h3><a href="https://tlcautomation.org/" rel="noopener">TLC Automation</a></h3><p class="ab-where">Chris, Boulder County, Colorado</p><p class="ab-text">For a small business in the US, especially near Boulder, Chris is who we would call. He helps local businesses get more from the software they already use, and quotes a fixed price.</p></li><li><span class="logo" role="img" aria-label="Alves Limited Group" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span><h3><a href="https://alveslimitedgroup.com/" rel="noopener">Alves Limited Group</a></h3><p class="ab-where">Plasencia, Spain and São Paulo, Brazil</p><p class="ab-text">They help us with sales and marketing, and bring deep experience of working across borders.</p></li>
       </ul>
@@ -198,18 +201,12 @@
   </div>
 </section>
 
-<section class="world ab-name" data-world="tides" style="--h:180">
-  <div class="pin"><div class="wrap ab-name-grid">
-    <div>
-      <h2 class="r">Chama means flame.</h2>
-      <p class="lead r">Chama Inteligente is Portuguese for intelligent flame. It is said &quot;Shama&quot;.</p>
-    </div>
-    <div class="ab-name-fig r fig"><svg class="mark-draw" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g transform="translate(2.06 0.06)"><path class="md-line" data-p pathLength="1" d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path class="md-fill" data-p d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z"/><path class="md-spark" data-p d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z"/></g></svg></div>
-  </div></div>
-</section>
-
-<section class="world end" data-world="tides" data-pin="off">
-  <section class="talk-close" aria-label="Talk to us">
+<section class="world end ab-name about-page" data-world="tides" data-pin="off" data-fill data-label="Chama means flame.">
+  <div class="pin"><div class="frame" data-layout="split">
+    <div class="words">
+      <h2>Chama means flame.</h2>
+      <p class="lead">Chama Inteligente is Portuguese for intelligent flame. It is said &quot;Shama&quot;.</p>
+      <section class="talk-close" aria-label="Talk to us">
   <p class="talk-close-line">Say hello.</p>
   <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-1"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
@@ -217,6 +214,20 @@
 </form>
   
 </section>
+    </div>
+    <div class="fig" style="--ar:0.941"><figure class="fx md" data-stage data-duration="3.2" data-delay="0.2" tabindex="-1">
+  <svg class="fx-svg md-svg" viewBox="0 -2 64 68" aria-hidden="true" focusable="false">
+    <defs><radialGradient id="md-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs>
+    <ellipse class="fx-floor" data-p fill="url(#md-floor)" cx="32" cy="60" rx="22" ry="3.5" style="opacity:clamp(0, (var(--p) - 0.3) / 0.15, 1)"/>
+    <g transform="translate(2.06 0.06)">
+      <path class="md-line" data-p pathLength="1" d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z" style="opacity:clamp(0, (var(--p) - 0) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0) / 0.4, 1) * clamp(0, (var(--p) - 0) / 0.4, 1) * (3 - 2 * clamp(0, (var(--p) - 0) / 0.4, 1))))"/>
+      <path class="md-fill" data-p d="M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z" style="opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.35) / 0.15, 1))"/>
+      <path class="md-spark" data-p d="M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z" style="opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.5) / 0.06, 1));transform-box:fill-box;transform-origin:20% 80%;scale:calc(0.4 + 0.66 * (1 - pow(1 - clamp(0, (var(--p) - 0.5) / 0.12, 1), 3)) - 0.06 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.08, 1), 3)))"/>
+    </g>
+  </svg>
+  <div class="replay"><button class="replay-btn" type="button" data-stage-action="play" aria-label="Play"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M7 4.5v11l9-5.5z"/></svg></button><button class="replay-btn" type="button" data-stage-action="pause" aria-label="Pause"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M7 4.5v11M13 4.5v11"/></svg></button><button class="replay-btn" type="button" data-stage-action="replay" aria-label="Play again"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4.5 10a5.5 5.5 0 1 0 1.8-4.1"/><path d="M4.5 3.5v3.2h3.2"/></svg></button></div>
+</figure></div>
+  </div></div>
 </section>
 </main>
 <footer class="foot">
