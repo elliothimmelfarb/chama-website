@@ -127,3 +127,20 @@ test("/about keeps Elliot's #15 sentence and leaves 'ours on day one' to the hom
   assert.ok(!/ours on day one/i.test(text), "the home page carries #13");
   assert.ok(!/levelling up fast/i.test(text), "the home page carries #13");
 });
+
+test("/coaching's first figure is the finished picture from the first paint", () => {
+  // the first screen is seen before anything plays: no stage, nothing that waits for --p
+  const first = /<section\b[^>]*\bcoaching-first\b[\s\S]*?<\/section>/.exec(main(html.coaching))[0];
+  const fig = /<figure\b[\s\S]*?<\/figure>/.exec(first)[0];
+  assert.ok(!/\sdata-stage\b/.test(fig), "the hero figure is a stage, so it opens empty");
+  assert.ok(!/var\(--p\)/.test(fig), "a part of the hero figure waits for --p");
+  for (const label of ["Where you are", "A session", "Where you&#39;re going"]) assert.ok(fig.includes(label), `${label} is not on the figure`);
+});
+
+test("/about names each partner once: its wordmark is its heading", () => {
+  const text = main(html.about).replace(/<[^>]+>/g, " ");
+  for (const name of ["TLC Automation", "Alves Limited Group"]) {
+    assert.ok(!text.includes(name), `"${name}" is written out beside its wordmark`);
+    assert.match(main(html.about), new RegExp(`<h3><a [^>]*><span class="logo" role="img" aria-label="${name}"`), `${name}'s wordmark is not its heading`);
+  }
+});

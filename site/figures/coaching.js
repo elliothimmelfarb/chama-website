@@ -4,7 +4,7 @@
 // JavaScript, low motion, one column, print). Their paint lives in
 // site/pages/coaching.js, beside the frames they sit in.
 import { html, raw } from "../html.js";
-import { n, c, ss, out, poly, place, label } from "./kit.js";
+import { n, c, ss, out, poly, place } from "./kit.js";
 
 const svg = (cls, vb, body) => `<svg class="fx-svg ${cls}" viewBox="${vb.join(" ")}" aria-hidden="true" focusable="false">${body}</svg>`;
 // an HTML label on its part; one that reads --p carries data-p
@@ -12,43 +12,19 @@ const lb = (vb, text, [x, y], style = "", cls = "") =>
   html`<span class="fx-lb${cls ? " " + cls : ""}"${raw(/--p/.test(style) ? " data-p" : "")} style="${place(vb, x, y)}${style ? ";" + style : ""}" aria-hidden="true">${text}</span>`;
 const lit = (id) => `<radialGradient id="${id}" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>`;
 const shade = (id) => `<radialGradient id="${id}"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>`;
-// arrive: fade in over 0.08 from a, settling from 0.94 of its size
-const arrive = (a) => `opacity:calc(0.01 + 0.99 * ${c(a, a + 0.08)});transform-box:fill-box;transform-origin:center;scale:calc(0.94 + 0.06 * ${out(a, a + 0.1)})`;
-// a stroke drawn from a to b, faded in over its first 0.05 so its round cap never shows as a dot
-const draw = (a, b) => `opacity:${c(a, a + 0.05)};stroke-dashoffset:calc(1 - ${ss(a, b)})`;
-// a point that travels the stroke as it draws, there only while it draws
-const head = (d, a, b) => `offset-path:path('${d}');offset-rotate:0deg;offset-distance:calc(${ss(a, b)} * 100%);opacity:calc(${c(a, a + 0.05)} * (1 - ${c(b, b + 0.05)}))`;
 
 // The mark (assets/favicon.svg's ring and spark), centred on 31.8, 31.8.
 const RING = "M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z";
 const SPARK = "M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z";
 
-// ---- the stage's controls --------------------------------------------------
-// One quiet button at the figure's corner: pause while it plays, play
-// again once it has ended (worlds.css shows the one that fits the state;
-// none in low motion or without JavaScript). /about's mark uses it too.
-const ICON = {
-  play: '<path d="M7 4.5v11l9-5.5z"/>',
-  pause: '<path d="M7 4.5v11M13 4.5v11"/>',
-  replay: '<path d="M4.5 10a5.5 5.5 0 1 0 1.8-4.1"/><path d="M4.5 3.5v3.2h3.2"/>',
-};
-const button = (action, name) =>
-  `<button class="replay-btn" type="button" data-stage-action="${action}" aria-label="${name}"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">${ICON[action]}</svg></button>`;
-export const STAGE_BUTTONS_CSS = `
-.replay { position: absolute; right: 0; bottom: 0; }
-.replay-btn { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-pill); background: color-mix(in srgb, var(--surface) 72%, transparent); color: var(--fg-2); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
-.replay-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
-.replay-btn:active { scale: 0.97; }
-@media (hover: hover) { .replay-btn:hover { color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg-2); } }
-`;
-export const stageButtons = () => raw(`<div class="replay">${button("play", "Play")}${button("pause", "Pause")}${button("replay", "Play again")}</div>`);
-
 // ---- C1. A session: the first screen's figure ----------------------------
-// You arrive unsure: a line that loops back on itself, drawn with a point
-// travelling its head. It reaches the session (the mark on a lit coin, on
-// its platform, the dotted ring turning) and goes round it once in ember,
-// then leaves with a direction, rising to the top right, and its head lands.
-// A stage: it plays once, from time, when it is in view.
+// You arrive unsure: a line that loops back on itself. It reaches the
+// session (the mark on a lit coin, on its platform, ringed by dots) and goes
+// round it once in ember, then leaves with a direction, rising to the top
+// right. It is the first thing on the page, so it is drawn whole from the
+// first paint and never waits for the scroll or a timer; once it is on
+// screen, a point travels the line once, into the session and out along
+// the ember, and the ring turns a little (site/pages/coaching.js, .cf-life).
 const SV = [0, 28, 600, 372];
 const SC = [306, 262]; // the session
 const ORBIT = 80;
@@ -67,10 +43,9 @@ const TANGLE = (() => {
 const [L, R, T] = [SC[0] - ORBIT, SC[0] + ORBIT, SC[1] - ORBIT];
 const END = [574, 62], C2 = [478, 156];
 const WAY = `M${L} ${SC[1]} A${ORBIT} ${ORBIT} 0 0 1 ${R} ${SC[1]} A${ORBIT} ${ORBIT} 0 0 1 ${L} ${SC[1]} A${ORBIT} ${ORBIT} 0 0 1 ${SC[0]} ${T} C${SC[0] + 84} ${T} ${C2[0]} ${C2[1]} ${END[0]} ${END[1]}`;
-// the arrow head, along the curve's last tangent; it lands with a small overshoot
-const DIR = (() => { const dx = END[0] - C2[0], dy = END[1] - C2[1], l = Math.hypot(dx, dy); return [dx / l, dy / l]; })();
+// the arrow head, along the curve's last tangent
 const HEAD = (() => {
-  const back = Math.atan2(-DIR[1], -DIR[0]), arm = 17, w = (30 * Math.PI) / 180;
+  const dx = END[0] - C2[0], dy = END[1] - C2[1], back = Math.atan2(-dy, -dx), arm = 17, w = (30 * Math.PI) / 180;
   const p = (a) => `${n(END[0] + arm * Math.cos(a))} ${n(END[1] + arm * Math.sin(a))}`;
   return `M${p(back + w)} L${END[0]} ${END[1]} L${p(back - w)}`;
 })();
@@ -78,26 +53,24 @@ const MARK_K = 1.04;
 
 export function sessionFigure({ labels, alt }) {
   const [where, session, going] = labels;
-  const tangle = [0.12, 0.42], way = [0.44, 0.66], land = 0.64;
   const body = `<defs>${lit("cf-coin")}${shade("cf-floor")}</defs>
-  <ellipse class="fx-floor" data-p fill="url(#cf-floor)" cx="${SC[0]}" cy="${SC[1] + 74}" rx="84" ry="11" style="${arrive(0)}"/>
-  <circle class="fx-plat cf-plat" data-p cx="${SC[0]}" cy="${SC[1]}" r="64" style="${arrive(0)}"/>
-  <circle class="fx-ring cf-ring" data-p cx="${SC[0]}" cy="${SC[1]}" r="64" style="opacity:${c(0.06, 0.14)};transform-box:fill-box;transform-origin:center;rotate:calc(${ss(0.06, 0.7)} * 120deg)"/>
-  <circle class="cf-coin" data-p fill="url(#cf-coin)" cx="${SC[0]}" cy="${SC[1]}" r="42" style="${arrive(0.04)}"/>
-  <g class="cf-mark" data-p transform="translate(${n(SC[0] - 31.8 * MARK_K)} ${n(SC[1] - 31.8 * MARK_K)}) scale(${MARK_K})" style="opacity:calc(0.01 + 0.99 * ${c(0.08, 0.14)})"><path class="cf-mark-ring" d="${RING}"/><path class="cf-mark-spark" d="${SPARK}"/></g>
-  <path class="cf-tube" data-p pathLength="1" d="${TANGLE}" style="${draw(...tangle)}"/>
-  <path class="cf-tangle" data-p pathLength="1" d="${TANGLE}" style="${draw(...tangle)}"/>
-  <circle class="fx-dot cf-you" data-p r="4.5" style="${head(TANGLE, ...tangle)}"/>
-  <path class="cf-tint" data-p pathLength="1" d="${WAY}" style="${draw(...way)}"/>
-  <path class="cf-way" data-p pathLength="1" d="${WAY}" style="${draw(...way)}"/>
-  <path class="cf-head" data-p d="${HEAD}" style="opacity:${c(land, land + 0.05)};translate:calc(${n(DIR[0] * 7)}px * (1 - ${out(land, land + 0.08)})) calc(${n(DIR[1] * 7)}px * (1 - ${out(land, land + 0.08)}))"/>
-  <circle class="fx-mk cf-you" data-p r="5.5" style="${head(WAY, ...way)}"/>`;
-  return html`<figure class="fx cf" data-stage data-duration="6.5" data-delay="0.9" tabindex="-1" aria-label="${alt}">
+  <ellipse class="fx-floor" fill="url(#cf-floor)" cx="${SC[0]}" cy="${SC[1] + 74}" rx="84" ry="11"/>
+  <circle class="fx-plat" cx="${SC[0]}" cy="${SC[1]}" r="64"/>
+  <circle class="fx-ring cf-ring" cx="${SC[0]}" cy="${SC[1]}" r="64"/>
+  <circle class="cf-coin" fill="url(#cf-coin)" cx="${SC[0]}" cy="${SC[1]}" r="42"/>
+  <g transform="translate(${n(SC[0] - 31.8 * MARK_K)} ${n(SC[1] - 31.8 * MARK_K)}) scale(${MARK_K})"><path class="cf-mark-ring" d="${RING}"/><path class="cf-mark-spark" d="${SPARK}"/></g>
+  <path class="cf-tube" d="${TANGLE}"/>
+  <path class="cf-tangle" d="${TANGLE}"/>
+  <path class="cf-tint" d="${WAY}"/>
+  <path class="cf-way" d="${WAY}"/>
+  <path class="cf-head" d="${HEAD}"/>
+  <circle class="fx-dot cf-you cf-you-1" r="4.5" style="offset-path:path('${TANGLE}')"/>
+  <circle class="fx-mk cf-you cf-you-2" r="5.5" style="offset-path:path('${WAY}')"/>`;
+  return html`<figure class="fx cf" aria-label="${alt}">
   ${raw(svg("cf-svg", SV, body))}
-  ${lb(SV, where, [112, 366], label(0.2))}
-  ${lb(SV, session, [SC[0], SC[1] + 104], label(0.14))}
-  ${lb(SV, going, [END[0] - 14, END[1] - 4], `--tx:-100%;${label(land + 0.02)}`, "is-live")}
-  ${stageButtons()}
+  ${lb(SV, where, [112, 366])}
+  ${lb(SV, session, [SC[0], SC[1] + 104])}
+  ${lb(SV, going, [END[0] - 14, END[1] - 4], "--tx:-100%", "is-live")}
 </figure>`;
 }
 

@@ -1,7 +1,7 @@
 import { html, raw } from "../html.js";
 import { page, talkField, talkClose, ARROW } from "../parts/chrome.js";
 import { coaching as t } from "../content/en/coaching.js";
-import { sessionFigure, effortFigure, hearthFigure, whoGlyph, enablementFigure, ASPECT, STAGE_BUTTONS_CSS } from "../figures/coaching.js";
+import { sessionFigure, effortFigure, hearthFigure, whoGlyph, enablementFigure, ASPECT } from "../figures/coaching.js";
 
 // Six worlds, each in one .frame (worlds.css): the first screen with the
 // session playing beside the words; who it's for (flow); new models (pinned,
@@ -34,8 +34,26 @@ ${sw("cf", 600)}
 .cf-tangle { stroke: var(--fx-ink); stroke-width: calc(2px * var(--sw)); }
 .cf-tint { stroke: var(--fx-tint); stroke-width: calc(12px * var(--sw)); }
 .cf-way, .cf-head { stroke: var(--accent); stroke-width: calc(3px * var(--sw)); }
-.cf-you { r: calc(4.5px * var(--sw)); }
-${STAGE_BUTTONS_CSS}
+.cf-you { r: calc(4.5px * var(--sw)); opacity: 0; offset-rotate: 0deg; }
+/* Life on a finished picture, once, in time: a point travels the tangle
+   into the session, then the ember out of it, and the ring turns a little.
+   Nothing here is content, so low and reduced motion leave it out. */
+@keyframes cf-travel { 0% { offset-distance: 0%; opacity: 0; } 10%, 88% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+@keyframes cf-turn { from { rotate: -50deg; } }
+:root:not([data-motion="low"]) .cf-you-1 { animation: cf-travel 1.9s var(--ease-in-out) 0.5s both; }
+:root:not([data-motion="low"]) .cf-you-2 { animation: cf-travel 1.7s var(--ease-in-out) 2.3s both; }
+:root:not([data-motion="low"]) .cf-ring { transform-box: fill-box; transform-origin: center; animation: cf-turn 4s var(--ease-out) 0.3s both; }
+@media (prefers-reduced-motion: reduce) { .cf-you-1, .cf-you-2, .cf-ring { animation: none; } }
+/* A figure in a world that scrolls fades as it reaches the header, so it
+   never slides under it looking clipped. */
+@keyframes cf-under { to { opacity: 0; } }
+@supports (animation-timeline: view()) {
+  :root:not([data-motion="low"]) :is(.coaching-first, .coaching-enable) .frame > .fig {
+    animation: cf-under linear both;
+    animation-timeline: view(block var(--head) 0px);
+    animation-range: exit 0% exit 40%;
+  }
+}
 
 /* who it's for: the heading and lead stand while the rows scroll */
 .coaching-who .who > h2 { font-size: var(--t-h3); }

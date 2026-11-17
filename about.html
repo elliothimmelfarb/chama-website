@@ -113,14 +113,15 @@
 
 /* ember: two pairs, each heading standing while its text scrolls */
 .ab-elliot > .pin > .frame + .frame { margin-top: var(--s9); }
-.ab-plist { list-style: none; margin: var(--s6) 0 0; padding: 0; }
-.ab-plist li { display: grid; gap: var(--s2); padding: var(--s5) 0; border-top: 1px solid var(--line); }
-.ab-plist li:last-child { border-bottom: 1px solid var(--line); }
+/* the partners, side by side under their heading, each named once: its
+   wordmark is the heading and the link */
+.ab-plist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s6); }
+.ab-plist li { display: grid; align-content: start; gap: var(--s2); padding-top: var(--s5); border-top: 1px solid var(--line); }
 /* Sized by area, as the logo strip is, with a taller cap: these marks
    carry a partner's name, not a row of clients. */
-.ab-plist .logo { width: calc(var(--lw) * 1.3px); height: calc(var(--lh) * 1.3px); max-height: 32px; max-width: calc(32px * var(--lw) / var(--lh)); margin-bottom: var(--s2); }
-.ab-plist h3 a { text-decoration: none; }
-.ab-plist h3 a:focus-visible, .ab-plist h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent-text); text-underline-offset: 3px; }
+.ab-plist .logo { display: block; width: calc(var(--lw) * 1.5px); height: calc(var(--lh) * 1.5px); max-height: 40px; max-width: calc(40px * var(--lw) / var(--lh)); transition: opacity var(--dur-quick) var(--ease-out); }
+.ab-plist h3 a { display: inline-block; padding: var(--s1) 0; }
+@media (hover: hover) { .ab-plist h3 a:hover .logo { opacity: 0.75; } }
 .ab-where { color: var(--fg-2); font-size: var(--t-small); }
 .ab-plist p.ab-text { color: var(--fg-2); max-width: 60ch; margin-top: var(--s1); }
 
@@ -150,9 +151,10 @@
   .ab-first .frame > .words { grid-column: 1 / span 6; grid-row: 1; }
   .ab-first .frame > .ab-family { grid-column: 1 / span 6; grid-row: 2; }
   .ab-first .frame > .fig { grid-column: 8 / -1; grid-row: 1 / span 2; align-self: start; position: sticky; top: calc(var(--head) + var(--s6)); }
-  .ab-elliot .frame > .words { grid-column: 1 / span 5; }
-  .ab-elliot .frame > :not(.words) { grid-column: 7 / -1; }
-  .ab-plist .logo { width: calc(var(--lw) * 1.6px); height: calc(var(--lh) * 1.6px); max-height: 44px; max-width: calc(44px * var(--lw) / var(--lh)); }
+  .ab-elliot .frame[data-layout="pair"] > .words { grid-column: 1 / span 5; }
+  .ab-elliot .frame[data-layout="pair"] > :not(.words) { grid-column: 7 / -1; }
+  .ab-plist { grid-template-columns: 1fr 1fr; column-gap: var(--s7); }
+  .ab-plist .logo { width: calc(var(--lw) * 1.8px); height: calc(var(--lh) * 1.8px); max-height: 52px; max-width: calc(52px * var(--lw) / var(--lh)); }
   /* the mark fills its cell, by height: the cell is wider than the mark is */
   .ab-name .frame { --fig-h: min(56svh, 30rem); }
 }
@@ -189,13 +191,13 @@
       </div>
       <div class="ab-text"><p>Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.</p><p>Engineers who learned the craft before AI, weren&#39;t afraid of it, and mastered it, can now build anything, fast.</p></div>
     </div>
-    <div class="frame" data-layout="pair">
+    <div class="frame" data-layout="split">
       <div class="words">
         <h2>Partners</h2>
         <p class="lead">People we work with, and introduce you to when they fit better than we do.</p>
       </div>
       <ul class="ab-plist">
-        <li><span class="logo" role="img" aria-label="TLC Automation" style="--logo:url('/assets/work/tlc-automation-mask.webp');--lw:145;--lh:17"></span><h3><a href="https://tlcautomation.org/" rel="noopener">TLC Automation</a></h3><p class="ab-where">Chris, Boulder County, Colorado</p><p class="ab-text">For a small business in the US, especially near Boulder, Chris is who we would call. He helps local businesses get more from the software they already use, and quotes a fixed price.</p></li><li><span class="logo" role="img" aria-label="Alves Limited Group" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span><h3><a href="https://alveslimitedgroup.com/" rel="noopener">Alves Limited Group</a></h3><p class="ab-where">Plasencia, Spain and São Paulo, Brazil</p><p class="ab-text">They help us with sales and marketing, and bring deep experience of working across borders.</p></li>
+        <li><h3><a href="https://tlcautomation.org/" rel="noopener"><span class="logo" role="img" aria-label="TLC Automation" style="--logo:url('/assets/work/tlc-automation-mask.webp');--lw:145;--lh:17"></span></a></h3><p class="ab-where">Chris, Boulder County, Colorado</p><p class="ab-text">For a small business in the US, especially near Boulder, Chris is who we would call. He helps local businesses get more from the software they already use, and quotes a fixed price.</p></li><li><h3><a href="https://alveslimitedgroup.com/" rel="noopener"><span class="logo" role="img" aria-label="Alves Limited Group" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></a></h3><p class="ab-where">Plasencia, Spain and São Paulo, Brazil</p><p class="ab-text">They help us with sales and marketing, and bring deep experience of working across borders.</p></li>
       </ul>
     </div>
   </div>
