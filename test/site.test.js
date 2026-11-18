@@ -72,6 +72,13 @@ for (const p of built) {
     if (!SITE.laMetalNamed) assert.ok(!/LA Metal/i.test(text), "LA Metal named while the flag is off");
   });
 
+  test(`${p.path} shows coaching members the way into the Hearth in the header, outside the menu`, () => {
+    const top = /<div class="top-end">([\s\S]*?)<\/div>/.exec(html[p.id])?.[1] ?? "";
+    const link = /<a class="[^"]*\bmembers-link\b[^"]*" href="\/hearth"[^>]*>/.exec(top)?.[0];
+    assert.ok(link, "no Members link to /hearth in the header");
+    assert.equal(link.includes('aria-current="page"'), p.path === "/hearth", "aria-current only on /hearth itself");
+  });
+
   test(`${p.path} has its own title, description and canonical`, () => {
     const doc = html[p.id];
     assert.match(doc, /<title>[^<]{10,}<\/title>/);

@@ -182,13 +182,13 @@ Rules: hover effects sit under `@media (hover: hover)`; nothing animates when it
 
 ### The decision
 
-Five pages, Talk to us, theme, motion and Members do not fit one row at 364px, and the two-row phone header the site has today costs about 96px of a 610px screen and collides once text is at 106%. So:
+Five pages, Talk to us, theme and motion do not fit one row at 364px, and the two-row phone header the site has today costs about 96px of a 610px screen and collides once text is at 106%. So:
 
-- **Desktop (1100px and wider):** one 72px row. Lockup on the left; then the five pages with full labels; then a quiet **Display** button; then the ember **Talk to us** pill. The current page is an ink pill (`--fg` fill, `--bg` text).
-- **Phone and tablet (under 1100px):** one 56px row. Lockup (mark plus "Chama Inteligente" at 15px; the wordmark drops to the mark alone under 340px), the ember **Talk to us** pill, and a 40px **Menu** button (two lines, labelled "Menu" for assistive tech).
+- **Desktop (1100px and wider):** one 72px row. Lockup on the left; then the five pages with full labels; then a quiet **Members** pill to /hearth; then a quiet **Display** button; then the ember **Talk to us** pill. The current page is an ink pill (`--fg` fill, `--bg` text). Below 75em (1200px at the default font) Display shows only its icon and the gaps tighten, so the nav stays on one line from 1100px.
+- **Phone and tablet (under 1100px):** one 56px row. Lockup (mark plus "Chama Inteligente" at 15px, "Chama" under 30em, the mark alone under 21em; ems so a larger default font gives up the name sooner), the quiet **Members** pill, the ember **Talk to us** pill, and a 40px **Menu** button (two lines, labelled "Menu" for assistive tech). While a page's own Talk to us field is in view the header pill fades and gives its room back, at every width.
 - **The menu** (phone and tablet) is a sheet that drops from the top inside 8px margins, on a `--surface` card with a light scrim behind. It holds the five pages as large rows, each with a one-line purpose; then Theme (Auto, Light, Dark) and Motion (Full, Low) as segmented controls; then a quiet "Coaching members: The Hearth" line. The current page has an ember dot after its name. Opens in 240ms with `--ease-out` (a 12px drop and fade), closes on the close button, Escape, a scrim tap or any navigation.
 - **Display popover** (desktop): a 300px `--surface` card anchored under the Display button with Theme (System, Light, Dark), Motion (Full, Low) and one line: "Low motion keeps every word and figure, without the moving scenes." It is a non-modal popover (the Popover API), closes on outside click and Escape. Choosing Low reloads the page in low motion (architecture).
-- **Members** moves out of the header. It lives in the footer, in the menu's last line, and as a section on /coaching.
+- **Members** is in the header on every page, so coaching clients see the way into the Hearth at load without scrolling (Elliot, 2026-11-18). It is also in the footer, the menu's last line, and a section on /coaching. On /hearth it carries `aria-current` and the ink fill.
 
 This improves on the proposal in two ways: the phone gets one row instead of two, and the pages in the menu carry a line each, so the menu doubles as a map of the offers for someone who skipped the home page.
 

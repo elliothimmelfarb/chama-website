@@ -119,15 +119,18 @@ function jsonLd(page, title, description) {
   };
 }
 
+const HEARTH = PAGES.find((x) => x.path === "/hearth");
+
 export function header(page) {
   const here = (p) => (p.id === page.id ? raw(' aria-current="page"') : "");
   return html`<a class="skip" href="#main">${c.skip}</a>
 <header class="top" data-top>
-  <a class="lockup" href="/" aria-label="${c.home}">${MARK}<span>${c.lockup}</span></a>
+  <a class="lockup" href="/" aria-label="${c.home}">${MARK}<span class="lockup-long">${c.lockup}</span><span class="lockup-short">${c.lockupShort}</span></a>
   <nav class="nav" aria-label="${c.pagesLabel}">
     ${navPages().map((p) => html`<a class="nav-link" href="${p.path}"${here(p)}>${c.navLabels[p.id]}</a>`)}
   </nav>
   <div class="top-end">
+    <a class="btn btn-quiet members-link" href="/hearth"${here(HEARTH)}>${c.membersShort}</a>
     <button class="btn btn-quiet display-btn" type="button" popovertarget="display">${DISPLAY_ICON}<span>${c.display}</span></button>
     <a class="btn btn-accent talk-btn" href="/agent" data-talk>${c.talk.button}</a>
     <button class="btn btn-quiet icon-btn menu-btn" type="button" popovertarget="menu" aria-label="${c.menu}">${MENU_ICON}</button>

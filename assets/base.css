@@ -55,6 +55,7 @@ p { margin: 0; }
 .btn:active { scale: 0.97; }
 .btn-accent { background: var(--accent); color: var(--on-accent); }
 .btn-quiet { box-shadow: inset 0 0 0 1px var(--line); }
+.members-link[aria-current] { background: var(--fg); color: var(--bg); box-shadow: none; }
 .icon-btn { width: 40px; padding: 0; }
 .icon-btn svg { width: 18px; height: 18px; }
 @media (hover: hover) {
@@ -91,9 +92,13 @@ p { margin: 0; }
 .lockup { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-family: var(--display); font-weight: 600; font-size: 0.9375rem; letter-spacing: -0.01em; white-space: nowrap; }
 .lockup .mark { width: 26px; height: 26px; flex: none; }
 .nav { display: none; }
-.top-end { display: flex; align-items: center; gap: var(--s2); margin-left: auto; }
+.top-end { --top-gap: var(--s2); display: flex; align-items: center; gap: var(--top-gap); margin-left: auto; }
 .display-btn { display: none; }
-@media (max-width: 339px) { .top .lockup span { display: none; } }
+/* The header must hold the name, Members, Talk to us and the menu in one
+   row. Ems, so a larger default font gives up the name sooner. */
+.top .lockup-short { display: none; }
+@media (max-width: 29.99em) { .top .lockup-long { display: none; } .top .lockup-short { display: inline; } }
+@media (max-width: 20.99em) { .top .lockup span { display: none; } }
 
 /* Popovers: the desktop Display card and the phone menu. Non-modal. */
 .pop {
@@ -281,8 +286,19 @@ h1 .half + .half { color: var(--fg-2); margin-top: 0.12em; }
   .logo { width: calc(var(--lw) * 1px); height: calc(var(--lh) * 1px); }
 }
 @media (max-width: 1099px) {
-  .top-end { gap: 6px; }
-  .talk-btn { padding: 0 12px; }
+  .top-end { --top-gap: 6px; }
+  .talk-btn, .members-link { padding: 0 12px; }
+}
+@media (max-width: 20.49em) {
+  .top-end { --top-gap: 4px; }
+  .talk-btn, .members-link { padding: 0 10px; }
+}
+/* On narrow desktops the nav needs this room to stay on one line. */
+@media (min-width: 1100px) and (max-width: 74.99em) {
+  .display-btn { width: 40px; padding: 0; }
+  .nav-link { padding-inline: 9px; }
+  .talk-btn, .members-link { padding: 0 12px; }
+  .display-btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 
 /* /#thanks: where the no-JavaScript contact form lands. */
@@ -298,13 +314,11 @@ html:not(.pin):not([data-motion]) .top::before { opacity: 1; }
    a page's own Talk to us field is in view (chrome.js sets the class). */
 .talk-btn { transition: opacity var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out); }
 html.field-in-view .top .talk-btn { opacity: 0; pointer-events: none; }
-/* on desktop the hidden pill gives its room back, so Display sits at the edge */
-@media (min-width: 1100px) {
-  /* only the fade animates: the room goes once the pill has faded, and
-     comes back before it fades in */
-  .top .talk-btn { max-width: 12rem; overflow: hidden; transition: opacity var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out), max-width 0s, padding 0s, margin 0s; }
-  html.field-in-view .top .talk-btn { max-width: 0; padding-inline: 0; margin-left: calc(-1 * var(--s2)); transition: opacity var(--dur-quick) var(--ease-exit), max-width 0s var(--dur-quick), padding 0s var(--dur-quick), margin 0s var(--dur-quick); }
-}
+/* The hidden pill gives its room back, so Members never floats in a gap.
+   Only the fade animates: the room goes once the pill has faded, and comes
+   back before it fades in. */
+.top .talk-btn { max-width: 12rem; overflow: hidden; transition: opacity var(--dur-quick) var(--ease-out), scale var(--dur-press) var(--ease-out), max-width 0s, padding 0s, margin 0s; }
+html.field-in-view .top .talk-btn { max-width: 0; padding-inline: 0; margin-left: calc(-1 * var(--top-gap)); transition: opacity var(--dur-quick) var(--ease-exit), max-width 0s var(--dur-quick), padding 0s var(--dur-quick), margin 0s var(--dur-quick); }
 
 /* ---- figure labels and statement type ---------------------------------- */
 /* The type for worlds.css's figure language and frame (that sheet sets no
