@@ -4,6 +4,8 @@
 export const common = {
   skip: "Skip to content",
   lockup: "Chama Inteligente",
+  // the header's name on a phone, where the full name leaves no room for Members
+  lockupShort: "Chama",
   home: "Chama Inteligente, home",
   homeShort: "Home",
   pagesLabel: "Pages",

@@ -624,6 +624,16 @@ async function runState(pg, theme, motion, vp) {
     // the H1 is the LCP element where it must be
     if (["/", "/engineering-department"].includes(pg.path) && !rig.lcp?.inH1) fail(pg.id, state, "LCP not the H1", `LCP was ${JSON.stringify(rig.lcp)}`, top);
 
+    // coaching members can reach the Hearth from the header at load, without scrolling
+    const members = await page.evaluate(() => {
+      const a = document.querySelector('.top a[href="/hearth"]');
+      if (!a) return { found: false };
+      const r = a.getBoundingClientRect(), cs = getComputedStyle(a);
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return { found: true, inView: r.width > 0 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, shown: a.checkVisibility({ opacityProperty: true, visibilityProperty: true }) && +cs.opacity > 0.9, onTop: !!hit && a.contains(hit) };
+    });
+    if (!members.found || !members.inView || !members.shown || !members.onTop) fail(pg.id, state, "members link", `the header's link to /hearth is not on screen at load: ${JSON.stringify(members)}`, top);
+
     // the three doors after one screen of scroll, on the phone
     if (pg.path === "/" && vp === PHONE) {
       await scrollTo(page, PHONE.height);
