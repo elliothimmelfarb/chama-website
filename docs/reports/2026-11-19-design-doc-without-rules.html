@@ -1,0 +1,155 @@
+<title>Design Doc Without Rules</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;600&family=Funnel+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column of sections; pictures first, short labels under them. */
+:root{
+  --bg:#f3f0e8; --surface:#fbf9f4; --fg:#141412; --fg2:#57544d; --line:rgb(20 20 18 / .14);
+  --ember:#f4581f; --ember-text:#b33d0b; --good:#2f6b4f; --warn:#8a5a00; --bad:#a3271b; --tint:rgb(244 88 31 / .1);
+  --display:"Funnel Display","Helvetica Neue",Arial,sans-serif; --text:"Funnel Sans","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember:#f4581f; --ember-text:#ff7a45; --good:#7fc9a3; --warn:#e2b458; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember:#f4581f; --ember-text:#ff7a45; --good:#7fc9a3; --warn:#e2b458; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font:400 1rem/1.5 var(--text);padding-block:2rem 4rem;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:3rem}
+.wrap > *{min-width:0}
+h1{font:600 clamp(1.9rem,1.2rem + 3vw,3.2rem)/1.05 var(--display);letter-spacing:-.025em;margin:0;text-wrap:balance}
+h2{font:600 clamp(1.35rem,1.1rem + 1vw,1.8rem)/1.15 var(--display);letter-spacing:-.02em;margin:0 0 1rem;text-wrap:balance}
+h3{font:600 1.05rem/1.25 var(--display);margin:0 0 .35rem}
+p{margin:0;max-width:65ch}
+.lead{font-size:1.15rem;color:var(--fg2);margin-top:.9rem;max-width:58ch}
+.date{font-size:.8rem;color:var(--fg2);margin-bottom:.6rem}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.nums > div{background:var(--surface);padding:1rem}
+.nums b{display:block;font:600 1.9rem/1 var(--display);font-variant-numeric:tabular-nums}
+.nums span{font-size:.82rem;color:var(--fg2)}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+figure{margin:0}
+figure img{display:block;width:100%;border-radius:10px;border:1px solid var(--line)}
+figcaption{font-size:.85rem;color:var(--fg2);margin-top:.5rem}
+figcaption b{color:var(--fg);font-weight:600}
+.diff{display:grid;gap:0;border-top:1px solid var(--line);margin-top:1.25rem}
+.diff > div{display:grid;grid-template-columns:minmax(110px,.7fr) 1fr 1fr;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.diff > div > *{min-width:0}
+.diff .k{font-weight:600}
+.diff .h{font-size:.76rem;color:var(--fg2);font-weight:600}
+.causes{display:grid;gap:.75rem;counter-reset:c}
+.cause{display:grid;grid-template-columns:2.2rem 1fr;gap:.75rem;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem}
+.cause > *{min-width:0}
+.cause::before{counter-increment:c;content:counter(c);font:600 1.3rem/1.2 var(--display);color:var(--ember-text)}
+.cause p{font-size:.93rem;color:var(--fg2)}
+.ev{display:inline-block;margin-top:.5rem;font-size:.8rem;padding:.15rem .55rem;border-radius:999px;background:var(--tint);color:var(--ember-text)}
+.tl{display:grid;gap:0;border-left:2px solid var(--line);margin-left:.4rem}
+.tl > div{position:relative;padding:.1rem 0 .9rem 1.1rem;font-size:.9rem}
+.tl > div::before{content:"";position:absolute;left:-6px;top:.45rem;width:10px;height:10px;border-radius:50%;background:var(--ember)}
+.tl > div.ok::before{background:var(--good)}
+.tl time{font-size:.78rem;color:var(--fg2);font-variant-numeric:tabular-nums;display:block}
+.tl q{font-weight:600}
+.tl span{color:var(--fg2)}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.verdict > div{border:1px solid var(--line);border-radius:14px;padding:1rem;background:var(--surface)}
+.verdict ul{margin:.5rem 0 0;padding-left:1.1rem;font-size:.9rem;color:var(--fg2)}
+.tag{font-size:.78rem;font-weight:600}
+.tag.y{color:var(--good)} .tag.n{color:var(--bad)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem;counter-reset:s}
+.flow > div{border:1px solid var(--line);border-top:3px solid var(--ember);border-radius:0 0 12px 12px;padding:.8rem;background:var(--surface);font-size:.88rem;color:var(--fg2)}
+.flow > div::before{counter-increment:s;content:"Step " counter(s);display:block;font-size:.76rem;color:var(--ember-text);font-weight:600;margin-bottom:.2rem}
+.flow b{display:block;color:var(--fg);font:600 1rem/1.25 var(--display);margin-bottom:.3rem}
+.ask{display:grid;gap:.6rem}
+.ask > div{display:grid;grid-template-columns:1.4rem 1fr;gap:.6rem;font-size:.95rem}
+.ask > div::before{content:"?";font-weight:600;color:var(--ember-text)}
+.ask span{color:var(--fg2);display:block;font-size:.88rem}
+.note{font-size:.85rem;color:var(--fg2);border-left:3px solid var(--line);padding-left:.8rem}
+@media (max-width:520px){ .diff > div{grid-template-columns:1fr 1fr} .diff .k{grid-column:1 / -1} .diff .h:first-child{display:none} }
+.bar{display:grid;gap:.5rem;margin-top:.5rem}
+.bar > div{display:grid;grid-template-columns:5.5rem 1fr;gap:.75rem;align-items:center;font-size:.9rem}
+.bar i{display:block;height:1.6rem;border-radius:4px;background:var(--fg2)}
+.bar .now i{background:var(--ember)}
+.bar span{font-variant-numeric:tabular-nums}
+.st{font-size:.78rem;font-weight:600;white-space:nowrap}
+.st.c{color:var(--fg2)} .st.k{color:var(--good)} .st.d{color:var(--bad)}
+.diff.three > div{grid-template-columns:minmax(120px,.9fr) 1.6fr auto}
+@media (max-width:520px){ .diff.three > div{grid-template-columns:1fr auto} .diff.three .k{grid-column:auto} .diff.three > div > span:nth-child(2){grid-column:1 / -1;order:3} }
+</style>
+<div class="wrap">
+<header>
+  <div class="date">2026-11-19 · Merged to main in pull request 221</div>
+  <h1>The design doc now holds purpose, goals and your decisions. The rules are gone.</h1>
+  <p class="lead">Everything it used to specify was already in the code, so nothing a builder needs was lost. An agent now reads what the site is for and what you have said, and chooses how.</p>
+</header>
+
+<section>
+  <h2>docs/DESIGN.md, before and after</h2>
+  <div class="bar">
+    <div><span>11,378 words</span><i style="width:100%"></i></div>
+    <div class="now"><span>1,549 words</span><i style="width:13.6%"></i></div>
+  </div>
+  <div class="nums" style="margin-top:1.25rem">
+    <div><b>163 → 8</b><span>sizes, timings and percentages written in the doc. The eight left are facts, such as two contrast ratios and your phone's size</span></div>
+    <div><b>23 → 0</b><span>banned patterns</span></div>
+    <div><b>36</b><span>pointers in code, tests and the README to section numbers that no longer exist, removed</span></div>
+    <div><b>765 / 765</b><span>checks pass after the change</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>What the new file holds</h2>
+  <div class="flow">
+    <div><b>What the site is for</b>The referred owner on a phone, and your own measure of success.</div>
+    <div><b>What it should feel like</b>The original's polish. Home's first view, which you called awesome. Calm voice. Pictures explain.</div>
+    <div><b>What you decided, and why</b>Twelve decisions, each with its reason, and who made the calls that were not yours.</div>
+    <div><b>What your reactions showed</b>Your words, dated, including today's.</div>
+    <div><b>Where the design lives</b>A map into the code, which is the only place values are kept.</div>
+  </div>
+</section>
+
+<section>
+  <h2>Where each old section went</h2>
+  <div class="diff three">
+    <div><span class="k">Design read and dials</span><span>Replaced by goals. The 6, 6, 3 dials and "preserve" are gone</span><span class="st d">Dropped</span></div>
+    <div><span class="k">Type, colour, spacing, motion tokens</span><span>tokens.css and base.css already hold every value</span><span class="st c">In code</span></div>
+    <div><span class="k">The four grounds</span><span>sky.js</span><span class="st c">In code</span></div>
+    <div><span class="k">Header and footer</span><span>Kept: why Members is in the header, why "Engineering department", why one legal email</span><span class="st k">Reasons kept</span></div>
+    <div><span class="k">Every page, section by section</span><span>site/pages. Kept: what home says in order and why each line is said once</span><span class="st c">In code</span></div>
+    <div><span class="k">Proof, logos, photo, doors</span><span>Kept: proof is real and measured, you decide who appears</span><span class="st k">Reasons kept</span></div>
+    <div><span class="k">Talk to us</span><span>Kept: no flame persona and why, the button's one label</span><span class="st k">Reasons kept</span></div>
+    <div><span class="k">Low motion</span><span>Kept as a goal: an edition in its own right</span><span class="st k">Goal kept</span></div>
+    <div><span class="k">Opening stage and loop, beat by beat</span><span>site/figures and their tests</span><span class="st c">In code</span></div>
+    <div><span class="k">23 anti-patterns</span><span>The few that were your decisions are stated as decisions</span><span class="st d">Dropped</span></div>
+    <div><span class="k">Frame and figure language</span><span>kit.js and its tests. Kept: your words about empty space and the original's figures</span><span class="st c">In code</span></div>
+  </div>
+  <p class="note" style="margin-top:1rem">The old specification is still in git history at commit c5fae67.</p>
+</section>
+
+<section>
+  <h2>Where rules still live</h2>
+  <div class="diff three">
+    <div><span class="h">Place</span><span class="h">What is in it</span><span class="h">Size</span></div>
+    <div><span class="k">design-taste-frontend skill</span><span>Third-party, loaded for any redesign. 155 never, must, always and ban words. The largest source of design rules an agent here still reads</span><span class="st">12,853 words</span></div>
+    <div><span class="k">The site skill's pages.md</span><span>28 lessons. Most are engine facts found the hard way. Some are design rules written after a complaint</span><span class="st">4,948 words</span></div>
+    <div><span class="k">The tests</span><span>130 tests pin the site as built, including section order and how full each screen is. The new doc says they record what is and are not a brief</span><span class="st">14 files</span></div>
+    <div><span class="k">README</span><span>The operating manual. Mostly how things work</span><span class="st">8,458 words</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Yours to decide</h2>
+  <div class="ask">
+        <div><div>Which place to clear next?<span>My pick is the web-design skill's routing, so a redesign here stops loading the 12,853-word taste skill, then pages.md.</span></div></div>
+  </div>
+</section>
+<section>
+  <h2>What the review changed</h2>
+  <div class="tl">
+    <div class="ok"><time>Attribution</time><q>Five calls were a session's, not yours.</q> <span>The doc now says so: the home section order, where info@ appears, ink on ember, what each ground stands for, the phone-first reading of the audience.</span></div>
+    <div class="ok"><time>Balance</time><q>The original is the measure of polish, not a design to return to.</q> <span>Your "cool but not sacred" went back in, with "the first page is awesome" from today.</span></div>
+    <div class="ok"><time>Lost facts</time><q>Six facts the code does not show were restored.</q> <span>The fire's cost in empty scroll, two contrast limits, the warmth's meaning, the grounds' subjects, why the Hearth room is dark only.</span></div>
+    <div class="ok"><time>Leftover rules</time><q>Eight lines still told a designer how.</q> <span>Each was cut back to your quote or the fact.</span></div>
+  </div>
+</section>
+</div>
