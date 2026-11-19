@@ -24,7 +24,7 @@ export const about = {
     h2: "Superpowers to make anything on a computer, a phone or in the cloud.",
     paras: [
       "Elliot started as a software engineer in 2016. He led AI enablement at Campminder for two and a half years, then built AI platforms as an engineer. Since 2023, nearly all of his work has gone into learning what the most capable AI systems can do and putting them to work.",
-      // Ends here: the home page says "Every new AI capability is ours on day one.", and no page repeats it.
+      // Ends here. Since 2026-11-19 no page says "Every new AI capability is ours on day one."; home's stage beat "When AI can do something new, so can you." carries it.
       "Engineers who learned the craft before AI, weren't afraid of it, and mastered it, can now build anything, fast.",
     ],
     // the timeline beside the paragraph: its own facts, in a few words each
