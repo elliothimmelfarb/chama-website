@@ -41,7 +41,7 @@ const circ = (x, y, r) => `M${x - r} ${y} A${r} ${r} 0 1 0 ${x + r} ${y} A${r} $
 // ember line, which is drawn by one hand. Times are seconds into the scene.
 const SCENES = [];
 
-// 1. The old way: a tall company, engineers in its windows, a long queue at its door.
+// 1. Big companies: a tall company with engineers in its windows, and you standing in front of it.
 {
   const ink = [rrect(452, 64, 140, 236, 8), `M505 300 V262 Q505 256 511 256 H533 Q539 256 539 262 V300`], win = [], fill = [];
   for (let r = 0; r < 7; r++) for (let k = 0; k < 4; k++) {
@@ -50,16 +50,15 @@ const SCENES = [];
     win.push(rrect(x, y, 21, 15, 2.5));
     if ((r * 4 + k) % 5 === 2) fill.push(circ(x + 10.5, y + 8.2, 3.2));
   }
-  const q = Array.from({ length: 6 }, (_, k) => inkPerson(432 - k * 33, 0.86));
   SCENES.push({
     tone: [rrect(452, 64, 140, 236, 8)],
-    ink: [{ d: ink.join(" "), a: 0, dur: 1.1 }, { d: q.join(" "), a: 0.35, dur: 1.2 }],
+    ink: [{ d: ink.join(" "), a: 0, dur: 1.1 }],
     ink2: [{ d: win.join(" "), a: 0.25, dur: 1.0 }],
     fill: fill.map((d) => ({ d, a: 1.1 })),
-    em: { d: `M${L} ${Y} H${r1(234 - 14 * 0.95)} ${emPerson(234, 0.95)} H252`, a: 1.0, dur: 1.6 },
+    em: { d: `M${L} ${Y} H${r1(370 - 14 * 1.05)} ${emPerson(370, 1.05)} H392`, a: 0.6, dur: 1.8 },
   });
 }
-// 2. The turn: you at a table with two engineers who work only for you.
+// 2. Your own engineers: you at a table with two engineers who work only for you.
 SCENES.push({
   zoom: [1.3, 360],
   ink: [{ d: `${inkPerson(214, 1.18)} ${inkPerson(170, 1.18)}`, a: 0, dur: 1.0 }, { d: `M262 246 H392 M276 246 V300 M378 246 V300`, a: 0.3, dur: 0.8 }],
@@ -67,7 +66,7 @@ SCENES.push({
   em: { d: `M${L} ${Y} H${r1(440 - 14 * 1.18)} ${emPerson(440, 1.18)} H${R}`, a: 0.5, dur: 2.0 },
   pop: [{ d: `M398 196 Q398 186 408 186 H432 Q442 186 442 196 V200 Q442 210 432 210 H414 L404 218 L406 210 Q398 208 398 200 Z`, a: 2.1 }],
 });
-// 3. A small, family-owned, AI-native business: the line builds the house, a spark over it.
+// 3. We're a small, family-owned, AI-native business: the line builds the house, a spark over it.
 SCENES.push({
   tone: [`M250 300 V204 L320 146 L390 204 V300 Z`],
   ink: [{ d: rrect(282, 214, 76, 52, 4), a: 1.1, dur: 0.6 }, { d: `${inkPerson(300, 0.8, 266)} ${inkPerson(326, 0.8, 266)} ${inkPerson(347, 0.55, 266)}`, a: 1.7, dur: 0.8 }],

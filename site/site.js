@@ -23,8 +23,8 @@ export const SITE = {
 // nav: the label in the header, in order. inRouter: swapped by worlds.js
 // without a full load. lastmod: bump in the same change as the page's copy.
 export const PAGES = [
-  { id: "home", path: "/", file: "index.html", nav: null, inRouter: true, priority: "1.0", lastmod: "2026-11-17" },
-  { id: "engineering-department", path: "/engineering-department", file: "engineering-department.html", nav: "Engineering", inRouter: true, priority: "0.9", lastmod: "2026-11-17", ogImage: "/og-ed-2026-11-16.png" },
+  { id: "home", path: "/", file: "index.html", nav: null, inRouter: true, priority: "1.0", lastmod: "2026-11-19" },
+  { id: "engineering-department", path: "/engineering-department", file: "engineering-department.html", nav: "Engineering", inRouter: true, priority: "0.9", lastmod: "2026-11-19", ogImage: "/og-ed-2026-11-16.png" },
   { id: "coaching", path: "/coaching", file: "coaching.html", nav: "Coaching", inRouter: true, priority: "0.8", lastmod: "2026-11-17" },
   { id: "build", path: "/build", file: "build.html", nav: "Build", inRouter: true, priority: "0.8", lastmod: "2026-11-17" },
   { id: "work", path: "/work", file: "work.html", nav: "Work", inRouter: true, priority: "0.7", lastmod: "2026-11-17" },
