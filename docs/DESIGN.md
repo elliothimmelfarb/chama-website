@@ -1,52 +1,61 @@
 # Design: what the site is for and what we know
 
-This file holds the purpose, the goals, and what Elliot has decided and said about how the site looks and feels. It has no rules, sizes or timings. Those are in the code, which is the only place they are kept, and the last section says where. How to reach a goal is the designer's call.
+This file holds the purpose, the goals, and what Elliot has decided and said about how the site looks and feels. It has no rules, sizes or timings. Those are in the code, which is the only place they are kept, and the last section says where. How to reach a goal is the designer's call. Where a choice was made by a session and not by Elliot, this file says so, because those are open to change.
 
 ## What the site is for
 
-A referred business owner, usually on a phone and already somewhat warm from a personal introduction, understands within a minute what Chama sells, trusts it, finds their page and sees proof that it has been done before. Coaching clients, executives, engineering leads and founders find their door as fast. People route by what they need, not by who they are.
+Elliot's near-term case (2026-11-16): the person who introduced LA Metal is about to refer more business owners. They need to see right away what Chama is, get some trust, find the page for their need, and see proof it has been done before. Coaching clients, executives, engineering leads and founders find their door as fast. People route by what they need, not by who they are. That these visitors are probably on a phone and already somewhat warm is Claude's reading, not something Elliot said.
 
-Elliot's measure of success (2026-11-16): more trust in first conversations, inbound sales, coaching sign-ups, and people looking at the site and thinking "these people really know what they're doing".
+His measure of success: more trust in first conversations, inbound sales, coaching sign-ups, and people looking at the site and thinking "these people really know what they're doing".
 
 ## What it should feel like
 
-- **The original site is the bar for quality and polish.** It is kept at `/original`. People praised its scroll-driven worlds, its paper with contours, and how one section gave way to the next. Its figures were large and had material: a fill, a crisp outline, an ember outline that hugged the shape. On 2026-11-19 Elliot said the rebuild does not have the quality and polish the original had, and that it sits in the middle between the old site and a new one. A change here should close that gap.
-- **The brand speaks calmly**, with quiet confidence: "we can solve any software problem", never "almost". Elliot said this about tone of voice (2026-11-16). Whether the visuals should be as calm as the words or as dramatic as the original's worlds is open, and it is his call.
-- **Pictures do the explaining.** The original's core problem was too many words on screen at once. Each area holds a little focused text, depth opens for those who want it, and moving figures carry the ideas a few words at a time. Motion is silent and never stands between a visitor and the content.
-- **Real people.** A small, family-owned, AI-native business you can reach. You talk to a person, and AI does the heavy work behind them.
-- **It reads as designed by someone with taste**, not as a template or an AI default.
+- **Quality and polish that match the original site**, which is kept at `/original`. Elliot, 2026-11-19, on the rebuild: "I'm not seeing the quality and polish that was present in the iteration that we started with", and "we're kind of in the middle", neither the old site nor fully a new one. The original's figures were large and had material: a fill, a crisp outline, an ember outline that hugged the shape. The original is the measure of polish, not a design to return to: he called it "cool but not sacred" and is "open to what's better".
+- **Home's first view is what he likes on the rebuild**: "the first page is awesome" (2026-11-19). Below it fell short for him. See his reactions further down.
+- **The animated scroll stays.** It is the thing visitors praise.
+- **The brand speaks calmly**, with quiet confidence: "we can solve any software problem", never "almost". He said this about tone of voice.
+- **Pictures do the explaining.** He named too much text as the original's core design problem: each area should hold a little focused text, with depth for those who want it, and moving images that explain the ideas a few words at a time.
+- **The central picture is a loop of three rings**: you, the software around you, and around that the AI system we run. You tell it what you need, it gets built, you use it, you find what's next. This is his idea of the engineering department offer.
+- **Real people you can reach**: a small, family-owned, AI-native business.
+- **No AI-default looks.** The bar in his own design notes is god-tier UI and UX.
 
 ## What Elliot has decided, and why
 
-- **The flame is the mark and the name, not a character.** The flame chatbot felt gimmicky, so the chat is simply "Talk to us": no persona, no avatar, no flame animation. The button always says "Talk to us" while the phrases above it cycle, because the box does several jobs and one phrase is not enough.
-- **The chat is the way in.** No phone number and no email address are offered as contact. info@chamainteligente.com appears only as the legal contact, because Portuguese e-commerce law and GDPR need one. A plain form stands in when the chat is down.
+- **The flame is the mark and the name, not a character.** The flame chatbot felt gimmicky to him, so the chat is simply "Talk to us", with no persona and no flame animation. He wants phrases cycling above it because the box does several jobs. Keeping the button's label the same while they cycle was an advisor's suggestion he approved.
+- **The chat is the way in.** He called it very important that no email address or phone number is offered for contact. He allowed info@chamainteligente.com "in any other places that make sense"; the session put it in the legal line, on the privacy page and as the fallback form's last resort, because Portuguese e-commerce law and GDPR need a contact.
 - **The visitor chooses light or dark**, and both are fully designed. On the original, sections flipped the page between bright and dark on their own, and he wanted that to stop.
-- **Low motion is an edition in its own right**, for people who choose it or whose system asks for it. On the original it was a stale copy of an older site.
-- **The fire between sections is retired** (2026-11-16): "it doesn't fit anymore". It belonged to the flame persona.
-- **Ember is the brand's colour**, with ink and paper. Ink sits on ember because white on ember measures 3.35 to 1 and fails AA for button text, while ink on ember is 5.5 to 1.
-- **No prices.** The price shape and the setup-fee guarantee are stated on `/engineering-department`.
-- **Proof is real and measured.** The numbers on `/engineering-department` are the plant's own measured requests. The plant is unnamed until Elliot says LA Metal can be named (`SITE.laMetalNamed`). He decides which clients and logos appear.
-- **Rozalie is named only on About, and so is "Shama".** Home's photo caption names Elliot and Annie.
-- **"Engineering department", never "Engineering" alone.** To a manufacturer, "Engineering" is a discipline they already employ, and it reads as an engineering consultancy.
+- **Low motion is designed in its own right.** On the original it was a stale copy of an older site.
+- **The fire between sections is retired** (2026-11-16). After two reviews he said "it's almost like it doesn't fit anymore", and agreed it belonged to the flame persona. It had also cost a lot: steering words around the fire line caused most of the empty scroll and the late words on a page change.
+- **No prices.** Pricing is part of the conversation. The price shape and the setup-fee guarantee are stated on `/engineering-department`.
+- **He decides what proof the site shows.** The plant is unnamed until he says LA Metal can be named (`SITE.laMetalNamed`).
+- **Rozalie is named only on About, and "Shama" appears only there.**
+- **The first offer is named "Your own engineering department".** To a manufacturer, "Engineering" alone is a discipline they already employ, which is why the header spells it out (the session's reasoning).
 - **Members is in the header on every page** (2026-11-18), so coaching clients see the way into the Hearth without scrolling.
-- **Home says, in order,** who we are, what we believe and want for you, what we can do, who we have done it for, how we work, and who we are as people. Each line is said once. The change time is said only where its evidence stands, on `/engineering-department`, which is built to stand alone for a referral link.
+- **Home carries what we believe, our goals, values and approach, with nothing said twice** (2026-11-16). The order of its sections was the session's.
 - **English first**, built so European and Brazilian Portuguese can be added.
 
 ## What Elliot's reactions have shown
 
-- Choosing from finished pictures works. On 2026-11-17 he picked from boards of samples: for openings, one continuous ember line Love, real product screens and an isometric workshop Maybe, Swiss poster shapes No. For diagrams, technical drawing Love, hand-inked and real interface fragments Maybe, soft solid objects and bold graphic No. In his words: "the hand-drawn and the technical drawing are my two favorites", "beautifully integrated", great on phone and desktop. Those picks held. Designs that went from words straight to code needed correcting afterwards.
-- "A lot of awkward empty space", and diagrams that needed to be "seriously elevated" to the original's polish (2026-11-16). The rebuild's figures had shrunk to a tenth of the original's size, in one flat stroke.
-- Transitions that "feel haphazard" (2026-11-16). He wants the original's consistency: one way of arriving and leaving, everywhere.
-- "Amateur" and "low effort" for home's first diagrams and opening, whose text "disappears too quickly to read" (2026-11-17). Text stays up for its reading time.
-- On his phone: "a lot of things bouncing up and down or weird kind of magnet points" (2026-11-17). Nothing should fight the scroll.
-- 2026-11-19: this file had grown to 11,000 words of rules, sizes and timings, and he asked for truth and goals in their place, with as few rules as possible.
+- He chooses well from finished pictures, and asks for them: on 2026-11-19 he wanted options to pick from, not another build. His picks for the rest of home are in the artifact "Chama Homepage Picks". Read it before designing home below the first view.
+- From boards of samples on 2026-11-17: for openings, one continuous ember line Love, real product screens and an isometric workshop Maybe, Swiss poster shapes No. For diagrams, technical drawing Love, hand-inked and real interface fragments Maybe, soft solid objects and bold graphic No. "The hand-drawn and the technical drawing are my two favorites", "beautifully integrated". The one-line opening and the pen marking the headline came from these boards and he still likes them. The pentagon diagram built in technical drawing he later said "isn't a nice quality".
+- 2026-11-19, on home below the first view: the moving coloured grounds are "too much", there is too much text, the family photo is too big, and he did not connect with the line "You talk to a person, and AI does the heavy work behind us".
+- 2026-11-16: "a lot of awkward empty space", and diagrams that needed to be "seriously elevated" to the original's polish. The rebuild's figures were 10 to 25% of the original's size, and flat.
+- 2026-11-16: the transitions "feel haphazard". He asked for the original's consistency.
+- 2026-11-17: home's first diagrams and opening felt "amateur" and "low effort", and the opening's text "disappears too quickly to read".
+- 2026-11-17, on his phone: "a lot of things bouncing up and down or weird kind of magnet points".
+- 2026-11-19: this file had grown to 11,000 words of rules, sizes and timings. "There's too many rules. And what I want is truth and goals."
 
 ## Facts that are easy to miss
 
 - Elliot's phone renders at about 364 by 610 CSS px with text at about 106%. A plain 390-wide emulator hides most of the crowding.
+- White text on ember measures 3.35 to 1 and fails AA for button text. Ink on ember is 5.5 to 1, which is why ember buttons carry ink.
+- `--line-strong` is under 3 to 1 on the grid, tides and ember grounds, so it is only safe for decoration. A control's outline there needs `--fg-2` or a `--surface` fill.
+- Ember dots used as data are about 2.8 to 1 on the light grounds, so the counts are also printed as text.
 - Funnel Display and Funnel Sans are self-hosted, because the public pages make no external requests. They replaced Helvetica Neue, which only rendered on Apple devices.
-- Every figure and ground exists twice, light and dark, so a new one is designed twice.
-- The tests pin the site as built: section order, figure timing, how much of each screen is filled. A redesign changes those tests with it. They are a record of what is, not a brief for what should be.
+- Every ground and figure exists in light and dark.
+- As built, by the design session and not by Elliot: each ground was given a subject (grid for measurement, proof and things we build; tides for coaching and belief; ember for the loop, the people and the Hearth; paper for calm openings), and a business in a figure turns warm only when it is owned or complete.
+- The Hearth's room is dark only because its light theme has not been checked yet.
+- The tests pin the site as built: section order, figure timing, how much of each screen is filled. They record what is, not what should be, and a redesign changes them with it.
 
 ## Where the design lives
 
