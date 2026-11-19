@@ -5,7 +5,6 @@ import { home as t } from "../content/en/home.js";
 import { common } from "../content/en/common.js";
 import { GLYPHS } from "../figures/glyphs.js";
 import { stage } from "../figures/stage.js";
-import { beliefFigure, canDoFigure, approachFigure, beliefPhrases, reasonStyle, homeFigureStyle } from "../figures/home-figures.js";
 import { logoStrip, CLIENTS } from "../parts/logos.js";
 
 const doors = () => html`<ul class="doors" data-doors>
@@ -14,10 +13,9 @@ const doors = () => html`<ul class="doors" data-doors>
   )}
 </ul>`;
 
-const photo = (alt) => html`<img class="photo" data-p src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 50vw, 100vw" width="2048" height="1804" alt="${alt}" loading="lazy" decoding="async">`;
-
-// the goals under Elliot's sentence, each reason lit as its side is drawn
-const goals = () => beliefPhrases(t.belief.line).map((p) => (p.k === undefined ? p.text : html`<span data-p data-n="0${p.k + 1}" style="${reasonStyle(p.k)}">${p.text}</span>`));
+// the round portrait: small on purpose (Elliot, 2026-11-19: the half-screen
+// photo was "just too big")
+const portrait = (alt) => html`<img class="portrait" src="/assets/family-2026-480.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w" sizes="(min-width: 760px) 176px, 128px" width="480" height="423" alt="${alt}" loading="lazy" decoding="async">`;
 
 // The pen's marks on the H1: an underline, then a ring, each an inline svg
 // over its words (the words stay plain text for search and screen readers).
@@ -28,8 +26,8 @@ const PEN = {
   under: '<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg>',
   ring: '<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M70 12C200 3 380 3 436 12C474 19 476 94 434 102C330 112 130 112 42 102C4 94 4 20 44 12C80 7 130 5 190 5"/></svg>',
 };
-const marked = (half) => {
-  for (const [kind, phrase] of Object.entries(t.h1Marks)) {
+const marked = (half, marks = t.h1Marks) => {
+  for (const [kind, phrase] of Object.entries(marks || {})) {
     const at = half.indexOf(phrase);
     if (at >= 0) return [half.slice(0, at), html`<span class="pen pen-${kind}">${phrase}${raw(PEN[kind])}</span>`, half.slice(at + phrase.length)];
   }
@@ -54,10 +52,10 @@ const STYLE = `
 .pen-ring { margin-inline: 0.2em 0.06em; }
 .pen-ring svg { left: -9%; width: 127%; top: 0.12em; height: 1.04em; }
 @keyframes pen { from { stroke-dashoffset: 1; } }
-:root:not([data-motion="low"]) .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
-:root:not([data-motion="low"]) .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
-:root.routed:not([data-motion="low"]) .pen-under path { animation-delay: 450ms; }
-:root.routed:not([data-motion="low"]) .pen-ring path { animation-delay: 900ms; }
+:root:not([data-motion="low"]) .first .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
+:root:not([data-motion="low"]) .first .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
+:root.routed:not([data-motion="low"]) .first .pen-under path { animation-delay: 450ms; }
+:root.routed:not([data-motion="low"]) .first .pen-ring path { animation-delay: 900ms; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .pen path { animation: none; } }
 /* on a phone: the headline, the stage under it, then the field; the
    descriptor and the sub follow, before the doors (from 760px the stage is
@@ -105,55 +103,62 @@ const STYLE = `
 }
 .home-doors { margin-top: var(--s5); padding-bottom: var(--s7); }
 .home-also { margin-top: var(--s4); }
-.home-frame .words .lead { margin-top: var(--s4); }
-/* the belief's sentence is long, so its heading is a size under the others */
-.home-belief h2 { font-size: min(var(--t-h2), 2.5rem); }
-/* the two beats of what we can do stand in one place, in turn */
-.home-cando .slot > div > .lead { margin-top: var(--s4); }
-/* who we have worked with: the plant line is the way to the engineering page */
-.home-plant { display: inline; color: var(--fg); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
-.home-plant .arr { display: inline-block; width: 18px; height: 18px; margin-left: 4px; vertical-align: -3px; color: var(--accent-text); }
-@media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
-.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s6) var(--s7); }
-.home-clients .logo { width: calc(var(--lw) * 1.7px); height: calc(var(--lh) * 1.7px); background: color-mix(in srgb, var(--fg) 82%, transparent); }
+/* ---- after the first view: the questions people ask (Elliot's pick,
+   2026-11-19). One paper ground, nothing pinned, no diagrams. Each section
+   is a question and its answer: the question in ember at the left, the
+   answer large beside it, a hairline above each pair. */
+.home-q { display: grid; gap: var(--s4) 24px; padding-block: clamp(4.5rem, 12svh, 9rem) 0; }
+.home-q-in { display: grid; gap: var(--s4) 24px; padding-top: var(--s5); border-top: 1px solid var(--line); }
+.ask { font: 500 var(--t-h3)/1.25 var(--display); letter-spacing: -0.01em; color: var(--accent-text); max-width: 22ch; text-wrap: balance; }
+.home-q h2 { max-width: 20ch; }
+/* the proof and the people are the page's two big claims, set larger */
+:is(.home-clients, .home-people) .home-q h2 { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.04; letter-spacing: -0.03em; }
+/* the pen marks one phrase in each answer as it comes into view, once
+   (the first view's pen, carried down); whole where scroll timelines are
+   missing, and in low or reduced motion */
+.home-q .pen-ring { margin-inline: 0.08em 0.04em; }
+.home-q .pen-ring svg { left: -6%; width: 112%; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="low"]) .home-q .pen path { animation: pen linear both; animation-timeline: view(); animation-range: entry 100% cover 55%; }
+  }
+}
+.home-q .lead { margin-top: var(--s4); }
+.home-q .more { margin-top: var(--s5); }
+.home-q .answer { min-width: 0; }
+@media (min-width: 900px) {
+  .home-q-in { grid-template-columns: repeat(12, 1fr); padding-top: var(--s6); }
+  .ask { grid-column: 1 / span 4; padding-top: 0.45em; }
+  .home-q .answer { grid-column: 5 / -1; }
+}
+/* why it matters: the five goals stand on rules, the two hopes in ember */
+.goals { list-style: none; margin: var(--s6) 0 0; padding: 0; display: grid; gap: 0 var(--s4); }
+.goal { padding: var(--s3) 0; border-top: 1px solid var(--line-strong); font: 500 var(--t-body)/1.3 var(--text); color: var(--fg); }
+.goal.hope { border-top-color: var(--accent); color: var(--accent-text); }
+@media (min-width: 760px) {
+  .goals { grid-template-columns: repeat(5, 1fr); }
+  .goal { border-top-width: 2px; padding-top: var(--s4); }
+}
+/* who we have worked with: the answer is the plant line, a link */
+.home-plant { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: transparent; text-underline-offset: 0.14em; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
 .home-plant .end { white-space: nowrap; }
-.home-clients .more { margin-top: var(--s6); }
-/* the next world's words arrive as this short section ends: the flow
-   padding's fifth of a screen for the ground's soft edge would leave a
-   quarter screen of bare grid between them */
-main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-bottom: 6vh; }
-.home-clients .frame { padding-bottom: 0; }
-/* on desktop the clients are a list beside the words, one to a row, at
-   twice the strip's size, so the section holds its frame */
-@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
-  .home-clients .logos { flex-direction: column; align-items: stretch; gap: 0; padding: 0; }
-  .home-clients .logos li { padding: var(--s6) 0; border-top: 1px solid var(--line); }
-  .home-clients .logos li:last-child { border-bottom: 1px solid var(--line); }
-  .home-clients .logo { width: calc(var(--lw) * 2px); height: calc(var(--lh) * 2px); }
-}
-/* the photo settles as the world is held */
-.home-photo { margin: 0; }
-.home-photo-crop { border-radius: var(--r-surface); overflow: hidden; }
-.home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }
-.home-photo figcaption { margin-top: var(--s3); }
-.home-people .frame { --ar: 1.05; }
-/* the people's heading is the page's last claim: set large beside the photo */
-@media (min-width: 760px) and (min-aspect-ratio: 9/10) { .home-people h2 { font-size: var(--t-display); line-height: 1.02; letter-spacing: -0.03em; } }
-
-@media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  /* the words each world's figure leaves room for, measured at 364x610 with 17px text */
-  .home-belief .frame { --words-h: 21rem; }
-  .home-cando .frame { --words-h: 12rem; }
-  .home-approach .frame { --words-h: 14rem; }
-  .home-belief h2 { font-size: 1.5rem; }
-  /* the figure's callouts are numbers on a phone; the reasons carry them */
-  .home-belief .lead [data-n]::before { content: attr(data-n); margin-right: 0.3em; font-size: 0.6875rem; letter-spacing: 0.04em; vertical-align: 0.35em; font-variant-numeric: tabular-nums; }
-  /* on a phone the photo is the width of the column, cropped to the faces */
-  .home-people .frame { --ar: 1.33; }
-  .home-photo-crop { aspect-ratio: 4 / 3; }
-  .home-photo .photo { height: 100%; object-fit: cover; object-position: 50% 30%; }
-}
-${homeFigureStyle}`;
+.home-plant .arr { display: inline-block; width: 0.7em; height: 0.7em; margin-left: 0.15em; vertical-align: -0.02em; color: var(--accent-text); }
+.home-plant:focus-visible { text-decoration-color: var(--accent-text); }
+@media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
+.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s5) var(--s7); }
+.home-clients .logo { width: calc(var(--lw) * 1.6px); height: calc(var(--lh) * 1.6px); background: color-mix(in srgb, var(--fg) 82%, transparent); }
+/* real people you can reach: a small round portrait beside the answer */
+.people { display: flex; align-items: center; gap: var(--s5); }
+.portrait { flex: none; width: 128px; height: 128px; border-radius: 50%; object-fit: cover; object-position: 48% 30%; }
+:root[data-theme="dark"] .portrait { box-shadow: 0 0 0 1px var(--line); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .portrait { box-shadow: 0 0 0 1px var(--line); } }
+.people .small { margin-top: var(--s2); color: var(--fg-2); }
+@media (min-width: 760px) { .portrait { width: 176px; height: 176px; } .people { gap: var(--s6); } }
+@media (max-width: 479px) { .people { flex-direction: column; align-items: flex-start; } }
+/* the close is the visitor's turn: their question, and the field to ask it */
+.home-close .talk-close { padding: 0 0 var(--s9); max-width: none; margin: 0; }
+@media (min-width: 900px) { .home-close .talk-close { grid-column: 5 / -1; } }
+`;
 
 export function render(p) {
   const main = html`
@@ -175,75 +180,55 @@ export function render(p) {
   </div>
 </section>
 
-<section class="world home-belief" data-world="tides" style="--h:180" data-label="${t.belief.label}" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words">
-        <h2 class="r">${t.belief.h2}</h2>
-        <p class="lead r">${goals()}</p>
-      </div>
-      <div class="fig r">${beliefFigure(t.belief.reasons, t.belief.label)}</div>
+<section class="world home-belief" data-world="paper" data-pin="off" data-label="${t.belief.label}">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">${t.belief.ask}</p>
+    <div class="answer">
+      <h2>${marked(t.belief.h2, t.belief.h2Mark)}</h2>
+      <ul class="goals">${t.belief.reasons.map((r, i) => html`<li class="${i >= t.belief.hopesFrom ? "goal hope" : "goal"}">${i === t.belief.hopesFrom ? html`<span class="sr-only">${t.belief.hopesLabel} </span>` : ""}${r}</li>`)}</ul>
     </div>
-  </div>
+  </div></div>
 </section>
 
-<section class="world home-cando" data-world="grid" style="--h:220" data-label="${t.cando.label}" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words slot">
+<section class="world home-clients" data-world="paper" data-pin="off" data-label="${t.clients.label}">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">${t.clients.ask}</p>
+    <div class="answer">
+      <h2><a class="home-plant" href="/engineering-department">${marked(plantHead, t.clients.h2Mark)}<span class="end">${plantEnd}${ARROW}</span></a></h2>
+      <div aria-label="${t.clients.logosLabel}" role="group">${logoStrip(CLIENTS)}</div>
+      <a class="more" href="/work">${common.workLink}${ARROW}</a>
+    </div>
+  </div></div>
+</section>
+
+<section class="world home-approach" data-world="paper" data-pin="off" data-label="${t.approach.label}">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">${t.approach.ask}</p>
+    <div class="answer">
+      <h2>${marked(t.approach.h2, t.approach.h2Mark)}</h2>
+      <p class="lead">${t.approach.line}</p>
+    </div>
+  </div></div>
+</section>
+
+<section class="world home-people" data-world="paper" data-pin="off" data-label="${t.people.label}">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">${t.people.ask}</p>
+    <div class="answer">
+      <div class="people">
+        ${portrait(t.people.photoAlt)}
         <div>
-          <h2 class="r" style="--out:0.5">${t.cando.h2}</h2>
-          <p class="lead r" style="--out:0.5">${t.cando.line}</p>
-        </div>
-        <div>
-          <h2 class="r" style="--in:0.5">${t.dayOne.h2}</h2>
-          <p class="lead r" style="--in:0.5">${t.dayOne.line}</p>
+          <h2>${marked(t.people.h2, t.people.h2Mark)}</h2>
+          <p class="small">${t.people.caption}</p>
+          <a class="more" href="${t.people.cta.href}">${t.people.cta.text}${ARROW}</a>
         </div>
       </div>
-      <div class="fig r">${canDoFigure({ fresh: t.cando.fig, dayOne: t.dayOne.fig }, t.cando.label)}</div>
     </div>
-  </div>
+  </div></div>
 </section>
 
-<section class="world home-clients" data-world="grid" data-pin="off" data-label="${t.clients.h2}" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words backed">
-        <h2 class="r">${t.clients.h2}</h2>
-        <p class="lead r"><a class="home-plant" href="/engineering-department">${plantHead}<span class="end">${plantEnd}${ARROW}</span></a></p>
-        <a class="more r" href="/work">${common.workLink}${ARROW}</a>
-      </div>
-      <div class="r backed">${logoStrip(CLIENTS)}</div>
-    </div>
-  </div>
-</section>
-
-<section class="world home-approach" data-world="ember" style="--h:170" data-label="${t.approach.label}" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words">
-        <h2 class="r">${t.approach.h2}</h2>
-        <p class="lead r">${t.approach.line}</p>
-      </div>
-      <div class="fig r">${approachFigure(t.approach.paths, t.approach.label)}</div>
-    </div>
-  </div>
-</section>
-
-<section class="world home-people" data-world="ember" style="--h:130" data-label="${t.people.h2.replace(/\.$/, "")}" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split" data-flip>
-      <div class="words">
-        <h2 class="r">${t.people.h2}</h2>
-        <a class="more r" href="${t.people.cta.href}">${t.people.cta.text}${ARROW}</a>
-      </div>
-      <div class="fig r"><figure class="fig-box home-photo"><div class="home-photo-crop">${photo(t.people.photoAlt)}</div><figcaption class="small">${t.people.caption}</figcaption></figure></div>
-    </div>
-  </div>
-</section>
-
-<section class="world end" data-world="ember" data-pin="off" data-label="Talk to us">
-  ${talkClose(t.close)}
+<section class="world end home-close" data-world="paper" data-pin="off" data-label="Talk to us">
+  <div class="wrap home-q"><div class="home-q-in"><p class="ask">${t.close}</p>${talkClose()}</div></div>
 </section>`;
   return page(p, t, main);
 }
@@ -257,16 +242,16 @@ export function text() {
     ...t.stageBeats.map((b) => b.say),
     ...t.doors.map((d) => `- ${d.title}: ${d.line}`),
     t.also,
+    t.belief.ask,
     `## ${t.belief.h2}`,
-    t.belief.line,
-    `## ${t.cando.h2}`,
-    t.cando.line,
-    `## ${t.dayOne.h2}`,
-    t.dayOne.line,
-    `## ${t.clients.h2}`,
-    plant,
+    ...t.belief.reasons.map((r) => `- ${r}`),
+    t.clients.ask,
+    `## ${plant}`,
+    t.approach.ask,
     `## ${t.approach.h2}`,
     t.approach.line,
+    t.people.ask,
     `## ${t.people.h2}`,
+    t.people.caption,
   ].join("\n\n");
 }

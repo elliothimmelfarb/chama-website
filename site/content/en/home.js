@@ -6,12 +6,14 @@ export const home = {
     "A small, family-owned, AI-native business in Lisbon, working worldwide. We're ready to solve any problem that can be solved with software, and teach you to use AI yourself: your own engineering department, websites, apps and products, and AI fluency coaching.",
   ogAlt: "We're ready to solve any problem that can be solved with software. Chama Inteligente, Lisbon.",
 
-  descriptor: "Custom software and AI coaching, from a family business in Lisbon.",
+  // the sub says where we are and who we are, so the descriptor does not
+  descriptor: "Custom software and AI coaching.",
   // Elliot, 2026-11-17: the ready-to-solve line is the main line, marked up
   // by the ember pen (the underline, then the ring).
   h1: ["We're ready to solve any problem", "that can be solved with software."],
   h1Marks: { under: "any problem", ring: "software" },
-  sub: "You talk to a person, and AI does the heavy work behind us.",
+  // Elliot's pick, 2026-11-19
+  sub: "A small family business in Lisbon. You work with us directly.",
 
   stageLabel: "How Chama works, in eight short scenes",
   // The opening stage: one sentence a scene, each shown whole for its
@@ -35,45 +37,47 @@ export const home = {
   ],
   also: "We also partner with founders on new products, and help leadership teams with AI enablement.",
 
-  // Elliot's sentence (2026-11-16), then the goals it names, drawn as the
-  // five sides of the business: the three must-haves, then the two hopes.
+  // After the first view, each section opens with a question a visitor has
+  // and answers it in one sentence (Elliot's pick, 2026-11-19, from
+  // "Chama Homepage Picks"). Few sections, all on paper, each pointing to
+  // the page that goes deeper, so home stays light beside the others.
   belief: {
-    label: "What we believe",
-    h2: "We believe that through using and teaching AI we can enable people to spend more time doing human things and accomplish more of their goals.",
-    line: "We help you make money, save money and stay compliant, while you enjoy your business more and do things with it you couldn't before.",
-    reasons: ["Make money", "Save money", "Stay compliant", "Enjoy it more", "Do what you couldn't before"],
-  },
-
-  // One pinned world, two beats of words that take turns.
-  cando: {
-    label: "What we can do",
-    h2: "What you have to do, made easier. What you wish you could do, made possible.",
-    line: "We take on things no one has ever done before.",
-    fig: "Something new",
-  },
-  dayOne: {
-    h2: "Every new AI capability is ours on day one.",
-    line: "AI is levelling up fast. We level up with it, and we help you level up too.",
-    fig: "Day one",
+    label: "Why it matters",
+    ask: "What will it do for my business?",
+    // the goals are the answer; "more time for human things" is the
+    // stage's last beat, so it is not said again here
+    h2: "What we work toward with you.",
+    h2Mark: { under: "with you" },
+    hopesLabel: "and two we hope for:",
+    // the three must-haves, then the two hopes
+    reasons: ["Make money", "Save money", "Stay compliant", "Enjoy your business more", "Do what you couldn't before"],
+    hopesFrom: 3,
   },
 
   clients: {
-    h2: "Who we have worked with",
-    line: "Including an 88-person metal stamping plant in Toronto, which runs on software we built.",
-    lineNamed: "Including LA Metal Stamping in Toronto, which runs on software we built.",
+    label: "Who we have worked with",
+    ask: "Who have you built for?",
+    h2Mark: { ring: "88-person" },
+    line: "An 88-person metal stamping plant in Toronto runs on software we built.",
+    lineNamed: "LA Metal Stamping in Toronto runs on software we built.",
+    logosLabel: "Some of the businesses we have worked with",
   },
 
   approach: {
     label: "How we work",
-    h2: "Done for you, and taught.",
+    ask: "Will you do it for us, or teach us?",
+    h2: "Both. Done for you, and taught.",
+    h2Mark: { under: "Both" },
     line: "We give you access to AI beyond your current abilities, and teach you to make it yours, if you want.",
-    paths: ["Done for you", "Taught"],
   },
 
   people: {
+    label: "Real people you can reach",
+    ask: "Who will I be talking to?",
     h2: "Real people you can reach.",
+    h2Mark: { under: "Real people" },
     photoAlt: "Elliot and Annie, smiling, with their baby daughter, in Lisbon.",
-    caption: "Elliot and Annie, in Lisbon.",
+    caption: "Elliot and Annie.",
     cta: { text: "About us", href: "/about" },
   },
 

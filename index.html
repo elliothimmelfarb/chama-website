@@ -109,10 +109,10 @@
 .pen-ring { margin-inline: 0.2em 0.06em; }
 .pen-ring svg { left: -9%; width: 127%; top: 0.12em; height: 1.04em; }
 @keyframes pen { from { stroke-dashoffset: 1; } }
-:root:not([data-motion="low"]) .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
-:root:not([data-motion="low"]) .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
-:root.routed:not([data-motion="low"]) .pen-under path { animation-delay: 450ms; }
-:root.routed:not([data-motion="low"]) .pen-ring path { animation-delay: 900ms; }
+:root:not([data-motion="low"]) .first .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
+:root:not([data-motion="low"]) .first .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
+:root.routed:not([data-motion="low"]) .first .pen-under path { animation-delay: 450ms; }
+:root.routed:not([data-motion="low"]) .first .pen-ring path { animation-delay: 900ms; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-motion="low"]) .pen path { animation: none; } }
 /* on a phone: the headline, the stage under it, then the field; the
    descriptor and the sub follow, before the doors (from 760px the stage is
@@ -160,142 +160,69 @@
 }
 .home-doors { margin-top: var(--s5); padding-bottom: var(--s7); }
 .home-also { margin-top: var(--s4); }
-.home-frame .words .lead { margin-top: var(--s4); }
-/* the belief's sentence is long, so its heading is a size under the others */
-.home-belief h2 { font-size: min(var(--t-h2), 2.5rem); }
-/* the two beats of what we can do stand in one place, in turn */
-.home-cando .slot > div > .lead { margin-top: var(--s4); }
-/* who we have worked with: the plant line is the way to the engineering page */
-.home-plant { display: inline; color: var(--fg); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
-.home-plant .arr { display: inline-block; width: 18px; height: 18px; margin-left: 4px; vertical-align: -3px; color: var(--accent-text); }
-@media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
-.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s6) var(--s7); }
-.home-clients .logo { width: calc(var(--lw) * 1.7px); height: calc(var(--lh) * 1.7px); background: color-mix(in srgb, var(--fg) 82%, transparent); }
+/* ---- after the first view: the questions people ask (Elliot's pick,
+   2026-11-19). One paper ground, nothing pinned, no diagrams. Each section
+   is a question and its answer: the question in ember at the left, the
+   answer large beside it, a hairline above each pair. */
+.home-q { display: grid; gap: var(--s4) 24px; padding-block: clamp(4.5rem, 12svh, 9rem) 0; }
+.home-q-in { display: grid; gap: var(--s4) 24px; padding-top: var(--s5); border-top: 1px solid var(--line); }
+.ask { font: 500 var(--t-h3)/1.25 var(--display); letter-spacing: -0.01em; color: var(--accent-text); max-width: 22ch; text-wrap: balance; }
+.home-q h2 { max-width: 20ch; }
+/* the proof and the people are the page's two big claims, set larger */
+:is(.home-clients, .home-people) .home-q h2 { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.04; letter-spacing: -0.03em; }
+/* the pen marks one phrase in each answer as it comes into view, once
+   (the first view's pen, carried down); whole where scroll timelines are
+   missing, and in low or reduced motion */
+.home-q .pen-ring { margin-inline: 0.08em 0.04em; }
+.home-q .pen-ring svg { left: -6%; width: 112%; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="low"]) .home-q .pen path { animation: pen linear both; animation-timeline: view(); animation-range: entry 100% cover 55%; }
+  }
+}
+.home-q .lead { margin-top: var(--s4); }
+.home-q .more { margin-top: var(--s5); }
+.home-q .answer { min-width: 0; }
+@media (min-width: 900px) {
+  .home-q-in { grid-template-columns: repeat(12, 1fr); padding-top: var(--s6); }
+  .ask { grid-column: 1 / span 4; padding-top: 0.45em; }
+  .home-q .answer { grid-column: 5 / -1; }
+}
+/* why it matters: the five goals stand on rules, the two hopes in ember */
+.goals { list-style: none; margin: var(--s6) 0 0; padding: 0; display: grid; gap: 0 var(--s4); }
+.goal { padding: var(--s3) 0; border-top: 1px solid var(--line-strong); font: 500 var(--t-body)/1.3 var(--text); color: var(--fg); }
+.goal.hope { border-top-color: var(--accent); color: var(--accent-text); }
+@media (min-width: 760px) {
+  .goals { grid-template-columns: repeat(5, 1fr); }
+  .goal { border-top-width: 2px; padding-top: var(--s4); }
+}
+/* who we have worked with: the answer is the plant line, a link */
+.home-plant { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: transparent; text-underline-offset: 0.14em; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
 .home-plant .end { white-space: nowrap; }
-.home-clients .more { margin-top: var(--s6); }
-/* the next world's words arrive as this short section ends: the flow
-   padding's fifth of a screen for the ground's soft edge would leave a
-   quarter screen of bare grid between them */
-main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-bottom: 6vh; }
-.home-clients .frame { padding-bottom: 0; }
-/* on desktop the clients are a list beside the words, one to a row, at
-   twice the strip's size, so the section holds its frame */
-@media (min-width: 760px) and (min-aspect-ratio: 9/10) {
-  .home-clients .logos { flex-direction: column; align-items: stretch; gap: 0; padding: 0; }
-  .home-clients .logos li { padding: var(--s6) 0; border-top: 1px solid var(--line); }
-  .home-clients .logos li:last-child { border-bottom: 1px solid var(--line); }
-  .home-clients .logo { width: calc(var(--lw) * 2px); height: calc(var(--lh) * 2px); }
-}
-/* the photo settles as the world is held */
-.home-photo { margin: 0; }
-.home-photo-crop { border-radius: var(--r-surface); overflow: hidden; }
-.home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }
-.home-photo figcaption { margin-top: var(--s3); }
-.home-people .frame { --ar: 1.05; }
-/* the people's heading is the page's last claim: set large beside the photo */
-@media (min-width: 760px) and (min-aspect-ratio: 9/10) { .home-people h2 { font-size: var(--t-display); line-height: 1.02; letter-spacing: -0.03em; } }
-
-@media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  /* the words each world's figure leaves room for, measured at 364x610 with 17px text */
-  .home-belief .frame { --words-h: 21rem; }
-  .home-cando .frame { --words-h: 12rem; }
-  .home-approach .frame { --words-h: 14rem; }
-  .home-belief h2 { font-size: 1.5rem; }
-  /* the figure's callouts are numbers on a phone; the reasons carry them */
-  .home-belief .lead [data-n]::before { content: attr(data-n); margin-right: 0.3em; font-size: 0.6875rem; letter-spacing: 0.04em; vertical-align: 0.35em; font-variant-numeric: tabular-nums; }
-  /* on a phone the photo is the width of the column, cropped to the faces */
-  .home-people .frame { --ar: 1.33; }
-  .home-photo-crop { aspect-ratio: 4 / 3; }
-  .home-photo .photo { height: 100%; object-fit: cover; object-position: 50% 30%; }
-}
-
-.hfx { --ar: 1.5; }
-.hfx-in { position: relative; }
-.hfx .fx-svg { --sw: calc(600 / 330); }
-@container fx (min-width: 480px) { .hfx .fx-svg { --sw: calc(600 / 520); } }
-@container fx (min-width: 600px) { .hfx .fx-svg { --sw: calc(600 / 680); } }
-.hfx-new { stroke-dasharray: 7 7; }
-.hfx-call::before { content: ""; position: absolute; left: var(--ax); top: var(--ay); width: var(--len); height: 1px; margin-top: -0.5px; background: var(--fg-2); transform-origin: 0 50%; rotate: var(--ang); }
-.hfx-call::after { content: ""; position: absolute; left: calc(var(--ax) - 2.5px); top: calc(var(--ay) - 2.5px); width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
-/* the step is a plinth drawn in hairlines, its top face lit like a body */
-.hfx-top { fill: var(--fx-light); stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); stroke-linejoin: round; }
-.hfx-front { fill: var(--fx-platform); stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); }
-.hfx-path { fill: none; stroke: var(--fx-ink-2); stroke-width: calc(1.25px * var(--sw)); stroke-linecap: round; }
-/* the technical drawing: a paper body in ink, hatched in ember once it is
-   owned; the floor shadow gives way to a ground line */
-.hfx { --fx-body: color-mix(in srgb, var(--fg) 8%, var(--ground, var(--bg))); }
-/* a dark ground is darker than the sky over it, so a body mixed from it
-   reads as a hole there */
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hfx { --fx-body: color-mix(in srgb, var(--fg) 15%, var(--ground, var(--bg))); } }
-:root[data-theme="dark"] .hfx { --fx-body: color-mix(in srgb, var(--fg) 15%, var(--ground, var(--bg))); }
-.hfx-approach .fx-halo { stroke-width: calc(4px * var(--sw)); }
-.hfx .fx-body { fill: var(--fx-body); }
-/* nothing passes behind the business in Fig. 2, and on a marbled ground
-   the halo reads as a band round the fit */
-.hfx-cando .fx-halo { display: none; }
-.hfx .fx-ink { stroke: color-mix(in srgb, var(--fx-ink) 85%, transparent); }
-.hfx-belief .fx-body[fill*="-owned"] { fill: url(#hfx-hatch-bl); }
-.hfx-cando .fx-body[fill*="-owned"] { fill: url(#hfx-hatch-cd); }
-.hfx-approach .fx-body[fill*="-owned"] { fill: url(#hfx-hatch-ap); }
-.hfx .fx-floor { display: none; }
-.hfx .fx-plat { fill: none; stroke: var(--line-strong); stroke-width: calc(1px * var(--sw)); stroke-dasharray: calc(3px * var(--sw)) calc(5px * var(--sw)); }
-.hfx .hfx-person { fill: var(--fx-body); stroke: var(--fx-ink); stroke-width: calc(1.75px * var(--sw)); stroke-linejoin: round; }
-.hfx .fx-ring.is-yours { stroke: var(--accent); stroke-opacity: 1; stroke-width: calc(2.25px * var(--sw)); }
-.hfx-con { fill: none; stroke: color-mix(in srgb, var(--fg) 32%, transparent); stroke-width: calc(1px * var(--sw)); }
-.hfx-faint { opacity: 0.5; }
-.hfx-axis { stroke-dasharray: calc(16px * var(--sw)) calc(4px * var(--sw)) calc(2px * var(--sw)) calc(4px * var(--sw)); }
-.hfx-dash { stroke-dasharray: calc(3px * var(--sw)) calc(5px * var(--sw)); }
-.hfx-ground { fill: none; stroke: var(--fx-ink); stroke-width: calc(1.25px * var(--sw)); }
-.hfx .hfx-front { fill: url(#hfx-ink-hatch-cd); stroke: var(--fx-ink); }
-.hfx .hfx-top { fill: var(--fx-halo); stroke: var(--fx-ink); }
-.hfx-hatch-e { stroke: var(--accent); stroke-width: 0.75; stroke-opacity: 0.55; }
-.hfx-hatch-i { stroke: color-mix(in srgb, var(--fg) 40%, transparent); stroke-width: 0.75; }
-.hfx-hatch-bg { fill: var(--fx-body); }
-/* the sheet: corner marks at the box's corners and the figure's number */
-.hfx::after { content: ""; position: absolute; inset: 0; pointer-events: none; --m: 14px; --c: var(--line-strong);
-  background:
-    linear-gradient(var(--c), var(--c)) 0 0 / var(--m) 1px, linear-gradient(var(--c), var(--c)) 0 0 / 1px var(--m),
-    linear-gradient(var(--c), var(--c)) 100% 0 / var(--m) 1px, linear-gradient(var(--c), var(--c)) 100% 0 / 1px var(--m),
-    linear-gradient(var(--c), var(--c)) 0 100% / var(--m) 1px, linear-gradient(var(--c), var(--c)) 0 100% / 1px var(--m),
-    linear-gradient(var(--c), var(--c)) 100% 100% / var(--m) 1px, linear-gradient(var(--c), var(--c)) 100% 100% / 1px var(--m);
-  background-repeat: no-repeat; }
-/* the title block in the bottom right corner: the figure's number and name */
-.hfx-tb { position: absolute; right: 0; bottom: 0; display: flex; font: 600 0.6875rem/1 var(--text); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-2); font-variant-numeric: tabular-nums; box-shadow: inset 0 0 0 1px var(--line-strong); }
-.hfx-tb > * { padding: 7px 10px; }
-.hfx-tb b { color: var(--fg); box-shadow: 1px 0 var(--line-strong); }
-/* annotation: small capitals, numbered */
-.hfx .fx-lb { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
-.hfx-belief { --call: 44px; }
-.hfx-n { margin-right: 0.6em; color: var(--fg-2); font-variant-numeric: tabular-nums; }
-/* on a phone the line under the heading names the reasons, so the callouts go */
-@media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  /* the callouts keep only their numbers; the line under the heading,
-     numbered to match, names the reasons */
-  .hfx .fx-lb { font-size: 0.6875rem; }
-  .hfx-belief { --call: 16px; }
-  .hfx .fx-lb.is-wide { font-size: 0; letter-spacing: 0; }
-  .hfx .fx-lb.is-wide .hfx-n { margin: 0; font-size: 0.75rem; letter-spacing: 0.04em; color: inherit; }
-  .hfx-tb { display: none; }
-  .hfx-belief { --ar: 1.1515; aspect-ratio: 380 / 330; overflow: clip; }
-  .hfx-belief .hfx-in { width: 157.8947%; margin: -6.5789% 0 0 -28.9474%; }
-  .hfx-belief .fx-svg { --sw: calc(380 / 300); }
-  .hfx-cando { --ar: 1.4706; aspect-ratio: 500 / 340; overflow: clip; }
-  .hfx-cando .hfx-in { width: 120%; margin: 2% 0 0 -20%; }
-  .hfx-cando .fx-svg { --sw: calc(500 / 300); }
-}
-@media (max-width: 759px), (max-aspect-ratio: 9/10) {
-  .hfx-cando .fx-lb.hfx-fresh { left: 95.9977%; top: 39.612%; --ty: -100%;
-    width: 7.5em; white-space: normal; text-align: right; line-height: 1.3; }
-  /* two labels need no numbers, and there is no room for them here */
-  .hfx-cando .hfx-n { display: none; }
-}</style>
+.home-plant .arr { display: inline-block; width: 0.7em; height: 0.7em; margin-left: 0.15em; vertical-align: -0.02em; color: var(--accent-text); }
+.home-plant:focus-visible { text-decoration-color: var(--accent-text); }
+@media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
+.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s5) var(--s7); }
+.home-clients .logo { width: calc(var(--lw) * 1.6px); height: calc(var(--lh) * 1.6px); background: color-mix(in srgb, var(--fg) 82%, transparent); }
+/* real people you can reach: a small round portrait beside the answer */
+.people { display: flex; align-items: center; gap: var(--s5); }
+.portrait { flex: none; width: 128px; height: 128px; border-radius: 50%; object-fit: cover; object-position: 48% 30%; }
+:root[data-theme="dark"] .portrait { box-shadow: 0 0 0 1px var(--line); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .portrait { box-shadow: 0 0 0 1px var(--line); } }
+.people .small { margin-top: var(--s2); color: var(--fg-2); }
+@media (min-width: 760px) { .portrait { width: 176px; height: 176px; } .people { gap: var(--s6); } }
+@media (max-width: 479px) { .people { flex-direction: column; align-items: flex-start; } }
+/* the close is the visitor's turn: their question, and the field to ask it */
+.home-close .talk-close { padding: 0 0 var(--s9); max-width: none; margin: 0; }
+@media (min-width: 900px) { .home-close .talk-close { grid-column: 5 / -1; } }
+</style>
 <section class="world first" data-world="paper" data-pin="off" data-fill>
   <div class="first-grid wrap">
     <div class="first-words">
       <p class="thanks" id="thanks" role="status">Thank you. We have your details, and a person will reach out soon.</p>
-      <p class="descriptor">Custom software and AI coaching, from a family business in Lisbon.</p>
+      <p class="descriptor">Custom software and AI coaching.</p>
       <h1><span class="half">We&#39;re ready to solve <span class="pen pen-under">any problem<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span></span> <span class="half">that can be solved with <span class="pen pen-ring">software<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M70 12C200 3 380 3 436 12C474 19 476 94 434 102C330 112 130 112 42 102C4 94 4 20 44 12C80 7 130 5 190 5"/></svg></span>.</span></h1>
-      <p class="lead home-sub">You talk to a person, and AI does the heavy work behind us.</p>
+      <p class="lead home-sub">A small family business in Lisbon. You work with us directly.</p>
       <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-home"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-home" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
@@ -391,132 +318,62 @@ html[data-motion="low"] .stage[data-state] .stage-step { display: flex; }
   </div>
 </section>
 
-<section class="world home-belief" data-world="tides" style="--h:180" data-label="What we believe" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words">
-        <h2 class="r">We believe that through using and teaching AI we can enable people to spend more time doing human things and accomplish more of their goals.</h2>
-        <p class="lead r">We help you <span data-p data-n="01" style="color:color-mix(in srgb, var(--fg) calc(clamp(0, (var(--p) - 0.22) / 0.06, 1) * 100%), var(--fg-2))">make money</span>, <span data-p data-n="02" style="color:color-mix(in srgb, var(--fg) calc(clamp(0, (var(--p) - 0.31) / 0.06, 1) * 100%), var(--fg-2))">save money</span> and <span data-p data-n="03" style="color:color-mix(in srgb, var(--fg) calc(clamp(0, (var(--p) - 0.4) / 0.06, 1) * 100%), var(--fg-2))">stay compliant</span>, while you <span data-p data-n="04" style="color:color-mix(in srgb, var(--accent-text) calc(clamp(0, (var(--p) - 0.49) / 0.06, 1) * 100%), var(--fg-2))">enjoy your business more</span> and <span data-p data-n="05" style="color:color-mix(in srgb, var(--accent-text) calc(clamp(0, (var(--p) - 0.58) / 0.06, 1) * 100%), var(--fg-2))">do things with it you couldn&#39;t before</span>.</p>
-      </div>
-      <div class="fig r"><figure class="fx hfx hfx-belief"><div class="hfx-in"><svg class="fx-svg" viewBox="-300 -190 600 400" aria-hidden="true" focusable="false"><defs><pattern id="hfx-hatch-bl" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hfx-hatch-bg" width="9" height="9"/><line class="hfx-hatch-e" x1="0" y1="0" x2="0" y2="9"/></pattern></defs><path class="hfx-con hfx-axis" d="M-149.5 0 H149.5 M0 -128.57 V128.57"/><ellipse class="hfx-con hfx-dash hfx-faint" cx="0" cy="0" rx="130" ry="111.8"/><path class="hfx-ground" d="M-250 109.6481 H250"/><path class="hfx-con" d="M-244 110.6481 l-7 7 M-232 110.6481 l-7 7 M-220 110.6481 l-7 7 M-208 110.6481 l-7 7 M-196 110.6481 l-7 7 M-184 110.6481 l-7 7 M-172 110.6481 l-7 7 M-160 110.6481 l-7 7 M-148 110.6481 l-7 7 M-136 110.6481 l-7 7 M-124 110.6481 l-7 7 M-112 110.6481 l-7 7 M-100 110.6481 l-7 7 M-88 110.6481 l-7 7 M-76 110.6481 l-7 7 M-64 110.6481 l-7 7 M-52 110.6481 l-7 7 M-40 110.6481 l-7 7 M-28 110.6481 l-7 7 M-16 110.6481 l-7 7 M-4 110.6481 l-7 7 M8 110.6481 l-7 7 M20 110.6481 l-7 7 M32 110.6481 l-7 7 M44 110.6481 l-7 7 M56 110.6481 l-7 7 M68 110.6481 l-7 7 M80 110.6481 l-7 7 M92 110.6481 l-7 7 M104 110.6481 l-7 7 M116 110.6481 l-7 7 M128 110.6481 l-7 7 M140 110.6481 l-7 7 M152 110.6481 l-7 7 M164 110.6481 l-7 7 M176 110.6481 l-7 7 M188 110.6481 l-7 7 M200 110.6481 l-7 7 M212 110.6481 l-7 7 M224 110.6481 l-7 7 M236 110.6481 l-7 7 M248 110.6481 l-7 7"/><defs>
-    <radialGradient id="bl-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient><radialGradient id="bl-owned" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-owned"/></radialGradient>
-    <radialGradient id="bl-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
-  </defs>
-  <g transform="translate(0 0)">
-    <ellipse class="fx-floor" fill="url(#bl-floor)" cx="0" cy="100.8481" rx="149.5" ry="26"/>
-    <path class="fx-body" fill="url(#bl-body)" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    <path class="fx-body" data-p style="opacity:clamp(0, (var(--p) - 0.62) / 0.08, 1)" fill="url(#bl-owned)" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    <path class="fx-ink" pathLength="1" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    
-  </g><path class="fx-fit" data-p pathLength="1" d="M0 -133.2606 L145.9369 -42.0754" style="opacity:clamp(0, (var(--p) - 0.18) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.18) / 0.08, 1) * clamp(0, (var(--p) - 0.18) / 0.08, 1) * (3 - 2 * clamp(0, (var(--p) - 0.18) / 0.08, 1))));scale:calc(1.03 - 0.03 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))"/><path class="fx-fit" data-p pathLength="1" d="M145.9369 -42.0754 L88.9915 108.6481" style="opacity:clamp(0, (var(--p) - 0.27) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.27) / 0.08, 1) * clamp(0, (var(--p) - 0.27) / 0.08, 1) * (3 - 2 * clamp(0, (var(--p) - 0.27) / 0.08, 1))));scale:calc(1.03 - 0.03 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))"/><path class="fx-fit" data-p pathLength="1" d="M88.9915 108.6481 L-88.9915 108.6481" style="opacity:clamp(0, (var(--p) - 0.36) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.36) / 0.08, 1) * clamp(0, (var(--p) - 0.36) / 0.08, 1) * (3 - 2 * clamp(0, (var(--p) - 0.36) / 0.08, 1))));scale:calc(1.03 - 0.03 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))"/><path class="fx-fit" data-p pathLength="1" d="M-88.9915 108.6481 L-145.9369 -42.0754" style="opacity:clamp(0, (var(--p) - 0.45) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.45) / 0.08, 1) * clamp(0, (var(--p) - 0.45) / 0.08, 1) * (3 - 2 * clamp(0, (var(--p) - 0.45) / 0.08, 1))));scale:calc(1.03 - 0.03 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))"/><path class="fx-fit" data-p pathLength="1" d="M-145.9369 -42.0754 L0 -133.2606" style="opacity:clamp(0, (var(--p) - 0.54) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.54) / 0.08, 1) * clamp(0, (var(--p) - 0.54) / 0.08, 1) * (3 - 2 * clamp(0, (var(--p) - 0.54) / 0.08, 1))));scale:calc(1.03 - 0.03 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))"/></svg><span class="fx-lb hfx-call is-wide is-live" data-p style="--x:62.1614%;--y:25.583%;--tx:calc(0.5299 * var(--call) + 6px);--ty:calc(-0.8481 * var(--call) - 50%);--ax:calc(-1 * (0.5299 * var(--call) + 6px));--ay:calc(50% - -0.8481 * var(--call));--ang:-58.0018deg;--len:var(--call);opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.23) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.23) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">01</span>Make money</span><span class="fx-lb hfx-call is-wide is-live" data-p style="--x:69.5774%;--y:55.8216%;--tx:calc(0.9355 * var(--call) + 6px);--ty:calc(0.3534 * var(--call) - 50%);--ax:calc(-1 * (0.9355 * var(--call) + 6px));--ay:calc(50% - 0.3534 * var(--call));--ang:20.6972deg;--len:var(--call);opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.32) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.32) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">02</span>Save money</span><span class="fx-lb hfx-call is-wide is-live" data-p style="--x:50%;--y:74.662%;--tx:-50%;--ty:calc(1 * var(--call) + 2px);--ax:50%;--ay:calc(-1 * (1 * var(--call) + 2px));--ang:90deg;--len:var(--call);opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.41) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.41) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">03</span>Stay compliant</span><span class="fx-lb hfx-call is-wide is-hot" data-p style="--x:30.4226%;--y:55.8216%;--tx:calc(-0.9355 * var(--call) - 6px - 100%);--ty:calc(0.3534 * var(--call) - 50%);--ax:calc(100% - -0.9355 * var(--call) + 6px);--ay:calc(50% - 0.3534 * var(--call));--ang:159.3028deg;--len:var(--call);opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.5) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.5) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">04</span>Enjoy it more</span><span class="fx-lb hfx-call is-wide is-hot" data-p style="--x:37.8386%;--y:25.583%;--tx:calc(-0.5299 * var(--call) - 6px - 100%);--ty:calc(-0.8481 * var(--call) - 50%);--ax:calc(100% - -0.5299 * var(--call) + 6px);--ay:calc(50% - -0.8481 * var(--call));--ang:-121.9982deg;--len:var(--call);opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.59) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.59) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">05</span>Do what you couldn&#39;t before</span></div><span class="hfx-tb" aria-hidden="true"><b>Fig. 1</b><span>What we believe</span></span></figure></div>
+<section class="world home-belief" data-world="paper" data-pin="off" data-label="Why it matters">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">What will it do for my business?</p>
+    <div class="answer">
+      <h2>What we work toward <span class="pen pen-under">with you<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span>.</h2>
+      <ul class="goals"><li class="goal">Make money</li><li class="goal">Save money</li><li class="goal">Stay compliant</li><li class="goal hope"><span class="sr-only">and two we hope for: </span>Enjoy your business more</li><li class="goal hope">Do what you couldn&#39;t before</li></ul>
     </div>
-  </div>
+  </div></div>
 </section>
 
-<section class="world home-cando" data-world="grid" style="--h:220" data-label="What we can do" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words slot">
+<section class="world home-clients" data-world="paper" data-pin="off" data-label="Who we have worked with">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">Who have you built for?</p>
+    <div class="answer">
+      <h2><a class="home-plant" href="/engineering-department">An <span class="pen pen-ring">88-person<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M70 12C200 3 380 3 436 12C474 19 476 94 434 102C330 112 130 112 42 102C4 94 4 20 44 12C80 7 130 5 190 5"/></svg></span> metal stamping plant in Toronto runs on software we <span class="end">built.<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></h2>
+      <div aria-label="Some of the businesses we have worked with" role="group"><ul class="logos"><li><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-mask.webp');--lw:46;--lh:44"></span></li><li><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></li><li><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-mask.webp');--lw:119;--lh:20"></span></li></ul></div>
+      <a class="more" href="/work">Everything we&#39;ve built<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </div></div>
+</section>
+
+<section class="world home-approach" data-world="paper" data-pin="off" data-label="How we work">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">Will you do it for us, or teach us?</p>
+    <div class="answer">
+      <h2><span class="pen pen-under">Both<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span>. Done for you, and taught.</h2>
+      <p class="lead">We give you access to AI beyond your current abilities, and teach you to make it yours, if you want.</p>
+    </div>
+  </div></div>
+</section>
+
+<section class="world home-people" data-world="paper" data-pin="off" data-label="Real people you can reach">
+  <div class="wrap home-q"><div class="home-q-in">
+    <p class="ask">Who will I be talking to?</p>
+    <div class="answer">
+      <div class="people">
+        <img class="portrait" src="/assets/family-2026-480.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w" sizes="(min-width: 760px) 176px, 128px" width="480" height="423" alt="Elliot and Annie, smiling, with their baby daughter, in Lisbon." loading="lazy" decoding="async">
         <div>
-          <h2 class="r" style="--out:0.5">What you have to do, made easier. What you wish you could do, made possible.</h2>
-          <p class="lead r" style="--out:0.5">We take on things no one has ever done before.</p>
-        </div>
-        <div>
-          <h2 class="r" style="--in:0.5">Every new AI capability is ours on day one.</h2>
-          <p class="lead r" style="--in:0.5">AI is levelling up fast. We level up with it, and we help you level up too.</p>
+          <h2><span class="pen pen-under">Real people<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span> you can reach.</h2>
+          <p class="small">Elliot and Annie.</p>
+          <a class="more" href="/about">About us<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         </div>
       </div>
-      <div class="fig r"><figure class="fx hfx hfx-cando"><div class="hfx-in"><svg class="fx-svg" viewBox="-300 -190 600 400" aria-hidden="true" focusable="false"><defs><pattern id="hfx-hatch-cd" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hfx-hatch-bg" width="9" height="9"/><line class="hfx-hatch-e" x1="0" y1="0" x2="0" y2="9"/></pattern>
-  <pattern id="hfx-ink-hatch-cd" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hfx-hatch-bg" width="6" height="6"/><line class="hfx-hatch-i" x1="0" y1="0" x2="0" y2="6"/></pattern></defs><path class="hfx-con hfx-axis" d="M-149.5 0 H149.5 M0 -128.57 V128.57"/><defs><radialGradient id="cd-new-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient></defs>
-  <path class="hfx-top" data-p d="M-160 82.6481 H282 L272 130.6481 H-170 Z" style="opacity:clamp(0, (var(--p) - 0.48) / 0.08, 1);translate:0 calc(26px * (1 - (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1)))))"/>
-  <path class="hfx-front" data-p d="M-170 130.6481 H272 V156.6481 H-170 Z" style="opacity:clamp(0, (var(--p) - 0.5) / 0.06, 1);transform-box:fill-box;transform-origin:bottom;scale:1 calc(0.001 + 0.999 * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))"/>
-  <defs>
-    <radialGradient id="cd-owned" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-owned"/></radialGradient>
-    <radialGradient id="cd-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
-  </defs>
-  <g transform="translate(0 0)">
-    <ellipse class="fx-floor" data-p style="translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))" fill="url(#cd-floor)" cx="0" cy="100.8481" rx="149.5" ry="26"/>
-    <path class="fx-body" data-p style="translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))" fill="url(#cd-owned)" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    
-    <path class="fx-ink" data-p style="translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))" pathLength="1" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    <path class="fx-halo" data-p style="translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))" pathLength="1" d="M0 -133.26 L145.94 -42.08 L88.99 108.65 L-88.99 108.65 L-145.94 -42.08 Z"/>
-    <path class="fx-fit" data-p style="translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))" pathLength="1" d="M0 -133.26 L145.94 -42.08 L88.99 108.65 L-88.99 108.65 L-145.94 -42.08 Z"/>
-  </g>
-  <ellipse class="fx-floor" data-p fill="url(#cd-floor)" cx="222" cy="98.4481" rx="54" ry="10" style="opacity:clamp(0, (var(--p) - 0.1) / 0.08, 1);translate:calc(48px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.1) / 0.12, 1), 3)))) calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))"/>
-  <path class="fx-body" data-p fill="url(#cd-new-body)" d="M182 26.45 L217 8.45 L260 34.45 L268 76.45 L230 90.45 L180 82.45 Z" style="opacity:clamp(0, (var(--p) - 0.34) / 0.08, 1);translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))"/>
-  <path class="fx-ink hfx-new" data-p d="M182 26.45 L217 8.45 L260 34.45 L268 76.45 L230 90.45 L180 82.45 Z" style="opacity:calc(0.8 * clamp(0, (var(--p) - 0.1) / 0.08, 1) * (1 - clamp(0, (var(--p) - 0.36) / 0.06, 1)));translate:calc(48px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.1) / 0.12, 1), 3)))) calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))"/>
-  <path class="fx-ink" data-p d="M182 26.45 L217 8.45 L260 34.45 L268 76.45 L230 90.45 L180 82.45 Z" style="opacity:clamp(0, (var(--p) - 0.36) / 0.06, 1);translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))"/>
-  <path class="fx-fit" data-p pathLength="1" d="M217.28 0.43 L266.29 30.07 L275.99 80.97 L230.7 97.65 L172.78 88.38 L175.15 22.1 Z" style="opacity:clamp(0, (var(--p) - 0.24) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.24) / 0.14, 1) * clamp(0, (var(--p) - 0.24) / 0.14, 1) * (3 - 2 * clamp(0, (var(--p) - 0.24) / 0.14, 1))));translate:0 calc(-26px * (clamp(0, (var(--p) - 0.56) / 0.12, 1) * clamp(0, (var(--p) - 0.56) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.56) / 0.12, 1))))"/></svg><span class="fx-lb is-live hfx-fresh" data-p style="--x:99.6667%;--y:27.612%;--tx:-100%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.22) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.22) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">01</span>Something new</span><span class="fx-lb is-live" data-p style="--x:58.1667%;--y:91.162%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.64) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.64) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">02</span>Day one</span></div><span class="hfx-tb" aria-hidden="true"><b>Fig. 2</b><span>What we can do</span></span></figure></div>
     </div>
-  </div>
+  </div></div>
 </section>
 
-<section class="world home-clients" data-world="grid" data-pin="off" data-label="Who we have worked with" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words backed">
-        <h2 class="r">Who we have worked with</h2>
-        <p class="lead r"><a class="home-plant" href="/engineering-department">Including an 88-person metal stamping plant in Toronto, which runs on software we <span class="end">built.<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></p>
-        <a class="more r" href="/work">Everything we&#39;ve built<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </div>
-      <div class="r backed"><ul class="logos"><li><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-mask.webp');--lw:46;--lh:44"></span></li><li><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></li><li><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-mask.webp');--lw:119;--lh:20"></span></li></ul></div>
-    </div>
-  </div>
-</section>
-
-<section class="world home-approach" data-world="ember" style="--h:170" data-label="How we work" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split">
-      <div class="words">
-        <h2 class="r">Done for you, and taught.</h2>
-        <p class="lead r">We give you access to AI beyond your current abilities, and teach you to make it yours, if you want.</p>
-      </div>
-      <div class="fig r"><figure class="fx hfx hfx-approach"><div class="hfx-in"><svg class="fx-svg" viewBox="-300 -190 600 400" aria-hidden="true" focusable="false"><defs><pattern id="hfx-hatch-ap" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hfx-hatch-bg" width="9" height="9"/><line class="hfx-hatch-e" x1="0" y1="0" x2="0" y2="9"/></pattern></defs><path class="hfx-con hfx-axis" d="M-195 0 H195 M0 -167.7 V167.7"/><path class="fx-plat" data-p d="M0 152.4481 A190 44 0 1 1 0 64.4481 A190 44 0 1 1 0 152.4481" style="opacity:clamp(0, (var(--p) - 0.5) / 0.12, 1)"/>
-  <path class="fx-ring is-yours" data-p pathLength="1" d="M0 152.4481 A190 44 0 1 1 0 64.4481 A190 44 0 1 1 0 152.4481" style="opacity:clamp(0, (var(--p) - 0.44) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.44) / 0.16, 1) * clamp(0, (var(--p) - 0.44) / 0.16, 1) * (3 - 2 * clamp(0, (var(--p) - 0.44) / 0.16, 1))))"/>
-  <path class="hfx-path" data-p pathLength="1" d="M-262 -16 C-262 -120 -110 -173.2606 0 -133.2606" style="opacity:clamp(0, (var(--p) - 0.14) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.14) / 0.12, 1) * clamp(0, (var(--p) - 0.14) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.14) / 0.12, 1))))"/>
-  <path class="hfx-path" data-p pathLength="1" d="M-240 44 C-222 152.4481 -120 158.4481 0 152.4481" style="opacity:clamp(0, (var(--p) - 0.32) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.32) / 0.12, 1) * clamp(0, (var(--p) - 0.32) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.32) / 0.12, 1))))"/>
-  <path class="hfx-ground" d="M-300 54 H-224"/><path class="hfx-con" d="M-294 55 l-7 7 M-282 55 l-7 7 M-270 55 l-7 7 M-258 55 l-7 7 M-246 55 l-7 7 M-234 55 l-7 7"/>
-  <path class="hfx-person" data-p d="M-284 54 C-284 33 -275 24 -262 24 C-249 24 -240 33 -240 54 Z M-275 5 A13 13 0 1 0 -249 5 A13 13 0 1 0 -275 5 Z" style="opacity:clamp(0, (var(--p) - 0.04) / 0.08, 1);translate:0 calc(10px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.04) / 0.1, 1), 3))))"/>
-  <defs>
-    <radialGradient id="ap-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient><radialGradient id="ap-owned" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-owned"/></radialGradient>
-    <radialGradient id="ap-floor"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient>
-  </defs>
-  <g transform="translate(0 0)">
-    <ellipse class="fx-floor" fill="url(#ap-floor)" cx="0" cy="100.8481" rx="149.5" ry="26"/>
-    <path class="fx-body" fill="url(#ap-body)" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    <path class="fx-body" data-p style="opacity:clamp(0, (var(--p) - 0.62) / 0.08, 1)" fill="url(#ap-owned)" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    <path class="fx-ink" pathLength="1" d="M0 -111.8 L123.64 -34.55 L76.41 90.45 L-76.41 90.45 L-123.64 -34.55 Z"/>
-    
-  </g>
-  <path class="fx-halo" data-p pathLength="1" d="M0 -133.26 L145.94 -42.08 L88.99 108.65 L-88.99 108.65 L-145.94 -42.08 Z" style="opacity:clamp(0, (var(--p) - 0.26) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.26) / 0.18, 1) * clamp(0, (var(--p) - 0.26) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.26) / 0.18, 1))));transform-box:fill-box;transform-origin:center;scale:calc(1.035 - 0.035 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))"/>
-  <path class="fx-fit" data-p pathLength="1" d="M0 -133.26 L145.94 -42.08 L88.99 108.65 L-88.99 108.65 L-145.94 -42.08 Z" style="opacity:clamp(0, (var(--p) - 0.26) / 0.05, 1);stroke-dashoffset:calc(1 - (clamp(0, (var(--p) - 0.26) / 0.18, 1) * clamp(0, (var(--p) - 0.26) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.26) / 0.18, 1))));transform-box:fill-box;transform-origin:center;scale:calc(1.035 - 0.035 * (1 - pow(1 - clamp(0, (var(--p) - 0.62) / 0.1, 1), 3)))"/>
-  <circle class="fx-mk" data-p r="7" style="offset-path:path('M-262 -16 C-262 -120 -110 -173.2606 0 -133.2606 L0 -133.26 L145.94 -42.08 L88.99 108.65 L-88.99 108.65 L-145.94 -42.08 L0 -133.26');offset-rotate:0deg;offset-distance:calc((0.2658 * (clamp(0, (var(--p) - 0.14) / 0.12, 1) * clamp(0, (var(--p) - 0.14) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.14) / 0.12, 1))) + 0.7342 * (clamp(0, (var(--p) - 0.26) / 0.18, 1) * clamp(0, (var(--p) - 0.26) / 0.18, 1) * (3 - 2 * clamp(0, (var(--p) - 0.26) / 0.18, 1)))) * 100%);opacity:calc(clamp(0, (var(--p) - 0.12) / 0.05, 1) * (1 - clamp(0, (var(--p) - 0.44) / 0.06, 1)))"/>
-  <circle class="fx-mk" data-p r="6" style="offset-path:path('M-240 44 C-222 152.4481 -120 158.4481 0 152.4481 L0 152.4481 A190 44 0 1 1 0 64.4481 A190 44 0 1 1 0 152.4481');offset-rotate:0deg;offset-distance:calc((0.2474 * (clamp(0, (var(--p) - 0.32) / 0.12, 1) * clamp(0, (var(--p) - 0.32) / 0.12, 1) * (3 - 2 * clamp(0, (var(--p) - 0.32) / 0.12, 1))) + 0.7526 * (clamp(0, (var(--p) - 0.44) / 0.16, 1) * clamp(0, (var(--p) - 0.44) / 0.16, 1) * (3 - 2 * clamp(0, (var(--p) - 0.44) / 0.16, 1)))) * 100%);opacity:calc(clamp(0, (var(--p) - 0.3) / 0.05, 1) * (1 - clamp(0, (var(--p) - 0.6) / 0.06, 1)))"/></svg><span class="fx-lb is-live" data-p style="--x:30%;--y:6.25%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.22) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.22) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">01</span>Done for you</span><span class="fx-lb is-live" data-p style="--x:3.3333%;--y:90.112%;--tx:0%;opacity:calc(0.01 + 0.99 * clamp(0, (var(--p) - 0.4) / 0.05, 1));translate:var(--tx, -50%) calc(var(--ty, -50%) + 4px * (1 - (1 - pow(1 - clamp(0, (var(--p) - 0.4) / 0.05, 1), 3))))" aria-hidden="true"><span class="hfx-n">02</span>Taught</span></div><span class="hfx-tb" aria-hidden="true"><b>Fig. 3</b><span>How we work</span></span></figure></div>
-    </div>
-  </div>
-</section>
-
-<section class="world home-people" data-world="ember" style="--h:130" data-label="Real people you can reach" data-fill>
-  <div class="pin">
-    <div class="frame home-frame" data-layout="split" data-flip>
-      <div class="words">
-        <h2 class="r">Real people you can reach.</h2>
-        <a class="more r" href="/about">About us<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </div>
-      <div class="fig r"><figure class="fig-box home-photo"><div class="home-photo-crop"><img class="photo" data-p src="/assets/family-2026-720.webp" srcset="/assets/family-2026-480.webp 480w, /assets/family-2026-720.webp 720w, /assets/family-2026-960.webp 960w, /assets/family-2026-1440.webp 1440w" sizes="(min-width: 760px) 50vw, 100vw" width="2048" height="1804" alt="Elliot and Annie, smiling, with their baby daughter, in Lisbon." loading="lazy" decoding="async"></div><figcaption class="small">Elliot and Annie, in Lisbon.</figcaption></figure></div>
-    </div>
-  </div>
-</section>
-
-<section class="world end" data-world="ember" data-pin="off" data-label="Talk to us">
-  <section class="talk-close" aria-label="Talk to us">
-  <p class="talk-close-line">What do you need?</p>
+<section class="world end home-close" data-world="paper" data-pin="off" data-label="Talk to us">
+  <div class="wrap home-q"><div class="home-q-in"><p class="ask">What do you need?</p><section class="talk-close" aria-label="Talk to us">
+  
   <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-1"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>
   <div class="field"><input id="ask-1" name="q" placeholder="What do you need?" autocomplete="off" enterkeyhint="send"><button class="btn btn-accent" type="submit">Talk to us</button></div>
 </form>
   
-</section>
+</section></div></div>
 </section>
 </main>
 <footer class="foot">
