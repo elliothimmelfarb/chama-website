@@ -482,7 +482,7 @@
   var docH = 0, vh = 0;
   // ---- leaving: a world leaves as one ----------------------------------------
   // A world's --u runs from 1 to 2 while its pin scrolls away. Its .r all
-  // leave on one exit (Leave, docs/DESIGN.md section 5): the world stands
+  // leave on one exit (Leave): the world stands
   // complete for EXIT_AT of a screen, then each .r fades over EXIT_SPAN,
   // EXIT_STAGGER after the one before it in reading order (--i), lifting
   // --lift. goneOf finds where that exit starts: at EXIT_AT, or earlier

@@ -1,5 +1,4 @@
-// What other code depends on in the figure language (site/figures/kit.js,
-// docs/DESIGN.md "The frame and the figure language"):
+// What other code depends on in the figure language (site/figures/kit.js):
 // - the helpers return the geometry and the --p expressions figures expect,
 //   and every layer subject() draws is complete at --p 1 (low motion, no
 //   JavaScript and print show --p 1);

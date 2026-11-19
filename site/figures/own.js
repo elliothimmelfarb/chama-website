@@ -1,4 +1,4 @@
-// You own it (docs/DESIGN.md section 7, /engineering-department row 6): the
+// You own it: the
 // two businesses stand from the start, the copy we run on our platform,
 // behind, and yours on yours, in front. The software's ember outline is
 // drawn round ours, then lifts out, flies over and sets down round yours,

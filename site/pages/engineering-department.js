@@ -1,7 +1,6 @@
 // /engineering-department: the page a referred business owner lands on from
 // a link, usually on a phone. Its first screen says what this is without
-// the home page. Sections and grounds follow docs/DESIGN.md section 7; every
-// world's contents sit in one .frame (section 14).
+// the home page. Every world's contents sit in one .frame.
 import { readFileSync } from "node:fs";
 import { html, raw } from "../html.js";
 import { SITE } from "../site.js";

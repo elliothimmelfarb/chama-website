@@ -1,4 +1,4 @@
-// The loop on /engineering-department (docs/DESIGN.md section 12): you (the
+// The loop on /engineering-department: you (the
 // protagonist, carried on from the contrast at the same size and place,
 // so it arrives drawn), the software (the ember outline that refits every
 // lap) and the AI system we run (a platform with a dotted rim and four
@@ -33,7 +33,7 @@ const shape = (laps) => {
 };
 const OUTLINES = [0, 1, 2, 3, 4].map((k) => poly(grow(shape(k), FIT_GAP * YOURS.R)));
 
-// The laps in the order the marker runs them (DESIGN.md section 12).
+// The laps in the order the marker runs them.
 const ORDER = ["A new filter", "A fix", "Download to Excel", "A new report"];
 export const LAPS = ORDER.map((label) => EXAMPLES.find((e) => e.label === label));
 // Each lap is 0.19 of the hold and the last parks by 0.84, so the finished

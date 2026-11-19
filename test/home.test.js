@@ -1,5 +1,4 @@
-// The home page as built (index.html) says what docs/DESIGN.md section 7
-// ("/ Home") says it does, in that order: who we are and the stage, the
+// The home page as built (index.html) says, in this order: who we are and the stage, the
 // doors, what we believe and what we help you do, what we can do with day
 // one, who we have worked with, done for you and taught, real people you
 // can reach, and the close. It says each thing once, and the change time
@@ -32,7 +31,7 @@ const worlds = [...main.matchAll(/<section class="world([^"]*)"([^>]*)>([\s\S]*?
 // Elliot's own sentence, 2026-11-16: the home page's values statement.
 const VALUES = "We believe that through using and teaching AI we can enable people to spend more time doing human things and accomplish more of their goals.";
 
-test("home is seven sections in the order and on the grounds DESIGN.md gives", () => {
+test("home is seven sections in their order and on their grounds", () => {
   assert.deepEqual(worlds.map((w) => w.ground), ["paper", "tides", "grid", "grid", "ember", "ember", "ember"]);
   assert.deepEqual(worlds.map((w) => w.pinned), [false, true, true, false, true, true, false]);
   assert.deepEqual(worlds.slice(1).map((w) => w.label), ["What we believe", "What we can do", "Who we have worked with", "How we work", "Real people you can reach", "Talk to us"]);

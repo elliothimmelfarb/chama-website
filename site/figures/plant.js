@@ -3,7 +3,7 @@
 import { html, raw } from "../html.js";
 import { place, subject } from "./kit.js";
 
-// Before and after (docs/DESIGN.md section 8): what the plant ran on, an
+// Before and after: what the plant ran on, an
 // old system's window, a second app and four spreadsheets in a loose pile
 // on one shadow, three lines gathering them into one point, and the one
 // system that replaced them: the protagonist, owned, so it is warm.

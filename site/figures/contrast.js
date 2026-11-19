@@ -1,5 +1,4 @@
-// Buying software against having your own engineers (docs/DESIGN.md section
-// 7, /engineering-department row 2), in two acts in one box. Act one, large:
+// Buying software against having your own engineers, in two acts in one box. Act one, large:
 // customers queue at a software company, a grey block with a doorway; the
 // line moves up twice, each time the front one goes in and a new one joins
 // at the back, so it never gets shorter. Then the camera moves on: the

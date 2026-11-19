@@ -1,5 +1,4 @@
-// /coaching and /about as built (docs/DESIGN.md section 7 and "The frame and
-// the figure language"):
+// /coaching and /about as built:
 // - every world holds its contents in one .frame with a named layout, and
 //   opts into the shots rig's fill check, so empty frames cannot come back;
 // - every figure part that reads --p is whole at --p 1 (low motion, no

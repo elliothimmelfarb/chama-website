@@ -12,7 +12,7 @@ export const EXAMPLES = [
   { label: "Download to Excel", minutes: 42 },
 ];
 
-// The summary on /engineering-department (docs/DESIGN.md section 7, row 4):
+// The summary on /engineering-department:
 // every measured request as one dot on one sheet, the day, in the order
 // they went live. The sheet arrives with its world already holding a grey
 // dot for each request; then those live within the hour fill in ember, a

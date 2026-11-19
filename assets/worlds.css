@@ -273,8 +273,7 @@ html:not(.pin) .slot,
 /* ---- words on the grid --------------------------------------------------- */
 /* The grid's floor lines run under the lower part of the screen. Text and
    charts that can sit there (.backed) stand on a patch of the ground's own
-   colour, feathered at its edges, so no line crosses a word (docs/DESIGN.md,
-   anti-pattern 15). It is static: nothing here reads --u, --e or --p. */
+   colour, feathered at its edges, so no line crosses a word. It is static: nothing here reads --u, --e or --p. */
 .world[data-world="grid"] .backed { position: relative; isolation: isolate; }
 .world[data-world="grid"] .backed::before {
   content: "";

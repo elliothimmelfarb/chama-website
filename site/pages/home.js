@@ -131,7 +131,7 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
   .home-clients .logos li:last-child { border-bottom: 1px solid var(--line); }
   .home-clients .logo { width: calc(var(--lw) * 2px); height: calc(var(--lh) * 2px); }
 }
-/* the photo settles as the world is held (docs/DESIGN.md, home) */
+/* the photo settles as the world is held */
 .home-photo { margin: 0; }
 .home-photo-crop { border-radius: var(--r-surface); overflow: hidden; }
 .home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }

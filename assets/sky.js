@@ -22,7 +22,6 @@
   // ground's main colour is its --ground in tokens.css (light / dark):
   // paper #f3f0e8 / #161513, grid #e3e8ec / #0e151c, tides #dcebe7 /
   // #06343a, ember #f3dfcd / #0f0b09, so low motion and the sky agree.
-  // docs/DESIGN.md (section 4) describes each look.
   var PAPER = {
     base: [[0.953, 0.941, 0.910], [0.086, 0.082, 0.075]],
     edge: [[0.882, 0.861, 0.819], [0.055, 0.052, 0.047]],
