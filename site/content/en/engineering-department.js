@@ -20,8 +20,8 @@ export const ed = {
   lead: "Software that fits your process, and changes when you do. You talk to a person. AI does the heavy work behind us.",
 
   contrast: {
-    h2: "Software companies have engineers, and their customers wait in line.",
-    lead: "Here the engineers work only for you. You get what a software company has, without becoming one.",
+    h2: "Big companies have their own engineers. Now your business can too.",
+    lead: "They work only for you, so you never wait in line behind a software company's other customers. You get what a software company has, without becoming one.",
     them: "Off the shelf",
     you: "Yours",
   },

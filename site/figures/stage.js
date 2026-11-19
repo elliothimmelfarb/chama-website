@@ -41,7 +41,7 @@ const circ = (x, y, r) => `M${x - r} ${y} A${r} ${r} 0 1 0 ${x + r} ${y} A${r} $
 // ember line, which is drawn by one hand. Times are seconds into the scene.
 const SCENES = [];
 
-// 1. The old way: a tall company, engineers in its windows, a long queue at its door.
+// 1. Big companies: a tall company with engineers in its windows, and you looking up at it.
 {
   const ink = [rrect(452, 64, 140, 236, 8), `M505 300 V262 Q505 256 511 256 H533 Q539 256 539 262 V300`], win = [], fill = [];
   for (let r = 0; r < 7; r++) for (let k = 0; k < 4; k++) {
@@ -50,13 +50,12 @@ const SCENES = [];
     win.push(rrect(x, y, 21, 15, 2.5));
     if ((r * 4 + k) % 5 === 2) fill.push(circ(x + 10.5, y + 8.2, 3.2));
   }
-  const q = Array.from({ length: 6 }, (_, k) => inkPerson(432 - k * 33, 0.86));
   SCENES.push({
     tone: [rrect(452, 64, 140, 236, 8)],
-    ink: [{ d: ink.join(" "), a: 0, dur: 1.1 }, { d: q.join(" "), a: 0.35, dur: 1.2 }],
+    ink: [{ d: ink.join(" "), a: 0, dur: 1.1 }],
     ink2: [{ d: win.join(" "), a: 0.25, dur: 1.0 }],
     fill: fill.map((d) => ({ d, a: 1.1 })),
-    em: { d: `M${L} ${Y} H${r1(234 - 14 * 0.95)} ${emPerson(234, 0.95)} H252`, a: 1.0, dur: 1.6 },
+    em: { d: `M${L} ${Y} H${r1(370 - 14 * 1.05)} ${emPerson(370, 1.05)} H392`, a: 0.6, dur: 1.8 },
   });
 }
 // 2. The turn: you at a table with two engineers who work only for you.

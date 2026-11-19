@@ -74,3 +74,11 @@ test("every world sits in a frame, and is held to the fill floor", () => {
   }
   assert.ok(!/ed-after|ed-hold/.test(HTML), "the loop's closing line and the old hold grid are gone");
 });
+
+// Elliot, 2026-11-19: the page says the home stage's opening pair, and the
+// lead says what the contrast figure's queue means.
+test("the contrast opens on having your own engineers", () => {
+  const contrast = sections.find((s) => /<h2[^>]*>Big companies have their own engineers\. Now your business can too\.<\/h2>/.test(s));
+  assert.ok(contrast, "the contrast heading is the home stage's opening pair");
+  assert.match(text(contrast), /They work only for you, so you never wait in line behind a software company's other customers\./);
+});

@@ -18,8 +18,8 @@ export const home = {
   // The opening stage: one sentence a scene, each shown whole for its
   // reading time (site/figures/stage.js).
   stageBeats: [
-    { name: "The old way", say: "Software companies have engineers, and their customers wait in line." },
-    { name: "The turn", say: "Here the engineers work only for you." },
+    { name: "Big companies", say: "Big companies have their own engineers." },
+    { name: "Your own engineers", say: "Now your business can too." },
     { name: "A small team", say: "A small, family-owned, AI-native business." },
     { name: "The loop", say: "Tell us what you need. It gets built. You use it. You find what's next." },
     { name: "Fit", say: "Fits your process, and changes when you do." },

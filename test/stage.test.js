@@ -35,7 +35,7 @@ const says = [...html.matchAll(/<p class="stage-say" data-p style="([^"]*)">([\s
 const shown = (part, p) => (value(part.style, "opacity", p) ?? 1) > 0.05;
 
 test("a scene stays up for its reading time", () => {
-  assert.equal(readingTime("Here the engineers work only for you."), 1.4 + 0.35 * 7);
+  assert.equal(readingTime("Big companies have their own engineers."), 1.4 + 0.35 * 6);
   assert.equal(readingTime("A small, family-owned, AI-native business."), 3.2, "never under 3.2s");
   const long = "If it can be solved with something on a phone, a computer or in the cloud, we can do it.";
   assert.equal(readingTime(long), 1.4 + 0.35 * words(long));
@@ -94,4 +94,14 @@ test("the scene bar's segments are as long as their scenes", () => {
 
 test("the built home page carries this stage", () => {
   assert.ok(built.includes(html), "index.html is built from this stage (npm run pages)");
+});
+
+// Elliot, 2026-11-19: "Software companies have engineers, and their
+// customers wait in line" felt dense, so the stage opens on what the
+// visitor gets (option A of five). With no queue in the words, scene 1
+// draws the company and you, and no line at its door.
+test("the stage opens on having your own engineers, with no queue drawn", () => {
+  assert.deepEqual(t.stageBeats.slice(0, 2).map((b) => b.say), ["Big companies have their own engineers.", "Now your business can too."]);
+  const ink = parts.filter((x) => x.scene === 0 && /stage-ink\b/.test(x.cls));
+  assert.equal(ink.length, 1, `scene 1 draws only the company in ink, not a queue (${ink.length} ink parts)`);
 });
