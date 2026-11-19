@@ -66,7 +66,7 @@ SCENES.push({
   em: { d: `M${L} ${Y} H${r1(440 - 14 * 1.18)} ${emPerson(440, 1.18)} H${R}`, a: 0.5, dur: 2.0 },
   pop: [{ d: `M398 196 Q398 186 408 186 H432 Q442 186 442 196 V200 Q442 210 432 210 H414 L404 218 L406 210 Q398 208 398 200 Z`, a: 2.1 }],
 });
-// 3. We're a small, family-owned, AI-native business: the line builds the house, a spark over it.
+// 3. We're those engineers, and we build with AI: the line builds our house, a spark over it.
 SCENES.push({
   tone: [`M250 300 V204 L320 146 L390 204 V300 Z`],
   ink: [{ d: rrect(282, 214, 76, 52, 4), a: 1.1, dur: 0.6 }, { d: `${inkPerson(300, 0.8, 266)} ${inkPerson(326, 0.8, 266)} ${inkPerson(347, 0.55, 266)}`, a: 1.7, dur: 0.8 }],

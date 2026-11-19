@@ -107,3 +107,12 @@ test("the stage opens on having your own engineers, with no queue drawn", () => 
   assert.ok(ink.length > 0, "found scene 1's ink");
   assert.ok(ink.every((d) => !/A/.test(d)), "scene 1 draws no person in ink, so no queue at the company's door");
 });
+
+// Elliot, 2026-11-19: the third scene said "We're a small, family-owned,
+// AI-native business." a few seconds after the line under the H1 said "A
+// small family business in Lisbon." He chose to reword the scene. It still
+// says whose engineers they are, after "Now your business can too."
+test("the third scene says the engineers are us, without repeating the line under the H1", () => {
+  assert.equal(t.stageBeats[2].say, "We're those engineers, and we build with AI.");
+  for (const b of t.stageBeats) assert.doesNotMatch(b.say, /\bfamily\b|\bLisbon\b/i, `"${b.say}" repeats the sub`);
+});
