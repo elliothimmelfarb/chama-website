@@ -646,6 +646,27 @@ async function runState(pg, theme, motion, vp) {
       await scrollTo(page, 0);
     }
 
+    // on desktop the whole first view, down to the "also" line, is one
+    // screen, with room under the header (Elliot, 2026-11-19). The sizes are
+    // browser windows on common laptops, 1366x657 and 1536x730 among them.
+    if (pg.path === "/" && vp === DESK) {
+      for (const [w, h] of [[1100, 700], [1280, 720], [1366, 657], [1440, 790], [1536, 730], [1512, 860], [1920, 1080]]) {
+        await page.setViewportSize({ width: w, height: h });
+        await page.waitForTimeout(STEP_WAIT);
+        const fit = await page.evaluate(() => {
+          const also = document.querySelector(".home-also").getBoundingClientRect();
+          const head = document.querySelector("[data-top]").getBoundingClientRect();
+          const tops = [".first .descriptor", ".first .stage"].map((q) => document.querySelector(q).getBoundingClientRect().top);
+          return { alsoBottom: Math.round(also.bottom), gap: Math.round(Math.min(...tops) - head.bottom) };
+        });
+        const where = `${state} at ${w}x${h}`;
+        if (fit.alsoBottom > h) fail(pg.id, where, "first view", `the "also" line ends at ${fit.alsoBottom}px, under the ${h}px screen`, top);
+        if (fit.gap < 12) fail(pg.id, where, "first view", `the first words start ${fit.gap}px under the header; want at least 12`, top);
+      }
+      await page.setViewportSize({ width: DESK.width, height: DESK.height });
+      await page.waitForTimeout(STEP_WAIT);
+    }
+
     if (motion === "full") {
       for (const pt of await holdPoints(page)) {
         await scrollTo(page, pt.y);

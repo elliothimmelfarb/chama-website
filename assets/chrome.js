@@ -69,9 +69,9 @@
   }, true);
 
   // ---- the cycling phrases ---------------------------------------------
-  // Each holds 2.8s and swaps over 0.56s (base.css has the swap). Paused
+  // Each holds 2s and swaps over 0.56s (base.css has the swap). Paused
   // while its field has focus or the pointer is over it, and out of view.
-  var HOLD = 2800;
+  var HOLD = 2000;
   var visible = new Set();
   var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) {
     es.forEach(function (en) { if (en.isIntersecting) visible.add(en.target); else visible.delete(en.target); });

@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/assets/talk.css?v=658634970f">
   <script src="/assets/sky.js?v=45dc1f89c6" defer></script>
   <script src="/assets/worlds.js?v=fb6ad94b59" defer></script>
-  <script src="/assets/chrome.js?v=18940e8963" defer></script>
+  <script src="/assets/chrome.js?v=635a8cbc12" defer></script>
   <script src="/assets/talk.js?v=88c238f845" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
@@ -106,7 +106,8 @@
 .pen svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
 .pen path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
 .pen-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
-.pen-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
+.pen-ring { margin-inline: 0.2em 0.06em; }
+.pen-ring svg { left: -9%; width: 127%; top: 0.12em; height: 1.04em; }
 @keyframes pen { from { stroke-dashoffset: 1; } }
 :root:not([data-motion="low"]) .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
 :root:not([data-motion="low"]) .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
@@ -131,6 +132,31 @@
 @media (min-width: 1100px) {
   .home-sub { margin-top: var(--s5); }
   .first-words { grid-column: 1 / span 6; }
+  /* the whole first view, doors and the founders line too, is one screen;
+     the H1 gives way on a short screen so the doors stay in view */
+  .first { min-height: 100svh; display: flex; flex-direction: column; padding-bottom: var(--s5); }
+  .first-grid { flex: 1 0 auto; min-height: 0; padding-top: clamp(12px, 2.5svh, var(--s5)); }
+  .first-words { padding: 0; }
+  .first .descriptor { margin-bottom: var(--s4); }
+  .first h1 { font-size: min(var(--t-display), max(2.25rem, 6.4svh)); }
+  /* the stage's picture is sized by its width, so on a short screen it
+     would set the row's height: cap it by what the screen has left */
+  .first .stage-pic { width: min(100%, calc((100svh - 470px) * 540 / 260)); }
+  .first-words .talk-field { margin-top: var(--s5); }
+  .home-doors { margin-top: var(--s4); padding-bottom: 0; }
+  .home-doors .door a { padding-block: 16px 18px; }
+  .home-doors .door h2 { font-size: 1.25rem; }
+  .home-also { margin-top: var(--s3); }
+}
+@media (min-width: 1100px) and (max-height: 760px) {
+  .first .descriptor { margin-bottom: var(--s3); }
+  .first .home-sub { margin-top: var(--s3); }
+  .first-words .talk-field { margin-top: var(--s4); }
+  .first .home-sub { max-width: none; }
+  .home-doors .doors { grid-template-columns: repeat(3, 1fr); }
+  .home-doors .door a { padding-right: 20px; }
+  .home-doors .door + .door a { padding-left: 20px; }
+  .home-doors .door p { font-size: 0.9375rem; }
 }
 .home-doors { margin-top: var(--s5); padding-bottom: var(--s7); }
 .home-also { margin-top: var(--s4); }
@@ -268,7 +294,7 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
     <div class="first-words">
       <p class="thanks" id="thanks" role="status">Thank you. We have your details, and a person will reach out soon.</p>
       <p class="descriptor">Custom software and AI coaching, from a family business in Lisbon.</p>
-      <h1><span class="half">We&#39;re ready to solve <span class="pen pen-under">any problem<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span></span> <span class="half">that can be solved with <span class="pen pen-ring">software<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M379 15C211 -1 29 17 17 56C7 92 178 111 322 102C437 95 475 67 463 39C451 21 418 13 370 11"/></svg></span>.</span></h1>
+      <h1><span class="half">We&#39;re ready to solve <span class="pen pen-under">any problem<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg></span></span> <span class="half">that can be solved with <span class="pen pen-ring">software<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M70 12C200 3 380 3 436 12C474 19 476 94 434 102C330 112 130 112 42 102C4 94 4 20 44 12C80 7 130 5 190 5"/></svg></span>.</span></h1>
       <p class="lead home-sub">You talk to a person, and AI does the heavy work behind us.</p>
       <form class="talk-field" action="/agent" method="get" data-talk-form>
   <label class="cycle" for="ask-home"><span class="sr-only">Talk to us, ask a question, or get in touch</span><span class="cycle-words" aria-hidden="true" data-cycle><span class="on">Talk to us</span><span>Ask a question</span><span>Get in touch</span></span></label>

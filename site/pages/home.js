@@ -26,7 +26,7 @@ const goals = () => beliefPhrases(t.belief.line).map((p) => (p.k === undefined ?
 // vector-effect: non-scaling-stroke.
 const PEN = {
   under: '<svg viewBox="0 0 520 16" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M8 10C114 5 286 13 512 6"/></svg>',
-  ring: '<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M379 15C211 -1 29 17 17 56C7 92 178 111 322 102C437 95 475 67 463 39C451 21 418 13 370 11"/></svg>',
+  ring: '<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M70 12C200 3 380 3 436 12C474 19 476 94 434 102C330 112 130 112 42 102C4 94 4 20 44 12C80 7 130 5 190 5"/></svg>',
 };
 const marked = (half) => {
   for (const [kind, phrase] of Object.entries(t.h1Marks)) {
@@ -51,7 +51,8 @@ const STYLE = `
 .pen svg { position: absolute; max-width: none; overflow: visible; pointer-events: none; }
 .pen path { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; }
 .pen-under svg { left: -1%; width: 102%; bottom: -0.1em; height: 0.16em; }
-.pen-ring svg { left: -6%; width: 113%; top: -0.02em; height: 1.18em; }
+.pen-ring { margin-inline: 0.2em 0.06em; }
+.pen-ring svg { left: -9%; width: 127%; top: 0.12em; height: 1.04em; }
 @keyframes pen { from { stroke-dashoffset: 1; } }
 :root:not([data-motion="low"]) .pen-under path { animation: pen 500ms var(--ease-out) 1150ms both; }
 :root:not([data-motion="low"]) .pen-ring path { animation: pen 750ms var(--ease-out) 1650ms both; }
@@ -76,6 +77,31 @@ const STYLE = `
 @media (min-width: 1100px) {
   .home-sub { margin-top: var(--s5); }
   .first-words { grid-column: 1 / span 6; }
+  /* the whole first view, doors and the founders line too, is one screen;
+     the H1 gives way on a short screen so the doors stay in view */
+  .first { min-height: 100svh; display: flex; flex-direction: column; padding-bottom: var(--s5); }
+  .first-grid { flex: 1 0 auto; min-height: 0; padding-top: clamp(12px, 2.5svh, var(--s5)); }
+  .first-words { padding: 0; }
+  .first .descriptor { margin-bottom: var(--s4); }
+  .first h1 { font-size: min(var(--t-display), max(2.25rem, 6.4svh)); }
+  /* the stage's picture is sized by its width, so on a short screen it
+     would set the row's height: cap it by what the screen has left */
+  .first .stage-pic { width: min(100%, calc((100svh - 470px) * 540 / 260)); }
+  .first-words .talk-field { margin-top: var(--s5); }
+  .home-doors { margin-top: var(--s4); padding-bottom: 0; }
+  .home-doors .door a { padding-block: 16px 18px; }
+  .home-doors .door h2 { font-size: 1.25rem; }
+  .home-also { margin-top: var(--s3); }
+}
+@media (min-width: 1100px) and (max-height: 760px) {
+  .first .descriptor { margin-bottom: var(--s3); }
+  .first .home-sub { margin-top: var(--s3); }
+  .first-words .talk-field { margin-top: var(--s4); }
+  .first .home-sub { max-width: none; }
+  .home-doors .doors { grid-template-columns: repeat(3, 1fr); }
+  .home-doors .door a { padding-right: 20px; }
+  .home-doors .door + .door a { padding-left: 20px; }
+  .home-doors .door p { font-size: 0.9375rem; }
 }
 .home-doors { margin-top: var(--s5); padding-bottom: var(--s7); }
 .home-also { margin-top: var(--s4); }
