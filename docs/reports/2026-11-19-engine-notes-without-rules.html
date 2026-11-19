@@ -1,0 +1,152 @@
+<title>Engine Notes Without Rules</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;600&family=Funnel+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column of sections; pictures first, short labels under them. */
+:root{
+  --bg:#f3f0e8; --surface:#fbf9f4; --fg:#141412; --fg2:#57544d; --line:rgb(20 20 18 / .14);
+  --ember:#f4581f; --ember-text:#b33d0b; --good:#2f6b4f; --warn:#8a5a00; --bad:#a3271b; --tint:rgb(244 88 31 / .1);
+  --display:"Funnel Display","Helvetica Neue",Arial,sans-serif; --text:"Funnel Sans","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember:#f4581f; --ember-text:#ff7a45; --good:#7fc9a3; --warn:#e2b458; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember:#f4581f; --ember-text:#ff7a45; --good:#7fc9a3; --warn:#e2b458; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font:400 1rem/1.5 var(--text);padding-block:2rem 4rem;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:3rem}
+.wrap > *{min-width:0}
+h1{font:600 clamp(1.9rem,1.2rem + 3vw,3.2rem)/1.05 var(--display);letter-spacing:-.025em;margin:0;text-wrap:balance}
+h2{font:600 clamp(1.35rem,1.1rem + 1vw,1.8rem)/1.15 var(--display);letter-spacing:-.02em;margin:0 0 1rem;text-wrap:balance}
+h3{font:600 1.05rem/1.25 var(--display);margin:0 0 .35rem}
+p{margin:0;max-width:65ch}
+.lead{font-size:1.15rem;color:var(--fg2);margin-top:.9rem;max-width:58ch}
+.date{font-size:.8rem;color:var(--fg2);margin-bottom:.6rem}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.nums > div{background:var(--surface);padding:1rem}
+.nums b{display:block;font:600 1.9rem/1 var(--display);font-variant-numeric:tabular-nums}
+.nums span{font-size:.82rem;color:var(--fg2)}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+figure{margin:0}
+figure img{display:block;width:100%;border-radius:10px;border:1px solid var(--line)}
+figcaption{font-size:.85rem;color:var(--fg2);margin-top:.5rem}
+figcaption b{color:var(--fg);font-weight:600}
+.diff{display:grid;gap:0;border-top:1px solid var(--line);margin-top:1.25rem}
+.diff > div{display:grid;grid-template-columns:minmax(110px,.7fr) 1fr 1fr;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.diff > div > *{min-width:0}
+.diff .k{font-weight:600}
+.diff .h{font-size:.76rem;color:var(--fg2);font-weight:600}
+.causes{display:grid;gap:.75rem;counter-reset:c}
+.cause{display:grid;grid-template-columns:2.2rem 1fr;gap:.75rem;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem}
+.cause > *{min-width:0}
+.cause::before{counter-increment:c;content:counter(c);font:600 1.3rem/1.2 var(--display);color:var(--ember-text)}
+.cause p{font-size:.93rem;color:var(--fg2)}
+.ev{display:inline-block;margin-top:.5rem;font-size:.8rem;padding:.15rem .55rem;border-radius:999px;background:var(--tint);color:var(--ember-text)}
+.tl{display:grid;gap:0;border-left:2px solid var(--line);margin-left:.4rem}
+.tl > div{position:relative;padding:.1rem 0 .9rem 1.1rem;font-size:.9rem}
+.tl > div::before{content:"";position:absolute;left:-6px;top:.45rem;width:10px;height:10px;border-radius:50%;background:var(--ember)}
+.tl > div.ok::before{background:var(--good)}
+.tl time{font-size:.78rem;color:var(--fg2);font-variant-numeric:tabular-nums;display:block}
+.tl q{font-weight:600}
+.tl span{color:var(--fg2)}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.verdict > div{border:1px solid var(--line);border-radius:14px;padding:1rem;background:var(--surface)}
+.verdict ul{margin:.5rem 0 0;padding-left:1.1rem;font-size:.9rem;color:var(--fg2)}
+.tag{font-size:.78rem;font-weight:600}
+.tag.y{color:var(--good)} .tag.n{color:var(--bad)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem;counter-reset:s}
+.flow > div{border:1px solid var(--line);border-top:3px solid var(--ember);border-radius:0 0 12px 12px;padding:.8rem;background:var(--surface);font-size:.88rem;color:var(--fg2)}
+.flow > div::before{counter-increment:s;content:"Step " counter(s);display:block;font-size:.76rem;color:var(--ember-text);font-weight:600;margin-bottom:.2rem}
+.flow b{display:block;color:var(--fg);font:600 1rem/1.25 var(--display);margin-bottom:.3rem}
+.ask{display:grid;gap:.6rem}
+.ask > div{display:grid;grid-template-columns:1.4rem 1fr;gap:.6rem;font-size:.95rem}
+.ask > div::before{content:"?";font-weight:600;color:var(--ember-text)}
+.ask span{color:var(--fg2);display:block;font-size:.88rem}
+.note{font-size:.85rem;color:var(--fg2);border-left:3px solid var(--line);padding-left:.8rem}
+@media (max-width:520px){ .diff > div{grid-template-columns:1fr 1fr} .diff .k{grid-column:1 / -1} .diff .h:first-child{display:none} }
+.bar{display:grid;gap:.5rem;margin-top:.5rem}
+.bar > div{display:grid;grid-template-columns:5.5rem 1fr;gap:.75rem;align-items:center;font-size:.9rem}
+.bar i{display:block;height:1.6rem;border-radius:4px;background:var(--fg2)}
+.bar .now i{background:var(--ember)}
+.bar span{font-variant-numeric:tabular-nums}
+.st{font-size:.78rem;font-weight:600;white-space:nowrap}
+.st.c{color:var(--fg2)} .st.k{color:var(--good)} .st.d{color:var(--bad)}
+.diff.three > div{grid-template-columns:minmax(120px,.9fr) 1.6fr auto}
+@media (max-width:520px){ .diff.three > div{grid-template-columns:1fr auto} .diff.three .k{grid-column:auto} .diff.three > div > span:nth-child(2){grid-column:1 / -1;order:3} }
+.ab{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.ab > div{border:1px solid var(--line);border-radius:14px;padding:1rem;background:var(--surface)}
+.ab > div.new{border-top:3px solid var(--ember)}
+.ab dl{margin:.6rem 0 0;display:grid;gap:.7rem}
+.ab dt{font-size:.76rem;font-weight:600;color:var(--fg2)}
+.ab dd{margin:.1rem 0 0;font-size:.92rem}
+</style>
+<div class="wrap">
+<header>
+  <div class="date">2026-11-19 · chama-website PR 227</div>
+  <h1>The engine notes now describe the engine. They no longer say how the site should look.</h1>
+  <p class="lead">pages.md in the site skill keeps every engine fact and trap. Design choices are written as what was built and who chose it, and the direction lives only in DESIGN.md.</p>
+</header>
+
+<section>
+  <div class="nums">
+    <div><b>12 → 0</b><span>instructions that open with a command (Check, Draw, Keep, Prefix)</span></div>
+    <div><b>65 → 47</b><span>uses of never, must, always, only, should</span></div>
+    <div><b>5,122 → 4,930</b><span>words. Almost all of it is engine fact, so it stayed</span></div>
+    <div><b>768 of 768</b><span>tests pass. No site file changed</span></div>
+  </div>
+  <p class="note" style="margin-top:1rem">The words that remain from the second count are in facts about the code, like "the engine only reads <code>html[data-motion]</code>" and "a stage never loops".</p>
+</section>
+
+<section>
+  <h2>The same knowledge, said as a rule and as a fact</h2>
+  <div class="ab">
+    <div><span class="tag n">Before</span>
+      <dl>
+        <dt>The fire</dt><dd>"Don't bring back fire, glow rims or scorch marks as a transition."</dd>
+        <dt>Figure timing</dt><dd>"Figures finish by 75% of their hold."</dd>
+        <dt>Drawing style</dt><dd>"Line, ink and construction over shading and mass."</dd>
+        <dt>Empty space</dt><dd>"Figures fill their frame and share one protagonist."</dd>
+      </dl>
+    </div>
+    <div class="new"><span class="tag y">Now</span>
+      <dl>
+        <dt>The fire</dt><dd>What replaced it in the code, and a pointer to your words in DESIGN.md.</dd>
+        <dt>Figure timing</dt><dd>On a phone the words start to leave at 85% of the hold, so a figure that finishes later is never seen whole.</dd>
+        <dt>Drawing style</dt><dd>Removed. Your picks from the sample boards are in DESIGN.md.</dd>
+        <dt>Empty space</dt><dd>What the screenshot rig measures and why, and that a design using space differently changes those floors.</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>What the file holds now</h2>
+  <div class="flow">
+    <div><b>The engine's API</b>Pinning, the scroll variables, stages, theme, low motion.</div>
+    <div><b>Arriving and leaving</b>Each mechanism with the complaint or review that caused it.</div>
+    <div><b>Frame cost and scrolling</b>Measurements and the rigs that produced them.</div>
+    <div><b>Layout traps</b>Collisions and overflows that already happened once.</div>
+    <div><b>As built</b>The sky, the figure kit, home's first view, the router, /build's devices, logos.</div>
+  </div>
+</section>
+
+<section>
+  <h2>What the reviewer caught before merge</h2>
+  <div class="tl">
+    <div class="ok"><time>Wrong credit</time><q>"Four questions and the close" was listed as your pick.</q> <span>You picked the questions format, paper only, no diagrams and one scroll on phones. The count and the pen marks in the answers were the session's.</span></div>
+    <div class="ok"><time>Lost facts</time><q>Seven engine facts had dropped out.</q> <span>Restored, including the phone check that all three doors are on screen.</span></div>
+    <div class="ok"><time>Stale numbers</time><q>Frame costs for home read as current.</q> <span>Home has no pinned worlds since today, and the file now says so.</span></div>
+    <div class="ok"><time>Loose test claims</time><q>Three "the test checks" lines named the wrong check.</q> <span>Each now says what the test really fails on.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Still open</h2>
+  <div class="ask">
+    <div><div>The tests are the last place rules live.<span>About 130 tests pin the site as built: section order, figure timing, how full each screen is. They protect a redesign from breaking things by accident, and they also fail a redesign that changes things on purpose.</span></div></div>
+    <div><div>Not tested on a design task.<span>This round was checked by a reviewer against the code. No agent has designed a page from the new file yet.</span></div></div>
+  </div>
+</section>
+</div>
