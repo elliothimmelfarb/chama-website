@@ -20,7 +20,7 @@ export const home = {
   stageBeats: [
     { name: "Big companies", say: "Big companies have their own engineers." },
     { name: "Your own engineers", say: "Now your business can too." },
-    { name: "A small team", say: "A small, family-owned, AI-native business." },
+    { name: "A small team", say: "We're a small, family-owned, AI-native business." },
     { name: "The loop", say: "Tell us what you need. It gets built. You use it. You find what's next." },
     { name: "Fit", say: "Fits your process, and changes when you do." },
     { name: "Breadth", say: "If it can be solved with something on a phone, a computer or in the cloud, we can do it." },
@@ -30,7 +30,7 @@ export const home = {
 
   // No door's line repeats the stage beat its glyph comes from.
   doors: [
-    { id: "engineering-department", title: "Your own engineering department", line: "You get what a software company has, without becoming one." },
+    { id: "engineering-department", title: "Your own engineering department", line: "You get what a big company has, without becoming one." },
     { id: "coaching", title: "AI fluency coaching and training", line: "Time with someone who knows AI deeply and makes it simple." },
     { id: "build", title: "Websites, apps and products", line: "Websites built to be found." },
   ],

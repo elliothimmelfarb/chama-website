@@ -21,7 +21,8 @@ export const ed = {
 
   contrast: {
     h2: "Big companies have their own engineers. Now your business can too.",
-    lead: "They work only for you, so you never wait in line behind a software company's other customers. You get what a software company has, without becoming one.",
+    lead: "Software bought off the shelf puts you in line behind its other customers. Your engineers work only for you. You get what a big company has, without becoming one.",
+    figLabel: "Customers wait in line at an off-the-shelf software company. Yours stands in front, with three engineers of its own.",
     them: "Off the shelf",
     you: "Yours",
   },

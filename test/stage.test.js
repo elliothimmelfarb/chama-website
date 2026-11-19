@@ -102,6 +102,8 @@ test("the built home page carries this stage", () => {
 // draws the company and you, and no line at its door.
 test("the stage opens on having your own engineers, with no queue drawn", () => {
   assert.deepEqual(t.stageBeats.slice(0, 2).map((b) => b.say), ["Big companies have their own engineers.", "Now your business can too."]);
-  const ink = parts.filter((x) => x.scene === 0 && /stage-ink\b/.test(x.cls));
-  assert.equal(ink.length, 1, `scene 1 draws only the company in ink, not a queue (${ink.length} ink parts)`);
+  // an ink person's head is two arcs; the company and its windows have none
+  const ink = [...html.matchAll(/<path class="stage-ink[^"]*" data-p data-s="0"[^>]*>/g)].map((m) => / d="([^"]*)"/.exec(m[0])[1]);
+  assert.ok(ink.length > 0, "found scene 1's ink");
+  assert.ok(ink.every((d) => !/A/.test(d)), "scene 1 draws no person in ink, so no queue at the company's door");
 });

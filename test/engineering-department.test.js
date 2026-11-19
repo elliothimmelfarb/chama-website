@@ -80,5 +80,6 @@ test("every world sits in a frame, and is held to the fill floor", () => {
 test("the contrast opens on having your own engineers", () => {
   const contrast = sections.find((s) => /<h2[^>]*>Big companies have their own engineers\. Now your business can too\.<\/h2>/.test(s));
   assert.ok(contrast, "the contrast heading is the home stage's opening pair");
-  assert.match(text(contrast), /They work only for you, so you never wait in line behind a software company's other customers\./);
+  assert.match(text(contrast), /Software bought off the shelf puts you in line behind its other customers\. Your engineers work only for you\./);
+  assert.match(contrast, /<figure[^>]*aria-label="Customers wait in line at an off-the-shelf software company\./, "the figure's label says what it draws");
 });

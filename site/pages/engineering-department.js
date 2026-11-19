@@ -291,7 +291,7 @@ ${STYLE}
       <h2 class="r">${t.contrast.h2}</h2>
       <p class="lead r">${t.contrast.lead}</p>
     </div>
-    <div class="fig r" style="${AR}">${contrast({ them: t.contrast.them, you: t.contrast.you, label: t.contrast.h2 })}</div>
+    <div class="fig r" style="${AR}">${contrast({ them: t.contrast.them, you: t.contrast.you, label: t.contrast.figLabel })}</div>
   </div></div>
 </section>
 

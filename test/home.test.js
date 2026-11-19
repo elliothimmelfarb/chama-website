@@ -98,7 +98,7 @@ test("no line is said twice on home", () => {
   for (const s of sentences) seen.set(s, (seen.get(s) || 0) + 1);
   assert.deepEqual([...seen].filter(([, n]) => n > 1), []);
   // the stage's third beat no longer repeats the sub-line or the people heading
-  assert.equal(t.stageBeats[2].say, "A small, family-owned, AI-native business.");
+  assert.equal(t.stageBeats[2].say, "We're a small, family-owned, AI-native business.");
 });
 
 test("home's machine-readable text follows the page, with the stage's sentences and Elliot's sentence", () => {

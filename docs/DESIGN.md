@@ -380,7 +380,7 @@ Low motion (`html[data-motion="low"]`) is a calm printed edition of the same sit
 
 Rebuilt 2026-11-17. Elliot said the old stage's text "disappears too quickly to read" and that parts of it felt low effort, and picked "one continuous line" from a board of samples. `site/figures/stage.js` draws it; `test/stage.test.js` holds the timing.
 
-**Reading pace.** Each scene shows its whole sentence from its first moment and holds it for max(3.2s, 1.4s + 0.35s a word), so the eight scenes run about 41 seconds. The engine's clock, the seek points and the scene bar's segments (each as long as its scene) all come from those times. Sentences cross-fade (out over 0.25s, in over 0.35s), in Funnel Display at 1.25rem on a phone and 1.5rem beside the headline on desktop.
+**Reading pace.** Each scene shows its whole sentence from its first moment and holds it for max(3.2s, 1.4s + 0.35s a word), so the eight scenes run about 38 seconds. The engine's clock, the seek points and the scene bar's segments (each as long as its scene) all come from those times. Sentences cross-fade (out over 0.25s, in over 0.35s), in Funnel Display at 1.25rem on a phone and 1.5rem beside the headline on desktop.
 
 **The drawing.** One inline SVG on a 640x360 sheet, showing the part from x 100 and y 52 (540x260), with a hairline ground across it. In each scene quiet ink parts draw first (1.6px `--fg`, 1.3px at 50% `--fg`, tone fills at 7%), and one ember line (3.25px) is drawn by a pen, a round nib that rides its drawing end, eased out so it runs quickly along the ground and slows into its figure. A scene's drawing is paced to finish at 78% of its hold. Every scene after the first starts drawing 0.35s before its sentence, while the last scene's ember runs off its tail and fades, so the sheet is never blank and two finished drawings never share it. The loop's ring runs off inside its own scene, after its still. Scenes drawn small (2, 6, 7, 8) are scaled up about their ground, their strokes held at width by `--zs`. Stroke widths hold their pixel size at each width through `--sw`.
 
@@ -388,7 +388,7 @@ Rebuilt 2026-11-17. Elliot said the old stage's text "disappears too quickly to 
 |---|---|---|
 | 1 | "Big companies have their own engineers." | A tall company with engineers in its windows; the ember line becomes you, standing in front of it. |
 | 2 | "Now your business can too." | Two engineers at a table with a laptop; the line becomes you across from them, and a speech bubble appears. |
-| 3 | "A small, family-owned, AI-native business." | The line builds a house with a family in its window and rises into a spark. |
+| 3 | "We're a small, family-owned, AI-native business." | The line builds a house with a family in its window and rises into a spark. |
 | 4 | "Tell us what you need. It gets built. You use it. You find what's next." | A dot runs one lap of a ring round a small house, lighting the four stations and their labels as it passes. |
 | 5 | "Fits your process, and changes when you do." | Three steps with the line traced snug round them; then the steps change height and the line changes with them (it becomes five straight runs that move, so it stays one crisp line). |
 | 6 | "If it can be solved with something on a phone, a computer or in the cloud, we can do it." | One stroke draws a phone, a laptop and a cloud. |
@@ -397,7 +397,7 @@ Rebuilt 2026-11-17. Elliot said the old stage's text "disappears too quickly to 
 
 **Controls.** A play, pause or replay button (a 32px ring in a 44px target) and the scene bar: 2px segments, seen scenes in ink, the scene in play filling in ember, each a button to that scene. Low motion is a stepper with "N of 8" and each scene's finished drawing (`test/stage.test.js` evaluates every part at each still: its own scene whole, nothing of another).
 
-**Cost.** Every moving part is a leaf with `data-p`, 77 in all, written only while the stage plays; a Chrome trace at 1440x900 while it played counted 32 elements restyled and 0.38 ms of style a frame. Nothing uses `offset-path` on a long path. The first build rode a nib along each scene's path that way, and frames slowed badly (measured while the machine was under heavy load, so how much is uncertain). The nib is now the round cap of a dash too short to see, moved by `stroke-dashoffset`.
+**Cost.** Every moving part is a leaf with `data-p`, 78 in all, written only while the stage plays; a Chrome trace at 1440x900 while it played counted 32 elements restyled and 0.38 ms of style a frame. Nothing uses `offset-path` on a long path. The first build rode a nib along each scene's path that way, and frames slowed badly (measured while the machine was under heavy load, so how much is uncertain). The nib is now the round cap of a dash too short to see, moved by `stroke-dashoffset`.
 
 ---
 
