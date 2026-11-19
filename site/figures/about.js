@@ -1,5 +1,5 @@
 // The mark drawing itself, beside "Chama means flame." on /about
-// (docs/DESIGN.md, "/about"). A stage: it plays once when it is in view. The
+//. A stage: it plays once when it is in view. The
 // ring's outline draws, the ring fills, then the spark lands with a small
 // overshoot, over a soft floor shadow. Each part reads --p inline and is
 // whole at --p 1, so the mark is complete in low motion, without JavaScript

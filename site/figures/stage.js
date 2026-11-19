@@ -1,5 +1,5 @@
 // The home page's opening stage: eight scenes drawn by one ember line, as if
-// by one hand (docs/DESIGN.md section 11). Each scene's sentence is shown
+// by one hand. Each scene's sentence is shown
 // whole and stays for its reading time, so the clock is the sum of those
 // times. The engine's [data-stage] clock writes --p on every [data-p] part,
 // and each part's inline style turns --p into its own draw, so seeking,

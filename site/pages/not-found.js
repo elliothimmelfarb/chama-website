@@ -5,7 +5,7 @@ import { notFound as t } from "../content/en/not-found.js";
 import { common as c } from "../content/en/common.js";
 import { GLYPHS } from "../figures/glyphs.js";
 
-// Paper giving way to ember (docs/DESIGN.md, "Other pages"): the
+// Paper giving way to ember: the
 // words and the five pages on paper, Talk to us on the ember below.
 const STYLE = raw(`<style>
 .nf { padding: calc(56px + var(--s7)) 0 var(--s9); }

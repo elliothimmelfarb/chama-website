@@ -1,5 +1,4 @@
-// The home page's words. Approved wording: brand-language.md (brain); the
-// order and what each section says: docs/DESIGN.md section 7, "/ Home".
+// The home page's words. Approved wording: brand-language.md (brain).
 
 export const home = {
   title: "Chama Inteligente | Custom software and AI coaching, from a family business in Lisbon",

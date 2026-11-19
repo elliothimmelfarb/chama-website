@@ -10,7 +10,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `site/pages/<id>.js` | Each page as a function that returns the whole document. Small page-only styles sit in the page's own `<style>`. |
 | `site/content/en/<id>.js` | Each page's words, kept apart from its markup. `common.js` holds the header, menu, footer and Talk to us words; `talk.js` the chat widget's. |
 | `site/parts/` | What pages share: `chrome.js` (head, header, menu, Display popover, Talk to us field, footer, `page()`), `boot.js` (the snippet that sets theme and motion before the first paint), `logos.js` (client and partner logos). |
-| `site/figures/` | The inline SVG figures, drawn from `--p`. `kit.js` holds what they share: the `--p` timing helpers, the pentagon's geometry and `subject()`, the protagonist on its five layers (`docs/DESIGN.md` section 14). |
+| `site/figures/` | The inline SVG figures, drawn from `--p`. `kit.js` holds what they share: the `--p` timing helpers, the pentagon's geometry and `subject()`, the protagonist on its five layers. |
 | `site/html.js` | The `html` tag every page is written with. Copy is escaped; `inline()` allows only `*emphasis*` and `[links](/path)`. |
 | `site/machine.js` | `sitemap.xml`, `llms.txt` and `llms-full.txt`, built from the same pages and copy as the HTML, and the one-line company `SUMMARY` they open with. |
 | `scripts/build.js` | Writes the pages, sitemap and llms files from `site/`. |
@@ -32,7 +32,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `api/watchdog.js`, `lib/flame-health.js` | The cron that reviews conversations and can take the chat offline, and the check that the chat can reach its model. |
 | `admin.html`, `assets/admin.*`, `api/admin-auth.js`, `api/admin-data.js` | The private, read-only admin area at `/admin`. |
 | `hearth-room.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform. See [The Hearth](#the-hearth). |
-| `docs/DESIGN.md` | The design: type, colour, grounds, motion, each page's sections, the Talk to us sheet, low motion. |
+| `docs/DESIGN.md` | What the site is for, what it should feel like, and what Elliot has decided and said about its design. Purpose and facts only: the values and layouts are in the code. |
 | `original/` | The old site at `/original`, frozen as it was on `main` on 2026-11-16: its pages, low motion pages, chat page and their assets, every address moved under `/original` and a note on each page saying it is the original site. Not indexed, not in the sitemap, and not built or stamped. Its chat still calls the live `/api/chat`, so it must keep the [chat event contract](#chat-event-contract). `test/original.test.js` keeps it self-contained. |
 | `vercel.json` | Headers, redirects, rewrites and cron schedules. |
 | `robots.txt` | Crawler policy. `sitemap.xml`, `llms.txt` and `llms-full.txt` are generated. |
@@ -47,7 +47,7 @@ Vercel runs no build. `npm run pages` writes every page, `sitemap.xml`, `llms.tx
 
 To add a page: an entry in `PAGES` in `site/site.js`, its source in `site/pages/<id>.js` (export `render(page, site)`, and `text()` for its words in `llms-full.txt`), its copy in `site/content/en/<id>.js`, a line in `lib/site-pages.js` with `live: true`, then `npm run pages`. A `nav` label puts it in the header, menu and footer, and `inRouter: true` lets the router swap it (add it to `PAGES` in `worlds.js` too; the test checks they agree). In the same change as any page's copy, bump its `lastmod`. A new page is a new public surface, so it is Elliot's call.
 
-**Theme.** `html[data-theme="light"|"dark"]` when the visitor chose one, otherwise the system's. **Motion.** `html[data-motion="low"]` when the visitor chose low or the system asks for reduced motion and they have not chosen full. Low motion is the same page, designed in its own right (`docs/DESIGN.md` section 10): no pinning, no router, no autoplay, every figure complete, stages as steppers. `site/parts/boot.js` sets both before the first stylesheet, from `localStorage` (`chama-theme`, `chama-motion`), so the first paint is already right, and adds `html.pin` (the pinned layout) when there is room for it.
+**Theme.** `html[data-theme="light"|"dark"]` when the visitor chose one, otherwise the system's. **Motion.** `html[data-motion="low"]` when the visitor chose low or the system asks for reduced motion and they have not chosen full. Low motion is the same page, designed in its own right: no pinning, no router, no autoplay, every figure complete, stages as steppers. `site/parts/boot.js` sets both before the first stylesheet, from `localStorage` (`chama-theme`, `chama-motion`), so the first paint is already right, and adds `html.pin` (the pinned layout) when there is room for it.
 
 ## Copy and brand
 

@@ -1,4 +1,4 @@
-// The home page's three scroll figures (docs/DESIGN.md section 7, "/ Home"),
+// The home page's three scroll figures,
 // in the figure language of site/figures/kit.js, drawn as technical drawings
 // (Elliot's pick, 2026-11-17): paper bodies in ink, hatched where owned,
 // construction lines, a ground line, corner marks and a figure number. They share one viewBox and

@@ -8,14 +8,14 @@
   <script>(function(){var d=document.documentElement;try{var t=localStorage.getItem("chama-theme");if(t==="light"||t==="dark")d.dataset.theme=t;var m=localStorage.getItem("chama-motion");if(m==="low"||(m!=="full"&&matchMedia("(prefers-reduced-motion: reduce)").matches))d.dataset.motion="low"}catch(e){}if(d.dataset.motion!=="low"&&matchMedia("(min-height: 501px)").matches){d.classList.add("pin");addEventListener("DOMContentLoaded",function(){setTimeout(function(){if(!d.dataset.engine)d.classList.remove("pin")},4e3)})}})();</script>
   <style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/tokens.css?v=d408beb26f">
+  <link rel="stylesheet" href="/assets/tokens.css?v=c7149b7fa3">
   <link rel="stylesheet" href="/assets/base.css?v=8a1815a2a7">
-  <link rel="stylesheet" href="/assets/worlds.css?v=481a5cda37">
-  <link rel="stylesheet" href="/assets/talk.css?v=658634970f">
-  <script src="/assets/sky.js?v=45dc1f89c6" defer></script>
-  <script src="/assets/worlds.js?v=fb6ad94b59" defer></script>
+  <link rel="stylesheet" href="/assets/worlds.css?v=1fc67a4689">
+  <link rel="stylesheet" href="/assets/talk.css?v=b376c3bce2">
+  <script src="/assets/sky.js?v=d7080de293" defer></script>
+  <script src="/assets/worlds.js?v=3a0f5ce40b" defer></script>
   <script src="/assets/chrome.js?v=635a8cbc12" defer></script>
-  <script src="/assets/talk.js?v=88c238f845" defer fetchpriority="low"></script>
+  <script src="/assets/talk.js?v=af9b097cd8" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
@@ -186,7 +186,7 @@ main .world.home-clients[data-pin="off"]:not([data-pad="off"]) > .pin { padding-
   .home-clients .logos li:last-child { border-bottom: 1px solid var(--line); }
   .home-clients .logo { width: calc(var(--lw) * 2px); height: calc(var(--lh) * 2px); }
 }
-/* the photo settles as the world is held (docs/DESIGN.md, home) */
+/* the photo settles as the world is held */
 .home-photo { margin: 0; }
 .home-photo-crop { border-radius: var(--r-surface); overflow: hidden; }
 .home-photo .photo[data-p] { scale: calc(1.04 - 0.04 * clamp(0, var(--p) / 0.4, 1)); }

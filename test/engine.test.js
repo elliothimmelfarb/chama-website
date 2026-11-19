@@ -333,7 +333,7 @@ test("where the scroll can drive it, a leaving word is held still by the scroll 
   assert.ok(RULES.some((x) => x.selectors.includes("html:not(.pin) .r") && /animation:\s*none/.test(x.body)), "a word stops standing when the layout leaves pinned (print keeps data-stand)");
 });
 
-// ---- the motion system: six named moves (docs/DESIGN.md section 5) ----------
+// ---- the motion system: six named moves ----------
 const TOKENS = strip(read("assets/tokens.css"));
 const rootVar = (css, name) => new RegExp(`${name}:\\s*([^;]+);`).exec(css)?.[1]?.trim();
 const STAGGER_MAX = +(/\bSTAGGER_MAX = (\d+)/.exec(JS)?.[1] ?? NaN);

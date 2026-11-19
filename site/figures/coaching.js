@@ -1,4 +1,4 @@
-// The figures on /coaching (docs/DESIGN.md section 7), in the figure
+// The figures on /coaching, in the figure
 // language (kit.js): each part that moves reads --p inline, and every one is
 // whole at --p 1, so a figure is complete wherever nothing writes --p (no
 // JavaScript, low motion, one column, print). Their paint lives in

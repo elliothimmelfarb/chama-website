@@ -484,10 +484,10 @@
 
   var doc = document, html = doc.documentElement;
   // The sheet's styles load with the script, after the first paint.
-  if (!doc.querySelector('link[href="/assets/talk.css?v=658634970f"]')) {
+  if (!doc.querySelector('link[href="/assets/talk.css?v=b376c3bce2"]')) {
     var css = doc.createElement("link");
     css.rel = "stylesheet";
-    css.href = "/assets/talk.css?v=658634970f";
+    css.href = "/assets/talk.css?v=b376c3bce2";
     doc.head.appendChild(css);
   }
   var DESK = matchMedia("(min-width: 1100px)");
@@ -556,7 +556,7 @@
     cycle.setAttribute("aria-hidden", "true");
     cycle.setAttribute("data-cycle", "");
     STRINGS.phrases.forEach(function (p, i) { var s = el("span", i === 0 ? "on" : null, p); cycle.appendChild(s); });
-    // On desktop the panel's phrase holds on "Talk to us" (DESIGN.md 9).
+    // On desktop the panel's phrase holds on "Talk to us".
     var still = el("span", "talk-still", STRINGS.button);
     still.setAttribute("aria-hidden", "true");
     title.append(sr, cycle, still);
@@ -819,7 +819,7 @@
 
   // Phone: modal, with the rest of the page inert. Desktop: a panel beside
   // the page, which stays usable.
-  // The header stays above the scrim and usable (DESIGN.md 9), so it is
+  // The header stays above the scrim and usable, so it is
   // part of the phone sheet's focus loop and is never made inert.
   function modal() {
     var phone = !DESK.matches && sheet.open;

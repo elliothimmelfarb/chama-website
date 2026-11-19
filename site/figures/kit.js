@@ -1,5 +1,4 @@
-// The figure language's shared parts (docs/DESIGN.md, "The frame and the
-// figure language"): the expressions that turn a world's --p into motion,
+// The figure language's shared parts: the expressions that turn a world's --p into motion,
 // the pentagon's geometry, and subject(), the protagonist drawn on its five
 // layers. Every figure imports these instead of keeping its own copies.
 // Nothing here imports anything, so test/fixtures/figure.html can load it

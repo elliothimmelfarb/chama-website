@@ -484,7 +484,7 @@ async function sweepDead(pg, state, page, dir, stem) {
 //   quarter screen. A world that opts in with data-fill fails the run on
 //   it; every other world is reported, until the page builders bring each
 //   page up to it and opt it in.
-// - the targets (docs/DESIGN.md, the frame), at 60% of each pinned world's
+// - the targets, at 60% of each pinned world's
 //   hold: the group, the figure, how far apart their centres are, and the
 //   largest empty band. Always reported, never failed.
 // A world that cannot meet the floor is listed in FILL_EXEMPT by its

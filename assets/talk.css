@@ -1,5 +1,5 @@
 /* The Talk to us sheet (phone), panel (desktop) and page (/agent).
-   docs/DESIGN.md section 9. Colours come only from tokens.css. */
+   Colours come only from tokens.css. */
 
 .talk {
   display: flex;

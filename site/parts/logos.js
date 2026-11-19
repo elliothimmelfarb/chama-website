@@ -1,5 +1,5 @@
 // Client and partner logos as one-colour masks, so one file works on every
-// ground in both themes (docs/DESIGN.md, "Logos"). Elliot decides who is
+// ground in both themes. Elliot decides who is
 // listed. Each logo's file is a transparent image whose opaque pixels are
 // the mark; w and h are its natural size, used to give each the same
 // optical weight.

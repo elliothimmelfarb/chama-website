@@ -1,6 +1,5 @@
 /* The design tokens, in three layers: primitives, then the semantic colours
-   for light and dark, then the ground each section sits on. docs/DESIGN.md
-   gives every value's job and its measured contrast. No colour is written
+   for light and dark, then the ground each section sits on. No colour is written
    anywhere else on the public pages (test/site.test.js). */
 
 @font-face {
@@ -54,7 +53,7 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ease-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
-  /* the six moves (docs/DESIGN.md section 5): arrivals rise, exits lift,
+  /* the six moves: arrivals rise, exits lift,
      arrivals are slower than exits */
   --rise: 16px;
   --lift: 8px;
@@ -140,7 +139,7 @@
 
 /* ---- 4. Figures --------------------------------------------------------
    Every figure's colours, mixed from the semantic tokens and the ground it
-   stands on (docs/DESIGN.md, "The frame and the figure language"). They sit
+   stands on. They sit
    on .fx so they resolve inside each world's ground. In dark the floor
    shadow is weaker against the ground and the body's light carries the
    depth. The two dark blocks must stay identical. */

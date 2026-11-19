@@ -1,5 +1,4 @@
-// The three door glyphs, drawn as technical drawings (docs/DESIGN.md, "The
-// doors"): one 1.5px ink stroke, hairline construction lines (.h), and one
+// The three door glyphs, drawn as technical drawings: one 1.5px ink stroke, hairline construction lines (.h), and one
 // ember part each (.e, .dot). base.css's ".g *" clears every fill, so the
 // hatch is drawn as strokes and nothing hides what is behind it.
 import { raw } from "../html.js";
