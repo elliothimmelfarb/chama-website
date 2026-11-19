@@ -650,7 +650,7 @@ async function runState(pg, theme, motion, vp) {
     // screen, with room under the header (Elliot, 2026-11-19). The sizes are
     // browser windows on common laptops, 1366x657 and 1536x730 among them.
     if (pg.path === "/" && vp === DESK) {
-      for (const [w, h] of [[1100, 700], [1280, 720], [1366, 657], [1440, 790], [1536, 730], [1512, 860], [1920, 1080]]) {
+      for (const [w, h] of [[1100, 700], [1100, 800], [1280, 720], [1366, 657], [1440, 790], [1536, 730], [1512, 860], [1920, 1080]]) {
         await page.setViewportSize({ width: w, height: h });
         await page.waitForTimeout(STEP_WAIT);
         const fit = await page.evaluate(() => {
