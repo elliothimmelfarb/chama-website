@@ -21,7 +21,7 @@ export const home = {
   stageBeats: [
     { name: "Big companies", say: "Big companies have their own engineers." },
     { name: "Your own engineers", say: "Now your business can too." },
-    { name: "A small team", say: "We're a small, family-owned, AI-native business." },
+    { name: "Those engineers", say: "We're those engineers, and we build with AI." },
     { name: "The loop", say: "Tell us what you need. It gets built. You use it. You find what's next." },
     { name: "Fit", say: "Fits your process, and changes when you do." },
     { name: "Breadth", say: "If it can be solved with something on a phone, a computer or in the cloud, we can do it." },
