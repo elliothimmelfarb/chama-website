@@ -113,12 +113,12 @@ th { font-size:.78rem; color:var(--ink-dim); font-weight:600; }
 </section>
 
 <section>
-  <h2>One thing for you</h2>
+  <h2>The repeated line, resolved</h2>
   <div class="words">
-    <div class="ask"><small>Under the headline (your pick)</small><p>A small family business in Lisbon. You work with us directly.</p></div>
-    <div class="ask"><small>Animation, third scene, a few seconds later</small><p>We're a small, family-owned, AI-native business.</p></div>
+    <div><small>Under the headline (your pick, unchanged)</small><p>A small family business in Lisbon. You work with us directly.</p></div>
+    <div class="ask" style="border-color:var(--ok)"><small>Animation, third scene, now</small><p>We're those engineers, and we build with AI.</p></div>
   </div>
-  <p class="note">These say nearly the same thing on the same screen. I left both, since one is your pick and the other is the animation's own copy. If you want one changed, say which.</p>
+  <p class="note">You chose to reword the scene. It was "We're a small, family-owned, AI-native business." It still says whose engineers come after "Now your business can too", and a test now fails if any scene says family or Lisbon. Shipped in <a href="https://github.com/elliothimmelfarb/chama-website/pull/225">PR 225</a> and checked live.</p>
 </section>
 
 <section>
@@ -126,11 +126,11 @@ th { font-size:.78rem; color:var(--ink-dim); font-weight:600; }
   <div class="tw"><table>
     <thead><tr><th>Check</th><th>Result</th></tr></thead>
     <tbody>
-      <tr><td>Unit tests, including the home page's tests rewritten first for the new page</td><td><span class="v">768 pass</span></td></tr>
+      <tr><td>Unit tests, including the home page's tests rewritten first for the new page</td><td><span class="v">769 pass</span></td></tr>
       <tr><td>Screenshot rig, every page, both themes, both motion settings, phone and desktop</td><td><span class="v">144 states, 0 failures</span></td></tr>
       <tr><td>New rig check: first view on one screen at 8 window sizes</td><td><span class="v">failed before, passes now</span></td></tr>
       <tr><td>Production at 10 desktop sizes, 364 x 610 phone, light and dark</td><td><span class="v">checked live</span></td></tr>
-      <tr><td>Sub line close to the animation's third scene</td><td><span class="v o">your call</span></td></tr>
+      <tr><td>Animation's third scene no longer repeats the sub line</td><td><span class="v">live, checked</span></td></tr>
     </tbody>
   </table></div>
   <p class="note">Your picks stay on the options page: <a href="https://claude.ai/artifact/H9Lzf2LDNrjTDGenNv9xmz">Chama Homepage Picks</a>.</p>
