@@ -116,3 +116,35 @@ test("the third scene says the engineers are us, without repeating the line unde
   assert.equal(t.stageBeats[2].say, "We're those engineers, and we build with AI.");
   for (const b of t.stageBeats) assert.doesNotMatch(b.say, /\bfamily\b|\bLisbon\b/i, `"${b.say}" repeats the sub`);
 });
+
+// Elliot, 2026-11-20: scene 5 is the one-line version of the survey sheet he
+// picked for /engineering-department. A business, boxes tried on it, then
+// the one ember line goes round it; the business asks, the line makes room,
+// and the business grows into it.
+test("scene 5 fits the business in one line: boxes go, the line goes round, then ask, make room, grow", () => {
+  assert.equal(t.stageBeats[4].say, "Fits your process, and changes when you do.");
+  const tags = [...html.matchAll(/<(?:path|rect|circle) class="([^"]*)" data-p data-s="4"[^>]*>/g)].map((m) => ({ cls: m[1], tag: m[0], style: /style="([^"]*)"/.exec(m[0])[1] }));
+  const one = (cls) => tags.filter((x) => x.cls === cls);
+  const keys = (x) => /data-morph="([^"|]+)\|/.exec(x.tag)[1].split(" ").map((k) => +k.split(":")[0] * T);
+  const [line] = one("stage-em"), [ink] = one("stage-ink"), boxes = one("stage-ink2 stage-tried"), rings = one("fx-ripple");
+  assert.equal(one("stage-em").length, 1, "the scene has one ember line");
+  const d = / d="([^"]+)"/.exec(line.tag)[1];
+  assert.equal((d.match(/M/g) || []).length, 1, "and it never lifts: one continuous stroke");
+  assert.match(d, /^M100 300 /, "in from the left along the ground");
+  assert.match(d, / 640 300$/, "and out to the right");
+  assert.equal(boxes.length, 2);
+  assert.equal(rings.length, 3);
+  const s0 = starts[4], end = s0 + holds[4];
+  const at = (x, sec) => value(x.style, "opacity", sec / T);
+  const when = (f) => { for (let s = s0 - 0.4; s <= end; s += 0.02) if (f(s)) return s; return Infinity; };
+  const boxesOn = when((s) => at(boxes[1], s) > 0.99), boxesGone = when((s) => s > boxesOn && at(boxes[0], s) < 0.01 && at(boxes[1], s) < 0.01);
+  const drawn = when((s) => Math.abs(value(line.style, "stroke-dashoffset", s / T)) < 0.005);
+  const asks = when((s) => at(rings[0], s) > 0.05);
+  const [room0, room1] = keys(line), [grow0, grow1] = keys(ink);
+  assert.ok(value(ink.style, "stroke-dashoffset", boxesOn / T) < 0.01, "the boxes are tried on a business already drawn");
+  assert.ok(boxesOn < boxesGone && boxesGone <= drawn, `the boxes (gone ${boxesGone.toFixed(2)}s) leave before the line is round the business (${drawn.toFixed(2)}s)`);
+  assert.ok(drawn <= asks + 0.1 && asks < room0, "the business asks once the line is round it, before the line moves");
+  assert.ok(room1 <= grow0 && grow0 < grow1, "the line has made the room before the business grows into it");
+  assert.ok(grow1 <= end - 0.3, "and it has grown before the scene's ink leaves");
+  assert.ok(!/stage-block|stage-run/.test(html), "the three steps this scene used to draw are gone");
+});
