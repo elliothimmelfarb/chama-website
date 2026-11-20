@@ -150,10 +150,12 @@ const STYLE = raw(`<style>
 .ed-rec-lines { margin: 0; padding-left: 1.4em; display: grid; gap: var(--s2); max-width: 60ch; color: var(--fg-2); }
 .ed-rec-lines li::marker { font-variant-numeric: tabular-nums; color: var(--fg-2); }
 .ed-rec-lines li[data-now] { color: var(--fg); }
-/* Playing in full motion, the captions are the line being said. */
-:root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines { list-style: none; padding-left: 0; min-height: 3em; }
-:root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li:not([data-now]) { display: none; }
-:root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
+/* In full motion the captions are the line being said. They take turns in
+   one cell as tall as the tallest, so the box never changes height under
+   the scroll. */
+:root:not([data-motion="low"]) [data-rec][data-state] .ed-rec-lines { list-style: none; padding-left: 0; }
+:root:not([data-motion="low"]) [data-rec][data-state] .ed-rec-lines li { grid-area: 1 / 1; font-size: var(--t-lead); }
+:root:not([data-motion="low"]) [data-rec][data-state] .ed-rec-lines li:not([data-now]) { visibility: hidden; }
 /* in dark, the bright app screen sits in a soft frame and is dimmed a little */
 :root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px var(--line); }
 :root[data-theme="dark"] .ed-rec-frame :is(img, video) { filter: brightness(0.86); }

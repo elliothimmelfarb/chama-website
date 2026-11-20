@@ -208,7 +208,7 @@
       v._bound = true;
       v.addEventListener("play", function () { v._started = true; });
       ["play", "pause", "ended", "timeupdate", "seeked"].forEach(function (ev) { v.addEventListener(ev, function () { show(v); }); });
-      v.closest("[data-rec]").setAttribute("data-state", "idle");
+      show(v);
       if (io) io.observe(v);
     });
   }
