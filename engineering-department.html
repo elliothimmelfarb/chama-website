@@ -10,11 +10,11 @@
   <link rel="preload" href="/assets/fonts/funnel-display-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/tokens.css?v=c7149b7fa3">
   <link rel="stylesheet" href="/assets/base.css?v=8a1815a2a7">
-  <link rel="stylesheet" href="/assets/worlds.css?v=1fc67a4689">
+  <link rel="stylesheet" href="/assets/worlds.css?v=31754bc4b8">
   <link rel="stylesheet" href="/assets/talk.css?v=b376c3bce2">
   <script src="/assets/sky.js?v=d7080de293" defer></script>
-  <script src="/assets/worlds.js?v=3a0f5ce40b" defer></script>
-  <script src="/assets/chrome.js?v=635a8cbc12" defer></script>
+  <script src="/assets/worlds.js?v=94662363db" defer></script>
+  <script src="/assets/chrome.js?v=064282a1ac" defer></script>
   <script src="/assets/talk.js?v=af9b097cd8" defer fetchpriority="low"></script>
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f3f0e8" media="(prefers-color-scheme: light)">
@@ -176,10 +176,15 @@
 .ed-rec-lines { margin: 0; padding-left: 1.4em; display: grid; gap: var(--s2); max-width: 60ch; color: var(--fg-2); }
 .ed-rec-lines li::marker { font-variant-numeric: tabular-nums; color: var(--fg-2); }
 .ed-rec-lines li[data-now] { color: var(--fg); }
-/* Playing in full motion, the captions are the line being said. */
-:root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines { list-style: none; padding-left: 0; min-height: 3em; }
-:root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li:not([data-now]) { display: none; }
-:root:not([data-motion="low"]) [data-rec]:is([data-state="playing"], [data-state="paused"]) .ed-rec-lines li[data-now] { font-size: var(--t-lead); }
+/* In full motion the captions are the line being said. They take turns in
+   one cell as tall as the tallest from the first paint, so the box never
+   changes height under the scroll, and the lines not being said stay in
+   the accessibility tree. */
+@media (scripting: enabled) {
+:root:not([data-motion="low"]) .ed-rec-lines { list-style: none; padding-left: 0; }
+:root:not([data-motion="low"]) .ed-rec-lines li { grid-area: 1 / 1; font-size: var(--t-lead); }
+:root:not([data-motion="low"]) .ed-rec-lines li:not([data-now]) { opacity: 0; }
+}
 /* in dark, the bright app screen sits in a soft frame and is dimmed a little */
 :root[data-theme="dark"] .ed-rec-frame { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 10px var(--line); }
 :root[data-theme="dark"] .ed-rec-frame :is(img, video) { filter: brightness(0.86); }
@@ -482,7 +487,7 @@
   <figcaption class="ed-rec-under">
     <button class="btn btn-quiet ed-rec-btn" type="button" data-rec-toggle><span class="ed-rec-play"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 3.5v9l7.5-4.5z" fill="currentColor"/></svg>Play the recording</span><span class="ed-rec-pause"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.5 3.5h2.5v9H4.5zM9 3.5h2.5v9H9z" fill="currentColor"/></svg>Pause the recording</span></button>
     <ol class="ed-rec-lines" id="ed-rec-captions">
-      <li data-wide="0" data-tall="0">Someone in the office asks for a change from inside the app.</li><li data-wide="3" data-tall="3">They type what they need: a way to see one supplier&#39;s orders at a time.</li><li data-wide="10.5" data-tall="9">The note reaches us with the page they were on.</li><li data-wide="12" data-tall="10.5">We build it, test it and ship it. This one took 31 minutes.</li><li data-wide="15" data-tall="13.5">The new Vendor filter is live in their app.</li>
+      <li data-now data-wide="0" data-tall="0">Someone in the office asks for a change from inside the app.</li><li data-wide="3" data-tall="3">They type what they need: a way to see one supplier&#39;s orders at a time.</li><li data-wide="10.5" data-tall="9">The note reaches us with the page they were on.</li><li data-wide="12" data-tall="10.5">We build it, test it and ship it. This one took 31 minutes.</li><li data-wide="15" data-tall="13.5">The new Vendor filter is live in their app.</li>
     </ol>
   </figcaption>
 </figure>

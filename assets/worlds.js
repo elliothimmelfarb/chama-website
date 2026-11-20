@@ -382,8 +382,9 @@
     // inside them every frame.
     var gone = ex.toFixed(3);
     put(D.stage, "opacity", gone);
-    var dy = (stand || 0) - (1 - ex) * liftPx;
-    put(D.stage, "translate", dy ? "0 " + dy.toFixed(1) + "px" : "");
+    var lift = (1 - ex) * liftPx;
+    put(D.stage, "transform", lift ? "translateY(" + (-lift).toFixed(1) + "px)" : "");
+    put(D.stage, "translate", stand ? "0 " + stand.toFixed(1) + "px" : "");
     if (D.bar) put(D.bar, "opacity", gone);
     var a = devicesIntro(D), opening = l < a;
     var q = opening ? 0 : clamp((l - a) / (1 - a)) * n, i = Math.min(Math.floor(q), n - 1), f = clamp(q - i);
@@ -464,7 +465,7 @@
         D.items.forEach(function (it) { it.inert = false; it.classList.remove("on", "rig-on", "rig-was"); });
         if (D.open) D.open.inert = false;
         D.ticks.forEach(function (b) { b.removeAttribute("aria-current"); });
-        if (D.stage) { put(D.stage, "opacity", ""); put(D.stage, "translate", ""); }
+        if (D.stage) { put(D.stage, "opacity", ""); put(D.stage, "transform", ""); put(D.stage, "translate", ""); }
         if (D.bar) put(D.bar, "opacity", "");
         D.shots.forEach(function (pair) {
           pair.forEach(function (img) { img.style.transform = ""; if (printing) img.loading = "eager"; });
@@ -628,15 +629,16 @@
       first = Math.min(first, by[j]);
     });
     if (sec.classList.contains("devices-world")) {
-      // /build's devices leave as one: drawDevices stands the stage still,
-      // then lets it ride up with the pin (nothing of its world is above
-      // it), and fades it; its words leave with it
-      var D = devicesOf(sec), it = D.items[D.items.length - 1], dTop = len, dLow = 0;
+      // /build's devices leave as one: the stage stands still (on the
+      // scroll, or from drawDevices where it cannot), then rides up with
+      // the pin (nothing of its world is above it), and fades; its words
+      // leave with it
+      var D = devicesOf(sec), it = D.items[D.items.length - 1], dTop = len, dLow = 0, dSh = shiftOf(D.stage);
       if (it) [it.querySelector(".rig"), it.querySelector(".made-words")].forEach(function (el) {
         if (!el) return;
         var b = el.getBoundingClientRect();
-        dTop = Math.min(dTop, b.top - pt);
-        dLow = Math.max(dLow, b.bottom - pt);
+        dTop = Math.min(dTop, b.top - dSh - pt);
+        dLow = Math.max(dLow, b.bottom - dSh - pt);
       });
       dLow = dLow || D.stage.offsetHeight * 0.75;
       var dGone = Math.min(start + span, mustGo(len, Math.min(dTop, dLow), dLow, blend, next, top, true));
@@ -733,6 +735,15 @@
           setVar(el, "--pl", x ? Math.round(pins[k]) + "px" : "");
         }
       });
+      // /build's devices stand as a word does: on the root's scroll
+      if (SCROLL_DRIVEN && isDevices(k)) {
+        var D = devicesOf(s), ds = held[k] ? devStay[k] || 0 : 0;
+        if (D.stage) {
+          setVar(D.stage, "--rel", ds ? Math.round(tops[k] + hs[k] - pins[k]) + "px" : "");
+          setVar(D.stage, "--stand", ds ? Math.round(ds * pins[k]) + "px" : "");
+          if (!!ds !== D.stage.hasAttribute("data-stand")) D.stage.toggleAttribute("data-stand", !!ds);
+        }
+      }
       // Where a world had to be gone early (a phone, /build's devices under
       // the header), the next pinned world's words start as its last part
       // fades rather than at --arrive-at, but never before they can be seen
@@ -993,11 +1004,11 @@
       drawRail();
       if (isDevices(i) && held[i]) {
         var ds = devStay[i] || 0;
-        drawDevices(sections[i], l, ts, exitOf(i, devGone[i], u), Math.min(Math.max(u - 1, 0), ds) * (pins[i] || AH));
+        drawDevices(sections[i], l, ts, exitOf(i, devGone[i], u), SCROLL_DRIVEN ? 0 : Math.min(Math.max(u - 1, 0), ds) * (pins[i] || AH));
       }
       if (a > 0 && isDevices(i + 1) && held[i + 1]) drawDevices(sections[i + 1], 0, ts, 1);
       // a jump past the devices leaves them as they were; settle them gone
-      if (i > 0 && isDevices(i - 1) && held[i - 1]) { var past = devicesOf(sections[i - 1]); if (past.stage) { put(past.stage, "opacity", "0"); put(past.stage, "translate", ""); } }
+      if (i > 0 && isDevices(i - 1) && held[i - 1]) { var past = devicesOf(sections[i - 1]); if (past.stage) { put(past.stage, "opacity", "0"); put(past.stage, "transform", ""); put(past.stage, "translate", ""); } }
     }
 
     ptr.sx += ((ptr.on ? ptr.x : AW / 2) - ptr.sx) * (1 - Math.exp(-dt * 4));

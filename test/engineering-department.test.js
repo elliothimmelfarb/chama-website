@@ -83,3 +83,28 @@ test("the contrast opens on having your own engineers", () => {
   assert.match(text(contrast), /Software bought off the shelf puts you in line behind its other customers\. Your engineers work only for you\./);
   assert.match(contrast, /<figure[^>]*aria-label="Customers wait in line at an off-the-shelf software company\./, "the figure's label says what it draws");
 });
+
+// The recording's captions used to be the whole list until the video
+// played, then only the line being said, at a larger size. So the box
+// shrank by 104px as the video started (at 1440x900) and changed height
+// again at every caption that wrapped differently, while the visitor was
+// scrolling past it: everything below jumped, and the last world's words,
+// held still by a stand measured before the jump, dropped about 56px as
+// their pin let go (Elliot, 2026-11-20: "something fighting the
+// scrolling"). Wherever the video can play, the captions now take turns in
+// one cell as tall as the tallest line, from the first paint.
+test("the recording's caption box is one height whatever line is being said", () => {
+  const css = [...HTML.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n").replace(/\/\*[\s\S]*?\*\//g, "");
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2] }));
+  const lines = rules.filter((r) => /\.ed-rec-lines/.test(r.sel));
+  assert.ok(!lines.some((r) => /data-state/.test(r.sel)), "the layout waits for no script: the box is one height from the first paint, and Back lands on the page it measured");
+  assert.ok(!lines.some((r) => /\bli\b/.test(r.sel) && /display:\s*none|visibility:\s*hidden/.test(r.body)), "a line not being said keeps its room, and screen readers still reach it");
+  const block = /@media \(scripting: enabled\) \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+  const cell = [...block.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2] })).find((r) => /\.ed-rec-lines li$/.test(r.sel));
+  assert.ok(cell, "only where scripts run (the video can play) do the lines take turns");
+  assert.match(cell.sel, /:root:not\(\[data-motion="low"\]\)/, "and only in full motion (low motion keeps the list)");
+  assert.match(cell.body, /grid-area:\s*1 \/ 1/, "every line stands in the same cell");
+  assert.match(cell.body, /font-size:\s*var\(--t-lead\)/, "every line at the size it is said at, so the cell fits the tallest");
+  assert.ok(/li:not\(\[data-now\]\)\s*\{[^}]*opacity:\s*0/.test(block), "the lines not being said are transparent");
+  assert.match(MAIN, /<ol class="ed-rec-lines"[^>]*>\s*<li data-now/, "the first line is the one shown before the script runs");
+});

@@ -223,7 +223,8 @@ main { position: relative; z-index: 2; }
    scroll timeline. A phone scrolls on its compositor, ahead of any frame:
    a hold written each frame rides up with the page and snaps back. */
 @supports (animation-timeline: scroll()) {
-  .r[data-stand] {
+  .r[data-stand],
+  .made-stage[data-stand] {
     animation: stand linear both;
     animation-duration: auto;
     animation-timeline: scroll(root);
@@ -236,6 +237,7 @@ main { position: relative; z-index: 2; }
 }
 html:not(.pin) .r,
 .world[data-pin="off"] .r { opacity: 1; transform: none; animation: none; }
+html:not(.pin) .made-stage { animation: none; }
 
 /* where the words stand in a pin; their type is base.css's (a page places
    its own figure box) */

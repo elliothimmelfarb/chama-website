@@ -317,7 +317,7 @@ test("a leaving world's words stand still, each gone before the next words or it
 test("where the scroll can drive it, a leaving word is held still by the scroll itself, not by a frame", () => {
   assert.match(JS, /CSS\.supports\("animation-timeline: scroll\(\)"\)/, "the engine asks whether the scroll can drive an animation");
   const sup = /@supports \(animation-timeline: scroll\(\)\) \{([\s\S]*?)\n\}/.exec(CSS)?.[1] ?? "";
-  assert.match(sup, /\.r\[data-stand\]\s*\{[^}]*animation:\s*stand linear both;[^}]*animation-timeline:\s*scroll\(root\);[^}]*animation-range:\s*var\(--rel\) calc\(var\(--rel\) \+ var\(--stand\)\)/, "a standing .r runs `stand` over its stretch of the root's scroll");
+  assert.match(sup, /\.r\[data-stand\][^{]*\{[^}]*animation:\s*stand linear both;[^}]*animation-timeline:\s*scroll\(root\);[^}]*animation-range:\s*var\(--rel\) calc\(var\(--rel\) \+ var\(--stand\)\)/, "a standing .r runs `stand` over its stretch of the root's scroll");
   assert.match(CSS, /@keyframes stand \{\s*from \{ translate: 0 0; \}\s*to \{ translate: 0 var\(--stand\); \}\s*\}/, "and gives back exactly the pin's travel over it");
   const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
   for (const v of ["--stand", "--rel"]) assert.match(measure, new RegExp(`setVar\\(el, "${v}"`), `measure() writes ${v} once per layout`);
@@ -331,6 +331,30 @@ test("where the scroll can drive it, a leaving word is held still by the scroll 
   assert.ok(!/--stand|--rel|data-stand|--sx|--pl/.test(frame), "no frame writes the hold");
   // in one column, and where the router's rise is playing, nothing stands
   assert.ok(RULES.some((x) => x.selectors.includes("html:not(.pin) .r") && /animation:\s*none/.test(x.body)), "a word stops standing when the layout leaves pinned (print keeps data-stand)");
+});
+
+// /build's devices stood still through a translate that drawDevices wrote
+// each frame, so on a composited scroll the last thing (Alves Teamware)
+// rode up 25px with the page and snapped back as its pin let go (Elliot,
+// 2026-11-20: "jiggles and bounces before going to the next page"). The
+// stage now stands the way a word does, and the frame writes only its fade
+// and its lift, on a property the stand does not use.
+test("where the scroll can drive it, /build's devices stand on the scroll itself, not from a frame", () => {
+  const sup = /@supports \(animation-timeline: scroll\(\)\) \{([\s\S]*?)\n\}/.exec(CSS)?.[1] ?? "";
+  const stand = /([^{}]+)\{[^}]*animation:\s*stand linear both;[^}]*animation-timeline:\s*scroll\(root\);[^}]*\}/.exec(sup)?.[1] ?? "";
+  assert.ok(stand.split(",").map((s) => s.trim()).includes(".made-stage[data-stand]"), "the devices' stage runs `stand` over its stretch of the root's scroll");
+  const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(measure, /setVar\(D\.stage, "--rel"/, "measure() writes where the devices' pin lets go");
+  assert.match(measure, /ds = held\[k\] \? devStay\[k\][\s\S]*setVar\(D\.stage, "--stand", ds \?/, "and how far the stage stands past it, from the devices' own stay");
+  assert.match(measure, /D\.stage\.toggleAttribute\("data-stand"/, "and marks the stage, or the animation never applies");
+  const frame = /function frame\(now\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  const call = /drawDevices\(sections\[i\], l, ts, [^;]*\);/.exec(frame)?.[0] ?? "";
+  assert.match(call, /SCROLL_DRIVEN \? 0 :/, "the frame passes the stand only where the scroll cannot drive it");
+  const draw = /function drawDevices\([^)]*\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(draw, /put\(D\.stage, "transform", /, "the lift goes on transform, which the stand's animation does not override");
+  const gone = /function goneOf\(k\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
+  assert.match(gone, /dSh = shiftOf\(D\.stage\)/, "a measure taken past the stretch reads the devices from their place, not from where they stand");
+  assert.ok(RULES.some((x) => x.selectors.includes("html:not(.pin) .made-stage") && /animation:\s*none/.test(x.body)), "the stage stops standing when the layout leaves pinned");
 });
 
 // ---- the motion system: six named moves ----------
