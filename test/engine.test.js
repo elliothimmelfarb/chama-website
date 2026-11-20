@@ -559,3 +559,39 @@ test("/build's opening stretch is the devices world's data-open, and its hold ag
   assert.ok(open > 0 && open < 90, `the opening is shorter than a thing's stretch (${open})`);
   assert.equal(h, 100 + open + 135 * n, "--h is the pin, the opening and 135 for each thing");
 });
+
+// A [data-p][data-morph] path changes shape only through setProgress, so every
+// place that writes --p must go through it, or the businesses stop growing in
+// every browser while every other test still passes.
+test("every write of --p goes through setProgress, which also writes a path's shape", () => {
+  const body = (name) => {
+    const at = JS.indexOf(`function ${name}(`);
+    assert.ok(at >= 0, `${name} is in worlds.js`);
+    return JS.slice(at, JS.indexOf("\n  }\n", at));
+  };
+  const writes = [...JS.matchAll(/setProperty\("--p"/g)].map((m) => m.index);
+  const sp = JS.indexOf("function setProgress(");
+  const spEnd = JS.indexOf("\n  }\n", sp);
+  assert.ok(writes.length > 0 && writes.every((i) => i > sp && i < spEnd), "--p is set only inside setProgress");
+  for (const name of ["stageWrite", "setP", "layFlat"]) assert.match(body(name), /setProgress\(/, `${name} writes through setProgress`);
+});
+
+// A path that only changes shape reads no --p, and writing it every frame
+// restyles it for nothing (pages.md, "Frame cost and scrolling").
+test("setProgress writes --p only on an element whose style reads it", () => {
+  const at = JS.indexOf("function setProgress(");
+  const fn = JS.slice(at, JS.indexOf("\n  }\n", at));
+  assert.match(fn, /var\\\(--p\\\)|--p\\\)/, "it checks the element's own style for var(--p)");
+});
+
+// Print shows each stage finished: a stage's readers carry an inline --p and
+// a written d, so the print layout alone cannot reset them.
+test("printing shows every stage complete, and the page returns to where it was", () => {
+  const before = JS.slice(JS.indexOf('addEventListener("beforeprint"'), JS.indexOf("\n", JS.indexOf('addEventListener("beforeprint"')));
+  const after = JS.slice(JS.indexOf('addEventListener("afterprint"'), JS.indexOf("\n", JS.indexOf('addEventListener("afterprint"')));
+  assert.match(before, /stagesFor(Print|print)\(true\)/);
+  assert.match(after, /stagesFor(Print|print)\(false\)/);
+  const at = JS.indexOf("function stagesForPrint(");
+  assert.ok(at >= 0);
+  assert.match(JS.slice(at, JS.indexOf("\n  }\n", at)), /setProgress\(el, 1\)/);
+});

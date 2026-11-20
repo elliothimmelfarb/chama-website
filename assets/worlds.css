@@ -524,7 +524,7 @@ html[data-motion="low"] [data-stage-action] { display: none; }
 
 /* ---- the figure language ------------------------------------------------ */
 /* Every figure is an .fx: an inline .fx-svg whose protagonist and cast are
-   drawn on five layers (floor shadow, body, ink, halo, ember fit) in the
+   drawn on its layers (body, ink, halo, ember boundary and its ticks) in the
    colours of tokens.css section 4, with HTML labels placed over it (.fx-lb;
    their type is base.css's). site/figures/kit.js writes the parts; this is
    how they are painted. Strokes on paths with pathLength cannot use

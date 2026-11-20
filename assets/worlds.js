@@ -92,7 +92,8 @@
   }
   // writes an element's --p, and its shape if it has one
   function setProgress(el, p) {
-    el.style.setProperty("--p", p);
+    if (el._readsP === undefined) el._readsP = /var\(--p\)/.test(el.getAttribute("style") || "") || !el.hasAttribute("data-morph");
+    if (el._readsP) el.style.setProperty("--p", p);
     var M = morphOf(el);
     if (!M) return;
     var d = shapeAt(M, p);
@@ -167,6 +168,18 @@
     S.p = p;
     S.readers.forEach(function (el) { setProgress(el, p); });
     stageMark(S);
+  }
+  // Print shows every stage finished, then puts each back where it stood. A
+  // stage never written has no inline --p, and its paths' d at 1 is the d in
+  // the HTML, so taking --p off is all it needs.
+  function stagesForPrint(on) {
+    stages.forEach(function (S) {
+      S.readers.forEach(function (el) {
+        if (on) setProgress(el, 1);
+        else if (S.p >= 0) setProgress(el, S.p);
+        else el.style.removeProperty("--p");
+      });
+    });
   }
   function stageAt(S) { return S.state === "playing" ? clamp(S.from + (performance.now() - S.start) / S.dur) : Math.max(0, S.p); }
   function stagePlay(S, from) {
@@ -1095,8 +1108,8 @@
   });
   window.addEventListener("scroll", function () { sy = window.scrollY; }, { passive: true });
   window.addEventListener("load", measure);
-  window.addEventListener("beforeprint", function () { printing = true; pinnable(); layFlat(); });
-  window.addEventListener("afterprint", function () { printing = false; resize(); });
+  window.addEventListener("beforeprint", function () { printing = true; pinnable(); layFlat(); stagesForPrint(true); });
+  window.addEventListener("afterprint", function () { printing = false; stagesForPrint(false); resize(); });
   // anything that lengthens the page (a late picture) measures again
   if (window.ResizeObserver) new ResizeObserver(function () {
     if (root.scrollHeight !== docH) measure();
