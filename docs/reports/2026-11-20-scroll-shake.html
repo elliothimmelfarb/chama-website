@@ -1,0 +1,177 @@
+<title>The End-of-Section Shake</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;600&family=Funnel+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column of sections; pictures first, short labels under them. */
+:root{
+  --bg:#f3f0e8; --surface:#fbf9f4; --fg:#141412; --fg2:#57544d; --line:rgb(20 20 18 / .14);
+  --ember:#f4581f; --ember-text:#b33d0b; --good:#2f6b4f; --warn:#8a5a00; --bad:#a3271b; --tint:rgb(244 88 31 / .1);
+  --display:"Funnel Display","Helvetica Neue",Arial,sans-serif; --text:"Funnel Sans","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember:#f4581f; --ember-text:#ff7a45; --good:#7fc9a3; --warn:#e2b458; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember:#f4581f; --ember-text:#ff7a45; --good:#7fc9a3; --warn:#e2b458; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font:400 1rem/1.5 var(--text);padding-block:2rem 4rem;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:3rem}
+.wrap > *{min-width:0}
+h1{font:600 clamp(1.9rem,1.2rem + 3vw,3.2rem)/1.05 var(--display);letter-spacing:-.025em;margin:0;text-wrap:balance}
+h2{font:600 clamp(1.35rem,1.1rem + 1vw,1.8rem)/1.15 var(--display);letter-spacing:-.02em;margin:0 0 1rem;text-wrap:balance}
+h3{font:600 1.05rem/1.25 var(--display);margin:0 0 .35rem}
+p{margin:0;max-width:65ch}
+.lead{font-size:1.15rem;color:var(--fg2);margin-top:.9rem;max-width:58ch}
+.date{font-size:.8rem;color:var(--fg2);margin-bottom:.6rem}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.nums > div{background:var(--surface);padding:1rem}
+.nums b{display:block;font:600 1.9rem/1 var(--display);font-variant-numeric:tabular-nums}
+.nums span{font-size:.82rem;color:var(--fg2)}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+figure{margin:0}
+figure img{display:block;width:100%;border-radius:10px;border:1px solid var(--line)}
+figcaption{font-size:.85rem;color:var(--fg2);margin-top:.5rem}
+figcaption b{color:var(--fg);font-weight:600}
+.diff{display:grid;gap:0;border-top:1px solid var(--line);margin-top:1.25rem}
+.diff > div{display:grid;grid-template-columns:minmax(110px,.7fr) 1fr 1fr;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.diff > div > *{min-width:0}
+.diff .k{font-weight:600}
+.diff .h{font-size:.76rem;color:var(--fg2);font-weight:600}
+.causes{display:grid;gap:.75rem;counter-reset:c}
+.cause{display:grid;grid-template-columns:2.2rem 1fr;gap:.75rem;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem}
+.cause > *{min-width:0}
+.cause::before{counter-increment:c;content:counter(c);font:600 1.3rem/1.2 var(--display);color:var(--ember-text)}
+.cause p{font-size:.93rem;color:var(--fg2)}
+.ev{display:inline-block;margin-top:.5rem;font-size:.8rem;padding:.15rem .55rem;border-radius:999px;background:var(--tint);color:var(--ember-text)}
+.tl{display:grid;gap:0;border-left:2px solid var(--line);margin-left:.4rem}
+.tl > div{position:relative;padding:.1rem 0 .9rem 1.1rem;font-size:.9rem}
+.tl > div::before{content:"";position:absolute;left:-6px;top:.45rem;width:10px;height:10px;border-radius:50%;background:var(--ember)}
+.tl > div.ok::before{background:var(--good)}
+.tl time{font-size:.78rem;color:var(--fg2);font-variant-numeric:tabular-nums;display:block}
+.tl q{font-weight:600}
+.tl span{color:var(--fg2)}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.verdict > div{border:1px solid var(--line);border-radius:14px;padding:1rem;background:var(--surface)}
+.verdict ul{margin:.5rem 0 0;padding-left:1.1rem;font-size:.9rem;color:var(--fg2)}
+.tag{font-size:.78rem;font-weight:600}
+.tag.y{color:var(--good)} .tag.n{color:var(--bad)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem;counter-reset:s}
+.flow > div{border:1px solid var(--line);border-top:3px solid var(--ember);border-radius:0 0 12px 12px;padding:.8rem;background:var(--surface);font-size:.88rem;color:var(--fg2)}
+.flow > div::before{counter-increment:s;content:"Step " counter(s);display:block;font-size:.76rem;color:var(--ember-text);font-weight:600;margin-bottom:.2rem}
+.flow b{display:block;color:var(--fg);font:600 1rem/1.25 var(--display);margin-bottom:.3rem}
+.ask{display:grid;gap:.6rem}
+.ask > div{display:grid;grid-template-columns:1.4rem 1fr;gap:.6rem;font-size:.95rem}
+.ask > div::before{content:"?";font-weight:600;color:var(--ember-text)}
+.ask span{color:var(--fg2);display:block;font-size:.88rem}
+.note{font-size:.85rem;color:var(--fg2);border-left:3px solid var(--line);padding-left:.8rem}
+@media (max-width:520px){ .diff > div{grid-template-columns:1fr 1fr} .diff .k{grid-column:1 / -1} .diff .h:first-child{display:none} }
+.bar{display:grid;gap:.5rem;margin-top:.5rem}
+.bar > div{display:grid;grid-template-columns:5.5rem 1fr;gap:.75rem;align-items:center;font-size:.9rem}
+.bar i{display:block;height:1.6rem;border-radius:4px;background:var(--fg2)}
+.bar .now i{background:var(--ember)}
+.bar span{font-variant-numeric:tabular-nums}
+.st{font-size:.78rem;font-weight:600;white-space:nowrap}
+.st.c{color:var(--fg2)} .st.k{color:var(--good)} .st.d{color:var(--bad)}
+.diff.three > div{grid-template-columns:minmax(120px,.9fr) 1.6fr auto}
+@media (max-width:520px){ .diff.three > div{grid-template-columns:1fr auto} .diff.three .k{grid-column:auto} .diff.three > div > span:nth-child(2){grid-column:1 / -1;order:3} }
+.ab{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.ab > div{border:1px solid var(--line);border-radius:14px;padding:1rem;background:var(--surface)}
+.ab > div.new{border-top:3px solid var(--ember)}
+.ab dl{margin:.6rem 0 0;display:grid;gap:.7rem}
+.ab dt{font-size:.76rem;font-weight:600;color:var(--fg2)}
+.ab dd{margin:.1rem 0 0;font-size:.92rem}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:320px;height:auto}
+.chart text{fill:var(--fg2);font:500 11px var(--text)}
+.chart .ax{stroke:var(--line);stroke-width:1}
+.chart .old{fill:none;stroke:var(--bad);stroke-width:2.5}
+.chart .new{fill:none;stroke:var(--good);stroke-width:2.5}
+.chart .dot-old{fill:var(--bad)} .chart .dot-new{fill:var(--good)}
+.chart .bo{fill:var(--bad);opacity:.75} .chart .bn{fill:var(--good)}
+.key{display:flex;flex-wrap:wrap;gap:1rem;font-size:.82rem;color:var(--fg2);margin-top:.5rem}
+.key i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
+.scope{display:grid;gap:0;border-top:1px solid var(--line)}
+.scope > div{display:grid;grid-template-columns:1.6rem 1fr;gap:.5rem;padding:.55rem 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.scope > div > *{min-width:0}
+.scope .y{color:var(--good);font-weight:600} .scope .o{color:var(--warn);font-weight:600}
+</style>
+<div class="wrap">
+<header>
+  <div class="date">2026-11-20 · chama-website PR 228, live on chamainteligente.com</div>
+  <h1>The shake at the end of pinned sections had two causes. Both are fixed and checked on the live site in Comet.</h1>
+  <p class="lead">Your trackpad scrolls on the browser's compositor, a frame ahead of the page's script. Anything the script positions against the scroll lands one frame late, and anything that changes height while you scroll moves everything below it.</p>
+</header>
+
+<section>
+  <div class="nums">
+    <div><b>26–28px → 0</b><span>/build: Alves Teamware's devices riding up and snapping back (2 of 3 runs before, 0 of 3 after)</span></div>
+    <div><b>104px → 0</b><span>/engineering-department: how much the page shrank mid-scroll when the recording started</span></div>
+    <div><b>56px → 0</b><span>how far "You own the IP." dropped at its release because of that shrink</span></div>
+    <div><b>771 of 771</b><span>tests pass, 2 new ones failed before the fix. Screenshot rig: 40 states, 0 failures</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>/build: the last device, frame by frame</h2>
+  <div class="chart">
+    <svg viewBox="0 0 640 230" role="img" aria-label="Device position against scroll, before and after">
+      <line class="ax" x1="60" y1="20" x2="60" y2="190"/><line class="ax" x1="60" y1="190" x2="620" y2="190"/>
+      <line class="ax" x1="60" y1="64" x2="620" y2="64" stroke-dasharray="3 4"/>
+      <text x="54" y="68" text-anchor="end">306</text><text x="54" y="104" text-anchor="end">281</text>
+      <text x="60" y="208">5,050</text><text x="320" y="208" text-anchor="middle">5,250</text><text x="620" y="208" text-anchor="end">5,410</text>
+      <text x="340" y="225" text-anchor="middle">page scroll (px)</text>
+      <text x="66" y="58">where it should stand</text>
+      <polyline class="old" points="94,64 238,64 273,64 370,100 435,64"/>
+      <circle class="dot-old" cx="370" cy="100" r="4"/>
+      <text x="300" y="124" style="fill:var(--bad)">rides up 25px, snaps back</text>
+      <polyline class="new" points="221,64 246,64 254,64 413,64 512,67"/>
+    </svg>
+    <div class="key"><span><i style="background:var(--bad)"></i>Before: held by the script each frame</span><span><i style="background:var(--good)"></i>After: held by the scroll itself</span></div>
+  </div>
+  <p class="note" style="margin-top:.75rem">Measured from painted frames of a real Comet window. The vertical axis is the device's distance from the top of the screen. The words on every page already stood still this way; the devices were the one thing left on the old method.</p>
+</section>
+
+<section>
+  <h2>/engineering-department: the recording's caption box</h2>
+  <div class="chart">
+    <svg viewBox="0 0 640 220" role="img" aria-label="Caption box height by caption, before and after">
+      <line class="ax" x1="60" y1="180" x2="620" y2="180"/>
+      <text x="54" y="184" text-anchor="end">0</text><text x="54" y="104" text-anchor="end">80</text><text x="54" y="24" text-anchor="end">160</text>
+      <line class="ax" x1="60" y1="100" x2="620" y2="100" stroke-dasharray="3 4"/><line class="ax" x1="60" y1="20" x2="620" y2="20" stroke-dasharray="3 4"/>
+      <g>
+        <rect class="bo" x="80" y="28" width="30" height="152"/><rect class="bn" x="112" y="123" width="30" height="57"/>
+        <rect class="bo" x="170" y="132" width="30" height="48"/><rect class="bn" x="202" y="123" width="30" height="57"/>
+        <rect class="bo" x="260" y="123" width="30" height="57"/><rect class="bn" x="292" y="123" width="30" height="57"/>
+        <rect class="bo" x="350" y="132" width="30" height="48"/><rect class="bn" x="382" y="123" width="30" height="57"/>
+        <rect class="bo" x="440" y="132" width="30" height="48"/><rect class="bn" x="472" y="123" width="30" height="57"/>
+        <rect class="bo" x="530" y="132" width="30" height="48"/><rect class="bn" x="562" y="123" width="30" height="57"/>
+      </g>
+      <text x="111" y="198" text-anchor="middle">Before play</text><text x="201" y="198" text-anchor="middle">Line 1</text><text x="291" y="198" text-anchor="middle">Line 2</text><text x="381" y="198" text-anchor="middle">Line 3</text><text x="471" y="198" text-anchor="middle">Line 4</text><text x="561" y="198" text-anchor="middle">Line 5</text>
+      <text x="340" y="216" text-anchor="middle">caption box height in px, 1440×900</text>
+    </svg>
+    <div class="key"><span><i style="background:var(--bad)"></i>Before: 152 → 48 → 57 → 48</span><span><i style="background:var(--good)"></i>After: 57 throughout</span></div>
+  </div>
+  <p class="note" style="margin-top:.75rem">The captions now take turns in one spot sized to the longest line, from the first paint. The other lines are see-through, so screen readers still read all of them. With low motion or no JavaScript, the full list shows as before.</p>
+</section>
+
+<section>
+  <h2>Scope</h2>
+  <div class="scope">
+    <div><span class="y">✓</span><span>The bounce on /build at Alves Teamware is gone (filmed in Comet on the live site, 3 runs).</span></div>
+    <div><span class="y">✓</span><span>No page changes height while scrolling, on 6 pages at 1440×900, 1512×860, 1280×720 and a phone.</span></div>
+    <div><span class="y">✓</span><span>Every block on /engineering-department holds still at its release, including "You own the IP."</span></div>
+    <div><span class="y">✓</span><span>Tests that fail if either fix regresses. A browser-scrolling reviewer checked the design and diff; its two caption findings are fixed.</span></div>
+    <div><span class="y">✓</span><span>Merged to main, deployed, branch deleted. The site skill records both causes and how they were found.</span></div>
+    <div><span class="o">?</span><span>/coaching: every block held still in Comet, and its page height never changes. I found nothing on it specific to coaching.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Still open</h2>
+  <div class="ask">
+    <div><p><b>Does /coaching still shake for you?</b> <span>Test runs can't reproduce a real trackpad exactly. If it still happens, a 10-second screen recording of where would let me find it.</span></p></div>
+    <div><p><b>Not fixed, and probably not noticeable.</b> <span>Firefox has no scroll-driven animations, so its words are still held by the script. The laptop picture on /build's last device still scrolls one frame behind.</span></p></div>
+  </div>
+</section>
+</div>
