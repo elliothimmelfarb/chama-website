@@ -91,21 +91,20 @@ test("the contrast opens on having your own engineers", () => {
 // scrolling past it: everything below jumped, and the last world's words,
 // held still by a stand measured before the jump, dropped about 56px as
 // their pin let go (Elliot, 2026-11-20: "something fighting the
-// scrolling"). In full motion the captions now take turns in one cell as
-// tall as the tallest line, in every state.
+// scrolling"). Wherever the video can play, the captions now take turns in
+// one cell as tall as the tallest line, from the first paint.
 test("the recording's caption box is one height whatever line is being said", () => {
   const css = [...HTML.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n").replace(/\/\*[\s\S]*?\*\//g, "");
   const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2] }));
   const lines = rules.filter((r) => /\.ed-rec-lines/.test(r.sel));
-  assert.ok(!lines.some((r) => /data-state="/.test(r.sel)), "no state of the video changes the captions' layout");
-  assert.ok(!lines.some((r) => /\bli\b/.test(r.sel) && /display:\s*none/.test(r.body)), "a line not being said keeps its room");
-  const cell = lines.find((r) => /\[data-rec\]\[data-state\] \.ed-rec-lines li(?![\w[:-])/.test(r.sel));
-  assert.ok(cell, "in full motion, once the video is bound, every line has a rule");
-  assert.match(cell.sel, /:root:not\(\[data-motion="low"\]\)/, "only in full motion (low motion keeps the list)");
+  assert.ok(!lines.some((r) => /data-state/.test(r.sel)), "the layout waits for no script: the box is one height from the first paint, and Back lands on the page it measured");
+  assert.ok(!lines.some((r) => /\bli\b/.test(r.sel) && /display:\s*none|visibility:\s*hidden/.test(r.body)), "a line not being said keeps its room, and screen readers still reach it");
+  const block = /@media \(scripting: enabled\) \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+  const cell = [...block.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2] })).find((r) => /\.ed-rec-lines li$/.test(r.sel));
+  assert.ok(cell, "only where scripts run (the video can play) do the lines take turns");
+  assert.match(cell.sel, /:root:not\(\[data-motion="low"\]\)/, "and only in full motion (low motion keeps the list)");
   assert.match(cell.body, /grid-area:\s*1 \/ 1/, "every line stands in the same cell");
   assert.match(cell.body, /font-size:\s*var\(--t-lead\)/, "every line at the size it is said at, so the cell fits the tallest");
-  assert.ok(lines.some((r) => /li:not\(\[data-now\]\)/.test(r.sel) && /visibility:\s*hidden/.test(r.body)), "the lines not being said are hidden, not removed");
-  const chrome = readFileSync(path.join(ROOT, "assets/chrome.js"), "utf8");
-  const bind = /function bind\(\) \{([\s\S]*?)\n  \}/.exec(chrome.slice(chrome.indexOf("the recording on")))[1];
-  assert.match(bind, /show\(v\);/, "a line is current from the moment the video is bound, so the box is never blank");
+  assert.ok(/li:not\(\[data-now\]\)\s*\{[^}]*opacity:\s*0/.test(block), "the lines not being said are transparent");
+  assert.match(MAIN, /<ol class="ed-rec-lines"[^>]*>\s*<li data-now/, "the first line is the one shown before the script runs");
 });
