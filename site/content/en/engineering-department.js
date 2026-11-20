@@ -19,6 +19,17 @@ export const ed = {
   h1: "Your own engineering department.",
   lead: "Software that fits your process, and changes when you do. You talk to a person. AI does the heavy work behind us.",
 
+  // the first picture: a survey sheet of a business, the boxes laid over it,
+  // then its own software round it
+  survey: {
+    label: "A business is an irregular shape. Boxes of off-the-shelf software are laid over it one after another as it grows: their corners go unused, where two overlap is paid for twice, and parts of the business are never covered. Then one outline, your own software, hugs the real shape. When the business needs room, the outline makes the room first and the business grows into it.",
+    unused: "Unused",
+    missing: "Missing",
+    twice: "Paid twice",
+    shelf: ["Off the shelf", "Off the shelf, twice", "Off the shelf, three times"],
+    own: "Your own software",
+  },
+
   contrast: {
     h2: "Big companies have their own engineers. Now your business can too.",
     lead: "Software bought off the shelf puts you in line behind its other customers. Your engineers work only for you. You get what a big company has, without becoming one.",

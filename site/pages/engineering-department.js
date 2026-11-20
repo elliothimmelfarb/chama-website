@@ -11,7 +11,7 @@ import { contrast, VIEW } from "../figures/contrast.js";
 import { loop, LAPS } from "../figures/loop.js";
 import { beforeAfter, priceLine } from "../figures/plant.js";
 import { own } from "../figures/own.js";
-import { subject } from "../figures/kit.js";
+import { survey, SURVEY_VIEW } from "../figures/survey.js";
 
 const MEDIA = "/assets/media/note-to-change-2026-11-16";
 const CAPTIONS = JSON.parse(readFileSync(new URL("../../assets/media/captions.json", import.meta.url), "utf8"));
@@ -51,10 +51,10 @@ function recording() {
 // contrast's "Yours", and the numbers' sheet stands where the ring was.
 const AR = `--ar:${+(VIEW[2] / VIEW[3]).toFixed(4)}`;
 
-// The first screen's picture: your business standing with its software
-// round it, still. The loop is the page's to show once, in its own world.
-const HERO_R = 120, HERO_VIEW = [-160, -136, 320, 264];
-const hero = raw(`<figure class="fx ed-hero" aria-hidden="true"><svg class="fx-svg ed-hero-svg" viewBox="${HERO_VIEW.join(" ")}" focusable="false">${subject({ id: "hero", R: HERO_R, at: [0, -8], drawn: true })}</svg></figure>`);
+// The first screen's picture is the survey sheet (figures/survey.js): the
+// business under boxes off the shelf, then with its own software round it.
+// Its box is centred where the contrast's and the loop's are, and it ends
+// on the shape they start from.
 
 // Everything inside a figure box (.fig.r) restyles on every frame of its
 // world's hold, because the engine writes --u on the box (pages.md, frame
@@ -78,7 +78,26 @@ const STYLE = raw(`<style>
 .ed-first .lead { margin-top: var(--s4); }
 .ed-first .talk-field { margin-top: var(--s5); }
 .ed-first > .pin > .frame { padding-top: calc(var(--head) + var(--s8)); padding-bottom: var(--s8); }
-.ed-first .fig { display: none; }
+
+/* The survey sheet: the first picture. Its labels are set as a drawing's
+   are, in small capitals of the system's fixed-width face. */
+.sv-dots circle { fill: var(--fx-ink); fill-opacity: 0.2; }
+.sv-reg { fill: none; stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1px * var(--sw)); }
+.sv-hatch path { fill: none; stroke: var(--fx-ink); stroke-opacity: 0.55; stroke-width: 1; }
+.sv-box { fill: none; stroke: var(--fx-ink); stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: 5 4; }
+.sv-twice { stroke: none; }
+.sv-paid { fill: var(--fx-ink); fill-opacity: 0.1; }
+.sv-missing { fill: color-mix(in srgb, var(--accent) 20%, transparent); stroke: var(--accent); stroke-width: calc(2.25px * var(--sw)); stroke-linejoin: round; }
+.sv-lead { fill: var(--fx-ink); stroke: var(--fx-ink); stroke-width: calc(0.9px * var(--sw)); }
+.sv-lead.is-hot { fill: var(--accent); stroke: var(--accent); }
+.fx-lb.sv-lb { font: 600 0.75rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.09em; text-transform: uppercase; }
+.sv-ctl { position: absolute; right: -6px; bottom: -6px; }
+.sv-btn { position: relative; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-pill); background: none; color: var(--fg); cursor: pointer; transition: scale var(--dur-press) var(--ease-out); }
+/* the ring is 32px; the button stays a 44px target */
+.sv-btn::before { content: ""; position: absolute; inset: 6px; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--line-strong); }
+.sv-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.sv-btn:active { scale: 0.97; }
+@media (hover: hover) { .sv-btn:hover::before { box-shadow: inset 0 0 0 1px var(--fg-2); } }
 .frame > .words > h2 + .lead { margin-top: var(--s3); }
 .frame > .words > .lead + .lead { margin-top: var(--s3); }
 [data-page="engineering-department"] main [id] { scroll-margin-top: 72px; }
@@ -87,8 +106,9 @@ const STYLE = raw(`<style>
 
 /* viewBox units per CSS pixel at each figure width (worlds.css, figures) */
 .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 330); }
-.ed-hero-svg { --sw: calc(320 / 330); }
-@container fx (min-width: 480px) { .ed-hero-svg { --sw: calc(320 / 520); } }
+.sv-svg { --sw: calc(352 / 330); }
+@container fx (min-width: 480px) { .sv-svg { --sw: calc(352 / 520); } }
+@container fx (min-width: 600px) { .sv-svg { --sw: calc(352 / 700); } }
 .pl-svg { --sw: calc(440 / 330); }
 @container fx (min-width: 480px) { .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 520); } .pl-svg { --sw: calc(440 / 520); } }
 @container fx (min-width: 600px) { .cx-svg, .loop-svg, .sum-svg, .own-svg { --sw: calc(480 / 700); } .pl-svg { --sw: calc(440 / 660); } }
@@ -100,7 +120,7 @@ const STYLE = raw(`<style>
 .cx-co, .cx-co-top { stroke: var(--fx-ink-2); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 .cx-co { fill: var(--fx-old); fill-rule: evenodd; }
 .cx-co-top { fill: var(--fx-light); }
-.cx-q { fill: url(#cx-q-body); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
+.cx-q { fill: var(--fx-body); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
 
 /* The loop */
 .loop-export { fill: var(--fx-light); stroke: var(--fx-ink); stroke-width: calc(1.5px * var(--sw)); stroke-linejoin: round; }
@@ -215,7 +235,8 @@ const STYLE = raw(`<style>
   .ed-first > .pin > .frame { min-height: calc(88svh); }
   .ed-first .words { grid-column: 1 / span 6; }
   .ed-first h1 { max-width: 12ch; }
-  .ed-first .fig { display: block; grid-column: 7 / -1; }
+  .ed-first .fig { grid-column: 7 / -1; }
+  .fx-lb.sv-lb { font-size: var(--t-label); }
   /* A figure in a pinned world rides up with its pin when it lets go and
      must be gone before it reaches the header; held under half the screen
      tall, it is still there when the next world's words come in. */
@@ -232,8 +253,19 @@ const STYLE = raw(`<style>
 }
 @media (min-width: 760px) and (max-width: 1099px) {
   .ed-first .words { grid-column: 1 / span 9; }
+  .ed-first .fig { grid-column: 1 / -1; }
+  .ed-first .frame { --fig-h: 44svh; }
 }
 @media (max-width: 759px), (max-aspect-ratio: 9/10) {
+  /* the first screen: the headline, the sheet under it, then the lead and
+     the field; who we are follows (home's first screen is ordered the same) */
+  .ed-first > .pin > .frame { display: flex; flex-direction: column; align-items: stretch; row-gap: 0; padding-top: calc(var(--head) + var(--s4)); --fig-h: 44svh; }
+  .ed-first .words { display: contents; }
+  .ed-first h1 { order: 1; font-size: clamp(2.25rem, 1.2rem + 5vw, 2.8rem); }
+  .ed-first .fig { order: 2; margin-top: var(--s4); }
+  .ed-first .lead { order: 3; }
+  .ed-first .talk-field { order: 4; }
+  .ed-first .descriptor { order: 5; margin: var(--s6) 0 0; }
   /* the contrast: the heading, the picture, then the lead, so the picture
      is not the lowest part, which a phone's pin lets go of first */
   .ed-contrast .frame { --words-h: 12rem; }
@@ -274,7 +306,7 @@ const STYLE = raw(`<style>
 </style>`);
 
 export function render(p) {
-  const L = loop({ id: "loop-b", stations: t.loop.stations, you: t.loop.you, label: t.loop.ledgerLabel });
+  const L = loop({ stations: t.loop.stations, you: t.loop.you, label: t.loop.ledgerLabel });
   const main = html`
 ${STYLE}
 <section class="world first ed-first" data-world="paper" data-pin="off" data-pad="off" data-fill data-label="${t.rail.first}">
@@ -285,7 +317,7 @@ ${STYLE}
       <p class="lead">${t.lead}</p>
       ${talkField({ id: "ask-ed" })}
     </div>
-    <div class="fig" style="--ar:${HERO_VIEW[2] / HERO_VIEW[3]}">${hero}</div>
+    <div class="fig" style="--ar:${+(SURVEY_VIEW[2] / SURVEY_VIEW[3]).toFixed(4)}">${survey(t.survey)}</div>
   </div></div>
 </section>
 
