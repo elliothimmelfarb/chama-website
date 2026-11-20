@@ -1,0 +1,1117 @@
+<title>Chama Shape Picks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one column of option cards, each a live sketch beside its idea, with Yes / Maybe / No under it. */
+:root { --ground:#f3f0e8; --ground-2:#ebe6da; --ink:#141412; --ink-dim:#5e5a52; --line:rgba(20,20,18,.14); --ember:#c9461b; --yes:#2f7a4f; --maybe:#a86a12; --no:#9b3b3b; --sans:"Helvetica Neue",Helvetica,Arial,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ground:#0e0c0a; --ground-2:#181512; --ink:#ece7dc; --ink-dim:#9a938a; --line:rgba(243,240,232,.14); --ember:#f4581f; --yes:#7fcf9a; --maybe:#e0a54a; --no:#e48a8a; color-scheme:dark; } }
+:root[data-theme="dark"] { --ground:#0e0c0a; --ground-2:#181512; --ink:#ece7dc; --ink-dim:#9a938a; --line:rgba(243,240,232,.14); --ember:#f4581f; --yes:#7fcf9a; --maybe:#e0a54a; --no:#e48a8a; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+.wrap { max-width:66rem; margin:0 auto; padding-block:2.5rem 4rem; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:grid; gap:3rem; }
+.wrap > * { min-width:0; }
+h1 { margin:0; font-size:clamp(2rem,6vw,3.6rem); font-weight:500; letter-spacing:-.04em; line-height:1.02; text-wrap:balance; }
+.lede { margin:.9rem 0 0; max-width:62ch; color:var(--ink-dim); font-size:1.1rem; }
+h2 { margin:0 0 .3rem; font-size:1.5rem; font-weight:600; letter-spacing:-.02em; }
+.sub { margin:0 0 1.2rem; color:var(--ink-dim); max-width:62ch; }
+.why { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
+.why img { width:100%; height:auto; border-radius:8px; border:1px solid var(--line); display:block; }
+.why figure { margin:0; display:grid; gap:.4rem; }
+figcaption, .cap { font-size:.84rem; color:var(--ink-dim); }
+.why ul { margin:0; padding:0; list-style:none; display:grid; gap:.6rem; }
+.why li { padding-left:.9rem; border-left:2px solid var(--ember); font-size:.95rem; }
+.why li b { font-weight:600; }
+.cards { display:grid; gap:1.25rem; }
+.card { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:1.5rem; border:1px solid var(--line); border-radius:10px; padding:1.25rem; background:var(--ground-2); }
+.card.flame { grid-template-columns:minmax(0,.8fr) minmax(0,1fr); }
+.art { color:var(--ink); background:var(--ground); border-radius:8px; border:1px solid var(--line); display:grid; place-items:center; padding:.5rem; }
+.art svg { width:100%; height:auto; display:block; }
+.body { display:grid; gap:.7rem; align-content:start; }
+.tag { font-family:var(--mono); font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ember); }
+.body h3 { margin:0; font-size:1.3rem; font-weight:600; letter-spacing:-.015em; }
+.body p { margin:0; font-size:.95rem; }
+.uses { display:grid; grid-template-columns:auto minmax(0,1fr); gap:.25rem .8rem; font-size:.86rem; margin:0; }
+.uses dt { color:var(--ink-dim); }
+.uses dd { margin:0; }
+.pick { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.3rem; }
+.pick button { font:inherit; font-size:.9rem; font-weight:600; padding:.45rem 1rem; border-radius:99px; border:1.5px solid var(--line); background:transparent; color:var(--ink); cursor:pointer; }
+.pick button:focus-visible { outline:2px solid var(--ember); outline-offset:2px; }
+.pick button[data-v="yes"][aria-pressed="true"] { border-color:var(--yes); color:var(--yes); background:color-mix(in srgb, var(--yes) 12%, transparent); }
+.pick button[data-v="maybe"][aria-pressed="true"] { border-color:var(--maybe); color:var(--maybe); background:color-mix(in srgb, var(--maybe) 12%, transparent); }
+.pick button[data-v="no"][aria-pressed="true"] { border-color:var(--no); color:var(--no); background:color-mix(in srgb, var(--no) 12%, transparent); }
+.rec { font-size:.78rem; font-weight:600; color:var(--yes); border:1px solid var(--yes); border-radius:99px; padding:.05rem .55rem; justify-self:start; }
+.shared { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin:0; padding:0; list-style:none; }
+.shared > li { border-top:2px solid var(--ember); padding-top:.6rem; font-size:.93rem; }
+.shared b { display:block; font-size:1.05rem; margin-bottom:.2rem; }
+.out { border:2px solid var(--maybe); border-radius:10px; padding:1.25rem; display:grid; gap:.8rem; }
+.out textarea { width:100%; min-height:9rem; font:inherit; font-family:var(--mono); font-size:.85rem; padding:.7rem; border-radius:6px; border:1px solid var(--line); background:var(--ground); color:var(--ink); resize:vertical; }
+.out .row { display:flex; gap:.7rem; align-items:center; flex-wrap:wrap; }
+.copy { font:inherit; font-weight:600; padding:.55rem 1.2rem; border-radius:99px; border:0; background:var(--ember); color:#141412; cursor:pointer; }
+.art canvas { width:100%; aspect-ratio:4/3; display:block; color:var(--ink); }
+.r1 > li { font-size:.9rem; }
+.notes { margin:0; padding:0; list-style:none; display:grid; gap:.4rem; font-size:.88rem; color:var(--ink-dim); }
+@media (max-width:46rem) {
+  .why, .card, .card.flame { grid-template-columns:minmax(0,1fr); }
+  .shared { grid-template-columns:minmax(0,1fr); }
+}
+@media (prefers-reduced-motion: reduce) { .art svg * { animation:none !important; } }
+</style>
+
+<main class="wrap">
+
+<header>
+  <h1>Round three: the business asks, the software makes room</h1>
+  <p class="lede">In all three directions, the part of the business that needs room now sends out a faint ripple. Your own software answers first by making the space, and then the business grows into it, so the business never pushes past its outline. The fire is rebuilt calmer, after looking at the original live. Mark each one, then copy your picks back to me. Nothing on the site has changed yet.</p>
+</header>
+
+<section>
+  <h2>So far</h2>
+  <ul class="shared r1">
+    <li><b>Directions</b>Survey sheet, One line and Growth rings, each with many boxes: yes in round two.</li>
+    <li><b>Flames</b>All four canvas fires were a no: too bright and intense, not warm, the sticks didn't work, and the mark looked like the C was smoking. The flame inside the C was better.</li>
+    <li><b>This round</b>Ripple, then the outline grows, then the business fills it. A calm fire that sits inside the C as its spark.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>The three directions: ask, make room, grow</h2>
+  <p class="sub">The box part is unchanged from round two. The new beat comes after it: watch for three thin ink rings leaving one edge of the business. The ink is the business speaking, and the ember outline answers. The survey sheet and one line loops run 31 seconds and growth rings 20.</p>
+  <div class="cards">
+    <article class="card" data-id="Survey sheet, ask then make room">
+      <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" fill="none" stroke-linecap="round" stroke-linejoin="round"><title>A business's irregular shape changes. Boxes of off the shelf software are laid over it one after another, always after the business has already outgrown them; they overlap, leave corners unused and still miss parts. Then the boxes go and one ember outline is drawn round the real shape. When a part of the business needs more room it sends out a quiet ripple, the ember outline makes the room first, and the business then grows into it without ever crossing the outline.</title>
+<defs>
+  <pattern id="d1c-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r=".8" fill="currentColor" fill-opacity=".22"/></pattern>
+  <pattern id="d1c-h" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V5" stroke="currentColor" stroke-opacity="0.6" stroke-width="1"/></pattern><pattern id="d1c-x" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><path d="M0 0V5" stroke="currentColor" stroke-opacity="0.75" stroke-width="1"/></pattern>
+  <mask id="d1c-hole" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="300"><rect width="400" height="300" fill="#fff"/><path fill="#000" d="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z"><animate attributeName="d" values="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6452;0.6903;0.7871;0.8323;0.8581;0.9097;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path></mask>
+  <mask id="d1c-cov" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="300"><rect width="400" height="300" fill="#fff"/><rect x="144" y="90" width="112" height="112" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/></rect><rect width="0" height="0"/><rect x="236" y="150" width="66" height="64" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/></rect><rect width="0" height="0"/><rect x="98" y="104" width="56" height="46" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/></rect><rect width="0" height="0"/></mask>
+</defs>
+<rect width="400" height="300" fill="url(#d1c-dots)"/>
+<path d="M14 24V14H24M386 24V14H376M14 276V286H24M386 276V286H376" stroke="currentColor" stroke-opacity=".45" stroke-width="1"/>
+<path d="M194 146h12M200 140v12" stroke="currentColor" stroke-opacity=".4" stroke-width=".8"/>
+<path d="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z" fill="#f4581f" opacity="0"><animate attributeName="d" values="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6452;0.6903;0.7871;0.8323;0.8581;0.9097;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/><animate attributeName="opacity" values="0;0;0.13;0.13;0" keyTimes="0;0.529;0.5613;0.9613;1" dur="31s" repeatCount="indefinite"/></path>
+<path d="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z" fill="currentColor" fill-opacity=".05" stroke="currentColor" stroke-width="1.6"><animate attributeName="d" values="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6452;0.6903;0.7871;0.8323;0.8581;0.9097;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+<g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="144" y="90" width="112" height="112" fill="url(#d1c-h)" mask="url(#d1c-hole)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="236" y="150" width="66" height="64" fill="url(#d1c-h)" mask="url(#d1c-hole)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="98" y="104" width="56" height="46" fill="url(#d1c-h)" mask="url(#d1c-hole)"/></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="236" y="150" width="20" height="52" fill="currentColor" fill-opacity=".1"/><rect x="236" y="150" width="20" height="52" fill="url(#d1c-x)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="144" y="104" width="10" height="46" fill="currentColor" fill-opacity=".1"/><rect x="144" y="104" width="10" height="46" fill="url(#d1c-x)"/></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><g mask="url(#d1c-cov)"><path d="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z" fill="#f4581f" fill-opacity=".2" stroke="#f4581f" stroke-width="2.2"><animate attributeName="d" values="M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 76C205.6 75.8 232.4 95.9 238.6 100C244.8 104.2 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.4 76.2 200 76Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 80C206.9 81.4 232.4 96.2 238.6 100C244.8 103.9 279.6 124.5 282.7 131.4C285.8 138.3 284.2 186.3 279.7 192C275.2 197.7 230 207.4 222.6 208C215.1 208.7 185.8 202.9 180.2 200.5C174.6 198.1 153.2 181.3 148 176C142.9 170.7 111.5 137.4 111.4 130.4C111.2 123.3 139.4 85.4 146 81.7C152.7 77.9 193.1 78.6 200 80Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 235.3 93.9 239.9 98.5C244.4 103.1 259.8 129.2 261.1 135.2C262.4 141.3 259.9 173.3 257.2 179C254.4 184.7 230.5 208.1 223.9 211.8C217.4 215.5 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 74C206.8 75 233.6 94.2 239.9 98.5C246.1 102.8 280 124.6 282.7 131.4C285.5 138.3 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.5 138 113.3 130.7C114.2 123.4 142.1 89 148.6 84.7C155.1 80.5 193.2 73 200 74Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 56C207.5 56.7 240.1 85.2 246.3 90.8C252.5 96.5 280.5 124 282.7 131.4C285 138.9 280.6 184 276.2 190C271.8 196 231.9 208.9 223.9 211.8C216 214.7 176.4 230.9 169.9 228.7C163.4 226.5 141.9 189.3 137.6 182C133.4 174.7 112.7 138.2 113.3 130.7C114 123.2 139.5 87.3 146 81.7C152.5 76 192.5 55.3 200 56Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z;M200 76C205.5 75.9 233.1 97 237.3 101.6C241.4 106.1 253.9 130.6 255.1 136.3C256.4 141.9 256.1 171.6 253.7 177C251.3 182.4 228.1 206.3 222.6 208C217.1 209.8 185.4 203.1 180.2 200.5C175 197.9 156.2 177.9 153.2 173C150.3 168.1 140.1 140.8 140.9 135.6C141.7 130.3 159.6 107.6 164 103.1C168.4 98.6 194.5 76.1 200 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6452;0.6903;0.7871;0.8323;0.8581;0.9097;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path></g></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="144" y="90" width="112" height="112" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="236" y="150" width="66" height="64" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/><rect x="98" y="104" width="56" height="46" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/></g>
+<g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.0387;0.0619;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/>
+  <g stroke="currentColor" stroke-width=".8"><path d="M151 97L124 64"/><circle cx="151" cy="97" r="1.7" fill="currentColor"/></g>
+  <text x="120" y="60" text-anchor="end" fill="currentColor" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">UNUSED</text>
+  <g stroke="#f4581f" stroke-width=".8"><path d="M205 84L232 58"/><circle cx="205" cy="84" r="1.7" fill="#f4581f"/></g>
+  <text x="236" y="56" fill="#f4581f" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">MISSING</text>
+</g>
+<g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1781;0.2013;0.4335;0.4735;1" dur="31s" repeatCount="indefinite"/>
+  <g stroke="currentColor" stroke-width=".8"><path d="M246 194L270 240"/><circle cx="246" cy="194" r="1.7" fill="currentColor"/></g>
+  <text x="275" y="246" fill="currentColor" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">PAID TWICE</text>
+</g>
+<text x="200" y="284" text-anchor="middle" fill="currentColor" opacity="0" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">OFF THE SHELF<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.031;0.061;0.1432;0.1732;1" dur="31s" repeatCount="indefinite"/></text><text x="200" y="284" text-anchor="middle" fill="currentColor" opacity="0" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">OFF THE SHELF, TWICE<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1703;0.2003;0.2826;0.3126;1" dur="31s" repeatCount="indefinite"/></text><text x="200" y="284" text-anchor="middle" fill="currentColor" opacity="0" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">OFF THE SHELF, THREE TIMES<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.3097;0.3397;0.4335;0.4635;1" dur="31s" repeatCount="indefinite"/></text>
+<g mask="url(#d1c-hole)" stroke="currentColor" stroke-width="0.9"><circle cx="259.1" cy="157.1" r="2" opacity="0"><animate attributeName="r" values="2;2;22;22" keyTimes="0;0.571;0.6081;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.571;0.5802;0.6081;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="259.1" cy="157.1" r="2" opacity="0"><animate attributeName="r" values="2;2;22;22" keyTimes="0;0.5839;0.621;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.5839;0.5931;0.621;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="259.1" cy="157.1" r="2" opacity="0"><animate attributeName="r" values="2;2;22;22" keyTimes="0;0.5968;0.6339;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.5968;0.606;0.6339;1" dur="31s" repeatCount="indefinite"/></circle></g><g mask="url(#d1c-hole)" stroke="currentColor" stroke-width="0.9"><circle cx="200" cy="74" r="2" opacity="0"><animate attributeName="r" values="2;2;22;22" keyTimes="0;0.7129;0.75;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.7129;0.7222;0.75;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="200" cy="74" r="2" opacity="0"><animate attributeName="r" values="2;2;22;22" keyTimes="0;0.7258;0.7629;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.7258;0.7351;0.7629;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="200" cy="74" r="2" opacity="0"><animate attributeName="r" values="2;2;22;22" keyTimes="0;0.7387;0.7758;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.7387;0.748;0.7758;1" dur="31s" repeatCount="indefinite"/></circle></g>
+<g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.4677;0.4806;0.9613;0.9903;1" dur="31s" repeatCount="indefinite"/>
+  <path d="M201.5 64.1C209.3 65.2 241.7 86.3 246.9 91.4C252.1 96.6 269.4 126.2 270.8 133.1C272.3 140 269.3 176.8 266.2 183.4C263 189.9 236.4 216.4 228.9 220.5C221.4 224.6 174.1 240.7 166.6 238.1C159.1 235.6 133.7 195.1 129 187C124.2 178.9 102.3 137.9 103.4 129.6C104.5 121.3 135.7 81.3 143.1 76.3C150.5 71.4 193.7 63 201.5 64.1Z" pathLength="1" stroke="#f4581f" stroke-width="2.4" stroke-dasharray="1" stroke-dashoffset="1"><animate attributeName="d" values="M201.5 64.1C209.3 65.2 241.7 86.3 246.9 91.4C252.1 96.6 269.4 126.2 270.8 133.1C272.3 140 269.3 176.8 266.2 183.4C263 189.9 236.4 216.4 228.9 220.5C221.4 224.6 174.1 240.7 166.6 238.1C159.1 235.6 133.7 195.1 129 187C124.2 178.9 102.3 137.9 103.4 129.6C104.5 121.3 135.7 81.3 143.1 76.3C150.5 71.4 193.7 63 201.5 64.1Z;M201.5 64.1C209.3 65.2 241.7 86.3 246.9 91.4C252.1 96.6 269.4 126.2 270.8 133.1C272.3 140 269.3 176.8 266.2 183.4C263 189.9 236.4 216.4 228.9 220.5C221.4 224.6 174.1 240.7 166.6 238.1C159.1 235.6 133.7 195.1 129 187C124.2 178.9 102.3 137.9 103.4 129.6C104.5 121.3 135.7 81.3 143.1 76.3C150.5 71.4 193.7 63 201.5 64.1Z;M201.5 64.1C209.2 65.2 238.8 85.5 245.6 90.3C252.3 95.1 289.1 119.8 292 127.7C294.9 135.6 289.1 188.9 284.3 195.9C279.4 202.9 236.2 218 227.4 221.2C218.5 224.3 174 240.7 166.6 238.1C159.3 235.6 133.7 195.1 129 187C124.2 178.9 102.3 137.9 103.4 129.6C104.5 121.3 135.7 81.3 143.1 76.3C150.5 71.4 193.8 63.1 201.5 64.1Z;M201.5 64.1C209.2 65.2 238.8 85.5 245.6 90.3C252.3 95.1 289.1 119.8 292 127.7C294.9 135.6 289.1 188.9 284.3 195.9C279.4 202.9 236.2 218 227.4 221.2C218.5 224.3 174 240.7 166.6 238.1C159.3 235.6 133.7 195.1 129 187C124.2 178.9 102.3 137.9 103.4 129.6C104.5 121.3 135.7 81.3 143.1 76.3C150.5 71.4 193.8 63.1 201.5 64.1Z;M200.9 46C209.4 46.7 246.2 77.3 253 83.5C259.9 89.6 290 120.1 292.3 128.5C294.6 137 289.2 189 284.3 195.9C279.4 202.9 236.2 218 227.4 221.2C218.5 224.3 174 240.7 166.6 238.1C159.3 235.6 133.7 195.1 129 187C124.2 178.9 102.6 138.4 103.4 129.9C104.2 121.4 132.2 80.4 139.5 74.1C146.8 67.8 192.4 45.3 200.9 46Z;M200.9 46C209.4 46.7 246.2 77.3 253 83.5C259.9 89.6 290 120.1 292.3 128.5C294.6 137 289.2 189 284.3 195.9C279.4 202.9 236.2 218 227.4 221.2C218.5 224.3 174 240.7 166.6 238.1C159.3 235.6 133.7 195.1 129 187C124.2 178.9 102.6 138.4 103.4 129.9C104.2 121.4 132.2 80.4 139.5 74.1C146.8 67.8 192.4 45.3 200.9 46Z;M199.8 66C206.4 65.9 239.8 89.7 244.7 94.8C249.5 99.9 263.6 127.7 264.9 134.1C266.3 140.6 265.7 174.9 262.8 181.1C259.9 187.4 232.2 215.4 225.6 217.5C219.1 219.7 181.7 212.4 175.7 209.4C169.6 206.5 148 183.8 144.7 178.2C141.3 172.5 130.1 140.2 131 134.1C131.9 127.9 151.7 101.2 156.9 96.1C162.1 91 193.2 66.1 199.8 66Z;M199.8 66C206.4 65.9 239.8 89.7 244.7 94.8C249.5 99.9 263.6 127.7 264.9 134.1C266.3 140.6 265.7 174.9 262.8 181.1C259.9 187.4 232.2 215.4 225.6 217.5C219.1 219.7 181.7 212.4 175.7 209.4C169.6 206.5 148 183.8 144.7 178.2C141.3 172.5 130.1 140.2 131 134.1C131.9 127.9 151.7 101.2 156.9 96.1C162.1 91 193.2 66.1 199.8 66Z" keyTimes="0;0.6065;0.6452;0.7484;0.7871;0.8774;0.929;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/><animate attributeName="stroke-dashoffset" values="1;1;0;0" keyTimes="0;0.471;0.5484;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.5355;0.5613;1" dur="31s" repeatCount="indefinite"/>
+    <path d="M201.5 64.1L202.4 58.2M246.9 91.4L251.2 87.2M270.8 133.1L276.7 131.9M266.2 183.4L271.6 186M228.9 220.5L231.9 225.7M166.6 238.1L164.7 243.8M129 187L123.8 190M103.4 129.6L97.4 128.9M143.1 76.3L139.8 71.3" stroke="#f4581f" stroke-width="1.1"><animate attributeName="d" values="M201.5 64.1L202.4 58.2M246.9 91.4L251.2 87.2M270.8 133.1L276.7 131.9M266.2 183.4L271.6 186M228.9 220.5L231.9 225.7M166.6 238.1L164.7 243.8M129 187L123.8 190M103.4 129.6L97.4 128.9M143.1 76.3L139.8 71.3;M201.5 64.1L202.4 58.2M246.9 91.4L251.2 87.2M270.8 133.1L276.7 131.9M266.2 183.4L271.6 186M228.9 220.5L231.9 225.7M166.6 238.1L164.7 243.8M129 187L123.8 190M103.4 129.6L97.4 128.9M143.1 76.3L139.8 71.3;M201.5 64.1L202.4 58.2M245.6 90.3L249 85.4M292 127.7L297.6 125.5M284.3 195.9L289.1 199.4M227.4 221.2L229.4 226.8M166.6 238.1L164.7 243.8M129 187L123.8 190M103.4 129.6L97.4 128.9M143.1 76.3L139.8 71.3;M201.5 64.1L202.4 58.2M245.6 90.3L249 85.4M292 127.7L297.6 125.5M284.3 195.9L289.1 199.4M227.4 221.2L229.4 226.8M166.6 238.1L164.7 243.8M129 187L123.8 190M103.4 129.6L97.4 128.9M143.1 76.3L139.8 71.3;M200.9 46L201.5 40.1M253 83.5L257.1 79M292.3 128.5L298 126.8M284.3 195.9L289.1 199.4M227.4 221.2L229.4 226.8M166.6 238.1L164.7 243.8M129 187L123.8 190M103.4 129.9L97.4 129.4M139.5 74.1L135.6 69.5;M200.9 46L201.5 40.1M253 83.5L257.1 79M292.3 128.5L298 126.8M284.3 195.9L289.1 199.4M227.4 221.2L229.4 226.8M166.6 238.1L164.7 243.8M129 187L123.8 190M103.4 129.9L97.4 129.4M139.5 74.1L135.6 69.5;M199.8 66L199.7 60M244.7 94.8L249.1 90.8M264.9 134.1L270.8 132.9M262.8 181.1L268.3 183.6M225.6 217.5L227.4 223.3M175.7 209.4L172.9 214.8M144.7 178.2L139.5 181.3M131 134.1L125.1 133.1M156.9 96.1L152.6 91.8;M199.8 66L199.7 60M244.7 94.8L249.1 90.8M264.9 134.1L270.8 132.9M262.8 181.1L268.3 183.6M225.6 217.5L227.4 223.3M175.7 209.4L172.9 214.8M144.7 178.2L139.5 181.3M131 134.1L125.1 133.1M156.9 96.1L152.6 91.8" keyTimes="0;0.6065;0.6452;0.7484;0.7871;0.8774;0.929;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+    <text x="200" y="284" text-anchor="middle" fill="#f4581f" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">YOUR OWN SOFTWARE</text>
+  </g>
+</g></svg>
+</div>
+      <div class="body">
+        <span class="tag">Direction 1, round three</span>
+        <h3>Survey sheet</h3>
+        <p>After the boxes, the business asks twice. Each time the ember boundary bulges out where the ripple came from, and the business grows into the bulge.</p>
+        <div class="pick"></div>
+      </div>
+    </article>
+    <article class="card" data-id="One line, ask then make room">
+      <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" fill="none" stroke-linecap="round" stroke-linejoin="round"><title>A business changes shape. Dashed boxes are tried on it one after another, always late, overlapping and still missing parts. Then they go, and one continuous ember line comes in from the left and goes once round the business. When a part of the business needs room it sends out a quiet ripple, the line loosens there first, and the business grows into the room without crossing the line. Then the line travels on to the right.</title>
+<defs><pattern id="d2c-h" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V7" stroke="currentColor" stroke-opacity="0.6" stroke-width="1"/></pattern><pattern id="d2c-x" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><path d="M0 0V7" stroke="currentColor" stroke-opacity="0.75" stroke-width="1"/></pattern>
+  <mask id="d2c-hole" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="300"><rect width="400" height="300" fill="#fff"/><path fill="#000" d="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z"><animate attributeName="d" values="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6581;0.7032;0.8;0.8452;0.8645;0.9161;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path></mask>
+  <mask id="d2c-cov" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="300"><rect width="400" height="300" fill="#fff"/><rect x="155" y="86" width="100" height="100" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/></rect><rect width="0" height="0"/><rect x="243" y="131" width="58" height="62" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/></rect><rect width="0" height="0"/><rect x="106" y="110" width="59" height="50" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/></rect><rect width="0" height="0"/></mask></defs>
+<path d="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z" fill="#f4581f" opacity="0"><animate attributeName="d" values="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6581;0.7032;0.8;0.8452;0.8645;0.9161;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/><animate attributeName="opacity" values="0;0;0.12;0.12;0;0" keyTimes="0;0.5355;0.5742;0.9548;0.9871;1" dur="31s" repeatCount="indefinite"/></path>
+<path d="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z" fill="currentColor" fill-opacity=".05" stroke="currentColor" stroke-width="1.9"><animate attributeName="d" values="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6581;0.7032;0.8;0.8452;0.8645;0.9161;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+<g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="155" y="86" width="100" height="100" fill="url(#d2c-h)" mask="url(#d2c-hole)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="243" y="131" width="58" height="62" fill="url(#d2c-h)" mask="url(#d2c-hole)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="106" y="110" width="59" height="50" fill="url(#d2c-h)" mask="url(#d2c-hole)"/></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="243" y="131" width="12" height="55" fill="currentColor" fill-opacity=".1"/><rect x="243" y="131" width="12" height="55" fill="url(#d2c-x)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="155" y="110" width="10" height="50" fill="currentColor" fill-opacity=".1"/><rect x="155" y="110" width="10" height="50" fill="url(#d2c-x)"/></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><g mask="url(#d2c-cov)"><path d="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z" fill="#f4581f" fill-opacity=".2" stroke="#f4581f" stroke-width="2.4"><animate attributeName="d" values="M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 76C217 75.8 227.4 89.2 241.8 99.2C256.1 109.2 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193 76.2 205 76Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 72C220.6 75.3 227.4 88.6 241.8 99.2C256.1 109.9 287.9 120.7 291 136C294.1 151.3 274.5 181.8 260.2 191.2C245.8 200.5 220.6 194.8 205 192C189.4 189.2 180.8 183.5 166.8 174.2C152.8 164.9 124.1 151.8 121 136C117.9 120.2 134.4 90.1 148.4 79.4C162.4 68.8 189.4 68.7 205 72Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 233.2 86.8 243.2 97.8C253.2 108.8 264.8 123 265 136C265.2 149 254.6 165.3 244.6 175.6C234.6 185.9 221 195.2 205 198C189 200.8 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 70C221 73.3 229.2 86.8 243.2 97.8C257.2 108.8 286.6 120.9 289 136C291.4 151.1 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 89 147 78C158.7 67 189 66.7 205 70Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 52C222.4 53.9 237.7 75.3 251.7 89.3C265.7 103.3 288.1 119.5 289 136C289.9 152.5 271.3 178 257.3 188.3C243.3 198.7 223.1 197.3 205 198C186.9 198.7 160.1 202.9 148.4 192.6C136.8 182.2 135.2 155.1 135 136C134.8 116.9 135.4 92 147 78C158.7 64 187.6 50.1 205 52Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z;M205 76C216.8 76 230.7 90.6 240.4 100.6C250 110.6 262.8 124 263 136C263.2 148 251.4 163.4 241.8 172.8C232.1 182.1 217.5 191.8 205 192C192.5 192.2 175.5 183.5 166.8 174.2C158.1 164.9 152.5 148.3 153 136C153.5 123.7 161 110.6 169.6 100.6C178.3 90.6 193.2 76 205 76Z" keyTimes="0;0.0697;0.1239;0.209;0.2632;0.3484;0.4026;0.6581;0.7032;0.8;0.8452;0.8645;0.9161;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path></g></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.0155;0.0455;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="155" y="86" width="100" height="100" stroke="currentColor" stroke-width="1.5" stroke-dasharray="7 6"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.1471;0.1771;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="243" y="131" width="58" height="62" stroke="currentColor" stroke-width="1.5" stroke-dasharray="7 6"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2865;0.3165;0.4258;0.4658;1" dur="31s" repeatCount="indefinite"/><rect x="106" y="110" width="59" height="50" stroke="currentColor" stroke-width="1.5" stroke-dasharray="7 6"/></g>
+<g mask="url(#d2c-hole)" stroke="currentColor" stroke-width="1.1"><circle cx="254.8" cy="155.8" r="2" opacity="0"><animate attributeName="r" values="2;2;24;24" keyTimes="0;0.5839;0.621;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.5839;0.5931;0.621;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="254.8" cy="155.8" r="2" opacity="0"><animate attributeName="r" values="2;2;24;24" keyTimes="0;0.5968;0.6339;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.5968;0.606;0.6339;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="254.8" cy="155.8" r="2" opacity="0"><animate attributeName="r" values="2;2;24;24" keyTimes="0;0.6097;0.6468;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.6097;0.619;0.6468;1" dur="31s" repeatCount="indefinite"/></circle></g><g mask="url(#d2c-hole)" stroke="currentColor" stroke-width="1.1"><circle cx="205" cy="70" r="2" opacity="0"><animate attributeName="r" values="2;2;24;24" keyTimes="0;0.7258;0.7629;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.7258;0.7351;0.7629;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="205" cy="70" r="2" opacity="0"><animate attributeName="r" values="2;2;24;24" keyTimes="0;0.7387;0.7758;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.7387;0.748;0.7758;1" dur="31s" repeatCount="indefinite"/></circle><circle cx="205" cy="70" r="2" opacity="0"><animate attributeName="r" values="2;2;24;24" keyTimes="0;0.7516;0.7887;1" dur="31s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.7516;0.7609;0.7887;1" dur="31s" repeatCount="indefinite"/></circle></g>
+<path d="M-12 244C-0.7 244.5 20.5 252.5 56 247C91.5 241.5 168.2 221.5 200.9 210.8C233.7 200.2 240 195.8 252.5 183.2C265 170.7 276.2 151.3 276 135.8C275.8 120.3 262.8 103.2 251.3 90.4C239.9 77.7 225.9 62.6 207.2 59.2C188.6 55.8 153.3 57.2 139.5 70C125.6 82.8 123.7 114.3 124 136.1C124.3 157.9 125.7 189.2 141.1 200.8C156.6 212.4 186.1 198 216.9 205.8C247.7 213.7 293.5 241.5 326 248C358.5 254.5 397.7 245.5 412 245" pathLength="1" stroke="#f4581f" stroke-width="2.6" stroke-dasharray="1" stroke-dashoffset="1" opacity="0"><animate attributeName="d" values="M-12 244C-0.7 244.5 20.5 252.5 56 247C91.5 241.5 168.2 221.5 200.9 210.8C233.7 200.2 240 195.8 252.5 183.2C265 170.7 276.2 151.3 276 135.8C275.8 120.3 262.8 103.2 251.3 90.4C239.9 77.7 225.9 62.6 207.2 59.2C188.6 55.8 153.3 57.2 139.5 70C125.6 82.8 123.7 114.3 124 136.1C124.3 157.9 125.7 189.2 141.1 200.8C156.6 212.4 186.1 198 216.9 205.8C247.7 213.7 293.5 241.5 326 248C358.5 254.5 397.7 245.5 412 245;M-12 244C-0.7 244.5 20.5 252.5 56 247C91.5 241.5 168.2 221.5 200.9 210.8C233.7 200.2 240 195.8 252.5 183.2C265 170.7 276.2 151.3 276 135.8C275.8 120.3 262.8 103.2 251.3 90.4C239.9 77.7 225.9 62.6 207.2 59.2C188.6 55.8 153.3 57.2 139.5 70C125.6 82.8 123.7 114.3 124 136.1C124.3 157.9 125.7 189.2 141.1 200.8C156.6 212.4 186.1 198 216.9 205.8C247.7 213.7 293.5 241.5 326 248C358.5 254.5 397.7 245.5 412 245;M-12 244C-0.7 244.5 20.8 252.5 56 247C91.2 241.5 164.8 219.3 199.4 211C234.1 202.7 247.1 210 263.9 197.2C280.6 184.4 302.2 152.3 299.9 134.3C297.6 116.3 265.4 101.7 250 89.2C234.5 76.7 225.6 62.4 207.2 59.2C188.8 56 153.3 57.2 139.5 70C125.6 82.8 123.7 114.3 124 136.1C124.3 157.9 125.9 189.2 141.1 200.8C156.4 212.4 184.6 198.1 215.4 206C246.2 213.9 293.2 241.5 326 248C358.8 254.5 397.7 245.5 412 245;M-12 244C-0.7 244.5 20.8 252.5 56 247C91.2 241.5 164.8 219.3 199.4 211C234.1 202.7 247.1 210 263.9 197.2C280.6 184.4 302.2 152.3 299.9 134.3C297.6 116.3 265.4 101.7 250 89.2C234.5 76.7 225.6 62.4 207.2 59.2C188.8 56 153.3 57.2 139.5 70C125.6 82.8 123.7 114.3 124 136.1C124.3 157.9 125.9 189.2 141.1 200.8C156.4 212.4 184.6 198.1 215.4 206C246.2 213.9 293.2 241.5 326 248C358.8 254.5 397.7 245.5 412 245;M-12 244C-0.7 244.5 20.8 252.5 56 247C91.2 241.5 164.8 219.3 199.4 211C234.1 202.7 247.1 209.8 263.9 197.2C280.6 184.6 300.7 154.6 300 135.4C299.2 116.1 275.1 97.3 259.4 81.6C243.8 65.8 226.3 42.8 206.2 41.1C186 39.3 152.3 55.1 138.6 71C124.9 86.8 123.6 114.5 124 136.1C124.4 157.8 125.9 189.2 141.1 200.8C156.4 212.4 184.6 198.1 215.4 206C246.2 213.9 293.2 241.5 326 248C358.8 254.5 397.7 245.5 412 245;M-12 244C-0.7 244.5 20.8 252.5 56 247C91.2 241.5 164.8 219.3 199.4 211C234.1 202.7 247.1 209.8 263.9 197.2C280.6 184.6 300.7 154.6 300 135.4C299.2 116.1 275.1 97.3 259.4 81.6C243.8 65.8 226.3 42.8 206.2 41.1C186 39.3 152.3 55.1 138.6 71C124.9 86.8 123.6 114.5 124 136.1C124.4 157.8 125.9 189.2 141.1 200.8C156.4 212.4 184.6 198.1 215.4 206C246.2 213.9 293.2 241.5 326 248C358.8 254.5 397.7 245.5 412 245;M-12 244C-0.7 244.5 20.8 253.5 56 247C91.2 240.5 167 216.1 199.2 205C231.4 193.9 236.9 192.2 249.4 180.7C261.9 169.1 274.2 150.4 274 135.8C273.8 121.2 259.8 104.8 248.3 93C236.8 81.2 219.5 64.9 205 65C190.5 65.1 171.8 81.7 161.3 93.4C150.8 105.2 142.4 120.9 142 135.6C141.6 150.3 146.6 170.9 158.8 181.7C171 192.4 187.3 188.9 215.2 200C243.1 211.1 293.2 240.5 326 248C358.8 255.5 397.7 245.5 412 245;M-12 244C-0.7 244.5 20.8 253.5 56 247C91.2 240.5 167 216.1 199.2 205C231.4 193.9 236.9 192.2 249.4 180.7C261.9 169.1 274.2 150.4 274 135.8C273.8 121.2 259.8 104.8 248.3 93C236.8 81.2 219.5 64.9 205 65C190.5 65.1 171.8 81.7 161.3 93.4C150.8 105.2 142.4 120.9 142 135.6C141.6 150.3 146.6 170.9 158.8 181.7C171 192.4 187.3 188.9 215.2 200C243.1 211.1 293.2 240.5 326 248C358.8 255.5 397.7 245.5 412 245" keyTimes="0;0.6194;0.6581;0.7613;0.8;0.8839;0.9355;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/><animate attributeName="stroke-dashoffset" values="1;1;0;0;-1;-1" keyTimes="0;0.471;0.5677;0.9484;0.9935;1" dur="31s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.471;0.4774;1" dur="31s" repeatCount="indefinite"/></path>
+<text x="205" y="284" text-anchor="middle" fill="currentColor" opacity="0" font-family="ui-serif,Georgia,serif" font-style="italic" font-size="13">off the shelf<animate attributeName="opacity" values="0;0;0.85;0.85;0;0" keyTimes="0;0.031;0.061;0.1432;0.1732;1" dur="31s" repeatCount="indefinite"/></text><text x="205" y="284" text-anchor="middle" fill="currentColor" opacity="0" font-family="ui-serif,Georgia,serif" font-style="italic" font-size="13">off the shelf, twice<animate attributeName="opacity" values="0;0;0.85;0.85;0;0" keyTimes="0;0.1703;0.2003;0.2826;0.3126;1" dur="31s" repeatCount="indefinite"/></text><text x="205" y="284" text-anchor="middle" fill="currentColor" opacity="0" font-family="ui-serif,Georgia,serif" font-style="italic" font-size="13">off the shelf, three times<animate attributeName="opacity" values="0;0;0.85;0.85;0;0" keyTimes="0;0.3097;0.3397;0.4258;0.4558;1" dur="31s" repeatCount="indefinite"/></text>
+<text x="205" y="284" text-anchor="middle" fill="#f4581f" opacity="0" font-family="ui-serif,Georgia,serif" font-style="italic" font-size="13">your own<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.5484;0.5742;0.9548;0.9806;1" dur="31s" repeatCount="indefinite"/></text></svg>
+</div>
+      <div class="body">
+        <span class="tag">Direction 2, round three</span>
+        <h3>One line</h3>
+        <p>The same order in the loose style. The lasso loosens at the spot that asked, the business fills it, and then the line travels on.</p>
+        <div class="pick"></div>
+      </div>
+    </article>
+    <article class="card" data-id="Growth rings, ask then make room">
+      <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" fill="none" stroke-linecap="round" stroke-linejoin="round"><title>Two copies of one business grow through four stages, each stage leaving a ring behind like a tree's. On the left, boxes are added only after the business has outgrown them; they overlap and more of the business falls outside them each time. On the right, before each stage the part of the business that needs room sends out a quiet ripple, the ember outline grows first, and the business then grows into it.</title>
+<g opacity="0"><animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.03;0.94;0.98;1" dur="20s" repeatCount="indefinite"/>
+  <defs><pattern id="d3c-h" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V5" stroke="currentColor" stroke-opacity="0.6" stroke-width="1"/></pattern><pattern id="d3c-x" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><path d="M0 0V5" stroke="currentColor" stroke-opacity="0.75" stroke-width="1"/></pattern>
+  <mask id="d3c-hole" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="300"><rect width="400" height="300" fill="#fff"/><path fill="#000" d="M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z"><animate attributeName="d" values="M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z;M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z;M104 89.2C113.5 88.7 130.5 93.9 137.4 100.6C144.3 107.4 151.1 125.1 150 134C148.9 142.9 136.8 153.7 129.9 159.9C123 166.1 113.8 173.3 104 175.3C94.2 177.3 70.6 179.4 64.8 173.2C58.9 167 63.7 144.4 65.1 134C66.4 123.6 68.1 110.7 74 104C79.8 97.2 94.5 89.7 104 89.2Z;M104 89.2C113.5 88.7 130.5 93.9 137.4 100.6C144.3 107.4 151.1 125.1 150 134C148.9 142.9 136.8 153.7 129.9 159.9C123 166.1 113.8 173.3 104 175.3C94.2 177.3 70.6 179.4 64.8 173.2C58.9 167 63.7 144.4 65.1 134C66.4 123.6 68.1 110.7 74 104C79.8 97.2 94.5 89.7 104 89.2Z;M104 78.5C116.1 76.9 141.7 79.8 149.9 88.1C158 96.4 160.2 122.1 158.3 134C156.4 145.9 145.5 158.9 137.4 167.4C129.2 175.9 116 188.6 104 190.6C92 192.6 65.2 189.2 57.3 180.7C49.3 172.2 49.1 146.3 50.9 134C52.7 121.7 61 107.3 69 99C76.9 90.6 91.9 80.2 104 78.5Z;M104 78.5C116.1 76.9 141.7 79.8 149.9 88.1C158 96.4 160.2 122.1 158.3 134C156.4 145.9 145.5 158.9 137.4 167.4C129.2 175.9 116 188.6 104 190.6C92 192.6 65.2 189.2 57.3 180.7C49.3 172.2 49.1 146.3 50.9 134C52.7 121.7 61 107.3 69 99C76.9 90.6 91.9 80.2 104 78.5Z;M104 65.6C118.4 63.4 149.9 68.7 159.1 78.9C168.3 89.2 166.9 119 165.4 134C163.9 149 158.3 168.1 149.1 179.1C139.9 190 118.6 206 104 207.2C89.4 208.3 62.1 197.5 51.4 186.6C40.8 175.6 31.4 148 33.2 134C35 120 52.5 103.4 63.1 93.1C73.7 82.8 89.6 67.7 104 65.6Z;M104 65.6C118.4 63.4 149.9 68.7 159.1 78.9C168.3 89.2 166.9 119 165.4 134C163.9 149 158.3 168.1 149.1 179.1C139.9 190 118.6 206 104 207.2C89.4 208.3 62.1 197.5 51.4 186.6C40.8 175.6 31.4 148 33.2 134C35 120 52.5 103.4 63.1 93.1C73.7 82.8 89.6 67.7 104 65.6Z" keyTimes="0;0.16;0.25;0.41;0.5;0.66;0.75;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path></mask>
+  <mask id="d3c-cov" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="300"><rect width="400" height="300" fill="#fff"/><rect x="68" y="98" width="72" height="72" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.005;0.035;0.95;0.99;1" dur="20s" repeatCount="indefinite"/></rect><rect width="0" height="0"/><rect x="48" y="148" width="44" height="42" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.31;0.95;0.99;1" dur="20s" repeatCount="indefinite"/></rect><rect width="0" height="0"/><rect x="126" y="76" width="38" height="36" fill="#000" fill-opacity="0"><animate attributeName="fill-opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.56;0.95;0.99;1" dur="20s" repeatCount="indefinite"/></rect><rect width="0" height="0"/></mask></defs>
+  
+  <path d="M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z" fill="currentColor" fill-opacity=".04" stroke="currentColor" stroke-width="1.6"><animate attributeName="d" values="M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z;M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z;M104 89.2C113.5 88.7 130.5 93.9 137.4 100.6C144.3 107.4 151.1 125.1 150 134C148.9 142.9 136.8 153.7 129.9 159.9C123 166.1 113.8 173.3 104 175.3C94.2 177.3 70.6 179.4 64.8 173.2C58.9 167 63.7 144.4 65.1 134C66.4 123.6 68.1 110.7 74 104C79.8 97.2 94.5 89.7 104 89.2Z;M104 89.2C113.5 88.7 130.5 93.9 137.4 100.6C144.3 107.4 151.1 125.1 150 134C148.9 142.9 136.8 153.7 129.9 159.9C123 166.1 113.8 173.3 104 175.3C94.2 177.3 70.6 179.4 64.8 173.2C58.9 167 63.7 144.4 65.1 134C66.4 123.6 68.1 110.7 74 104C79.8 97.2 94.5 89.7 104 89.2Z;M104 78.5C116.1 76.9 141.7 79.8 149.9 88.1C158 96.4 160.2 122.1 158.3 134C156.4 145.9 145.5 158.9 137.4 167.4C129.2 175.9 116 188.6 104 190.6C92 192.6 65.2 189.2 57.3 180.7C49.3 172.2 49.1 146.3 50.9 134C52.7 121.7 61 107.3 69 99C76.9 90.6 91.9 80.2 104 78.5Z;M104 78.5C116.1 76.9 141.7 79.8 149.9 88.1C158 96.4 160.2 122.1 158.3 134C156.4 145.9 145.5 158.9 137.4 167.4C129.2 175.9 116 188.6 104 190.6C92 192.6 65.2 189.2 57.3 180.7C49.3 172.2 49.1 146.3 50.9 134C52.7 121.7 61 107.3 69 99C76.9 90.6 91.9 80.2 104 78.5Z;M104 65.6C118.4 63.4 149.9 68.7 159.1 78.9C168.3 89.2 166.9 119 165.4 134C163.9 149 158.3 168.1 149.1 179.1C139.9 190 118.6 206 104 207.2C89.4 208.3 62.1 197.5 51.4 186.6C40.8 175.6 31.4 148 33.2 134C35 120 52.5 103.4 63.1 93.1C73.7 82.8 89.6 67.7 104 65.6Z;M104 65.6C118.4 63.4 149.9 68.7 159.1 78.9C168.3 89.2 166.9 119 165.4 134C163.9 149 158.3 168.1 149.1 179.1C139.9 190 118.6 206 104 207.2C89.4 208.3 62.1 197.5 51.4 186.6C40.8 175.6 31.4 148 33.2 134C35 120 52.5 103.4 63.1 93.1C73.7 82.8 89.6 67.7 104 65.6Z" keyTimes="0;0.16;0.25;0.41;0.5;0.66;0.75;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+  <path d="M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z" stroke="currentColor" stroke-width="1" opacity="0"><animate attributeName="opacity" values="0;0;0.5;0.5" keyTimes="0;0.16;0.24;1" dur="20s" repeatCount="indefinite"/></path><path d="M104 89.2C113.5 88.7 130.5 93.9 137.4 100.6C144.3 107.4 151.1 125.1 150 134C148.9 142.9 136.8 153.7 129.9 159.9C123 166.1 113.8 173.3 104 175.3C94.2 177.3 70.6 179.4 64.8 173.2C58.9 167 63.7 144.4 65.1 134C66.4 123.6 68.1 110.7 74 104C79.8 97.2 94.5 89.7 104 89.2Z" stroke="currentColor" stroke-width="1" opacity="0"><animate attributeName="opacity" values="0;0;0.5;0.5" keyTimes="0;0.41;0.49;1" dur="20s" repeatCount="indefinite"/></path><path d="M104 78.5C116.1 76.9 141.7 79.8 149.9 88.1C158 96.4 160.2 122.1 158.3 134C156.4 145.9 145.5 158.9 137.4 167.4C129.2 175.9 116 188.6 104 190.6C92 192.6 65.2 189.2 57.3 180.7C49.3 172.2 49.1 146.3 50.9 134C52.7 121.7 61 107.3 69 99C76.9 90.6 91.9 80.2 104 78.5Z" stroke="currentColor" stroke-width="1" opacity="0"><animate attributeName="opacity" values="0;0;0.5;0.5" keyTimes="0;0.66;0.74;1" dur="20s" repeatCount="indefinite"/></path>
+  <circle cx="104" cy="134" r="1.6" fill="currentColor"/>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.005;0.035;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="68" y="98" width="72" height="72" fill="url(#d3c-h)" mask="url(#d3c-hole)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.31;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="48" y="148" width="44" height="42" fill="url(#d3c-h)" mask="url(#d3c-hole)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.56;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="126" y="76" width="38" height="36" fill="url(#d3c-h)" mask="url(#d3c-hole)"/></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.31;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="68" y="148" width="24" height="22" fill="currentColor" fill-opacity=".1"/><rect x="68" y="148" width="24" height="22" fill="url(#d3c-x)"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.56;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="126" y="98" width="14" height="14" fill="currentColor" fill-opacity=".1"/><rect x="126" y="98" width="14" height="14" fill="url(#d3c-x)"/></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.005;0.035;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><g mask="url(#d3c-cov)"><path d="M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z" fill="#f4581f" fill-opacity=".2" stroke="#f4581f" stroke-width="2" stroke-dasharray="2 4"><animate attributeName="d" values="M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z;M104 98.6C110.9 99 120 107 125.7 112.3C131.4 117.6 142 127.7 141.8 134C141.5 140.3 129.7 149.1 124 154C118.4 159 111.1 165.9 104 167C96.9 168.2 80.9 166.5 76.5 161.5C72 156.6 74 141.8 74.5 134C75 126.2 75.4 115.1 79.8 109.8C84.2 104.5 97.1 98.2 104 98.6Z;M104 89.2C113.5 88.7 130.5 93.9 137.4 100.6C144.3 107.4 151.1 125.1 150 134C148.9 142.9 136.8 153.7 129.9 159.9C123 166.1 113.8 173.3 104 175.3C94.2 177.3 70.6 179.4 64.8 173.2C58.9 167 63.7 144.4 65.1 134C66.4 123.6 68.1 110.7 74 104C79.8 97.2 94.5 89.7 104 89.2Z;M104 89.2C113.5 88.7 130.5 93.9 137.4 100.6C144.3 107.4 151.1 125.1 150 134C148.9 142.9 136.8 153.7 129.9 159.9C123 166.1 113.8 173.3 104 175.3C94.2 177.3 70.6 179.4 64.8 173.2C58.9 167 63.7 144.4 65.1 134C66.4 123.6 68.1 110.7 74 104C79.8 97.2 94.5 89.7 104 89.2Z;M104 78.5C116.1 76.9 141.7 79.8 149.9 88.1C158 96.4 160.2 122.1 158.3 134C156.4 145.9 145.5 158.9 137.4 167.4C129.2 175.9 116 188.6 104 190.6C92 192.6 65.2 189.2 57.3 180.7C49.3 172.2 49.1 146.3 50.9 134C52.7 121.7 61 107.3 69 99C76.9 90.6 91.9 80.2 104 78.5Z;M104 78.5C116.1 76.9 141.7 79.8 149.9 88.1C158 96.4 160.2 122.1 158.3 134C156.4 145.9 145.5 158.9 137.4 167.4C129.2 175.9 116 188.6 104 190.6C92 192.6 65.2 189.2 57.3 180.7C49.3 172.2 49.1 146.3 50.9 134C52.7 121.7 61 107.3 69 99C76.9 90.6 91.9 80.2 104 78.5Z;M104 65.6C118.4 63.4 149.9 68.7 159.1 78.9C168.3 89.2 166.9 119 165.4 134C163.9 149 158.3 168.1 149.1 179.1C139.9 190 118.6 206 104 207.2C89.4 208.3 62.1 197.5 51.4 186.6C40.8 175.6 31.4 148 33.2 134C35 120 52.5 103.4 63.1 93.1C73.7 82.8 89.6 67.7 104 65.6Z;M104 65.6C118.4 63.4 149.9 68.7 159.1 78.9C168.3 89.2 166.9 119 165.4 134C163.9 149 158.3 168.1 149.1 179.1C139.9 190 118.6 206 104 207.2C89.4 208.3 62.1 197.5 51.4 186.6C40.8 175.6 31.4 148 33.2 134C35 120 52.5 103.4 63.1 93.1C73.7 82.8 89.6 67.7 104 65.6Z" keyTimes="0;0.16;0.25;0.41;0.5;0.66;0.75;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path></g></g>
+  <g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.005;0.035;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="68" y="98" width="72" height="72" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.31;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="48" y="148" width="44" height="42" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/></g><g opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.53;0.56;0.95;0.99;1" dur="20s" repeatCount="indefinite"/><rect x="126" y="76" width="38" height="36" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/></g>
+  <text x="104" y="254" text-anchor="middle" fill="currentColor" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">OFF THE SHELF</text>
+  <defs><mask id="d3c-own-hole" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="300"><rect width="400" height="300" fill="#fff"/><path fill="#000" d="M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z"><animate attributeName="d" values="M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z;M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z;M296 89.2C305.5 88.7 322.5 93.9 329.4 100.6C336.3 107.4 343.1 125.1 342 134C340.9 142.9 328.8 153.7 321.9 159.9C315 166.1 305.8 173.3 296 175.3C286.2 177.3 262.6 179.4 256.8 173.2C250.9 167 255.7 144.4 257.1 134C258.4 123.6 260.1 110.7 266 104C271.8 97.2 286.5 89.7 296 89.2Z;M296 89.2C305.5 88.7 322.5 93.9 329.4 100.6C336.3 107.4 343.1 125.1 342 134C340.9 142.9 328.8 153.7 321.9 159.9C315 166.1 305.8 173.3 296 175.3C286.2 177.3 262.6 179.4 256.8 173.2C250.9 167 255.7 144.4 257.1 134C258.4 123.6 260.1 110.7 266 104C271.8 97.2 286.5 89.7 296 89.2Z;M296 78.5C308.1 76.9 333.7 79.8 341.9 88.1C350 96.4 352.2 122.1 350.3 134C348.4 145.9 337.5 158.9 329.4 167.4C321.2 175.9 308 188.6 296 190.6C284 192.6 257.2 189.2 249.3 180.7C241.3 172.2 241.1 146.3 242.9 134C244.7 121.7 253 107.3 261 99C268.9 90.6 283.9 80.2 296 78.5Z;M296 78.5C308.1 76.9 333.7 79.8 341.9 88.1C350 96.4 352.2 122.1 350.3 134C348.4 145.9 337.5 158.9 329.4 167.4C321.2 175.9 308 188.6 296 190.6C284 192.6 257.2 189.2 249.3 180.7C241.3 172.2 241.1 146.3 242.9 134C244.7 121.7 253 107.3 261 99C268.9 90.6 283.9 80.2 296 78.5Z;M296 65.6C310.4 63.4 341.9 68.7 351.1 78.9C360.3 89.2 358.9 119 357.4 134C355.9 149 350.3 168.1 341.1 179.1C331.9 190 310.6 206 296 207.2C281.4 208.3 254.1 197.5 243.4 186.6C232.8 175.6 223.4 148 225.2 134C227 120 244.5 103.4 255.1 93.1C265.7 82.8 281.6 67.7 296 65.6Z;M296 65.6C310.4 63.4 341.9 68.7 351.1 78.9C360.3 89.2 358.9 119 357.4 134C355.9 149 350.3 168.1 341.1 179.1C331.9 190 310.6 206 296 207.2C281.4 208.3 254.1 197.5 243.4 186.6C232.8 175.6 223.4 148 225.2 134C227 120 244.5 103.4 255.1 93.1C265.7 82.8 281.6 67.7 296 65.6Z" keyTimes="0;0.16;0.25;0.41;0.5;0.66;0.75;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path></mask></defs>
+  <path d="M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z" fill="#f4581f" fill-opacity=".12"><animate attributeName="d" values="M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z;M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z;M296 89.2C305.5 88.7 322.5 93.9 329.4 100.6C336.3 107.4 343.1 125.1 342 134C340.9 142.9 328.8 153.7 321.9 159.9C315 166.1 305.8 173.3 296 175.3C286.2 177.3 262.6 179.4 256.8 173.2C250.9 167 255.7 144.4 257.1 134C258.4 123.6 260.1 110.7 266 104C271.8 97.2 286.5 89.7 296 89.2Z;M296 89.2C305.5 88.7 322.5 93.9 329.4 100.6C336.3 107.4 343.1 125.1 342 134C340.9 142.9 328.8 153.7 321.9 159.9C315 166.1 305.8 173.3 296 175.3C286.2 177.3 262.6 179.4 256.8 173.2C250.9 167 255.7 144.4 257.1 134C258.4 123.6 260.1 110.7 266 104C271.8 97.2 286.5 89.7 296 89.2Z;M296 78.5C308.1 76.9 333.7 79.8 341.9 88.1C350 96.4 352.2 122.1 350.3 134C348.4 145.9 337.5 158.9 329.4 167.4C321.2 175.9 308 188.6 296 190.6C284 192.6 257.2 189.2 249.3 180.7C241.3 172.2 241.1 146.3 242.9 134C244.7 121.7 253 107.3 261 99C268.9 90.6 283.9 80.2 296 78.5Z;M296 78.5C308.1 76.9 333.7 79.8 341.9 88.1C350 96.4 352.2 122.1 350.3 134C348.4 145.9 337.5 158.9 329.4 167.4C321.2 175.9 308 188.6 296 190.6C284 192.6 257.2 189.2 249.3 180.7C241.3 172.2 241.1 146.3 242.9 134C244.7 121.7 253 107.3 261 99C268.9 90.6 283.9 80.2 296 78.5Z;M296 65.6C310.4 63.4 341.9 68.7 351.1 78.9C360.3 89.2 358.9 119 357.4 134C355.9 149 350.3 168.1 341.1 179.1C331.9 190 310.6 206 296 207.2C281.4 208.3 254.1 197.5 243.4 186.6C232.8 175.6 223.4 148 225.2 134C227 120 244.5 103.4 255.1 93.1C265.7 82.8 281.6 67.7 296 65.6Z;M296 65.6C310.4 63.4 341.9 68.7 351.1 78.9C360.3 89.2 358.9 119 357.4 134C355.9 149 350.3 168.1 341.1 179.1C331.9 190 310.6 206 296 207.2C281.4 208.3 254.1 197.5 243.4 186.6C232.8 175.6 223.4 148 225.2 134C227 120 244.5 103.4 255.1 93.1C265.7 82.8 281.6 67.7 296 65.6Z" keyTimes="0;0.16;0.25;0.41;0.5;0.66;0.75;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+  <path d="M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z" fill="currentColor" fill-opacity=".04" stroke="currentColor" stroke-width="1.6"><animate attributeName="d" values="M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z;M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z;M296 89.2C305.5 88.7 322.5 93.9 329.4 100.6C336.3 107.4 343.1 125.1 342 134C340.9 142.9 328.8 153.7 321.9 159.9C315 166.1 305.8 173.3 296 175.3C286.2 177.3 262.6 179.4 256.8 173.2C250.9 167 255.7 144.4 257.1 134C258.4 123.6 260.1 110.7 266 104C271.8 97.2 286.5 89.7 296 89.2Z;M296 89.2C305.5 88.7 322.5 93.9 329.4 100.6C336.3 107.4 343.1 125.1 342 134C340.9 142.9 328.8 153.7 321.9 159.9C315 166.1 305.8 173.3 296 175.3C286.2 177.3 262.6 179.4 256.8 173.2C250.9 167 255.7 144.4 257.1 134C258.4 123.6 260.1 110.7 266 104C271.8 97.2 286.5 89.7 296 89.2Z;M296 78.5C308.1 76.9 333.7 79.8 341.9 88.1C350 96.4 352.2 122.1 350.3 134C348.4 145.9 337.5 158.9 329.4 167.4C321.2 175.9 308 188.6 296 190.6C284 192.6 257.2 189.2 249.3 180.7C241.3 172.2 241.1 146.3 242.9 134C244.7 121.7 253 107.3 261 99C268.9 90.6 283.9 80.2 296 78.5Z;M296 78.5C308.1 76.9 333.7 79.8 341.9 88.1C350 96.4 352.2 122.1 350.3 134C348.4 145.9 337.5 158.9 329.4 167.4C321.2 175.9 308 188.6 296 190.6C284 192.6 257.2 189.2 249.3 180.7C241.3 172.2 241.1 146.3 242.9 134C244.7 121.7 253 107.3 261 99C268.9 90.6 283.9 80.2 296 78.5Z;M296 65.6C310.4 63.4 341.9 68.7 351.1 78.9C360.3 89.2 358.9 119 357.4 134C355.9 149 350.3 168.1 341.1 179.1C331.9 190 310.6 206 296 207.2C281.4 208.3 254.1 197.5 243.4 186.6C232.8 175.6 223.4 148 225.2 134C227 120 244.5 103.4 255.1 93.1C265.7 82.8 281.6 67.7 296 65.6Z;M296 65.6C310.4 63.4 341.9 68.7 351.1 78.9C360.3 89.2 358.9 119 357.4 134C355.9 149 350.3 168.1 341.1 179.1C331.9 190 310.6 206 296 207.2C281.4 208.3 254.1 197.5 243.4 186.6C232.8 175.6 223.4 148 225.2 134C227 120 244.5 103.4 255.1 93.1C265.7 82.8 281.6 67.7 296 65.6Z" keyTimes="0;0.16;0.25;0.41;0.5;0.66;0.75;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+  <path d="M296 98.6C302.9 99 312 107 317.7 112.3C323.4 117.6 334 127.7 333.8 134C333.5 140.3 321.7 149.1 316 154C310.4 159 303.1 165.9 296 167C288.9 168.2 272.9 166.5 268.5 161.5C264 156.6 266 141.8 266.5 134C267 126.2 267.4 115.1 271.8 109.8C276.2 104.5 289.1 98.2 296 98.6Z" stroke="currentColor" stroke-width="1" opacity="0"><animate attributeName="opacity" values="0;0;0.5;0.5" keyTimes="0;0.16;0.24;1" dur="20s" repeatCount="indefinite"/></path><path d="M296 89.2C305.5 88.7 322.5 93.9 329.4 100.6C336.3 107.4 343.1 125.1 342 134C340.9 142.9 328.8 153.7 321.9 159.9C315 166.1 305.8 173.3 296 175.3C286.2 177.3 262.6 179.4 256.8 173.2C250.9 167 255.7 144.4 257.1 134C258.4 123.6 260.1 110.7 266 104C271.8 97.2 286.5 89.7 296 89.2Z" stroke="currentColor" stroke-width="1" opacity="0"><animate attributeName="opacity" values="0;0;0.5;0.5" keyTimes="0;0.41;0.49;1" dur="20s" repeatCount="indefinite"/></path><path d="M296 78.5C308.1 76.9 333.7 79.8 341.9 88.1C350 96.4 352.2 122.1 350.3 134C348.4 145.9 337.5 158.9 329.4 167.4C321.2 175.9 308 188.6 296 190.6C284 192.6 257.2 189.2 249.3 180.7C241.3 172.2 241.1 146.3 242.9 134C244.7 121.7 253 107.3 261 99C268.9 90.6 283.9 80.2 296 78.5Z" stroke="currentColor" stroke-width="1" opacity="0"><animate attributeName="opacity" values="0;0;0.5;0.5" keyTimes="0;0.66;0.74;1" dur="20s" repeatCount="indefinite"/></path>
+  <circle cx="296" cy="134" r="1.6" fill="currentColor"/>
+  <g mask="url(#d3c-own-hole)" stroke="currentColor" stroke-width="0.9"><circle cx="268.5" cy="161.5" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.03;0.0875;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.03;0.0444;0.0875;1" dur="20s" repeatCount="indefinite"/></circle><circle cx="268.5" cy="161.5" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.05;0.1075;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.05;0.0644;0.1075;1" dur="20s" repeatCount="indefinite"/></circle><circle cx="268.5" cy="161.5" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.07;0.1275;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.07;0.0844;0.1275;1" dur="20s" repeatCount="indefinite"/></circle></g><g mask="url(#d3c-own-hole)" stroke="currentColor" stroke-width="0.9"><circle cx="329.4" cy="100.6" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.28;0.3375;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.28;0.2944;0.3375;1" dur="20s" repeatCount="indefinite"/></circle><circle cx="329.4" cy="100.6" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.3;0.3575;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.3;0.3144;0.3575;1" dur="20s" repeatCount="indefinite"/></circle><circle cx="329.4" cy="100.6" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.32;0.3775;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.32;0.3344;0.3775;1" dur="20s" repeatCount="indefinite"/></circle></g><g mask="url(#d3c-own-hole)" stroke="currentColor" stroke-width="0.9"><circle cx="242.9" cy="134" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.53;0.5875;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.53;0.5444;0.5875;1" dur="20s" repeatCount="indefinite"/></circle><circle cx="242.9" cy="134" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.55;0.6075;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.55;0.5644;0.6075;1" dur="20s" repeatCount="indefinite"/></circle><circle cx="242.9" cy="134" r="2" opacity="0"><animate attributeName="r" values="2;2;18;18" keyTimes="0;0.57;0.6275;1" dur="20s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;0.8;0;0" keyTimes="0;0.57;0.5844;0.6275;1" dur="20s" repeatCount="indefinite"/></circle></g><path d="M296.4 90.6C305.1 90.9 316.4 99.9 323.2 106.5C330 113 342 126.3 341.8 134.3C341.5 142.4 328 154 321.3 160C314.6 166.1 306.1 173.9 297.2 174.9C288.4 176 268.3 173.1 262.5 166.9C256.7 160.6 258 142.8 258.5 133.5C259 124.2 260 111.1 265.7 104.7C271.3 98.3 287.8 90.3 296.4 90.6Z" stroke="#f4581f" stroke-width="2.4"><animate attributeName="d" values="M296.4 90.6C305.1 90.9 316.4 99.9 323.2 106.5C330 113 342 126.3 341.8 134.3C341.5 142.4 328 154 321.3 160C314.6 166.1 306.1 173.9 297.2 174.9C288.4 176 268.3 173.1 262.5 166.9C256.7 160.6 258 142.8 258.5 133.5C259 124.2 260 111.1 265.7 104.7C271.3 98.3 287.8 90.3 296.4 90.6Z;M296.4 90.6C305.1 90.9 316.4 99.9 323.2 106.5C330 113 342 126.3 341.8 134.3C341.5 142.4 328 154 321.3 160C314.6 166.1 306.1 173.9 297.2 174.9C288.4 176 268.3 173.1 262.5 166.9C256.7 160.6 258 142.8 258.5 133.5C259 124.2 260 111.1 265.7 104.7C271.3 98.3 287.8 90.3 296.4 90.6Z;M295.6 81.2C306.8 80.6 326.8 86.8 335 94.9C343.1 103 351.1 124.4 350 135C348.8 145.6 335.1 158.6 327.2 165.8C319.4 173 309 181.2 297.6 183.1C286.2 185.1 258.2 186.2 251 178.7C243.7 171.2 247.8 144.9 249.1 132.9C250.5 121 253 106.5 259.9 98.7C266.9 90.9 284.3 81.7 295.6 81.2Z;M295.6 81.2C306.8 80.6 326.8 86.8 335 94.9C343.1 103 351.1 124.4 350 135C348.8 145.6 335.1 158.6 327.2 165.8C319.4 173 309 181.2 297.6 183.1C286.2 185.1 258.2 186.2 251 178.7C243.7 171.2 247.8 144.9 249.1 132.9C250.5 121 253 106.5 259.9 98.7C266.9 90.9 284.3 81.7 295.6 81.2Z;M294.9 70.6C308.8 69 338.1 72.8 347.6 82.5C357.1 92.2 360.1 121.7 358.2 135.2C356.3 148.8 344.3 163.4 335.2 172.9C326 182.4 311.1 196.5 297.3 198.5C283.6 200.5 252.8 196 243.4 186.2C234.1 176.3 233.2 146.8 235 132.9C236.7 119 246.2 102.8 255.2 93.4C264.2 84.1 281.1 72.2 294.9 70.6Z;M294.9 70.6C308.8 69 338.1 72.8 347.6 82.5C357.1 92.2 360.1 121.7 358.2 135.2C356.3 148.8 344.3 163.4 335.2 172.9C326 182.4 311.1 196.5 297.3 198.5C283.6 200.5 252.8 196 243.4 186.2C234.1 176.3 233.2 146.8 235 132.9C236.7 119 246.2 102.8 255.2 93.4C264.2 84.1 281.1 72.2 294.9 70.6Z;M294.8 57.6C311 55.6 346.5 62 357 73.6C367.6 85.2 366.8 118.2 365.3 134.8C363.8 151.4 357.5 172.1 347.2 184.2C336.9 196.2 313 213.9 296.6 215.1C280.2 216.3 249.6 204.4 237.7 192.1C225.8 179.8 215.5 148.7 217.3 133C219 117.3 237.9 98.7 249.6 87.4C261.2 76.1 278.7 59.7 294.8 57.6Z;M294.8 57.6C311 55.6 346.5 62 357 73.6C367.6 85.2 366.8 118.2 365.3 134.8C363.8 151.4 357.5 172.1 347.2 184.2C336.9 196.2 313 213.9 296.6 215.1C280.2 216.3 249.6 204.4 237.7 192.1C225.8 179.8 215.5 148.7 217.3 133C219 117.3 237.9 98.7 249.6 87.4C261.2 76.1 278.7 59.7 294.8 57.6Z" keyTimes="0;0.09;0.16;0.34;0.41;0.59;0.66;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></path>
+  <text x="296" y="254" text-anchor="middle" fill="#f4581f" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11" letter-spacing="1.1">YOUR OWN</text>
+  <path d="M140 280H262m-5 -3.5l5 3.5l-5 3.5M152 276v8M184 276v8M216 276v8M248 276v8" stroke="currentColor" stroke-opacity=".55" stroke-width="1"/>
+  <circle cy="280" r="4" cx="152" fill="#f4581f"><animate attributeName="cx" values="152;152;184;184;216;216;248;248" keyTimes="0;0.16;0.25;0.41;0.5;0.66;0.75;1" dur="20s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1;0.45 0 0.2 1"/></circle>
+</g></svg>
+</div>
+      <div class="body">
+        <span class="tag">Direction 3, round three</span>
+        <h3>Growth rings</h3>
+        <p>On the right, before each stage a ripple leaves the side about to grow, the ember outline grows, and then the business grows and leaves a ring. On the left, the boxes still arrive late.</p>
+        <div class="pick"></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <h2>A calmer fire</h2>
+  <p class="sub">The original's flame is a loose column of small glowing embers over a faint haze. These use the same embers, dimmer and with less white, so they read as a warm hearth and not a blaze. Give them a few seconds to catch. They look best on dark: switch your theme to compare. On the light background they are fainter and look more like a drawing.</p>
+  <div class="cards">
+    <article class="card flame" data-id="Calm fire: Mark spark">
+      <div class="art"><canvas class="fire" data-f="flame1c" aria-label="The Chama mark, where the spark is a small bed of gently burning embers inside the opening of the C."></canvas></div>
+      <div class="body">
+        <span class="tag">Inside the C</span>
+        <h3>Mark spark</h3>
+        <p>The spark itself burns gently, the same size and place as the drawn spark, with a soft glow and no plume. At this size it reads more as glowing embers in a spark shape than as a flame with a tip.</p>
+        <dl class="uses"><dt>Where</dt><dd>The mark wherever it is shown large: About, the Hearth sign-in, a page's close.</dd></dl>
+        <div class="pick"></div>
+      </div>
+    </article>
+    <article class="card flame" data-id="Calm fire: Fire inside">
+      <div class="art"><canvas class="fire" data-f="flame2c" aria-label="An owned business with a calm column of embers at its heart and a warm glow inside."></canvas></div>
+      <div class="body">
+        <span class="tag">No sticks</span>
+        <h3>Fire inside</h3>
+        <p>A business that owns its software has a calm column of embers at its heart and a warm glow inside. Its outline also makes room before the business grows.</p>
+        <dl class="uses"><dt>Where</dt><dd>The "owned" state in figures, and the Hearth room.</dd></dl>
+        <div class="pick"></div>
+      </div>
+    </article>
+    <article class="card flame" data-id="Calm fire: Construction lights">
+      <div class="art"><canvas class="fire" data-f="flame3c" aria-label="The mark drawn as a technical drawing, then filled, then its spark becomes a gentle flame."></canvas></div>
+      <div class="body">
+        <span class="tag">Your round-one yes</span>
+        <h3>Construction drawing, then it lights</h3>
+        <p>The mark draws itself from its real measurements and fills. Then the drawn spark fades to a faint outline and becomes the same gentle flame over two seconds. It loops every 17 seconds.</p>
+        <dl class="uses"><dt>Where</dt><dd>About beside "Chama means flame", the brand page, the 404.</dd></dl>
+        <div class="pick"></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="out">
+  <h2>Your picks</h2>
+  <p class="cap">This fills in as you choose. Add anything in the notes line, then copy it and paste it back to me in the chat.</p>
+  <textarea id="picks" readonly aria-label="Your picks as text"></textarea>
+  <label class="cap" for="note">Notes (optional)</label>
+  <input id="note" type="text" style="font:inherit;padding:.55rem .7rem;border-radius:6px;border:1px solid var(--line);background:var(--ground);color:var(--ink)" placeholder="e.g. survey sheet on engineering, growth rings in the loop">
+  <div class="row"><button class="copy" id="copy" type="button">Copy my picks</button><span class="cap" id="copied" aria-live="polite"></span></div>
+</section>
+
+<section>
+  <h2>Good to know</h2>
+  <ul class="notes">
+    <li>The flames pause when scrolled out of view and show one still frame if your device asks for reduced motion.</li>
+    <li>These are sketches to judge the idea, not the finished figures. The real ones would be built in the site's figure kit, run on scroll, and have a still version for low motion.</li>
+    <li>docs/DESIGN.md says "The flame is the mark and the name, not a character". Whatever you pick here, I'll record your reaction there in the same change.</li>
+  </ul>
+</section>
+
+</main>
+
+<script>/* flame-1c-mark-spark.js
+   window.flame1c(canvas) draws into the given canvas and returns a function that stops it.
+   Self-contained: no imports, no network. The canvas's CSS colour is read as the ink:
+   a light ink means a dark ground. One still frame under prefers-reduced-motion. */
+(function () {
+  "use strict";
+  // ---- the fire: small embers in a curl-noise flow, after the original
+  // site's engine (original/assets/flame.js): the same noise, the same bell
+  // shaped base and the same soft sprites, turned down to a calm, warm burn.
+  var TAU = Math.PI * 2, EMBER = "#f4581f";
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function smooth(a, b, v) { var k = clamp((v - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); }
+  function mix(a, b, k) { return a + (b - a) * k; }
+
+  var PERM = new Uint8Array(512);
+  (function () {
+    var s = 1337, p = new Uint8Array(256), i;
+    function rnd() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }
+    for (i = 0; i < 256; i++) p[i] = i;
+    for (i = 255; i > 0; i--) { var j = (rnd() * (i + 1)) | 0, t = p[i]; p[i] = p[j]; p[j] = t; }
+    for (i = 0; i < 512; i++) PERM[i] = p[i & 255];
+  })();
+  function hash3(x, y, z) { return PERM[(PERM[(PERM[x & 255] + (y & 255)) & 255] + (z & 255)) & 255] / 255; }
+  function fade(t) { return t * t * (3 - 2 * t); }
+  function noise3(x, y, z) {
+    var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    var xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
+    var a = hash3(xi, yi, zi), b = hash3(xi + 1, yi, zi), c = hash3(xi, yi + 1, zi), d = hash3(xi + 1, yi + 1, zi);
+    var e = hash3(xi, yi, zi + 1), f = hash3(xi + 1, yi, zi + 1), g = hash3(xi, yi + 1, zi + 1), h = hash3(xi + 1, yi + 1, zi + 1);
+    var x0 = a + (b - a) * xf, x1 = c + (d - c) * xf, x2 = e + (f - e) * xf, x3 = g + (h - g) * xf;
+    var y0 = x0 + (x1 - x0) * yf, y1 = x2 + (x3 - x2) * yf;
+    return y0 + (y1 - y0) * zf;
+  }
+  function potential(x, y, t) {
+    return noise3(x, y, t) + noise3(x * 2.07, y * 2.07, t * 1.6) * 0.45 + Math.sin(x * 1.7 + t * 2.3) * 0.09 + Math.sin(y * 1.3 - t * 1.7) * 0.07;
+  }
+  var EPS = 0.09, curlOut = [0, 0];
+  function curl(x, y, t) {
+    curlOut[0] = (potential(x, y + EPS, t) - potential(x, y - EPS, t)) / (2 * EPS);
+    curlOut[1] = -(potential(x + EPS, y, t) - potential(x - EPS, y, t)) / (2 * EPS);
+  }
+  function bell() { return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
+
+  // ---- shapes, in the sketch's 400 by 300 units -------------------------
+  function ringPts(cx, cy, radii) {
+    var P = [], n = radii.length;
+    for (var i = 0; i < n; i++) { var a = (i / n) * TAU - Math.PI / 2; P.push([cx + radii[i] * Math.cos(a), cy + radii[i] * Math.sin(a)]); }
+    return P;
+  }
+  function offsetPts(P, d) {
+    var n = P.length, O = [];
+    for (var i = 0; i < n; i++) {
+      var a = P[(i - 1 + n) % n], b = P[(i + 1) % n], tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1;
+      O.push([P[i][0] + (ty / l) * d, P[i][1] - (tx / l) * d]);
+    }
+    return O;
+  }
+  function blob(ctx, P) {
+    var n = P.length;
+    ctx.beginPath(); ctx.moveTo(P[0][0], P[0][1]);
+    for (var i = 0; i < n; i++) {
+      var p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n];
+      ctx.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
+    }
+    ctx.closePath();
+  }
+  function mixRadii(a, b, k) { var r = []; for (var i = 0; i < a.length; i++) r.push(mix(a[i], b[i], k)); return r; }
+  // sets held for `hold` seconds each, then changed over `move`
+  function radiiAt(sets, t, hold, move) {
+    var per = hold + move, u = Math.max(0, t) / per, i = Math.floor(u) % sets.length, k = smooth(hold / per, 1, u - Math.floor(u));
+    return mixRadii(sets[i], sets[(i + 1) % sets.length], k);
+  }
+
+  function stage(canvas, scene) {
+    var ctx = canvas.getContext("2d");
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var W = 0, H = 0, S = 1, OX = 0, OY = 0;
+    var api = { ctx: ctx, dark: false, ink: "#14110f", ground: "#f6f1e8", ember: EMBER, inkA: function (a) { return api.dark ? "rgba(246,241,232," + a + ")" : "rgba(20,17,15," + a + ")"; }, emberA: function (a) { return "rgba(244,88,31," + a + ")"; } };
+
+    function readGround() {
+      var m = (getComputedStyle(canvas).color || "").match(/[\d.]+/g) || [20, 17, 15];
+      var dark = (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255 > 0.5;
+      api.dark = dark;
+      api.ink = "rgb(" + m[0] + "," + m[1] + "," + m[2] + ")";
+      api.ground = dark ? "#14110f" : "#f6f1e8";
+    }
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      var w = Math.max(1, Math.round((canvas.clientWidth || 400) * dpr)), h = Math.max(1, Math.round((canvas.clientHeight || 300) * dpr));
+      if (w === W && h === H) return false;
+      W = canvas.width = w; H = canvas.height = h;
+      S = Math.min(W / 400, H / 300); OX = (W - 400 * S) / 2; OY = (H - 300 * S) / 2;
+      return true;
+    }
+
+    // One calm fire, drawn the way the original site drew its flame: a loose
+    // column of small glowing embers over a faint body of haze, with a small
+    // warm core at the base. On a dark ground the embers add as light; on
+    // paper they are laid down as warm ink. Set x, y (the base), k (size: the
+    // flame is about 60k long), ax, ay (the way it burns; up by default),
+    // band (half width of the base), rate (embers a second) and level (0 to 1).
+    api.fire = function () {
+      var CAP = 900, n = 0, carry = 0;
+      var px = new Float32Array(CAP), py = new Float32Array(CAP), vx = new Float32Array(CAP), vy = new Float32Array(CAP);
+      var pa = new Float32Array(CAP), pl = new Float32Array(CAP), ps = new Float32Array(CAP), pj = new Float32Array(CAP);
+      var BC = 90, bn = 0, bcarry = 0;
+      var bx = new Float32Array(BC), by = new Float32Array(BC), bvx = new Float32Array(BC), bvy = new Float32Array(BC), ba = new Float32Array(BC), bl = new Float32Array(BC), bs = new Float32Array(BC);
+      var F = { x: 200, y: 200, k: 1, ax: 0, ay: -1, band: 8, rate: 150, haze: 16, level: 1, glow: 1, flick: 1 };
+      var ramp = null, body = null, rampDark = null;
+      function dot(r, g, b, soft) {
+        var c = document.createElement("canvas"); c.width = c.height = 48;
+        var q = c.getContext("2d"), gr = q.createRadialGradient(24, 24, 0, 24, 24, 24), rgb = Math.round(r) + "," + Math.round(g) + "," + Math.round(b);
+        if (soft) { gr.addColorStop(0, "rgba(" + rgb + ",1)"); gr.addColorStop(0.34, "rgba(" + rgb + ",0.72)"); gr.addColorStop(0.62, "rgba(" + rgb + ",0.3)"); gr.addColorStop(0.84, "rgba(" + rgb + ",0.07)"); }
+        else { gr.addColorStop(0, "rgba(" + rgb + ",1)"); gr.addColorStop(0.28, "rgba(" + rgb + ",0.55)"); gr.addColorStop(0.62, "rgba(" + rgb + ",0.14)"); }
+        gr.addColorStop(1, "rgba(" + rgb + ",0)");
+        q.fillStyle = gr; q.fillRect(0, 0, 48, 48);
+        return c;
+      }
+      function build() {
+        // an ember's colour as it cools: warm cream, amber, ember, deep red
+        var stops = api.dark
+          ? [[0, 255, 212, 150], [0.14, 255, 172, 88], [0.42, 244, 104, 40], [1, 150, 44, 14]]
+          : [[0, 252, 166, 62], [0.16, 246, 124, 36], [0.45, 232, 84, 24], [1, 176, 54, 18]];
+        ramp = [];
+        for (var i = 0; i < 18; i++) {
+          var h = i / 17, k = 0;
+          while (k < stops.length - 2 && h > stops[k + 1][0]) k++;
+          var a = stops[k], b = stops[k + 1], u = clamp((h - a[0]) / (b[0] - a[0]), 0, 1);
+          ramp.push(dot(mix(a[1], b[1], u), mix(a[2], b[2], u), mix(a[3], b[3], u), false));
+        }
+        body = api.dark ? dot(236, 86, 30, true) : dot(246, 122, 44, true);
+        rampDark = api.dark;
+      }
+      F.update = function (dt, t) {
+        var k = F.k, i, lx = -F.ay, ly = F.ax;   // lx, ly: across the flame
+        carry += F.rate * F.level * dt;
+        while (carry >= 1) {
+          carry -= 1;
+          if (n >= CAP) continue;
+          i = n++;
+          var off = bell() * F.band * k, al = (Math.random() - 0.3) * 5 * k, go = (18 + Math.random() * 30) * k, jit = (Math.random() - 0.5) * 14 * k;
+          px[i] = F.x + off * lx + al * F.ax; py[i] = F.y + off * ly + al * F.ay;
+          vx[i] = go * F.ax + jit * lx; vy[i] = go * F.ay + jit * ly;
+          pa[i] = 0; pl[i] = 1.25 * (0.4 + Math.random() * 1.0);
+          ps[i] = (0.7 + Math.random() * Math.random() * 1.7) * Math.pow(k, 0.55); pj[i] = Math.random() * TAU;
+        }
+        bcarry += F.haze * F.level * dt;
+        while (bcarry >= 1) {
+          bcarry -= 1;
+          if (bn >= BC) continue;
+          i = bn++;
+          var bo = bell() * F.band * k * 0.8, bg = (14 + Math.random() * 16) * k;
+          bx[i] = F.x + bo * lx; by[i] = F.y + bo * ly; bvx[i] = bg * F.ax; bvy[i] = bg * F.ay;
+          ba[i] = 0; bl[i] = 1.5 * (0.6 + Math.random() * 0.8); bs[i] = (9 + Math.random() * 7) * k;
+        }
+        var ns = 0.024 / k, drag = Math.exp(-1.5 * dt), a, up, lat, pull;
+        for (i = 0; i < n; i++) {
+          pa[i] += dt;
+          if (pa[i] >= pl[i]) { n--; px[i] = px[n]; py[i] = py[n]; vx[i] = vx[n]; vy[i] = vy[n]; pa[i] = pa[n]; pl[i] = pl[n]; ps[i] = ps[n]; pj[i] = pj[n]; i--; continue; }
+          a = pa[i] / pl[i];
+          curl(px[i] * ns, py[i] * ns, t * 0.42);
+          lat = (px[i] - F.x) * lx + (py[i] - F.y) * ly;
+          pull = -lat * (0.25 + 2.6 * a * a); up = 150 * k * (1 - a * 0.6);
+          vx[i] += (curlOut[0] * 58 * k * (1 - a * 0.6) + pull * lx + up * F.ax) * dt;
+          vy[i] += (curlOut[1] * 38 * k * (1 - a * 0.6) + pull * ly + up * F.ay) * dt;
+          vx[i] *= drag; vy[i] *= drag;
+          px[i] += vx[i] * dt; py[i] += vy[i] * dt;
+        }
+        for (i = 0; i < bn; i++) {
+          ba[i] += dt;
+          if (ba[i] >= bl[i]) { bn--; bx[i] = bx[bn]; by[i] = by[bn]; bvx[i] = bvx[bn]; bvy[i] = bvy[bn]; ba[i] = ba[bn]; bl[i] = bl[bn]; bs[i] = bs[bn]; i--; continue; }
+          a = ba[i] / bl[i];
+          curl(bx[i] * ns * 0.7, by[i] * ns * 0.7, t * 0.3);
+          lat = (bx[i] - F.x) * lx + (by[i] - F.y) * ly;
+          bvx[i] += (curlOut[0] * 12 * k - lat * 0.7 * lx + 80 * k * (1 - a * 0.7) * F.ax) * dt;
+          bvy[i] += (curlOut[1] * 8 * k - lat * 0.7 * ly + 80 * k * (1 - a * 0.7) * F.ay) * dt;
+          bvx[i] *= drag; bvy[i] *= drag;
+          bx[i] += bvx[i] * dt; by[i] += bvy[i] * dt;
+        }
+        // a slow breath, never a strobe
+        F.flick = 0.9 + 0.1 * noise3(t * 0.9, F.x * 0.1, 7.3) + 0.03 * Math.sin(t * 5.1);
+      };
+      // the warmth it throws, drawn before whatever it should fall on
+      F.drawGlow = function (r) {
+        var g = F.glow * F.level * F.flick, R = (r || 70) * F.k;
+        if (g <= 0.01) return;
+        ctx.save();
+        ctx.translate(F.x + F.ax * 24 * F.k, F.y + F.ay * 24 * F.k);
+        var gr = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+        if (api.dark) { ctx.globalCompositeOperation = "lighter"; gr.addColorStop(0, "rgba(244,104,40," + 0.17 * g + ")"); gr.addColorStop(0.5, "rgba(214,78,26," + 0.06 * g + ")"); gr.addColorStop(1, "rgba(200,70,24,0)"); }
+        else { gr.addColorStop(0, "rgba(250,150,70," + 0.26 * g + ")"); gr.addColorStop(0.5, "rgba(246,120,50," + 0.09 * g + ")"); gr.addColorStop(1, "rgba(244,110,40,0)"); }
+        ctx.fillStyle = gr; ctx.fillRect(-R, -R, 2 * R, 2 * R);
+        ctx.restore();
+      };
+      F.draw = function () {
+        var k = F.k, i, a, r, lv = F.level;
+        if (!ramp || rampDark !== api.dark) build();
+        ctx.save();
+        if (api.dark) ctx.globalCompositeOperation = "lighter";
+        for (i = 0; i < bn; i++) {
+          a = ba[i] / bl[i]; r = bs[i] * (0.7 + 0.5 * a);
+          ctx.globalAlpha = (api.dark ? 0.15 : 0.13) * Math.sin(Math.PI * Math.min(1, a * 1.15)) * (1 - a * 0.5) * lv;
+          ctx.drawImage(body, bx[i] - r, by[i] - r, 2 * r, 2 * r);
+        }
+        // the small warm core, where the embers are born
+        var cr = F.band * k * 1.35 * F.flick;
+        ctx.globalAlpha = (api.dark ? 0.26 : 0.4) * lv;
+        ctx.drawImage(ramp[api.dark ? 2 : 1], F.x + F.ax * 2 * k - cr, F.y + F.ay * 2 * k - cr, 2 * cr, 2 * cr);
+        for (i = 0; i < n; i++) {
+          a = pa[i] / pl[i]; r = ps[i] * 2.6 * (1 - 0.35 * a);
+          ctx.globalAlpha = (api.dark ? 0.6 : 0.8) * Math.min(1, a * 12 + 0.2) * Math.pow(1 - a, 1.1) * (0.72 + 0.28 * Math.sin(pj[i] + pa[i] * 7)) * lv;
+          ctx.drawImage(ramp[Math.min(17, (a * 17.99) | 0)], px[i] - r, py[i] - r, 2 * r, 2 * r);
+        }
+        ctx.restore();
+      };
+      return F;
+    };
+
+    var t = 0, last = 0, raf = 0, seen = true, stopped = false;
+    function paint(dt) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
+      ctx.setTransform(S, 0, 0, S, OX, OY);
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      scene.draw(api, t, dt);
+    }
+    function still() { t = (scene.still || 6) - 2.5; for (var i = 0; i < 150; i++) { t += 1 / 60; paint(1 / 60); } }
+    function frame(now) {
+      if (stopped) return;
+      raf = requestAnimationFrame(frame);
+      if (!seen || document.hidden) { last = now; return; }
+      var dt = clamp((now - last) / 1000, 0, 0.05); last = now;
+      if (((now / 1000) | 0) !== (((now - dt * 1000) / 1000) | 0)) readGround();
+      resize(); t += dt; paint(dt);
+    }
+    readGround(); resize(); scene.init(api);
+    var ro = null, io = null;
+    if (reduce) {
+      still();
+      if (window.ResizeObserver) { ro = new ResizeObserver(function () { if (resize()) { readGround(); paint(0); } }); ro.observe(canvas); }
+    } else {
+      if (window.IntersectionObserver) { io = new IntersectionObserver(function (e) { seen = e[e.length - 1].isIntersecting; }); io.observe(canvas); }
+      last = performance.now(); raf = requestAnimationFrame(frame);
+    }
+    return function stop() { stopped = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); if (io) io.disconnect(); };
+  }
+
+  // The mark. The ring is drawn; the spark in its opening is a small, real,
+  // gently burning flame, the same size and place as the drawn spark.
+  var RING = new Path2D("M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z");
+  var SPARK = new Path2D("M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z");
+  var MS = 3.7, OX0 = 200 - 33.9 * MS, OY0 = 150 - 31.8 * MS;
+  function makeScene() { var F; return {
+    still: 6,
+    init: function (api) { F = api.fire(); F.x = OX0 + 46.9 * MS; F.y = OY0 + 34.2 * MS; F.ax = 0.7; F.ay = -0.714; F.k = 0.8; F.band = 12; F.rate = 230; F.haze = 18; },
+    draw: function (api, t, dt) {
+      var ctx = api.ctx;
+      F.update(dt, t);
+      F.drawGlow(74);
+      ctx.save(); ctx.translate(OX0, OY0); ctx.scale(MS, MS);
+      ctx.fillStyle = api.ember; ctx.fill(RING);
+      ctx.globalAlpha = api.dark ? 0.2 : 0.16; ctx.fill(SPARK);
+      ctx.restore();
+      F.draw();
+    }
+  }; }
+
+  window.flame1c = function (canvas) { return stage(canvas, makeScene()); };
+})();
+</script>
+<script>/* flame-2c-fire-inside.js
+   window.flame2c(canvas) draws into the given canvas and returns a function that stops it.
+   Self-contained: no imports, no network. The canvas's CSS colour is read as the ink:
+   a light ink means a dark ground. One still frame under prefers-reduced-motion. */
+(function () {
+  "use strict";
+  // ---- the fire: small embers in a curl-noise flow, after the original
+  // site's engine (original/assets/flame.js): the same noise, the same bell
+  // shaped base and the same soft sprites, turned down to a calm, warm burn.
+  var TAU = Math.PI * 2, EMBER = "#f4581f";
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function smooth(a, b, v) { var k = clamp((v - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); }
+  function mix(a, b, k) { return a + (b - a) * k; }
+
+  var PERM = new Uint8Array(512);
+  (function () {
+    var s = 1337, p = new Uint8Array(256), i;
+    function rnd() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }
+    for (i = 0; i < 256; i++) p[i] = i;
+    for (i = 255; i > 0; i--) { var j = (rnd() * (i + 1)) | 0, t = p[i]; p[i] = p[j]; p[j] = t; }
+    for (i = 0; i < 512; i++) PERM[i] = p[i & 255];
+  })();
+  function hash3(x, y, z) { return PERM[(PERM[(PERM[x & 255] + (y & 255)) & 255] + (z & 255)) & 255] / 255; }
+  function fade(t) { return t * t * (3 - 2 * t); }
+  function noise3(x, y, z) {
+    var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    var xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
+    var a = hash3(xi, yi, zi), b = hash3(xi + 1, yi, zi), c = hash3(xi, yi + 1, zi), d = hash3(xi + 1, yi + 1, zi);
+    var e = hash3(xi, yi, zi + 1), f = hash3(xi + 1, yi, zi + 1), g = hash3(xi, yi + 1, zi + 1), h = hash3(xi + 1, yi + 1, zi + 1);
+    var x0 = a + (b - a) * xf, x1 = c + (d - c) * xf, x2 = e + (f - e) * xf, x3 = g + (h - g) * xf;
+    var y0 = x0 + (x1 - x0) * yf, y1 = x2 + (x3 - x2) * yf;
+    return y0 + (y1 - y0) * zf;
+  }
+  function potential(x, y, t) {
+    return noise3(x, y, t) + noise3(x * 2.07, y * 2.07, t * 1.6) * 0.45 + Math.sin(x * 1.7 + t * 2.3) * 0.09 + Math.sin(y * 1.3 - t * 1.7) * 0.07;
+  }
+  var EPS = 0.09, curlOut = [0, 0];
+  function curl(x, y, t) {
+    curlOut[0] = (potential(x, y + EPS, t) - potential(x, y - EPS, t)) / (2 * EPS);
+    curlOut[1] = -(potential(x + EPS, y, t) - potential(x - EPS, y, t)) / (2 * EPS);
+  }
+  function bell() { return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
+
+  // ---- shapes, in the sketch's 400 by 300 units -------------------------
+  function ringPts(cx, cy, radii) {
+    var P = [], n = radii.length;
+    for (var i = 0; i < n; i++) { var a = (i / n) * TAU - Math.PI / 2; P.push([cx + radii[i] * Math.cos(a), cy + radii[i] * Math.sin(a)]); }
+    return P;
+  }
+  function offsetPts(P, d) {
+    var n = P.length, O = [];
+    for (var i = 0; i < n; i++) {
+      var a = P[(i - 1 + n) % n], b = P[(i + 1) % n], tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1;
+      O.push([P[i][0] + (ty / l) * d, P[i][1] - (tx / l) * d]);
+    }
+    return O;
+  }
+  function blob(ctx, P) {
+    var n = P.length;
+    ctx.beginPath(); ctx.moveTo(P[0][0], P[0][1]);
+    for (var i = 0; i < n; i++) {
+      var p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n];
+      ctx.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
+    }
+    ctx.closePath();
+  }
+  function mixRadii(a, b, k) { var r = []; for (var i = 0; i < a.length; i++) r.push(mix(a[i], b[i], k)); return r; }
+  // sets held for `hold` seconds each, then changed over `move`
+  function radiiAt(sets, t, hold, move) {
+    var per = hold + move, u = Math.max(0, t) / per, i = Math.floor(u) % sets.length, k = smooth(hold / per, 1, u - Math.floor(u));
+    return mixRadii(sets[i], sets[(i + 1) % sets.length], k);
+  }
+
+  function stage(canvas, scene) {
+    var ctx = canvas.getContext("2d");
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var W = 0, H = 0, S = 1, OX = 0, OY = 0;
+    var api = { ctx: ctx, dark: false, ink: "#14110f", ground: "#f6f1e8", ember: EMBER, inkA: function (a) { return api.dark ? "rgba(246,241,232," + a + ")" : "rgba(20,17,15," + a + ")"; }, emberA: function (a) { return "rgba(244,88,31," + a + ")"; } };
+
+    function readGround() {
+      var m = (getComputedStyle(canvas).color || "").match(/[\d.]+/g) || [20, 17, 15];
+      var dark = (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255 > 0.5;
+      api.dark = dark;
+      api.ink = "rgb(" + m[0] + "," + m[1] + "," + m[2] + ")";
+      api.ground = dark ? "#14110f" : "#f6f1e8";
+    }
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      var w = Math.max(1, Math.round((canvas.clientWidth || 400) * dpr)), h = Math.max(1, Math.round((canvas.clientHeight || 300) * dpr));
+      if (w === W && h === H) return false;
+      W = canvas.width = w; H = canvas.height = h;
+      S = Math.min(W / 400, H / 300); OX = (W - 400 * S) / 2; OY = (H - 300 * S) / 2;
+      return true;
+    }
+
+    // One calm fire, drawn the way the original site drew its flame: a loose
+    // column of small glowing embers over a faint body of haze, with a small
+    // warm core at the base. On a dark ground the embers add as light; on
+    // paper they are laid down as warm ink. Set x, y (the base), k (size: the
+    // flame is about 60k long), ax, ay (the way it burns; up by default),
+    // band (half width of the base), rate (embers a second) and level (0 to 1).
+    api.fire = function () {
+      var CAP = 900, n = 0, carry = 0;
+      var px = new Float32Array(CAP), py = new Float32Array(CAP), vx = new Float32Array(CAP), vy = new Float32Array(CAP);
+      var pa = new Float32Array(CAP), pl = new Float32Array(CAP), ps = new Float32Array(CAP), pj = new Float32Array(CAP);
+      var BC = 90, bn = 0, bcarry = 0;
+      var bx = new Float32Array(BC), by = new Float32Array(BC), bvx = new Float32Array(BC), bvy = new Float32Array(BC), ba = new Float32Array(BC), bl = new Float32Array(BC), bs = new Float32Array(BC);
+      var F = { x: 200, y: 200, k: 1, ax: 0, ay: -1, band: 8, rate: 150, haze: 16, level: 1, glow: 1, flick: 1 };
+      var ramp = null, body = null, rampDark = null;
+      function dot(r, g, b, soft) {
+        var c = document.createElement("canvas"); c.width = c.height = 48;
+        var q = c.getContext("2d"), gr = q.createRadialGradient(24, 24, 0, 24, 24, 24), rgb = Math.round(r) + "," + Math.round(g) + "," + Math.round(b);
+        if (soft) { gr.addColorStop(0, "rgba(" + rgb + ",1)"); gr.addColorStop(0.34, "rgba(" + rgb + ",0.72)"); gr.addColorStop(0.62, "rgba(" + rgb + ",0.3)"); gr.addColorStop(0.84, "rgba(" + rgb + ",0.07)"); }
+        else { gr.addColorStop(0, "rgba(" + rgb + ",1)"); gr.addColorStop(0.28, "rgba(" + rgb + ",0.55)"); gr.addColorStop(0.62, "rgba(" + rgb + ",0.14)"); }
+        gr.addColorStop(1, "rgba(" + rgb + ",0)");
+        q.fillStyle = gr; q.fillRect(0, 0, 48, 48);
+        return c;
+      }
+      function build() {
+        // an ember's colour as it cools: warm cream, amber, ember, deep red
+        var stops = api.dark
+          ? [[0, 255, 212, 150], [0.14, 255, 172, 88], [0.42, 244, 104, 40], [1, 150, 44, 14]]
+          : [[0, 252, 166, 62], [0.16, 246, 124, 36], [0.45, 232, 84, 24], [1, 176, 54, 18]];
+        ramp = [];
+        for (var i = 0; i < 18; i++) {
+          var h = i / 17, k = 0;
+          while (k < stops.length - 2 && h > stops[k + 1][0]) k++;
+          var a = stops[k], b = stops[k + 1], u = clamp((h - a[0]) / (b[0] - a[0]), 0, 1);
+          ramp.push(dot(mix(a[1], b[1], u), mix(a[2], b[2], u), mix(a[3], b[3], u), false));
+        }
+        body = api.dark ? dot(236, 86, 30, true) : dot(246, 122, 44, true);
+        rampDark = api.dark;
+      }
+      F.update = function (dt, t) {
+        var k = F.k, i, lx = -F.ay, ly = F.ax;   // lx, ly: across the flame
+        carry += F.rate * F.level * dt;
+        while (carry >= 1) {
+          carry -= 1;
+          if (n >= CAP) continue;
+          i = n++;
+          var off = bell() * F.band * k, al = (Math.random() - 0.3) * 5 * k, go = (18 + Math.random() * 30) * k, jit = (Math.random() - 0.5) * 14 * k;
+          px[i] = F.x + off * lx + al * F.ax; py[i] = F.y + off * ly + al * F.ay;
+          vx[i] = go * F.ax + jit * lx; vy[i] = go * F.ay + jit * ly;
+          pa[i] = 0; pl[i] = 1.25 * (0.4 + Math.random() * 1.0);
+          ps[i] = (0.7 + Math.random() * Math.random() * 1.7) * Math.pow(k, 0.55); pj[i] = Math.random() * TAU;
+        }
+        bcarry += F.haze * F.level * dt;
+        while (bcarry >= 1) {
+          bcarry -= 1;
+          if (bn >= BC) continue;
+          i = bn++;
+          var bo = bell() * F.band * k * 0.8, bg = (14 + Math.random() * 16) * k;
+          bx[i] = F.x + bo * lx; by[i] = F.y + bo * ly; bvx[i] = bg * F.ax; bvy[i] = bg * F.ay;
+          ba[i] = 0; bl[i] = 1.5 * (0.6 + Math.random() * 0.8); bs[i] = (9 + Math.random() * 7) * k;
+        }
+        var ns = 0.024 / k, drag = Math.exp(-1.5 * dt), a, up, lat, pull;
+        for (i = 0; i < n; i++) {
+          pa[i] += dt;
+          if (pa[i] >= pl[i]) { n--; px[i] = px[n]; py[i] = py[n]; vx[i] = vx[n]; vy[i] = vy[n]; pa[i] = pa[n]; pl[i] = pl[n]; ps[i] = ps[n]; pj[i] = pj[n]; i--; continue; }
+          a = pa[i] / pl[i];
+          curl(px[i] * ns, py[i] * ns, t * 0.42);
+          lat = (px[i] - F.x) * lx + (py[i] - F.y) * ly;
+          pull = -lat * (0.25 + 2.6 * a * a); up = 150 * k * (1 - a * 0.6);
+          vx[i] += (curlOut[0] * 58 * k * (1 - a * 0.6) + pull * lx + up * F.ax) * dt;
+          vy[i] += (curlOut[1] * 38 * k * (1 - a * 0.6) + pull * ly + up * F.ay) * dt;
+          vx[i] *= drag; vy[i] *= drag;
+          px[i] += vx[i] * dt; py[i] += vy[i] * dt;
+        }
+        for (i = 0; i < bn; i++) {
+          ba[i] += dt;
+          if (ba[i] >= bl[i]) { bn--; bx[i] = bx[bn]; by[i] = by[bn]; bvx[i] = bvx[bn]; bvy[i] = bvy[bn]; ba[i] = ba[bn]; bl[i] = bl[bn]; bs[i] = bs[bn]; i--; continue; }
+          a = ba[i] / bl[i];
+          curl(bx[i] * ns * 0.7, by[i] * ns * 0.7, t * 0.3);
+          lat = (bx[i] - F.x) * lx + (by[i] - F.y) * ly;
+          bvx[i] += (curlOut[0] * 12 * k - lat * 0.7 * lx + 80 * k * (1 - a * 0.7) * F.ax) * dt;
+          bvy[i] += (curlOut[1] * 8 * k - lat * 0.7 * ly + 80 * k * (1 - a * 0.7) * F.ay) * dt;
+          bvx[i] *= drag; bvy[i] *= drag;
+          bx[i] += bvx[i] * dt; by[i] += bvy[i] * dt;
+        }
+        // a slow breath, never a strobe
+        F.flick = 0.9 + 0.1 * noise3(t * 0.9, F.x * 0.1, 7.3) + 0.03 * Math.sin(t * 5.1);
+      };
+      // the warmth it throws, drawn before whatever it should fall on
+      F.drawGlow = function (r) {
+        var g = F.glow * F.level * F.flick, R = (r || 70) * F.k;
+        if (g <= 0.01) return;
+        ctx.save();
+        ctx.translate(F.x + F.ax * 24 * F.k, F.y + F.ay * 24 * F.k);
+        var gr = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+        if (api.dark) { ctx.globalCompositeOperation = "lighter"; gr.addColorStop(0, "rgba(244,104,40," + 0.17 * g + ")"); gr.addColorStop(0.5, "rgba(214,78,26," + 0.06 * g + ")"); gr.addColorStop(1, "rgba(200,70,24,0)"); }
+        else { gr.addColorStop(0, "rgba(250,150,70," + 0.26 * g + ")"); gr.addColorStop(0.5, "rgba(246,120,50," + 0.09 * g + ")"); gr.addColorStop(1, "rgba(244,110,40,0)"); }
+        ctx.fillStyle = gr; ctx.fillRect(-R, -R, 2 * R, 2 * R);
+        ctx.restore();
+      };
+      F.draw = function () {
+        var k = F.k, i, a, r, lv = F.level;
+        if (!ramp || rampDark !== api.dark) build();
+        ctx.save();
+        if (api.dark) ctx.globalCompositeOperation = "lighter";
+        for (i = 0; i < bn; i++) {
+          a = ba[i] / bl[i]; r = bs[i] * (0.7 + 0.5 * a);
+          ctx.globalAlpha = (api.dark ? 0.15 : 0.13) * Math.sin(Math.PI * Math.min(1, a * 1.15)) * (1 - a * 0.5) * lv;
+          ctx.drawImage(body, bx[i] - r, by[i] - r, 2 * r, 2 * r);
+        }
+        // the small warm core, where the embers are born
+        var cr = F.band * k * 1.35 * F.flick;
+        ctx.globalAlpha = (api.dark ? 0.26 : 0.4) * lv;
+        ctx.drawImage(ramp[api.dark ? 2 : 1], F.x + F.ax * 2 * k - cr, F.y + F.ay * 2 * k - cr, 2 * cr, 2 * cr);
+        for (i = 0; i < n; i++) {
+          a = pa[i] / pl[i]; r = ps[i] * 2.6 * (1 - 0.35 * a);
+          ctx.globalAlpha = (api.dark ? 0.6 : 0.8) * Math.min(1, a * 12 + 0.2) * Math.pow(1 - a, 1.1) * (0.72 + 0.28 * Math.sin(pj[i] + pa[i] * 7)) * lv;
+          ctx.drawImage(ramp[Math.min(17, (a * 17.99) | 0)], px[i] - r, py[i] - r, 2 * r, 2 * r);
+        }
+        ctx.restore();
+      };
+      return F;
+    };
+
+    var t = 0, last = 0, raf = 0, seen = true, stopped = false;
+    function paint(dt) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
+      ctx.setTransform(S, 0, 0, S, OX, OY);
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      scene.draw(api, t, dt);
+    }
+    function still() { t = (scene.still || 6) - 2.5; for (var i = 0; i < 150; i++) { t += 1 / 60; paint(1 / 60); } }
+    function frame(now) {
+      if (stopped) return;
+      raf = requestAnimationFrame(frame);
+      if (!seen || document.hidden) { last = now; return; }
+      var dt = clamp((now - last) / 1000, 0, 0.05); last = now;
+      if (((now / 1000) | 0) !== (((now - dt * 1000) / 1000) | 0)) readGround();
+      resize(); t += dt; paint(dt);
+    }
+    readGround(); resize(); scene.init(api);
+    var ro = null, io = null;
+    if (reduce) {
+      still();
+      if (window.ResizeObserver) { ro = new ResizeObserver(function () { if (resize()) { readGround(); paint(0); } }); ro.observe(canvas); }
+    } else {
+      if (window.IntersectionObserver) { io = new IntersectionObserver(function (e) { seen = e[e.length - 1].isIntersecting; }); io.observe(canvas); }
+      last = performance.now(); raf = requestAnimationFrame(frame);
+    }
+    return function stop() { stopped = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); if (io) io.disconnect(); };
+  }
+
+  // An owned business, changing shape inside its ember outline, with a calm,
+  // warm flame at its heart. The outline makes room before the business grows.
+  var SETS = [[78, 64, 76, 66, 70, 82, 62, 72], [66, 78, 68, 80, 74, 64, 78, 62], [82, 68, 62, 72, 80, 70, 66, 78]];
+  function makeScene() { var F; return {
+    still: 6,
+    init: function (api) { F = api.fire(); F.x = 200; F.y = 198; F.k = 1.18; F.band = 19; F.rate = 420; F.haze = 28; },
+    draw: function (api, t, dt) {
+      var ctx = api.ctx, now = radiiAt(SETS, t, 3.6, 1.8), soon = radiiAt(SETS, t + 1.5, 3.6, 1.8), fit = [], i;
+      for (i = 0; i < now.length; i++) fit.push(Math.max(now[i], soon[i]));
+      var P = ringPts(200, 150, now), O = offsetPts(ringPts(200, 150, fit), 10);
+      F.update(dt, t);
+      blob(ctx, P); ctx.fillStyle = api.emberA(api.dark ? 0.07 : 0.07); ctx.fill();
+      ctx.save(); blob(ctx, P); ctx.clip(); F.drawGlow(86); ctx.restore();
+      blob(ctx, P); ctx.strokeStyle = api.ink; ctx.lineWidth = 1.7; ctx.stroke();
+      blob(ctx, O); ctx.strokeStyle = api.ember; ctx.lineWidth = 2.4; ctx.stroke();
+      F.draw();
+    }
+  }; }
+
+  window.flame2c = function (canvas) { return stage(canvas, makeScene()); };
+})();
+</script>
+<script>/* flame-3c-construction-lights.js
+   window.flame3c(canvas) draws into the given canvas and returns a function that stops it.
+   Self-contained: no imports, no network. The canvas's CSS colour is read as the ink:
+   a light ink means a dark ground. One still frame under prefers-reduced-motion. */
+(function () {
+  "use strict";
+  // ---- the fire: small embers in a curl-noise flow, after the original
+  // site's engine (original/assets/flame.js): the same noise, the same bell
+  // shaped base and the same soft sprites, turned down to a calm, warm burn.
+  var TAU = Math.PI * 2, EMBER = "#f4581f";
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function smooth(a, b, v) { var k = clamp((v - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); }
+  function mix(a, b, k) { return a + (b - a) * k; }
+
+  var PERM = new Uint8Array(512);
+  (function () {
+    var s = 1337, p = new Uint8Array(256), i;
+    function rnd() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }
+    for (i = 0; i < 256; i++) p[i] = i;
+    for (i = 255; i > 0; i--) { var j = (rnd() * (i + 1)) | 0, t = p[i]; p[i] = p[j]; p[j] = t; }
+    for (i = 0; i < 512; i++) PERM[i] = p[i & 255];
+  })();
+  function hash3(x, y, z) { return PERM[(PERM[(PERM[x & 255] + (y & 255)) & 255] + (z & 255)) & 255] / 255; }
+  function fade(t) { return t * t * (3 - 2 * t); }
+  function noise3(x, y, z) {
+    var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    var xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
+    var a = hash3(xi, yi, zi), b = hash3(xi + 1, yi, zi), c = hash3(xi, yi + 1, zi), d = hash3(xi + 1, yi + 1, zi);
+    var e = hash3(xi, yi, zi + 1), f = hash3(xi + 1, yi, zi + 1), g = hash3(xi, yi + 1, zi + 1), h = hash3(xi + 1, yi + 1, zi + 1);
+    var x0 = a + (b - a) * xf, x1 = c + (d - c) * xf, x2 = e + (f - e) * xf, x3 = g + (h - g) * xf;
+    var y0 = x0 + (x1 - x0) * yf, y1 = x2 + (x3 - x2) * yf;
+    return y0 + (y1 - y0) * zf;
+  }
+  function potential(x, y, t) {
+    return noise3(x, y, t) + noise3(x * 2.07, y * 2.07, t * 1.6) * 0.45 + Math.sin(x * 1.7 + t * 2.3) * 0.09 + Math.sin(y * 1.3 - t * 1.7) * 0.07;
+  }
+  var EPS = 0.09, curlOut = [0, 0];
+  function curl(x, y, t) {
+    curlOut[0] = (potential(x, y + EPS, t) - potential(x, y - EPS, t)) / (2 * EPS);
+    curlOut[1] = -(potential(x + EPS, y, t) - potential(x - EPS, y, t)) / (2 * EPS);
+  }
+  function bell() { return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; }
+
+  // ---- shapes, in the sketch's 400 by 300 units -------------------------
+  function ringPts(cx, cy, radii) {
+    var P = [], n = radii.length;
+    for (var i = 0; i < n; i++) { var a = (i / n) * TAU - Math.PI / 2; P.push([cx + radii[i] * Math.cos(a), cy + radii[i] * Math.sin(a)]); }
+    return P;
+  }
+  function offsetPts(P, d) {
+    var n = P.length, O = [];
+    for (var i = 0; i < n; i++) {
+      var a = P[(i - 1 + n) % n], b = P[(i + 1) % n], tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1;
+      O.push([P[i][0] + (ty / l) * d, P[i][1] - (tx / l) * d]);
+    }
+    return O;
+  }
+  function blob(ctx, P) {
+    var n = P.length;
+    ctx.beginPath(); ctx.moveTo(P[0][0], P[0][1]);
+    for (var i = 0; i < n; i++) {
+      var p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n];
+      ctx.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
+    }
+    ctx.closePath();
+  }
+  function mixRadii(a, b, k) { var r = []; for (var i = 0; i < a.length; i++) r.push(mix(a[i], b[i], k)); return r; }
+  // sets held for `hold` seconds each, then changed over `move`
+  function radiiAt(sets, t, hold, move) {
+    var per = hold + move, u = Math.max(0, t) / per, i = Math.floor(u) % sets.length, k = smooth(hold / per, 1, u - Math.floor(u));
+    return mixRadii(sets[i], sets[(i + 1) % sets.length], k);
+  }
+
+  function stage(canvas, scene) {
+    var ctx = canvas.getContext("2d");
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var W = 0, H = 0, S = 1, OX = 0, OY = 0;
+    var api = { ctx: ctx, dark: false, ink: "#14110f", ground: "#f6f1e8", ember: EMBER, inkA: function (a) { return api.dark ? "rgba(246,241,232," + a + ")" : "rgba(20,17,15," + a + ")"; }, emberA: function (a) { return "rgba(244,88,31," + a + ")"; } };
+
+    function readGround() {
+      var m = (getComputedStyle(canvas).color || "").match(/[\d.]+/g) || [20, 17, 15];
+      var dark = (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255 > 0.5;
+      api.dark = dark;
+      api.ink = "rgb(" + m[0] + "," + m[1] + "," + m[2] + ")";
+      api.ground = dark ? "#14110f" : "#f6f1e8";
+    }
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      var w = Math.max(1, Math.round((canvas.clientWidth || 400) * dpr)), h = Math.max(1, Math.round((canvas.clientHeight || 300) * dpr));
+      if (w === W && h === H) return false;
+      W = canvas.width = w; H = canvas.height = h;
+      S = Math.min(W / 400, H / 300); OX = (W - 400 * S) / 2; OY = (H - 300 * S) / 2;
+      return true;
+    }
+
+    // One calm fire, drawn the way the original site drew its flame: a loose
+    // column of small glowing embers over a faint body of haze, with a small
+    // warm core at the base. On a dark ground the embers add as light; on
+    // paper they are laid down as warm ink. Set x, y (the base), k (size: the
+    // flame is about 60k long), ax, ay (the way it burns; up by default),
+    // band (half width of the base), rate (embers a second) and level (0 to 1).
+    api.fire = function () {
+      var CAP = 900, n = 0, carry = 0;
+      var px = new Float32Array(CAP), py = new Float32Array(CAP), vx = new Float32Array(CAP), vy = new Float32Array(CAP);
+      var pa = new Float32Array(CAP), pl = new Float32Array(CAP), ps = new Float32Array(CAP), pj = new Float32Array(CAP);
+      var BC = 90, bn = 0, bcarry = 0;
+      var bx = new Float32Array(BC), by = new Float32Array(BC), bvx = new Float32Array(BC), bvy = new Float32Array(BC), ba = new Float32Array(BC), bl = new Float32Array(BC), bs = new Float32Array(BC);
+      var F = { x: 200, y: 200, k: 1, ax: 0, ay: -1, band: 8, rate: 150, haze: 16, level: 1, glow: 1, flick: 1 };
+      var ramp = null, body = null, rampDark = null;
+      function dot(r, g, b, soft) {
+        var c = document.createElement("canvas"); c.width = c.height = 48;
+        var q = c.getContext("2d"), gr = q.createRadialGradient(24, 24, 0, 24, 24, 24), rgb = Math.round(r) + "," + Math.round(g) + "," + Math.round(b);
+        if (soft) { gr.addColorStop(0, "rgba(" + rgb + ",1)"); gr.addColorStop(0.34, "rgba(" + rgb + ",0.72)"); gr.addColorStop(0.62, "rgba(" + rgb + ",0.3)"); gr.addColorStop(0.84, "rgba(" + rgb + ",0.07)"); }
+        else { gr.addColorStop(0, "rgba(" + rgb + ",1)"); gr.addColorStop(0.28, "rgba(" + rgb + ",0.55)"); gr.addColorStop(0.62, "rgba(" + rgb + ",0.14)"); }
+        gr.addColorStop(1, "rgba(" + rgb + ",0)");
+        q.fillStyle = gr; q.fillRect(0, 0, 48, 48);
+        return c;
+      }
+      function build() {
+        // an ember's colour as it cools: warm cream, amber, ember, deep red
+        var stops = api.dark
+          ? [[0, 255, 212, 150], [0.14, 255, 172, 88], [0.42, 244, 104, 40], [1, 150, 44, 14]]
+          : [[0, 252, 166, 62], [0.16, 246, 124, 36], [0.45, 232, 84, 24], [1, 176, 54, 18]];
+        ramp = [];
+        for (var i = 0; i < 18; i++) {
+          var h = i / 17, k = 0;
+          while (k < stops.length - 2 && h > stops[k + 1][0]) k++;
+          var a = stops[k], b = stops[k + 1], u = clamp((h - a[0]) / (b[0] - a[0]), 0, 1);
+          ramp.push(dot(mix(a[1], b[1], u), mix(a[2], b[2], u), mix(a[3], b[3], u), false));
+        }
+        body = api.dark ? dot(236, 86, 30, true) : dot(246, 122, 44, true);
+        rampDark = api.dark;
+      }
+      F.update = function (dt, t) {
+        var k = F.k, i, lx = -F.ay, ly = F.ax;   // lx, ly: across the flame
+        carry += F.rate * F.level * dt;
+        while (carry >= 1) {
+          carry -= 1;
+          if (n >= CAP) continue;
+          i = n++;
+          var off = bell() * F.band * k, al = (Math.random() - 0.3) * 5 * k, go = (18 + Math.random() * 30) * k, jit = (Math.random() - 0.5) * 14 * k;
+          px[i] = F.x + off * lx + al * F.ax; py[i] = F.y + off * ly + al * F.ay;
+          vx[i] = go * F.ax + jit * lx; vy[i] = go * F.ay + jit * ly;
+          pa[i] = 0; pl[i] = 1.25 * (0.4 + Math.random() * 1.0);
+          ps[i] = (0.7 + Math.random() * Math.random() * 1.7) * Math.pow(k, 0.55); pj[i] = Math.random() * TAU;
+        }
+        bcarry += F.haze * F.level * dt;
+        while (bcarry >= 1) {
+          bcarry -= 1;
+          if (bn >= BC) continue;
+          i = bn++;
+          var bo = bell() * F.band * k * 0.8, bg = (14 + Math.random() * 16) * k;
+          bx[i] = F.x + bo * lx; by[i] = F.y + bo * ly; bvx[i] = bg * F.ax; bvy[i] = bg * F.ay;
+          ba[i] = 0; bl[i] = 1.5 * (0.6 + Math.random() * 0.8); bs[i] = (9 + Math.random() * 7) * k;
+        }
+        var ns = 0.024 / k, drag = Math.exp(-1.5 * dt), a, up, lat, pull;
+        for (i = 0; i < n; i++) {
+          pa[i] += dt;
+          if (pa[i] >= pl[i]) { n--; px[i] = px[n]; py[i] = py[n]; vx[i] = vx[n]; vy[i] = vy[n]; pa[i] = pa[n]; pl[i] = pl[n]; ps[i] = ps[n]; pj[i] = pj[n]; i--; continue; }
+          a = pa[i] / pl[i];
+          curl(px[i] * ns, py[i] * ns, t * 0.42);
+          lat = (px[i] - F.x) * lx + (py[i] - F.y) * ly;
+          pull = -lat * (0.25 + 2.6 * a * a); up = 150 * k * (1 - a * 0.6);
+          vx[i] += (curlOut[0] * 58 * k * (1 - a * 0.6) + pull * lx + up * F.ax) * dt;
+          vy[i] += (curlOut[1] * 38 * k * (1 - a * 0.6) + pull * ly + up * F.ay) * dt;
+          vx[i] *= drag; vy[i] *= drag;
+          px[i] += vx[i] * dt; py[i] += vy[i] * dt;
+        }
+        for (i = 0; i < bn; i++) {
+          ba[i] += dt;
+          if (ba[i] >= bl[i]) { bn--; bx[i] = bx[bn]; by[i] = by[bn]; bvx[i] = bvx[bn]; bvy[i] = bvy[bn]; ba[i] = ba[bn]; bl[i] = bl[bn]; bs[i] = bs[bn]; i--; continue; }
+          a = ba[i] / bl[i];
+          curl(bx[i] * ns * 0.7, by[i] * ns * 0.7, t * 0.3);
+          lat = (bx[i] - F.x) * lx + (by[i] - F.y) * ly;
+          bvx[i] += (curlOut[0] * 12 * k - lat * 0.7 * lx + 80 * k * (1 - a * 0.7) * F.ax) * dt;
+          bvy[i] += (curlOut[1] * 8 * k - lat * 0.7 * ly + 80 * k * (1 - a * 0.7) * F.ay) * dt;
+          bvx[i] *= drag; bvy[i] *= drag;
+          bx[i] += bvx[i] * dt; by[i] += bvy[i] * dt;
+        }
+        // a slow breath, never a strobe
+        F.flick = 0.9 + 0.1 * noise3(t * 0.9, F.x * 0.1, 7.3) + 0.03 * Math.sin(t * 5.1);
+      };
+      // the warmth it throws, drawn before whatever it should fall on
+      F.drawGlow = function (r) {
+        var g = F.glow * F.level * F.flick, R = (r || 70) * F.k;
+        if (g <= 0.01) return;
+        ctx.save();
+        ctx.translate(F.x + F.ax * 24 * F.k, F.y + F.ay * 24 * F.k);
+        var gr = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+        if (api.dark) { ctx.globalCompositeOperation = "lighter"; gr.addColorStop(0, "rgba(244,104,40," + 0.17 * g + ")"); gr.addColorStop(0.5, "rgba(214,78,26," + 0.06 * g + ")"); gr.addColorStop(1, "rgba(200,70,24,0)"); }
+        else { gr.addColorStop(0, "rgba(250,150,70," + 0.26 * g + ")"); gr.addColorStop(0.5, "rgba(246,120,50," + 0.09 * g + ")"); gr.addColorStop(1, "rgba(244,110,40,0)"); }
+        ctx.fillStyle = gr; ctx.fillRect(-R, -R, 2 * R, 2 * R);
+        ctx.restore();
+      };
+      F.draw = function () {
+        var k = F.k, i, a, r, lv = F.level;
+        if (!ramp || rampDark !== api.dark) build();
+        ctx.save();
+        if (api.dark) ctx.globalCompositeOperation = "lighter";
+        for (i = 0; i < bn; i++) {
+          a = ba[i] / bl[i]; r = bs[i] * (0.7 + 0.5 * a);
+          ctx.globalAlpha = (api.dark ? 0.15 : 0.13) * Math.sin(Math.PI * Math.min(1, a * 1.15)) * (1 - a * 0.5) * lv;
+          ctx.drawImage(body, bx[i] - r, by[i] - r, 2 * r, 2 * r);
+        }
+        // the small warm core, where the embers are born
+        var cr = F.band * k * 1.35 * F.flick;
+        ctx.globalAlpha = (api.dark ? 0.26 : 0.4) * lv;
+        ctx.drawImage(ramp[api.dark ? 2 : 1], F.x + F.ax * 2 * k - cr, F.y + F.ay * 2 * k - cr, 2 * cr, 2 * cr);
+        for (i = 0; i < n; i++) {
+          a = pa[i] / pl[i]; r = ps[i] * 2.6 * (1 - 0.35 * a);
+          ctx.globalAlpha = (api.dark ? 0.6 : 0.8) * Math.min(1, a * 12 + 0.2) * Math.pow(1 - a, 1.1) * (0.72 + 0.28 * Math.sin(pj[i] + pa[i] * 7)) * lv;
+          ctx.drawImage(ramp[Math.min(17, (a * 17.99) | 0)], px[i] - r, py[i] - r, 2 * r, 2 * r);
+        }
+        ctx.restore();
+      };
+      return F;
+    };
+
+    var t = 0, last = 0, raf = 0, seen = true, stopped = false;
+    function paint(dt) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
+      ctx.setTransform(S, 0, 0, S, OX, OY);
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      scene.draw(api, t, dt);
+    }
+    function still() { t = (scene.still || 6) - 2.5; for (var i = 0; i < 150; i++) { t += 1 / 60; paint(1 / 60); } }
+    function frame(now) {
+      if (stopped) return;
+      raf = requestAnimationFrame(frame);
+      if (!seen || document.hidden) { last = now; return; }
+      var dt = clamp((now - last) / 1000, 0, 0.05); last = now;
+      if (((now / 1000) | 0) !== (((now - dt * 1000) / 1000) | 0)) readGround();
+      resize(); t += dt; paint(dt);
+    }
+    readGround(); resize(); scene.init(api);
+    var ro = null, io = null;
+    if (reduce) {
+      still();
+      if (window.ResizeObserver) { ro = new ResizeObserver(function () { if (resize()) { readGround(); paint(0); } }); ro.observe(canvas); }
+    } else {
+      if (window.IntersectionObserver) { io = new IntersectionObserver(function (e) { seen = e[e.length - 1].isIntersecting; }); io.observe(canvas); }
+      last = performance.now(); raf = requestAnimationFrame(frame);
+    }
+    return function stop() { stopped = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); if (io) io.disconnect(); };
+  }
+
+  // The mark as a construction drawing that draws itself in thin ink and is
+  // inked and filled in ember. Then its spark becomes a small, gentle flame.
+  var RING = new Path2D("M44.55 19.07A21 21 0 1 0 44.55 44.93L36.83 41.81A13.2 13.2 0 1 1 36.83 22.19Z");
+  var SPARK = new Path2D("M45.04 27.44C48.27 24.22 51.63 24.75 56.33 24.49C54.78 26.84 54.38 28.85 54.18 30.67C55.19 30.46 56.13 30.06 57 29.32C56.46 31.88 55.66 34.16 53.91 35.91C51.16 38.66 47.33 38.73 44.91 36.31C42.49 33.89 42.22 30.26 45.04 27.44Z");
+  var T = 17, s = 3.4, cx = 160, cy = 150, MX = 27.9, MY = 32, ro = 21 * s, ri = 13.2 * s;
+  function X(x) { return cx + (x - MX) * s; }
+  function Y(y) { return cy + (y - MY) * s; }
+  function seg(v, a, b) { return clamp((v - a) / (b - a), 0, 1); }
+  function ease(k) { return k * k * (3 - 2 * k); }
+  function makeScene() { var F; return {
+    still: 12,
+    init: function (api) { F = api.fire(); F.x = X(46.9); F.y = Y(34.2); F.ax = 0.7; F.ay = -0.714; F.k = 0.74; F.band = 12; F.rate = 230; F.haze = 18; F.level = 0; },
+    draw: function (api, t, dt) {
+      var ctx = api.ctx, q = t % T, G = seg(q, 0, 0.5) * (1 - seg(q, 15.4, 16.4)), c45 = Math.SQRT1_2, p;
+      var burn = ease(seg(q, 7, 9)) * (1 - ease(seg(q, 14, 15.4)));
+      F.level = burn;
+      F.update(dt, t);
+      ctx.save(); ctx.globalAlpha = G;
+      ctx.strokeStyle = api.inkA(0.4); ctx.lineWidth = 0.8;
+      ctx.setLineDash([14, 3, 2, 3]); ctx.beginPath(); ctx.moveTo(cx - 104, cy); ctx.lineTo(312, cy); ctx.moveTo(cx, cy - 100); ctx.lineTo(cx, cy + 100); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = api.inkA(0.62);
+      p = ease(seg(q, 0.4, 2.2)); if (p > 0) { ctx.beginPath(); ctx.arc(cx, cy, ro, -Math.PI / 2, -Math.PI / 2 + TAU * p); ctx.stroke(); }
+      p = ease(seg(q, 1.1, 2.7)); if (p > 0) { ctx.beginPath(); ctx.arc(cx, cy, ri, -Math.PI / 2, -Math.PI / 2 + TAU * p); ctx.stroke(); }
+      var ax = X(12.56), far = 300, dy = (far - ax) * Math.tan(22 * Math.PI / 180);
+      p = ease(seg(q, 2.3, 3.5)); if (p > 0) { ctx.beginPath(); ctx.moveTo(ax, cy); ctx.lineTo(ax + (far - ax) * p, cy - dy * p); ctx.moveTo(ax, cy); ctx.lineTo(ax + (far - ax) * p, cy + dy * p); ctx.stroke(); }
+      p = seg(q, 2.9, 3.5); if (p > 0) { ctx.globalAlpha = G * p; ctx.setLineDash([8, 3, 2, 3]); ctx.beginPath(); ctx.moveTo(X(41), Y(40.4)); ctx.lineTo(X(60.5), Y(20.4)); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.globalAlpha = G; F.drawGlow(74);
+      // the mark, outlined and then filled; the drawn spark thins as it catches
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(s, s); ctx.translate(-MX, -MY);
+      ctx.lineWidth = 0.62; ctx.strokeStyle = api.ember; ctx.fillStyle = api.ember;
+      p = seg(q, 5.4, 6.3); if (p > 0) { ctx.globalAlpha = G * p * 0.93; ctx.fill(RING); }
+      p = ease(seg(q, 3.9, 5.6)); if (p > 0) { ctx.globalAlpha = G; ctx.setLineDash([190 * p, 400]); ctx.stroke(RING); }
+      p = seg(q, 6.3, 6.8); if (p > 0) { ctx.globalAlpha = G * p * (1 - 0.82 * burn); ctx.fill(SPARK); }
+      p = ease(seg(q, 5.6, 6.4)); if (p > 0) { ctx.globalAlpha = G * (1 - burn); ctx.setLineDash([46 * p, 400]); ctx.stroke(SPARK); }
+      ctx.restore();
+      p = seg(q, 3.3, 3.9);
+      if (p > 0) {
+        ctx.globalAlpha = G * p; ctx.strokeStyle = api.ink; ctx.fillStyle = api.ink; ctx.lineWidth = 0.8; ctx.setLineDash([]);
+        var e = (ro + 16) * c45;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - e, cy - e); ctx.moveTo(cx, cy); ctx.lineTo(cx - e, cy + e);
+        var ox = cx - ro * c45, oy = cy - ro * c45, ix = cx - ri * c45, iy = cy + ri * c45;
+        ctx.moveTo(ox + 7, oy + 2.2); ctx.lineTo(ox, oy); ctx.lineTo(ox + 2.2, oy + 7); ctx.moveTo(ix + 7, iy - 2.2); ctx.lineTo(ix, iy); ctx.lineTo(ix + 2.2, iy - 7); ctx.stroke();
+        ctx.beginPath(); ctx.arc(ax, cy, 34, -0.384, 0.384); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, 1.8, 0, TAU); ctx.fill();
+        ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+        ctx.textAlign = "right"; ctx.fillText("R21", cx - e - 4, cy - e - 2); ctx.fillText("R13.2", cx - e - 4, cy + e + 10);
+        ctx.textAlign = "left"; ctx.fillText("44°", ax + 39, cy - 4); ctx.fillText("45°", X(47.5), Y(45.5));
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      F.draw();
+    }
+  }; }
+
+  window.flame3c = function (canvas) { return stage(canvas, makeScene()); };
+})();
+</script>
+<script>
+document.querySelectorAll("canvas.fire").forEach(function (c) { try { window[c.dataset.f](c); } catch (e) { console.error(e); } });
+</script>
+<script>
+(function () {
+  var picks = {};
+  var KEY = "chama-shape-picks-3";
+  try { picks = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+  var cards = document.querySelectorAll(".card");
+  var out = document.getElementById("picks"), note = document.getElementById("note");
+  function render() {
+    var lines = [];
+    cards.forEach(function (c) { var id = c.dataset.id; lines.push(id + ": " + (picks[id] || "-")); });
+    if (note.value.trim()) lines.push("Notes: " + note.value.trim());
+    out.value = lines.join("\n");
+    try { localStorage.setItem(KEY, JSON.stringify(picks)); } catch (e) {}
+  }
+  cards.forEach(function (c) {
+    var box = c.querySelector(".pick"), id = c.dataset.id;
+    ["yes", "maybe", "no"].forEach(function (v) {
+      var b = document.createElement("button");
+      b.type = "button"; b.dataset.v = v; b.textContent = v[0].toUpperCase() + v.slice(1);
+      b.setAttribute("aria-pressed", picks[id] === v ? "true" : "false");
+      b.addEventListener("click", function () {
+        picks[id] = picks[id] === v ? undefined : v;
+        box.querySelectorAll("button").forEach(function (o) { o.setAttribute("aria-pressed", picks[id] === o.dataset.v ? "true" : "false"); });
+        render();
+      });
+      box.appendChild(b);
+    });
+  });
+  note.addEventListener("input", render);
+  document.getElementById("copy").addEventListener("click", function () {
+    var done = document.getElementById("copied");
+    navigator.clipboard.writeText(out.value).then(function () { done.textContent = "Copied"; }, function () { out.select(); done.textContent = "Selected, press copy"; });
+  });
+  render();
+})();
+</script>

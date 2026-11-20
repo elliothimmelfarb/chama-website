@@ -524,7 +524,7 @@ html[data-motion="low"] [data-stage-action] { display: none; }
 
 /* ---- the figure language ------------------------------------------------ */
 /* Every figure is an .fx: an inline .fx-svg whose protagonist and cast are
-   drawn on five layers (floor shadow, body, ink, halo, ember fit) in the
+   drawn on its layers (body, ink, halo, ember boundary and its ticks) in the
    colours of tokens.css section 4, with HTML labels placed over it (.fx-lb;
    their type is base.css's). site/figures/kit.js writes the parts; this is
    how they are painted. Strokes on paths with pathLength cannot use
@@ -542,10 +542,15 @@ html[data-motion="low"] [data-stage-action] { display: none; }
 .fx-s-owned { stop-color: var(--fx-owned); }
 .fx-s-shadow { stop-color: var(--fx-shadow); }
 .fx-s-clear { stop-color: var(--fx-shadow); stop-opacity: 0; }
-.fx-body, .fx-floor { stroke: none; }
+.fx-floor { stroke: none; }
+.fx-body { fill: var(--fx-body); stroke: none; }
+.fx-body.is-owned { fill: var(--fx-owned); }
 .fx-ink { fill: none; stroke: var(--fx-ink); stroke-width: calc(1.75px * var(--sw)); stroke-linejoin: round; stroke-linecap: round; }
 .fx-halo { fill: none; stroke: var(--fx-halo); stroke-width: calc(7px * var(--sw)); stroke-linejoin: round; }
 .fx-fit { fill: none; stroke: var(--accent); stroke-width: calc(2.5px * var(--sw)); stroke-linejoin: round; stroke-linecap: round; }
+.fx-ticks { fill: none; stroke: var(--accent); stroke-width: calc(1.25px * var(--sw)); stroke-linecap: round; }
+/* a ripple grows by scale, so its line is non-scaling: 1px at any size */
+.fx-ripple { fill: none; stroke: var(--fx-ink); stroke-width: 1px; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; }
 .fx-tinted { fill: var(--fx-tint); }
 .fx-plat { fill: var(--fx-platform); stroke: none; }
 .fx-ring { fill: none; stroke: var(--fx-ink); stroke-opacity: 0.45; stroke-width: calc(1.25px * var(--sw)); stroke-dasharray: 1.5 6; stroke-linecap: round; }

@@ -10,7 +10,7 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `site/pages/<id>.js` | Each page as a function that returns the whole document. Small page-only styles sit in the page's own `<style>`. |
 | `site/content/en/<id>.js` | Each page's words, kept apart from its markup. `common.js` holds the header, menu, footer and Talk to us words; `talk.js` the chat widget's. |
 | `site/parts/` | What pages share: `chrome.js` (head, header, menu, Display popover, Talk to us field, footer, `page()`), `boot.js` (the snippet that sets theme and motion before the first paint), `logos.js` (client and partner logos). |
-| `site/figures/` | The inline SVG figures, drawn from `--p`. `kit.js` holds what they share: the `--p` timing helpers, the pentagon's geometry and `subject()`, the protagonist on its five layers. |
+| `site/figures/` | The inline SVG figures, drawn from `--p`. `kit.js` holds what they share: the `--p` timing helpers, the business's irregular shape (`BUSINESS`, nine points) and its geometry, `subject()` (the business drawn flat with its ember boundary and survey ticks, and optionally growing), `ripple()` and `morph()`. `survey.js` is the first picture on `/engineering-department`, `loop.js` its loop, and `stage.js` home's opening stage. A path that changes shape carries `data-morph`, which `worlds.js` turns into its `d` wherever it writes `--p`. |
 | `site/html.js` | The `html` tag every page is written with. Copy is escaped; `inline()` allows only `*emphasis*` and `[links](/path)`. |
 | `site/machine.js` | `sitemap.xml`, `llms.txt` and `llms-full.txt`, built from the same pages and copy as the HTML, and the one-line company `SUMMARY` they open with. |
 | `scripts/build.js` | Writes the pages, sitemap and llms files from `site/`. |
@@ -287,7 +287,7 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 | `test/build.test.js` | Every generated file is exactly what the build makes, and the build is deterministic. |
 | `test/site.test.js` | Every page exists and asks no other host for anything, sets theme and motion before any stylesheet, keeps the brand rules above, has its own title, description and canonical; the sitemap lists exactly the indexable pages; no colour outside `tokens.css`; every old address redirects to a real page in one step; `/hearth` routing; the media kit's files exist. |
 | `test/engine.test.js` | The engine's contracts (see `pages.md` in the skill). `test/fixtures/engine.html` exercises them in a browser. |
-| `test/figures.test.js` | The figure kit's helpers and protagonist, complete at `--p` 1, no figure keeping its own copies, and `[data-p]` only on leaves or groups of at most three. `test/fixtures/figure.html` shows the language on the real engine. |
+| `test/figures.test.js` | The figure kit's helpers and protagonist, complete at `--p` 1, the `data-morph` format against the engine's own reader, a business only growing into room its boundary has already made, no figure keeping its own copies, and `[data-p]` only on leaves or groups of at most three. `test/fixtures/figure.html` shows the language on the real engine. |
 | `test/talk.test.js` | The chat widget's decisions, and its words against `site/content/en/`. |
 | `test/html.test.js` | The `html` tag escapes copy and `inline()` links only to this site. |
 | `test/site-pages.test.js` | The chat's page list agrees with what is served. |

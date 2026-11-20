@@ -5,7 +5,7 @@
 // and each part's inline style turns --p into its own draw, so seeking,
 // pausing and the low motion stills all come from the one clock.
 import { html, raw } from "../html.js";
-import { c, ss, out, n } from "./kit.js";
+import { c, ss, out, n, shape, blob, curve, offset, morph, ripple, BUSINESS } from "./kit.js";
 
 // 1.4s to start reading, 0.35s a word, never under 3.2s.
 export const readingTime = (say) => Math.max(3.2, 1.4 + 0.35 * say.trim().split(/\s+/).length);
@@ -82,9 +82,10 @@ SCENES.push({
   ink: [{ d: `M342 198 V168 L360 152 L378 168 V198 Z`, a: 0.1, dur: 0.7 }],
   loop: true,
 });
-// 5. Fits your process: three steps, the line traced snug round them, then
-// the steps change and the line changes with them.
-SCENES.push({ steps: true });
+// 5. Fits your process: a business, boxes tried on it that do not fit, then
+// the line goes once round it; the business asks for room, the line makes
+// it, and the business grows into it.
+SCENES.push({ fits: true });
 // 6. A phone, a computer, the cloud: one stroke draws all three.
 {
   const phone = `H150 V200 Q150 190 160 190 H188 Q198 190 198 200 V${Y}`;
@@ -121,24 +122,26 @@ SCENES.push({
   });
 }
 
-// The steps of scene 5: three blocks whose heights change from A to B, and
-// the line 9 units outside them. The line's corners move as straight
-// segments (a unit line placed and stretched), so it stays one crisp
-// line while the blocks change under it.
-const SX = [214, 270, 350, 436], G = 9, HA = [64, 112, 82], HB = [64, 84, 132];
-const stepLine = (H) => {
-  let d = `M${L} ${Y} H${SX[0] - G} V${Y - H[0] - G}`;
-  for (let k = 0; k < 3; k++) {
-    const next = k < 2 ? Y - H[k + 1] - G : Y;
-    const off = k < 2 ? G * Math.max(-1, Math.min(1, (H[k + 1] - H[k]) / -14)) : G;
-    d += ` H${SX[k + 1] + off} V${next}`;
-  }
-  return `${d} H${R}`;
-};
-// the corners of the line between the first block's top and the ground on
-// the right, at A and at B: [x of the rise to block 2, y of block 2's top,
-// x of the rise to block 3, y of block 3's top]
-const corner = (H) => [SX[1] - G, Y - H[1] - G, SX[2] + G * Math.max(-1, Math.min(1, (H[2] - H[1]) / -14)), Y - H[2] - G];
+// Scene 5's business (kit.js, BUSINESS) before and after it grows to the
+// right, and the line round it: in along the ground, up to the business's
+// foot, once round it against the clock, across its own start and back down
+// to the ground. The line is one curve through the same points both times,
+// so it loosens where the business will grow and stays one line.
+const FITS = (() => {
+  const C = [372, 166], S = 70, GAP = 13;
+  const before = BUSINESS.map((r, i) => (i === 2 || i === 3 ? 0.8 : r));
+  const pts = [before, BUSINESS].map((radii) => shape(S, radii).map(([x, y]) => [x + C[0], y + C[1]]));
+  const round = (p) => {
+    const o = offset(p, GAP), foot = o[4];
+    return curve([[L, Y], [160, Y], [230, Y], [272, Y - 8], [foot[0] - 24, foot[1] + 18], o[3], o[2], o[1], o[0], o[8], o[7], o[6], o[5], [foot[0] + 8, foot[1] + 4], [470, Y - 6], [540, Y], [590, Y], [R, Y]]);
+  };
+  return {
+    body: pts.map((p) => blob(p, 1)), line: pts.map(round),
+    // where it asks: on its right side, between the points that will move
+    ask: [(pts[0][2][0] + pts[0][3][0]) / 2, (pts[0][2][1] + pts[0][3][1]) / 2],
+    boxes: [[C[0] - 56, C[1] - 52, 108, 108], [C[0] - 88, C[1] - 4, 60, 58]],
+  };
+})();
 
 // ---- the choreography, as styles read from --p --------------------------------
 export function stage({ label, beats }) {
@@ -180,12 +183,13 @@ export function stage({ label, beats }) {
   // and fades as it goes, so two finished drawings never share the sheet
   const lineGone = (i) => (i === last ? "1" : `(1 - ${C(end(i), end(i) + 0.45)})`);
   // off: when the line runs off, if not at its scene's end
-  const ember = (i, d, x, y, off) => [
-    path("stage-em", d, `opacity:calc(${C(x, x + 0.06)} * ${off ? `(1 - ${C(off + 0.8, off + 0.82)})` : lineGone(i)});stroke-dashoffset:calc(1 - ${E(x, y)}${off ? ` - ${S(off, off + 0.8)}` : runOff(i)})`, ` pathLength="1"`),
+  // more: other attributes of the line itself (a shape that changes)
+  const ember = (i, d, x, y, off, more = "") => [
+    path("stage-em", d, `opacity:calc(${C(x, x + 0.06)} * ${off ? `(1 - ${C(off + 0.8, off + 0.82)})` : lineGone(i)});stroke-dashoffset:calc(1 - ${E(x, y)}${off ? ` - ${S(off, off + 0.8)}` : runOff(i)})`, ` pathLength="1"${more}`),
     // the pen: a nib at the drawing end while it draws, drawn as the round
     // cap of a dash too short to see (an offset-path on a path this long
     // cost Chrome more than a frame in every style pass)
-    path("stage-nib", d, `opacity:calc(${C(x, x + 0.08)} * (1 - ${C(y - 0.02, y + 0.3)}));stroke-dashoffset:calc(-1 * ${E(x, y)})`, ` pathLength="1"`),
+    path("stage-nib", d, `opacity:calc(${C(x, x + 0.08)} * (1 - ${C(y - 0.02, y + 0.3)}));stroke-dashoffset:calc(-1 * ${E(x, y)})`, ` pathLength="1"${more}`),
   ].join("");
 
   const parts = [];
@@ -217,29 +221,19 @@ export function stage({ label, beats }) {
       parts.push(path("stage-nib stage-dot", ring, `opacity:calc(${C(x, x + 0.1)} * ${gone(i)});stroke-dashoffset:calc(-1 * ${S(x, y)})`, ` pathLength="1"`));
       sc.passes = passes;
     }
-    if (sc.steps) {
-      const m = S(starts[i] + 2.0, starts[i] + 2.9);
-      const swap = starts[i] + 1.95;
-      // the blocks, which keep their stroke as they stretch
-      HA.forEach((h, k) => parts.push(`<rect class="stage-block" data-p x="${SX[k] + 3}" y="${Y - h}" width="${SX[k + 1] - SX[k] - 6}" height="${h}" style="${shown(i, 0)};transform-box:fill-box;transform-origin:bottom;scale:1 calc(1 + ${n(HB[k] / h - 1)} * ${m})"/>`));
-      // the line as drawn, until the steps change
-      parts.push(path("stage-em", stepLine(HA), `opacity:calc(${C(starts[i] - 0.35, starts[i] - 0.29)} * (1 - ${C(swap, swap + 0.02)}));stroke-dashoffset:calc(1 - ${S(starts[i] - 0.35, starts[i] + 1.5)})`, ` pathLength="1"`));
-      // then the same line in pieces: the ends that never move, and five
-      // straight runs placed and stretched as the steps change
-      const [ax, ay, bx, by] = corner(HA), [, ay2, bx2, by2] = corner(HB);
-      const on = `opacity:calc(${C(swap, swap + 0.02)} * ${gone(i)})`;
-      parts.push(path("stage-em", `M${L} ${Y} H${SX[0] - G} V${Y - HA[0] - G} H${ax} M${SX[3] + G} ${Y} H${R}`, on));
-      const lin = (a, b) => `calc(${a}px + ${n(b - a)}px * ${m})`;
-      const num = (a, b) => `calc(${a} + ${n(b - a)} * ${m})`;
-      const y0 = Y - HA[0] - G, xe = SX[3] + G;
-      const runs = [
-        [`M0 0 V1`, `${ax}px ${y0}px`, `1 ${num(ay - y0, ay2 - y0)}`],
-        [`M0 0 H1`, `${ax}px ${lin(ay, ay2)}`, `${num(bx - ax, bx2 - ax)} 1`],
-        [`M0 0 V1`, `${lin(bx, bx2)} ${lin(ay, ay2)}`, `1 ${num(by - ay, by2 - ay2)}`],
-        [`M0 0 H1`, `${lin(bx, bx2)} ${lin(by, by2)}`, `${num(xe - bx, xe - bx2)} 1`],
-        [`M0 0 V1`, `${xe}px ${lin(by, by2)}`, `1 ${num(Y - by, Y - by2)}`],
-      ];
-      runs.forEach(([d, tr, sc2]) => parts.push(path("stage-em stage-run", d, `${on};translate:${tr};scale:${sc2}`)));
+    if (sc.fits) {
+      const t0 = early(i), sec = (a) => t0 + a;
+      // the business, then the boxes tried on it, which go as the line comes
+      const grows = [[at(sec(3.45)), 0], [at(sec(3.85)), 1]], room = [[at(sec(3.1)), 0], [at(sec(3.4)), 1]];
+      // the ask: three rings from its right side. They are drawn first, under
+      // a fill of the ground's own colour, so they show only outside the business
+      parts.push(ripple(FITS.ask, at(sec(2.75)), at(sec(3.4)), 26));
+      parts.push(path("stage-cover", FITS.body[1], shown(i, 0, 0.3), ` data-morph="${morph(grows, FITS.body)}"`));
+      parts.push(path("stage-tone", FITS.body[1], shown(i, 0.3, 0.6), ` data-morph="${morph(grows, FITS.body)}"`));
+      parts.push(path("stage-ink", FITS.body[1], `opacity:calc(${C(sec(0), sec(0.06))} * ${gone(i)});stroke-dashoffset:calc(1 - ${S(sec(0), sec(0.9))})`, ` pathLength="1" data-morph="${morph(grows, FITS.body)}"`));
+      FITS.boxes.forEach(([x, y, w, h], k) => parts.push(`<rect class="stage-ink2 stage-tried" data-p x="${x}" y="${y}" width="${w}" height="${h}" style="opacity:calc(${C(sec(0.8 + 0.4 * k), sec(1.1 + 0.4 * k))} * (1 - ${C(sec(1.7), sec(2.0))}))"/>`));
+      const [x, y] = [sec(1.5), sec(2.8)];
+      parts.push(ember(i, FITS.line[1], x, y, 0, ` data-morph="${morph(room, FITS.line)}"`));
     }
     // a scene drawn small on the sheet is scaled up about its ground; its
     // strokes keep their widths through --zs
@@ -323,12 +317,11 @@ const CSS = `
 .stage-fig .stage-dot { stroke-width: calc(15px * var(--sw) / var(--zs, 1)); }
 .stage-guide { stroke-dasharray: 2 5; }
 .stage-em { stroke: var(--accent); stroke-width: calc(3.25px * var(--sw) / var(--zs, 1)); }
-/* the steps' moving runs are stretched, so their stroke is non-scaling, at
-   the width the line's other pieces have at this size of the box */
-.stage-fig .stage-run { stroke-width: calc(3.25 * var(--sw) * 100cqw / ${VB[2]}); vector-effect: non-scaling-stroke; stroke-linecap: square; }
+.stage-tried { stroke-dasharray: 6 5; }
+.stage-fig .fx-ripple { stroke: var(--fg); stroke-width: 1.4px; }
+.stage-fig .stage-cover { fill: var(--ground, var(--bg)); stroke: none; }
 .stage-fig .stage-tone { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: none; }
 .stage-fig .stage-dotfill { fill: var(--fg); stroke: none; }
-.stage-fig .stage-block { fill: color-mix(in srgb, var(--fg) 7%, transparent); stroke: var(--fg); stroke-width: 1.6px; vector-effect: non-scaling-stroke; }
 .stage-node { fill: color-mix(in srgb, var(--accent) calc(var(--on) * 100%), var(--ground, var(--bg))); stroke: color-mix(in srgb, var(--accent) calc(var(--on) * 100%), var(--fg)); stroke-width: 1.6px; vector-effect: non-scaling-stroke; }
 .stage-lb { position: absolute; translate: -50% -50%; font: 600 var(--t-label)/1.15 var(--text); white-space: nowrap; color: color-mix(in srgb, var(--fg) calc(var(--on) * 100%), var(--fg-2)); }
 .stage-lb1 { translate: 0 -50%; }

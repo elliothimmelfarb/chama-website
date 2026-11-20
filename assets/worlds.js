@@ -19,6 +19,7 @@
    and [data-p] elements are shown complete.
 
    A [data-stage] plays --p from time instead of scroll (see "stages").
+   A [data-p][data-morph] path also changes shape with --p (see "shapes").
 
    --p is registered with an initial value of 1 (worlds.css), so a figure
    drawn from var(--p) is complete wherever nothing writes it: without
@@ -57,6 +58,47 @@
   function clamp(x, a, b) { if (a === undefined) { a = 0; b = 1; } return x < a ? a : x > b ? b : x; }
   function sm(a, b, x) { var t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
   function round3(v) { return Math.round(v * 1000) / 1000; }
+
+  // ---- shapes: paths that change shape with --p ----------------------------------
+  // CSS cannot write a path's d from a number (Safari has no d property at
+  // all), so a [data-p] path with data-morph="p:i p:i ...|d0|d1|..." gets
+  // its d here, wherever its --p is written. Each "p:i" says shape i stands
+  // at progress p; between two it eases from one to the other. The shapes
+  // share one run of commands and differ only in their numbers. The d in
+  // the HTML is the last shape, which is what shows wherever nothing
+  // writes --p.
+  var NUM = /-?\d+(?:\.\d+)?/g, morphs = {};
+  function morphOf(el) {
+    if (el._morph !== undefined) return el._morph;
+    var src = el.getAttribute("data-morph");
+    if (!src) return (el._morph = null);
+    if (!morphs[src]) {
+      var parts = src.split("|");
+      morphs[src] = {
+        keys: parts[0].split(" ").map(function (k) { var a = k.split(":"); return { p: +a[0], i: +a[1] }; }),
+        ds: parts.slice(1), cut: parts[1].split(NUM),
+        nums: parts.slice(1).map(function (d) { return (d.match(NUM) || []).map(Number); })
+      };
+    }
+    return (el._morph = morphs[src]);
+  }
+  function shapeAt(M, p) {
+    var K = M.keys, k = 0;
+    while (k < K.length - 1 && K[k + 1].p <= p) k++;
+    if (k === K.length - 1 || p <= K[k].p || K[k].i === K[k + 1].i) return M.ds[K[k].i];
+    var A = M.nums[K[k].i], B = M.nums[K[k + 1].i], t = sm(K[k].p, K[k + 1].p, p), d = M.cut[0];
+    for (var j = 0; j < A.length; j++) d += Math.round((A[j] + (B[j] - A[j]) * t) * 10) / 10 + M.cut[j + 1];
+    return d;
+  }
+  // writes an element's --p, and its shape if it has one
+  function setProgress(el, p) {
+    if (el._readsP === undefined) el._readsP = /var\(--p\)/.test(el.getAttribute("style") || "") || !el.hasAttribute("data-morph");
+    if (el._readsP) el.style.setProperty("--p", p);
+    var M = morphOf(el);
+    if (!M) return;
+    var d = shapeAt(M, p);
+    if (d !== el._d) { el._d = d; el.setAttribute("d", d); }
+  }
 
   // ---- stages: figures that play themselves ---------------------------------------
   // A [data-stage] runs --p from 0 to 1 over data-duration seconds on the
@@ -124,8 +166,20 @@
     p = Math.round(clamp(p) * 10000) / 10000;
     if (p === S.p) return;
     S.p = p;
-    S.readers.forEach(function (el) { el.style.setProperty("--p", p); });
+    S.readers.forEach(function (el) { setProgress(el, p); });
     stageMark(S);
+  }
+  // Print shows every stage finished, then puts each back where it stood. A
+  // stage never written has no inline --p, and its paths' d at 1 is the d in
+  // the HTML, so taking --p off is all it needs.
+  function stagesForPrint(on) {
+    stages.forEach(function (S) {
+      S.readers.forEach(function (el) {
+        if (on) setProgress(el, 1);
+        else if (S.p >= 0) setProgress(el, S.p);
+        else el.style.removeProperty("--p");
+      });
+    });
   }
   function stageAt(S) { return S.state === "playing" ? clamp(S.from + (performance.now() - S.start) / S.dur) : Math.max(0, S.p); }
   function stagePlay(S, from) {
@@ -457,7 +511,7 @@
       if (sec._lay === lay) return;
       sec._lay = lay;
       lastP[k] = undefined;
-      if (!pinned) pReaders[k].forEach(function (el) { el.style.removeProperty("--p"); });
+      if (!pinned) pReaders[k].forEach(function (el) { setProgress(el, 1); el.style.removeProperty("--p"); });
       if (sec.classList.contains("devices-world")) {
         var D = devicesOf(sec);
         D.words = -2; D.rig = -1; D.was = -1; D.fitted = "";
@@ -845,7 +899,7 @@
       var p = k < i ? 1 : k > i ? 0 : round3(l);
       if (p === lastP[k]) continue;
       lastP[k] = p;
-      for (var j = 0; j < pReaders[k].length; j++) pReaders[k][j].style.setProperty("--p", p);
+      for (var j = 0; j < pReaders[k].length; j++) setProgress(pReaders[k][j], p);
     }
   }
 
@@ -1054,8 +1108,8 @@
   });
   window.addEventListener("scroll", function () { sy = window.scrollY; }, { passive: true });
   window.addEventListener("load", measure);
-  window.addEventListener("beforeprint", function () { printing = true; pinnable(); layFlat(); });
-  window.addEventListener("afterprint", function () { printing = false; resize(); });
+  window.addEventListener("beforeprint", function () { printing = true; pinnable(); layFlat(); stagesForPrint(true); });
+  window.addEventListener("afterprint", function () { printing = false; stagesForPrint(false); resize(); });
   // anything that lengthens the page (a late picture) measures again
   if (window.ResizeObserver) new ResizeObserver(function () {
     if (root.scrollHeight !== docH) measure();

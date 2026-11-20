@@ -9,7 +9,7 @@
 // Act one stands at --p 0, so the figure arrives with its world already
 // showing the queue. Complete at --p 1.
 import { html, raw, escape } from "../html.js";
-import { c, ss, out, pent, poly, place, label, subject } from "./kit.js";
+import { c, ss, out, shape, blob, place, label, subject, BUSINESS, FIT_GAP, TICK } from "./kit.js";
 
 // The box and the business, shared with the loop so the two line up.
 export const VIEW = [-240, -170, 480, 340];
@@ -22,10 +22,13 @@ const STEPS = [[0.1, 0.22], [0.24, 0.36]];
 const MOVED = `(${STEPS.map(([a, b]) => ss(a, b)).join(" + ")})`;
 // slot s: 0 at the door, 4 at the back; nearer is larger
 const SLOT_X = (s) => 30 - 50 * s, SLOT_R = (s) => 26 - 2 * s;
-// customers standing in the given slots, as one path, their bottoms on the ground
+// customers standing in the given slots, as one path, their bottoms on the
+// ground. Each is a business, so each is the business's shape turned a
+// different way: no two in the line are alike.
+const turned = (k) => BUSINESS.map((_, i) => BUSINESS[(i + 2 * k + 1) % BUSINESS.length]);
 const stand = (slots) => slots.map((s) => {
-  const pts = pent(SLOT_R(s)), bottom = Math.max(...pts.map((p) => p[1]));
-  return poly(pts.map(([x, y]) => [x + SLOT_X(s), y - bottom + GROUND]));
+  const pts = shape(SLOT_R(s), turned(s)), bottom = Math.max(...pts.map((p) => p[1]));
+  return blob(pts.map(([x, y]) => [x + SLOT_X(s), y - bottom + GROUND]));
 }).join(" ");
 
 // The camera moving on: act one steps back, shrinking to 0.55 about the
@@ -62,10 +65,10 @@ const TOP = "M56 -60 L176 -60 L196 -76 L76 -76 Z";
 const { R } = YOURS;
 // the protagonist's own rhythm, from the moment the camera has moved on
 const ACT = {
-  floor: `opacity:calc(0.01 + 0.99 * ${c(0.4, 0.47)});transform-box:fill-box;transform-origin:center;scale:calc(0.7 + 0.3 * ${out(0.4, 0.5)})`,
-  body: `opacity:calc(0.01 + 0.99 * ${c(0.4, 0.47)});transform-box:fill-box;transform-origin:center;scale:calc(0.94 + 0.06 * ${out(0.4, 0.5)});translate:0 calc(12px * (1 - ${out(0.4, 0.5)}))`,
-  ink: `opacity:${c(0.44, 0.49)};stroke-dashoffset:calc(1 - ${ss(0.44, 0.54)})`,
-  fit: `opacity:${c(0.48, 0.53)};stroke-dashoffset:calc(1 - ${ss(0.48, 0.6)});transform-box:fill-box;transform-origin:center;scale:calc(1.035 - 0.035 * ${out(0.62, 0.72)})`,
+  body: `opacity:calc(0.01 + 0.99 * ${c(0.4, 0.47)})`,
+  ink: `opacity:${c(0.4, 0.45)};stroke-dashoffset:calc(1 - ${ss(0.4, 0.52)})`,
+  fit: `opacity:${c(0.48, 0.53)};stroke-dashoffset:calc(1 - ${ss(0.48, 0.6)})`,
+  ticks: `opacity:${c(0.6, 0.66)}`,
 };
 // three engineers, standing together to its right
 const TEAM = [[136, 22], [114, 31], [146, 40]];
@@ -75,26 +78,24 @@ const team = `<path class="fx-dot" data-p d="${TEAM.map(dot).join("")}" style="o
 const talk = `<path class="fx-hair cx-talk" data-p pathLength="1" d="M104 30 L66 20" style="opacity:${c(0.56, 0.6)};stroke-dashoffset:calc(1 - ${ss(0.56, 0.64)})"/>`;
 
 const svg = raw(`<svg class="fx-svg cx-svg" viewBox="${VIEW.join(" ")}" aria-hidden="true" focusable="false">
-  <defs><radialGradient id="cx-q-body" cx="0.36" cy="0.3" r="0.85"><stop offset="0" class="fx-s-light"/><stop offset="0.75" class="fx-s-body"/></radialGradient>
-  <radialGradient id="cx-ground"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs>
-  <ellipse class="fx-floor" data-p fill="url(#cx-ground)" cx="4" cy="${GROUND + 3}" rx="226" ry="12" style="${ACT_ONE}"/>
+  <path class="fx-hair" data-p d="M-222 ${GROUND} H230" style="${ACT_ONE}"/>
   <path class="cx-co-top" data-p d="${TOP}" style="${ACT_ONE}"/>
   <path class="cx-co" data-p d="${FRONT}" style="${ACT_ONE}"/>
   ${queue}
   ${team}
   ${talk}
-  ${subject({ id: "cx", ...YOURS, st: ACT })}
+  ${subject({ ...YOURS, st: ACT })}
 </svg>`);
 
 // labels: the company named beside it once the camera has moved on
 // (while it is large, the heading beside it says what it is); yours under yours
 const lb = (text, [x, y], style, cls = "") => `<span class="fx-lb${cls}" data-p style="${place(VIEW, x, y)};${style}">${escape(text)}</span>`;
-const bottom = 0.86 * R * Math.cos(Math.PI / 5);
+const bottom = Math.max(...shape(R).map((p) => p[1])) + (FIT_GAP + TICK) * R;
 
 export function contrast({ them, you, label: aria }) {
   return html`<figure class="fx cx" role="group" aria-label="${aria}">
   ${svg}
   ${raw(lb(them, [110, -120], `--tx:0%;${label(0.46)}`))}
-  ${raw(lb(you, [0, bottom + 0.14 * R + 22], `--ty:0%;${label(0.58)}`, " is-live"))}
+  ${raw(lb(you, [0, bottom + 14], `--ty:0%;${label(0.58)}`, " is-live"))}
 </figure>`;
 }

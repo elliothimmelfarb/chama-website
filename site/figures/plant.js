@@ -1,7 +1,7 @@
 // Two still figures on /engineering-department that draw what their words
 // say. Both sit in worlds that scroll, so neither reads --p.
 import { html, raw } from "../html.js";
-import { place, subject } from "./kit.js";
+import { place, shape, subject, FIT_GAP, TICK } from "./kit.js";
 
 // Before and after: what the plant ran on, an
 // old system's window, a second app and four spreadsheets in a loose pile
@@ -13,7 +13,7 @@ const sheet = ([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r} 32 
 const ONE = { R: 64, at: [346, 168] };
 
 export function beforeAfter({ after, label }) {
-  const bottom = ONE.at[1] + 0.86 * ONE.R * Math.cos(Math.PI / 5);
+  const bottom = ONE.at[1] + Math.max(...shape(ONE.R).map((p) => p[1])) + (FIT_GAP + TICK) * ONE.R;
   return html`<figure class="fx pl-fig" role="img" aria-label="${label}">
   ${raw(`<svg class="fx-svg pl-svg" viewBox="${BA_VIEW.join(" ")}" aria-hidden="true" focusable="false">
     <defs><radialGradient id="pl-pile"><stop offset="0" class="fx-s-shadow"/><stop offset="1" class="fx-s-clear"/></radialGradient></defs>
@@ -23,9 +23,9 @@ export function beforeAfter({ after, label }) {
     ${SHEETS.map(sheet).join("")}
     <path class="fx-hair pl-gather" d="M156 116C196 116 208 150 238 166M212 166H238M186 236C212 236 216 182 238 166"/>
     <path class="pl-head" d="M238 159L252 166L238 173Z"/>
-    ${subject({ id: "pl", ...ONE, owned: true, drawn: true })}
+    ${subject({ ...ONE, owned: true, drawn: true })}
   </svg>`)}
-  <span class="fx-lb is-live" aria-hidden="true" style="${`${place(BA_VIEW, ONE.at[0], bottom + 30)};--ty:0%`}">${after}</span>
+  <span class="fx-lb is-live" aria-hidden="true" style="${`${place(BA_VIEW, ONE.at[0], bottom + 12)};--ty:0%`}">${after}</span>
 </figure>`;
 }
 

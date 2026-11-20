@@ -1,6 +1,6 @@
 // The figure fixture's figures (figure.html), built in the browser from the
 // same kit the pages use, so the fixture shows kit.js as it is.
-import { subject, pent, grow, c, out, place, label, WARM, FIT_GAP } from "/site/figures/kit.js";
+import { subject, shape, offset, c, out, place, label, WARM, FIT_GAP } from "/site/figures/kit.js";
 
 const R = 100;
 const VB = [-170, -150, 340, 290];
@@ -8,9 +8,9 @@ const vb = VB.join(" ");
 // the platform the business stands on, seen from above
 const PX = 155, PY = 74, PRX = 0, PRY = 40;
 const RING = `M${PRX} ${PY - PRY} A${PX} ${PRY} 0 1 1 ${PRX} ${PY + PRY} A${PX} ${PRY} 0 1 1 ${PRX} ${PY - PRY} Z`;
-// the fit's top corner, where "The software" is called out, and the ring's
+// the boundary's top point, where "The software" is called out, and the ring's
 // near edge, where it is named: both inside the figure's box at every width
-const corner = grow(pent(R), FIT_GAP * R)[0];
+const corner = offset(shape(R), FIT_GAP * R)[0];
 const CALL = "--ang:-40deg;--len:34px";
 const SOFTWARE = "--tx:calc(26px + 6px);--ty:calc(-22px - 50%)";
 const NEAR = [0, PY + PRY], UNDER = "--ty:8px";
@@ -25,7 +25,7 @@ const drawn = `<figure class="fx hero">
   <ellipse class="fx-plat" cx="0" cy="${PY}" rx="${PX}" ry="${PRY}"/>
   <path class="fx-ring" data-p d="${RING}" style="opacity:${c(0.04, 0.12)}"/>
   <circle class="fx-mk" data-p r="4.5" style="offset-path:path('${RING}');offset-rotate:0deg;offset-distance:calc(${out(0.22, 0.62)} * 100%);opacity:calc(${c(0.2, 0.25)} * (1 - ${c(0.62, 0.67)}))"/>
-  ${subject({ id: "fx1", R, warm: WARM })}`)}
+  ${subject({ R, warm: WARM })}`)}
   ${lb("Your business", [0, -4], label(0.12), "is-live")}
   <span class="fx-lb fx-call" data-p style="${place(VB, ...corner)};${CALL};${label(0.2)}"></span>
   ${lb("The software", corner, `${SOFTWARE};${label(0.2)}`, "is-hot")}
@@ -39,7 +39,7 @@ const continued = `<figure class="fx hero">
   <ellipse class="fx-plat" cx="0" cy="${PY}" rx="${PX}" ry="${PRY}"/>
   <path class="fx-ring" data-p d="${RING}" style="opacity:calc(1 - ${c(0.22, 0.4)})"/>
   <path class="fx-ring is-yours" data-p d="${RING}" style="opacity:${c(0.22, 0.4)}"/>
-  ${subject({ id: "fx2", R, drawn: true, warm: WARM })}`)}
+  ${subject({ R, drawn: true, warm: WARM })}`)}
   ${lb("Your business", [0, -4], "", "is-live")}
   ${lb("The software", corner, SOFTWARE, "is-hot")}
   <span class="fx-lb fx-call" style="${place(VB, ...corner)};${CALL}"></span>
@@ -48,7 +48,7 @@ const continued = `<figure class="fx hero">
 
 // 3. a quiet band: a crowd of businesses, the same shape smaller, one warm
 const band = `<figure class="fx band">
-  ${svg("", [0, 1, 2, 3, 4].map((i) => subject({ id: `fxb${i}`, R: 34, at: [60 + i * 120, 56], drawn: true, owned: i === 2 })).join(""), "0 0 600 120")}
+  ${svg("", [0, 1, 2, 3, 4].map((i) => subject({ R: 34, at: [60 + i * 120, 56], drawn: true, owned: i === 2 })).join(""), "0 0 600 120")}
 </figure>`;
 
 const put = (name, html, ar) => {
