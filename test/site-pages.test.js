@@ -82,7 +82,7 @@ test("only addresses of live pages count as links the agent may give", () => {
 
 // A page added to the site but not to the list would stay invisible to the
 // agent. Pages that are not for visitors to be sent to are named here.
-const NOT_FOR_LINKING = new Set(["/404", "/admin", "/hearth-room", "/hearth-public", "/simple"]);
+const NOT_FOR_LINKING = new Set(["/404", "/admin", "/hearth-public", "/simple"]);
 
 test("every page the site serves is in the list, or named as one not to link to", async () => {
   const { readdirSync } = await import("node:fs");

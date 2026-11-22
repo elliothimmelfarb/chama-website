@@ -1,5 +1,5 @@
 // /hearth for visitors who are not signed in: what the members' room is.
-// Ported from the old hearth-public.html. Members sign in at /hearth/sign-in.
+// Ported from the old hearth-public.html. Members sign in on the Hearth's own host.
 
 export const hearthPublic = {
   title: "The Hearth | Chama Inteligente",
@@ -10,7 +10,7 @@ export const hearthPublic = {
 
   h1: "The Hearth.",
   lead: "The members' room for our coaching clients. Everything that comes out of your sessions with Elliot is kept in one place, and it belongs to you.",
-  signIn: { text: "Members sign in", href: "/hearth/sign-in" },
+  signIn: { text: "Members sign in", href: "https://hearth.chamainteligente.com/sign-in" },
   coaching: { text: "How coaching works", href: "/coaching" },
 
   features: [

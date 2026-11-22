@@ -7,10 +7,9 @@
 // a wrong one. It also writes the tree's versions into vercel.json, which
 // caches an address for a year only when its v is one of them.
 //
-// A file's hash covers the versions it carries itself, so a change to
-// flame.js also changes flame-worker.js (which imports it), agent.js (which
-// starts the worker), worlds.js and the pages. That is why stamping repeats
-// until nothing moves.
+// A file's hash covers the versions it carries itself, so a change to one
+// asset also changes every asset that asks for it, and every page that asks
+// for those. That is why stamping repeats until nothing moves.
 
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
