@@ -128,30 +128,54 @@ test("the pages the old site served are gone, so nothing serves them before the 
   for (const f of ["built.html", "clients.html", "simple.html", "simple/coaching.html"]) assert.ok(!existsSync(path.join(ROOT, f)), `${f} still exists`);
 });
 
-// /hearth is two pages on one address: the public page for anyone without
-// a session cookie, and the members' room for anyone with one.
-test("/hearth serves the room only with the session cookie, and the public page otherwise", async () => {
-  const { SESSION_COOKIE } = await import("../lib/hearth/auth.js");
+// The Hearth lives at hearth.chamainteligente.com, in its own repo. Here
+// /hearth is only the public page about it, and every address the room
+// used to answer here leads there, so links in old emails keep working.
+const HEARTH = "https://hearth.chamainteligente.com";
+
+test("/hearth is always the public page about the room", () => {
   const forHearth = vercel.rewrites.filter((r) => r.source === "/hearth");
-  assert.equal(forHearth.length, 2);
-  const [room, pub] = forHearth;
-  assert.deepEqual(room.has, [{ type: "cookie", key: SESSION_COOKIE }]);
-  assert.equal(room.destination, "/hearth-room");
-  assert.ok(!pub.has && !pub.missing);
-  assert.equal(pub.destination, "/hearth-public");
-  assert.ok(vercel.rewrites.some((r) => r.source === "/hearth/:path*" && r.destination === "/hearth-room"));
+  assert.deepEqual(forHearth, [{ source: "/hearth", destination: "/hearth-public" }]);
   assert.ok(!existsSync(path.join(ROOT, "hearth.html")), "a hearth.html would be served at /hearth before the rewrites");
+  assert.ok(!existsSync(path.join(ROOT, "hearth-room.html")), "the room's shell left with the room");
+  assert.ok(!vercel.headers.some((h) => h.source === "/hearth" || h.source.startsWith("/hearth/")), "/hearth needs no headers of its own");
 });
 
-test("/hearth is indexable without a session and the room's paths are not", () => {
-  const robotsTag = (h) => h.headers.find((x) => x.key === "X-Robots-Tag");
-  for (const h of vercel.headers.filter((x) => x.source === "/hearth")) {
-    if (robotsTag(h)) assert.ok(h.has && h.has.some((c) => c.type === "cookie"));
+test("the room's old addresses redirect to the Hearth's own host for good", () => {
+  const to = (source) => vercel.redirects.find((r) => r.source === source);
+  for (const [source, destination] of [
+    ["/hearth/:path*", `${HEARTH}/:path*`],
+    ["/hearth-room", `${HEARTH}/`],
+    ["/api/hearth/:path*", `${HEARTH}/api/hearth/:path*`],
+    ["/api/oauth/:path*", `${HEARTH}/api/oauth/:path*`],
+    ["/.well-known/oauth-authorization-server", `${HEARTH}/.well-known/oauth-authorization-server`],
+    ["/.well-known/oauth-protected-resource", `${HEARTH}/.well-known/oauth-protected-resource`]
+  ]) {
+    assert.ok(to(source), source);
+    assert.equal(to(source).destination, destination, source);
+    assert.equal(to(source).permanent, true, source);
   }
-  assert.ok(vercel.headers.some((h) => h.source === "/hearth/(.*)" && robotsTag(h)));
-  const robots = file("robots.txt");
-  assert.ok(!/^Disallow: \/hearth\s*$/m.test(robots));
-  assert.ok(/^Disallow: \/hearth\/$/m.test(robots));
+});
+
+// A redirect would drop an agent's Authorization header and a POST's body,
+// so /mcp and the public feed are forwarded instead.
+test("agents on /mcp and readers of the public feed are forwarded to the Hearth", () => {
+  const rewrite = (source) => vercel.rewrites.find((r) => r.source === source)?.destination;
+  assert.equal(rewrite("/mcp"), `${HEARTH}/mcp`);
+  assert.equal(rewrite("/feed"), `${HEARTH}/api/feed`);
+  assert.equal(rewrite("/feed.xml"), `${HEARTH}/api/feed?format=xml`);
+  assert.equal(rewrite("/feed/:slug"), `${HEARTH}/api/feed?path=:slug`);
+});
+
+test("the website runs none of the Hearth's code or jobs", () => {
+  for (const f of ["lib/hearth", "api/hearth.js", "api/mcp.js", "api/oauth.js", "api/feed.js", "api/hearth-cron.js", "api/stripe-webhook.js", "assets/hearth.js"]) {
+    assert.ok(!existsSync(path.join(ROOT, f)), `${f} still exists`);
+  }
+  assert.ok(!vercel.crons.some((c) => c.path === "/api/hearth-cron"));
+});
+
+test("members sign in on the Hearth's own host", () => {
+  assert.match(html["/hearth"] ?? file("hearth-public.html"), new RegExp(`href="${HEARTH}/sign-in"`));
 });
 
 test("every media kit file linked from /brand and llms.txt exists", () => {

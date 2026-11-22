@@ -157,6 +157,36 @@
       "source": "/hearth-public",
       "destination": "/hearth",
       "permanent": false
+    },
+    {
+      "source": "/hearth/:path*",
+      "destination": "https://hearth.chamainteligente.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/hearth-room",
+      "destination": "https://hearth.chamainteligente.com/",
+      "permanent": true
+    },
+    {
+      "source": "/api/hearth/:path*",
+      "destination": "https://hearth.chamainteligente.com/api/hearth/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/api/oauth/:path*",
+      "destination": "https://hearth.chamainteligente.com/api/oauth/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/.well-known/oauth-authorization-server",
+      "destination": "https://hearth.chamainteligente.com/.well-known/oauth-authorization-server",
+      "permanent": true
+    },
+    {
+      "source": "/.well-known/oauth-protected-resource",
+      "destination": "https://hearth.chamainteligente.com/.well-known/oauth-protected-resource",
+      "permanent": true
     }
   ],
   "crons": [
@@ -167,10 +197,6 @@
     {
       "path": "/api/watchdog",
       "schedule": "5,35 * * * *"
-    },
-    {
-      "path": "/api/hearth-cron",
-      "schedule": "20 * * * *"
     }
   ],
   "headers": [
@@ -218,45 +244,6 @@
       ]
     },
     {
-      "source": "/mcp",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    },
-    {
-      "source": "/.well-known/oauth-authorization-server",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    },
-    {
-      "source": "/.well-known/oauth-protected-resource",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    },
-    {
       "source": "/assets/(.*)\\.(js|css)",
       "has": [
         {
@@ -264,29 +251,16 @@
           "key": "v",
           "value": {
             "inc": [
-              "0423b5bedc",
               "064282a1ac",
-              "08fe2359ca",
-              "1bd12af0fb",
-              "5e57dbd6ed",
               "71a9be7ec3",
-              "752d48d2a5",
               "8a1815a2a7",
               "905a9a36ef",
-              "97e60958b4",
-              "a592622ad0",
-              "a7704ae7ed",
               "af9b097cd8",
               "b376c3bce2",
-              "b5f18f0e6c",
-              "b73e6c4eed",
-              "b889f167b2",
               "c5b567bda6",
               "c7149b7fa3",
               "d7080de293",
-              "dc632ba6b4",
-              "e001488e88",
-              "fe17b7f65c"
+              "e001488e88"
             ]
           }
         }
@@ -306,29 +280,16 @@
           "key": "v",
           "value": {
             "ninc": [
-              "0423b5bedc",
               "064282a1ac",
-              "08fe2359ca",
-              "1bd12af0fb",
-              "5e57dbd6ed",
               "71a9be7ec3",
-              "752d48d2a5",
               "8a1815a2a7",
               "905a9a36ef",
-              "97e60958b4",
-              "a592622ad0",
-              "a7704ae7ed",
               "af9b097cd8",
               "b376c3bce2",
-              "b5f18f0e6c",
-              "b73e6c4eed",
-              "b889f167b2",
               "c5b567bda6",
               "c7149b7fa3",
               "d7080de293",
-              "dc632ba6b4",
-              "e001488e88",
-              "fe17b7f65c"
+              "e001488e88"
             ]
           }
         }
@@ -410,130 +371,28 @@
           "value": "no-store"
         }
       ]
-    },
-    {
-      "source": "/hearth",
-      "has": [
-        {
-          "type": "cookie",
-          "key": "__Host-chama_hearth"
-        }
-      ],
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://js.stripe.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src 'self' https://accounts.google.com https://api.stripe.com; frame-src https://accounts.google.com https://js.stripe.com https://hooks.stripe.com; img-src 'self' data: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://cdn.discordapp.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    },
-    {
-      "source": "/hearth",
-      "missing": [
-        {
-          "type": "cookie",
-          "key": "__Host-chama_hearth"
-        }
-      ],
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    },
-    {
-      "source": "/hearth/(.*)",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://js.stripe.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src 'self' https://accounts.google.com https://api.stripe.com; frame-src https://accounts.google.com https://js.stripe.com https://hooks.stripe.com; img-src 'self' data: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://cdn.discordapp.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
-    },
-    {
-      "source": "/hearth-room",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://js.stripe.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src 'self' https://accounts.google.com https://api.stripe.com; frame-src https://accounts.google.com https://js.stripe.com https://hooks.stripe.com; img-src 'self' data: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://cdn.discordapp.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
     }
   ],
   "rewrites": [
     {
       "source": "/hearth",
-      "has": [
-        {
-          "type": "cookie",
-          "key": "__Host-chama_hearth"
-        }
-      ],
-      "destination": "/hearth-room"
-    },
-    {
-      "source": "/hearth",
       "destination": "/hearth-public"
     },
     {
-      "source": "/hearth/:path*",
-      "destination": "/hearth-room"
-    },
-    {
       "source": "/mcp",
-      "destination": "/api/mcp"
+      "destination": "https://hearth.chamainteligente.com/mcp"
     },
     {
       "source": "/feed",
-      "destination": "/api/feed"
+      "destination": "https://hearth.chamainteligente.com/api/feed"
     },
     {
       "source": "/feed.xml",
-      "destination": "/api/feed?format=xml"
+      "destination": "https://hearth.chamainteligente.com/api/feed?format=xml"
     },
     {
       "source": "/feed/:slug",
-      "destination": "/api/feed?path=:slug"
-    },
-    {
-      "source": "/api/hearth/:path*",
-      "destination": "/api/hearth"
-    },
-    {
-      "source": "/api/oauth/:path*",
-      "destination": "/api/oauth"
-    },
-    {
-      "source": "/.well-known/oauth-authorization-server",
-      "destination": "/api/oauth"
-    },
-    {
-      "source": "/.well-known/oauth-protected-resource",
-      "destination": "/api/oauth"
+      "destination": "https://hearth.chamainteligente.com/api/feed?path=:slug"
     }
   ]
 }

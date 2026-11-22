@@ -24,14 +24,13 @@ The deployable source for **https://chamainteligente.com** (and `www.`), plus th
 | `assets/media/` | The recording on `/engineering-department`: a wide and a tall cut, their posters, and `captions.json`. |
 | `assets/work/` | Client and partner logos, drawn as one-colour masks so one file works on every ground in both themes. |
 | `assets/built/` | The device pictures on `/build`. |
-| `assets/flame.js`, `assets/figures.css` | Left from the old site. Only the Hearth room still loads them (`hearth-room.html`). |
 | `api/chat.js`, `api/chat-prompt.js` | The chat endpoint (same origin, SSE streaming, one tool: `send_note_to_elliot`, a visitor asking to be contacted) and its frozen system prompt, which is reviewed like copy. |
 | `lib/site-pages.js` | The site's pages as the chat agent knows them: path, title, what each covers, and whether it is live. |
 | `evals/` | The agent's evals (`npm run evals`, `npm run evals:conversations`). Both spend API credit and are not part of `npm run check`. |
 | `api/intake.js`, `api/intake-cleanup.js` | The contact pipeline and its daily 12-month retention cleanup. |
 | `api/watchdog.js`, `lib/flame-health.js` | The cron that reviews conversations and can take the chat offline, and the check that the chat can reach its model. |
 | `admin.html`, `assets/admin.*`, `api/admin-auth.js`, `api/admin-data.js` | The private, read-only admin area at `/admin`. |
-| `hearth-room.html`, `assets/hearth*`, `api/hearth.js`, `api/mcp.js`, `api/oauth.js`, `api/feed.js`, `api/hearth-cron.js`, `lib/hearth/` | The Hearth, the members' platform. See [The Hearth](#the-hearth). |
+| `hearth-public.html` | The public page about the Hearth at `/hearth`. The Hearth itself (the members' room, its API, `/mcp` for agents and the public feed's code) lives in its own repo, `chama-hearth`, at https://hearth.chamainteligente.com. See [The Hearth](#the-hearth). |
 | `docs/DESIGN.md` | What the site is for, what it should feel like, and what Elliot has decided and said about its design. Purpose and facts only: the values and layouts are in the code. |
 | `original/` | The old site at `/original`, frozen as it was on `main` on 2026-11-16: its pages, low motion pages, chat page and their assets, every address moved under `/original` and a note on each page saying it is the original site. Not indexed, not in the sitemap, and not built or stamped. Its chat still calls the live `/api/chat`, so it must keep the [chat event contract](#chat-event-contract). `test/original.test.js` keeps it self-contained. |
 | `vercel.json` | Headers, redirects, rewrites and cron schedules. |
@@ -181,102 +180,9 @@ Sign-in uses Google's ID token flow with no client secret. `/api/admin-auth` ver
 
 ## The Hearth
 
-The members' room at `/hearth`: clients buy session packs, book against Elliot's availability, own their session transcripts and the records made from them, and connect their own agents. Owners and staff manage members, roles, packs, purchases, availability, transcripts and the feed. The design record is in the brain at `wiki/topics/the-hearth-members-platform.md`.
+The members' room is its own product, in the private repo `chama-hearth` (`../chama-hearth`), served by its own Vercel project at https://hearth.chamainteligente.com. This site keeps only the public page about it, `/hearth` (`hearth-public.html`, generated from `site/pages/hearth-public.js`, indexable, with its sharing card `og-hearth-2026-10-22.png`), whose Members sign in button goes to the Hearth.
 
-| File | What it is |
-|---|---|
-| `hearth-public.html` | The public page at `/hearth` for anyone without a session cookie: what the room is, for prospective coaching clients. Generated from `site/pages/hearth-public.js` like every public page, indexable, with its own sharing card (`og-hearth-2026-10-22.png` from `brand/og/og-hearth.html`). It loads nothing from the room. |
-| `hearth-room.html` | The room's shell, served at `/hearth` to anyone with the `__Host-chama_hearth` cookie and at `/hearth/*` always, `noindex`, with its own CSP. Signed-out members sign in at `/hearth/sign-in`. Hand-written, not generated, and still on the old look: it loads `assets/flame.js` (the fire in the room) and `assets/figures.css`. It paints the bar at once and asks `/config` and `/me` from an inline script while `hearth.js` downloads. |
-| `assets/hearth.js`, `assets/hearth.css` | The core app (router, sign-in, frame, account) and design. No `innerHTML` anywhere in the room. |
-| `assets/hearth-*.js` | One file per area: sessions, transcripts, agents, feed, admin, each with an `-admin` file where the owner's side differs. `hearth.js` loads only the ones `/me` names for the member's permissions, from the list in `lib/hearth/modules.js`, at the versioned addresses written in `hearth-room.html`. A new file goes on that list and in that page, or `modules.test.js` fails. |
-| `api/hearth.js` | The router behind `/api/hearth/*`. The routes are in `lib/hearth/routes/`. |
-| `lib/hearth/` | Database and migrations, auth, users, providers, permissions, audit, mail, time and slots, calendar files, transcript records, the OAuth server and the MCP server. |
-| `api/mcp.js`, `api/oauth.js` | `/mcp` and the OAuth 2.1 endpoints with their well-known documents. |
-| `api/feed.js` | The public feed at `/feed` and `/feed.xml`, off until `feed_public` is on. |
-| `api/hearth-cron.js` | Hourly at `:20`: reminders, Meet transcript pulls, unsettled card checkouts, expired token sweep. |
-| `api/stripe-webhook.js`, `lib/hearth/stripe.js`, `lib/hearth/routes/invoices.js`, `lib/hearth/routes/checkout.js` | Stripe: the client, invoices, card checkout for packs, and the signed webhook at `/api/stripe-webhook`. |
-
-### Routing
-
-`/hearth` is two pages on one address, chosen in `vercel.json` by the session cookie: with `__Host-chama_hearth` it rewrites to the room (`hearth-room.html`, `noindex`, the room's CSP), without it to the public page (`hearth-public.html`). Crawlers and link previews never carry the cookie, so they always get the public page. `/hearth/*` is always the room and stays `noindex` and disallowed in `robots.txt`. Sign-in errors land on `/hearth/sign-in?error=...`, and a signed-in member who opens `/hearth/sign-in` is moved to Home. `vercel dev` ignores `has` conditions, so check the routing on a preview deployment with and without the cookie.
-
-The navigation is built from each page's `register(..., { nav })`: an unlabelled daily list, then Money and Setup. An entry with `hideFor` is hidden from anyone holding that permission, which is how the owner sees Sessions, Session records and Client notes for the whole business instead of his own empty member pages. The owner's "See it as a member" opens the room as a chosen member sees it, read-only (view-as). On a phone the first four entries are tabs and the rest sit under More.
-
-Loading a part only for those who can use it saves bytes; it never guards anything. Every API route checks its own permission, and the page's `can()` only decides what to draw.
-
-### Data
-
-Neon Postgres (`chama-hearth`, Frankfurt) through Vercel's managed `DATABASE_URL`. There is no migration command: the first request after a cold start applies any unapplied migration in `lib/hearth/migrations.js`, and every statement is idempotent. The rules:
-
-- One person per email, whatever they signed in with. Unverified emails are refused.
-- Credit balances are sums over the append-only `credit_ledger`.
-- The database refuses double bookings (an exclusion constraint) and a second transcript per booking (`transcripts_booking_idx`).
-- Every cancel and referral reward is a compare-and-set, so a second concurrent call changes nothing.
-- The audit log is append-only and never holds an IP, a raw user agent or visitor text.
-- Transcripts are data: shown through `textContent`, given to models as untrusted text, never logged.
-
-If `transcripts_booking_idx` is missing because duplicates existed when migration 004 ran, find them with `select booking_id, count(*) from transcripts where booking_id is not null group by 1 having count(*) > 1`, remove the extras by hand, then run `create unique index transcripts_booking_idx on transcripts(booking_id) where booking_id is not null`.
-
-### Signing in
-
-Google (ID token), GitHub and Discord (authorization code with a state nonce, verified email required), and email (a 15-minute magic link, or an optional password of 12 or more characters). Every auth endpoint is rate limited. A session is an opaque token in the `chama_hearth` cookie, 30 days sliding, stored hashed, and members can end any of their sessions. Everyone on `ADMIN_EMAILS` is an owner every time they sign in, so the owner cannot be locked out.
-
-### Agents
-
-`https://chamainteligente.com/mcp` is an MCP server. Claude connects with OAuth 2.1 (dynamic registration, PKCE S256, a consent page in the Hearth, tokens bound to `/mcp`). A malformed authorize request stops on a page here with a labelled link back and never redirects by itself, because registration is open. `/mcp` refuses a browser `Origin` other than this site's or Claude's. Scripts use scoped API keys (`chama_sk_...`). The tools a caller gets are the intersection of the token's scopes and the person's permissions. The unauthenticated tools answer only when `mcp_public` is on. Nothing an agent submits is treated as an instruction to anyone.
-
-### Sessions and money
-
-Packs and prices are set in the room, never in code. A client requests a pack, Elliot issues the fatura from the certified invoicing software, marks the purchase invoiced and then paid, and the credits appear. With card payment on, a client can instead pay for a priced pack by card (see Card payment for packs).
-
-Each member pays one of two ways, set on their member page under How they pay (`users.billing`). Pre-buy (`prebuy`, the default) members need a credit to book, and the server refuses a booking without one. Billed after (`after`) members book any open time without credits; their held sessions wait under Purchases, To invoice, until marked invoiced (`bookings.billing`, `bookings.invoiced_at`). The rule lives in `POST /bookings`, so the MCP `book_session` tool follows it too.
-
-### Invoices through Stripe
-
-Under Money, Invoices, the owner bills one member through Stripe: the sessions they held while billed after, the sessions recorded for them with no booking behind them (`transcripts.invoice_id`), a pack they asked for, or lines typed by hand. Ready to invoice, at the top of that page, lists everyone with sessions waiting and opens the form for them with every session ticked; the price per session starts from the last one used for that member, else the last one used (`settings.session_price_cents`). "Invoice with Stripe" on the To invoice list, on a pack request and on a member's page opens the same form. The Hearth reuses or makes the member's Stripe customer (`users.stripe_customer_id`), creates and finalizes a `send_invoice` invoice tagged `metadata.source = hearth` that always offers card, marks those sessions or the pack invoiced, and emails the member the link from Resend (Stripe's own invoice emails are not used). Each invoice is a row in `invoices`. Members, guests included, see theirs at `/hearth/invoices` (in the nav once they have one), an open one on Home with a Pay button, and a notice with a See invoice button once per visit while one is open: notice, Pay, Stripe. Pay opens a dialog in the room with Stripe's card form (the Payment Element, confirming the invoice's own payment via `POST /invoices/:id/pay`, which returns its `confirmation_secret`); Stripe.js loads only when Pay is pressed, and the Hearth's CSP allows `js.stripe.com`, `hooks.stripe.com` and `api.stripe.com` for that. After the card goes through, `POST /invoices/:id/sync` asks Stripe and marks it paid at once, without waiting for the webhook. Receipt opens the paid invoice in a dialog too, with its PDF. Stripe's own invoice page can't be framed, so it is only the fallback (new tab) when the card form can't load or `STRIPE_PUBLISHABLE_KEY` is missing.
-
-Stripe calls `/api/stripe-webhook` (endpoint `we_1UQsBvKIjHJB7AoptnkdEcEw`, events `invoice.finalized`, `invoice.paid`, `invoice.voided`, `invoice.marked_uncollectible`, `checkout.session.completed`, `checkout.session.async_payment_succeeded`). Paid is a compare-and-set, so a replay adds nothing; a paid pack invoice adds its credits through the same path as Mark paid, and the owner gets an email. Voiding, in the room or in Stripe, frees the sessions to be invoiced again and puts the pack back to requested. The Hearth follows only invoices it made: one sent from the Stripe dashboard is never attached to anyone, because the account also bills ShopIntake and AI Made Games.
-
-Who pays decides the IVA (`lib/hearth/iva.js`, CIVA artigo 6.º n.º 6). Each member has billing details (`billing_profiles`), which they fill in at `/hearth/billing` or the owner records under Bill to in the invoice form. A business must have its legal name, address and tax ID before it can be invoiced as one. The tax ID is checked on save (a NIF's check digit, an EIN's nine digits) and is named for the country (NIF, EIN, VAT number). For an EU number, Look up asks the EU's VIES register (`lib/hearth/vies.js`) and fills in the registered name and address; a live answer is kept as proof (`vies_valid_at`), and an EU number VIES rejects is refused, except a Portuguese NIF, since small firms outside the IVA regime are not in VIES. A Portuguese business pays 23 percent and its NIF goes on the invoice as Customer NIF, so it can deduct the IVA. When a member saves complete company details the owner gets an email with a link to invoice them. A business outside Portugal with its legal name, address and tax ID (an EIN for a US LLC, a VAT number in the EU) is invoiced with no IVA: the Stripe customer gets the legal name, address and `tax_exempt = reverse`, the invoice footer gives the legal reason (IVA - autoliquidação), and the tax ID is added to the Stripe customer as a real tax ID (`us_ein`, `eu_vat` and so on, `stripeTaxId`) so the invoice carries it in `customer_tax_ids`, which Stripe prints. A number Stripe has no type for, or one it refuses, is printed as a custom field instead. Without those details the Hearth refuses the invoice. Everyone else, private people and Portuguese businesses, gets 23 percent added through one Stripe tax rate (`settings.stripe_iva_rate`). Saving the details is the member's declaration and records who and when (`declared_by`, `declared_at`); the owner can note how they checked it, and changing only the currency or the note keeps the member's declaration. The billing details also hold the member's currency (EUR or USD) and their last price per session. The owner's paid email repeats the bill-to and the IVA reason so the fatura matches.
-
-The Stripe invoice is the payment request, not the fatura: the fatura still comes from the certified software. The Stripe account (Chama Inteligente, Lda) is shared with ShopIntake and AI Made Games, each with its own restricted key; the Hearth's is `chama-hearth-prod`. ShopIntake's webhook sends a fatura notice for every paid invoice, Hearth ones included.
-
-### Card payment for packs
-
-Off until the owner turns on "Members can pay by card" under Money, Purchases (`card_checkout`), and shown only while `STRIPE_SECRET_KEY` is set. With it on, each priced pack has Pay by card next to Ask for an invoice, and a requested pack has a Pay by card button under In progress. The member is sent to Stripe's hosted Checkout (no Stripe script on any page) for the pack's price less any referral discount, with billing address required and a tax ID optional. The session is tagged `metadata.source = hearth` and `hearth_purchase_id`, and its id is kept on the purchase (`purchases.checkout_session_id`). A second click while it is open returns the same session. A pack that already has a Stripe invoice is paid from the invoice instead.
-
-Three paths settle it, all through `settleCheckout` and the same compare-and-set as Mark paid: the member's return to `/hearth/sessions/packs?checkout=done`, which asks Stripe about the stored session (never the address bar); the webhook on `checkout.session.completed` and `checkout.session.async_payment_succeeded`; and the hourly cron, which checks unsettled sessions from the last 15 days and forgets expired ones. Credits arrive once, the purchase records `provider = stripe_checkout` and the session id, an open invoice for the same pack is voided, and the owner gets an email with the billing details the buyer typed (marked untrusted) for the fatura. Stripe also issues a paid invoice for the payment (`invoice_creation`, tagged `source = hearth` like everything the Hearth makes); the Hearth's invoice webhook ignores it because it is not `send_invoice`. A card payment that arrives for a pack already paid another way, or voided, adds nothing, is logged as `purchase.card_duplicate`, and the owner is emailed to refund it. If Stripe refuses to start a checkout, the member is told Elliot can invoice instead and the owner is emailed Stripe's reason.
-
-Before turning card payment on: add `checkout.session.completed` and `checkout.session.async_payment_succeeded` to the webhook endpoint `we_1UQsBvKIjHJB7AoptnkdEcEw` (without them the return page and the cron still settle payments, only later), and make sure the restricted key can write Checkout Sessions and read and write Customers and Invoices. The site has no terms or refund page yet.
-
-Availability is painted date by date on a grid of half hours in the owner's zone: the grid is always a real week, chosen with arrows, and each painted run is one row in `availability_days` for that date alone, so nothing repeats into the next week (since 2026-10-22; the old weekly `availability_rules` were laid onto the next 60 days by migration 010 and are no longer read, and migration 011 cleared those copies from 2026-11-09 on so the weeks ahead start closed). Under the week's total, a line says the last date open for booking, which is where the Friday routine of setting the next week or two picks up. Quick fills work on the week shown, and "Same as last week" and "Copy to next week" copy a whole week when it should repeat. Past dates are locked. The Google Calendar events and booked sessions of those dates are drawn over the grid, so the week is painted around them. Under it, the coming weeks as dates: picking one shows its week in the grid, and a day can be taken off (a whole-day block), given more hours, or blocked in part (older one-off `availability_openings` still count), and the panel shows exactly which times members are offered (`GET /admin/slots`, the same calculator they use). When Google is connected, the coming weeks also show the events on Elliot's Google calendars (titles only on the owner's side), and with Block booking on (`google_busy`, default on) members are not offered times that overlap them. The calendars read are `google_calendars` (default the connected account's `primary`); another account's calendar must be shared with the connected account first. Someone else's calendar shared with him (Young Ju's) goes in `google_shared_calendars` instead, the second field under Calendars: every event on those is drawn in the colour she gave it, so he knows what is going on at home, but only the ones that involve him block booking: they invite one of his addresses, name him in the title, or are coloured green (Sage or Basil, her mark for both of them). The rest, and anything she marked free, are outlined boxes marked "shared, does not block". An event seen on two calendars is kept once. Events are read with the existing `calendar.events` scope, cached two minutes per instance, and a failed read blocks nothing. Members book from a strip of days that glow by how open they are, see the chosen day as a daylight bar, and confirm with the cost spelled out. Booking emails both sides a calendar file. On the owner's Sessions page, opening a booking lets Elliot cancel it with a message to the member, or move it to any free time (no notice window, same length, same Meet room); either way the member gets one email in their timezone with his message, and the list says who cancelled and why. The refund toggle shows only for sessions that spent a credit. Moves, by either side, send a "Session moved" email with the old and new time. Once the owner connects Google in Settings, each booking gets a Calendar event with a Meet room, and the hourly cron pulls the Meet transcript after the session and writes the record.
-
-Through MCP, `add_transcript` with `draft` attaches a transcript without writing the record or telling the member, and `write_record` writes it without mail, so the owner can read a record before the client is told. Without `draft`, adding a transcript writes the record and emails the member.
-
-A record can also be written by hand (`set_record`, version 2 of the record shape in `lib/hearth/record.js`): the short version, a big-picture figure, the ideas as chapters with their own figures (each placed after a chosen paragraph, `after`) and the client's words, a playbook of actions with steps and prompts to copy, what is agreed, and what the next session is for. The playbook's actions become the client's follow-ups. Figures are SVGs keyed per record (`set_record_figure`, table `record_figures`), served from `/api/hearth/transcripts/<id>/figures/<key>` only to people who may read the record, shown through `<img>` so they cannot run, and refused on upload if they hold script, event handlers or any link that leaves the file (`lib/hearth/visual.js`).
-
-Remember cards are spaced repetition for a record (`set_record_cards`, table `recall_cards`). A card comes back after 1, 3, 7, 16 and 35 days: "Got it" climbs a step, "Fuzzy" holds, "Missed it" starts over, and a card answered well at the top retires (`lib/hearth/recall.js`). Members review on the record, on the Remember page, and see the count due on Home.
-
-An owner can view the room as any member (a member's page, or "See this as ... sees it" on a record). Their nav, Home, records and cards render exactly as the member's, under a banner with the way out. A second cookie names the member and means something only alongside an owner's session, every change is refused while it is set, and starting and ending a view are logged.
-
-Settings has three switches, each a decision rather than a deploy: `open_signup`, `feed_public`, `mcp_public`.
-
-### Environment variables
-
-The Hearth also uses `ADMIN_EMAILS`, `RESEND_*`, `CRON_SECRET`, `ANTHROPIC_API_KEY` and `GOOGLE_CLIENT_ID` from above.
-
-The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligente.com>` (`lib/hearth/mail.js`). Everything meant for Elliot (bookings, pack requests, billing details, payments, failures) goes to `elliot@chamainteligente.com` (`OWNER_INBOX`), never to the address the owner signs in with. A paid invoice or card payment is the fatura request: it opens with "This payment needs a fatura." (it never says where to send it) and carries who paid, the bill-to and the IVA reason. ShopIntake's Stripe webhook asks for the fatura for every other sale on the shared Stripe account and skips anything tagged `metadata.source = hearth`, so each Hearth payment brings one email, from the Hearth.
-
-| Variable | What it is |
-|---|---|
-| `DATABASE_URL` | Set by the Neon integration. Without it the Hearth answers "not open yet". |
-| `HEARTH_SESSION_SECRET` | Seals the Google refresh token at rest. |
-| `GOOGLE_CLIENT_SECRET` | The same Google OAuth client as `GOOGLE_CLIENT_ID`. Needs the redirect URI `https://chamainteligente.com/api/hearth/google/callback`, the Calendar and Meet REST APIs, and the scopes `calendar.events` and `meetings.space.readonly`. |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | The GitHub OAuth app. Callback `https://chamainteligente.com/api/hearth/auth/github/callback`. |
-| `STRIPE_SECRET_KEY` | The restricted key `chama-hearth-prod` on the Chama Inteligente Stripe account: Customers, Invoices, Checkout Sessions and Webhook Endpoints write. Without it the Invoices page says Stripe is not connected and nothing else changes. |
-| `STRIPE_WEBHOOK_SECRET` | The signing secret of the Hearth's webhook endpoint above. |
-| `STRIPE_PUBLISHABLE_KEY` | The account's live publishable key (public by design), for the card form in the Pay dialog. Without it Pay opens Stripe's page in a new tab. |
-| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | The Discord app. Redirect `https://chamainteligente.com/api/hearth/auth/discord/callback`. The Discord button appears once both are set. |
+Everything the room used to answer here leads there, in `vercel.json`, because links in sent emails, calendar invites and agents' settings still carry the old addresses. `/hearth/*`, `/hearth-room`, `/api/hearth/*`, `/api/oauth/*` and the two OAuth documents under `/.well-known/` redirect permanently (308, which keeps a POST and its body). `/mcp` and the public feed (`/feed`, `/feed.xml`, `/feed/<slug>`) are forwarded instead of redirected: a redirect would drop an agent's `Authorization` header, and the feed's address belongs to this site. `test/site.test.js` holds each of these.
 
 ## Checking and deploying
 
@@ -285,7 +191,7 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 | Test | What it holds |
 |---|---|
 | `test/build.test.js` | Every generated file is exactly what the build makes, and the build is deterministic. |
-| `test/site.test.js` | Every page exists and asks no other host for anything, sets theme and motion before any stylesheet, keeps the brand rules above, has its own title, description and canonical; the sitemap lists exactly the indexable pages; no colour outside `tokens.css`; every old address redirects to a real page in one step; `/hearth` routing; the media kit's files exist. |
+| `test/site.test.js` | Every page exists and asks no other host for anything, sets theme and motion before any stylesheet, keeps the brand rules above, has its own title, description and canonical; the sitemap lists exactly the indexable pages; no colour outside `tokens.css`; every old address redirects to a real page in one step; the Hearth's old addresses leading to its own host; the media kit's files exist. |
 | `test/engine.test.js` | The engine's contracts (see `pages.md` in the skill). `test/fixtures/engine.html` exercises them in a browser. |
 | `test/figures.test.js` | The figure kit's helpers and protagonist, complete at `--p` 1, the `data-morph` format against the engine's own reader, a business only growing into room its boundary has already made, no figure keeping its own copies, and `[data-p]` only on leaves or groups of at most three. `test/fixtures/figure.html` shows the language on the real engine. |
 | `test/talk.test.js` | The chat widget's decisions, and its words against `site/content/en/`. |
@@ -295,11 +201,11 @@ The Hearth's mail comes from `Hearth · Chama Inteligente <hearth@chamainteligen
 
 `test/shots/` is the visual rig for the built pages, with its own dependencies; see `test/shots/README.md`.
 
-`vercel dev --listen 4990` serves the site locally; without a database the Hearth API answers 503, which still proves the routing.
+`vercel dev --listen 4990` serves the site locally.
 
 Merging to `main` deploys through Vercel's GitHub integration (project `chama-inteligente/chama-inteligente`), and PRs get preview URLs. Do not run `vercel deploy` by hand. `.vercelignore` keeps `docs/`, `evals/`, `scripts/`, `site/` and `test/` out of every deploy, so internal reports and page sources live only on GitHub.
 
-Storage and email are Vercel resources: the private Blob store `chama-inteligente-intake` in Paris (`BLOB_READ_WRITE_TOKEN`) and the Resend integration `chama-inteligente-email` (`RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`). Their values live only in Vercel. Crons: intake cleanup daily at 03:15 UTC, the watchdog at `:05` and `:35`, the Hearth at `:20`.
+Storage and email are Vercel resources: the private Blob store `chama-inteligente-intake` in Paris (`BLOB_READ_WRITE_TOKEN`) and the Resend integration `chama-inteligente-email` (`RESEND_API_KEY`, `RESEND_EMAIL_DOMAIN`). Their values live only in Vercel. Crons: intake cleanup daily at 03:15 UTC and the watchdog at `:05` and `:35`.
 
 ### Caching
 
@@ -313,7 +219,7 @@ Images (and the recording's posters) are cached for a day in the browser and a w
 
 The rules `scripts/stamp.js` keeps, and `test/stamp.test.js` enforces:
 
-- Every address is a whole quoted literal from the root: the pages' tags, `talk.js` adding `talk.css`, and the Hearth's parts in `hearth-room.html`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
+- Every address is a whole quoted literal from the root: the pages' tags, `talk.js` adding `talk.css`. Building one at run time (`"/assets/" + name`) fails the check, because no stamp can reach it.
 - A file's version covers the versions it carries, so changing `talk.css` re-versions `talk.js` and the pages. `npm run stamp` repeats until nothing moves.
 - `vercel.json`'s three `/assets/(.*)\.(js|css)` header rules carry the tree's versions, and the check fails while they are stale.
 - The tree is what is added to git, symlinks left out: an address to an asset nobody has added fails the check rather than 404 in production, and the stamp never writes outside the repository.
