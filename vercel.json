@@ -159,8 +159,8 @@
       "permanent": false
     },
     {
-      "source": "/hearth/:path*",
-      "destination": "https://hearth.chamainteligente.com/:path*",
+      "source": "/hearth/:path+",
+      "destination": "https://hearth.chamainteligente.com/:path+",
       "permanent": true
     },
     {
@@ -169,13 +169,13 @@
       "permanent": true
     },
     {
-      "source": "/api/hearth/:path*",
-      "destination": "https://hearth.chamainteligente.com/api/hearth/:path*",
+      "source": "/api/hearth/:path+",
+      "destination": "https://hearth.chamainteligente.com/api/hearth/:path+",
       "permanent": true
     },
     {
-      "source": "/api/oauth/:path*",
-      "destination": "https://hearth.chamainteligente.com/api/oauth/:path*",
+      "source": "/api/oauth/:path+",
+      "destination": "https://hearth.chamainteligente.com/api/oauth/:path+",
       "permanent": true
     },
     {

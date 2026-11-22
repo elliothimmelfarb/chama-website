@@ -141,13 +141,30 @@ test("/hearth is always the public page about the room", () => {
   assert.ok(!vercel.headers.some((h) => h.source === "/hearth" || h.source.startsWith("/hearth/")), "/hearth needs no headers of its own");
 });
 
+// Vercel reads a source the way path-to-regexp does: "/x/:p*" also matches a
+// bare "/x", "/x/:p+" needs at least one segment, and ":p" is one segment.
+function vercelMatches(source, address) {
+  const pattern = source
+    .replace(/[.]/g, "\\.")
+    .replace(/\/:\w+\*/g, "(?:/.*)?")
+    .replace(/\/:\w+\+/g, "/.+")
+    .replace(/:\w+/g, "[^/]+");
+  return new RegExp(`^${pattern}$`).test(address);
+}
+
+test("no redirect takes /hearth away from the public page", () => {
+  const onThisHost = vercel.redirects.filter((r) => !(r.has || []).some((c) => c.type === "host"));
+  assert.deepEqual(onThisHost.filter((r) => vercelMatches(r.source, "/hearth")).map((r) => r.source), []);
+  assert.deepEqual(onThisHost.filter((r) => vercelMatches(r.source, "/hearth-public")).map((r) => r.destination), ["/hearth"]);
+});
+
 test("the room's old addresses redirect to the Hearth's own host for good", () => {
   const to = (source) => vercel.redirects.find((r) => r.source === source);
   for (const [source, destination] of [
-    ["/hearth/:path*", `${HEARTH}/:path*`],
+    ["/hearth/:path+", `${HEARTH}/:path+`],
     ["/hearth-room", `${HEARTH}/`],
-    ["/api/hearth/:path*", `${HEARTH}/api/hearth/:path*`],
-    ["/api/oauth/:path*", `${HEARTH}/api/oauth/:path*`],
+    ["/api/hearth/:path+", `${HEARTH}/api/hearth/:path+`],
+    ["/api/oauth/:path+", `${HEARTH}/api/oauth/:path+`],
     ["/.well-known/oauth-authorization-server", `${HEARTH}/.well-known/oauth-authorization-server`],
     ["/.well-known/oauth-protected-resource", `${HEARTH}/.well-known/oauth-protected-resource`]
   ]) {
