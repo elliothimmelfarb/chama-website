@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>End-of-Page Jitter Fixed</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;600&family=Funnel+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f3f0e8; --surface:#fbf9f4; --fg:#141412; --fg2:#57544d; --line:rgb(20 20 18 / .14);
+  --ember:#f4581f; --ember-text:#b33d0b; --good:#2f6b4f; --bad:#a3271b; --tint:rgb(244 88 31 / .1);
+  --display:"Funnel Display","Helvetica Neue",Arial,sans-serif; --text:"Funnel Sans","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember-text:#ff7a45; --good:#7fc9a3; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember-text:#ff7a45; --good:#7fc9a3; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 1rem/1.5 var(--text);padding:2rem 16px 4rem}
+.wrap{max-width:1000px;margin:0 auto;display:grid;gap:2.75rem}
+.wrap > *{min-width:0}
+h1{font:600 clamp(1.8rem,1.2rem + 3vw,3rem)/1.05 var(--display);letter-spacing:-.025em;margin:0;text-wrap:balance}
+h2{font:600 clamp(1.25rem,1.05rem + 1vw,1.7rem)/1.15 var(--display);letter-spacing:-.02em;margin:0 0 .4rem;text-wrap:balance}
+p{margin:0;max-width:62ch}
+.lead{font-size:1.1rem;color:var(--fg2);margin-top:.8rem}
+.date{font-size:.8rem;color:var(--fg2);margin-bottom:.5rem}
+.sub{color:var(--fg2);font-size:.95rem;margin-bottom:1rem}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+.pair > *{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem}
+.card h3{font:600 1rem/1.2 var(--display);margin:0 0 .5rem}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--text);fill:var(--fg)}
+.muted{fill:var(--fg2)}
+.ax{stroke:var(--line);stroke-width:1.5}
+.res{display:grid;gap:0;border-top:1px solid var(--line)}
+.res > div{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.7fr) minmax(0,.7fr);gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--line);font-size:.92rem;align-items:baseline}
+.res .h{font-size:.78rem;color:var(--fg2);font-weight:600}
+.res b{font:600 1.15rem/1 var(--display);font-variant-numeric:tabular-nums}
+.bad{color:var(--bad)} .good{color:var(--good)}
+.open{border:1.5px dashed var(--line);border-radius:14px;padding:1rem;background:transparent}
+.open ul{margin:.4rem 0 0;padding-left:1.1rem;color:var(--fg2);font-size:.93rem;display:grid;gap:.5rem}
+.open li b{color:var(--fg)}
+a{color:var(--ember-text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="date">2026-11-25 · /engineering-department · live in production</div>
+  <h1>The jitter near the end of the Engineering department page is gone</h1>
+  <p class="lead">As "You own the IP" let go of the screen, its words slid 56px down instead of holding still. A play button appearing late was the cause.</p>
+</header>
+
+<section>
+  <h2>What you saw, measured</h2>
+  <p class="sub">Where the "You own the IP" heading sits on the screen while you scroll past its release, at 1440×820.</p>
+  <div class="card">
+  <svg viewBox="0 0 380 250" role="img" aria-label="Before the fix the heading stays at 241px, then slides down to 297px over the 56px of scroll before the release. After the fix it stays at 241px.">
+    <line class="ax" x1="50" y1="20" x2="50" y2="200"/>
+    <line class="ax" x1="50" y1="200" x2="365" y2="200"/>
+    <text x="44" y="64" text-anchor="end" font-size="13" class="muted">241</text>
+    <text x="44" y="164" text-anchor="end" font-size="13" class="muted">297</text>
+    <text x="10" y="14" font-size="13" class="muted">px from top of screen</text>
+    <!-- x: scroll 8180..8420 -> 50..365  (1.3125 px per px) -->
+    <line x1="190" y1="20" x2="190" y2="200" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <line x1="263" y1="20" x2="263" y2="200" stroke="var(--fg2)" stroke-dasharray="4 4"/>
+    <text x="190" y="218" text-anchor="middle" font-size="13.5" class="muted">8245</text>
+    <text x="263" y="218" text-anchor="middle" font-size="13.5" class="muted">8301</text>
+    <text x="207" y="240" text-anchor="middle" font-size="13" class="muted">scroll position →</text>
+    <text x="268" y="34" font-size="13.5" class="muted">pin lets go</text>
+    <!-- before: flat 60, ramp 190->263 to 160, flat -->
+    <polyline points="50,60 190,60 263,160 365,160" fill="none" stroke="var(--bad)" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- after -->
+    <polyline points="50,60 365,60" fill="none" stroke="var(--good)" stroke-width="3.5"/>
+    <text x="300" y="150" font-size="13" fill="var(--bad)" font-weight="600">before</text>
+    <text x="300" y="52" font-size="13" fill="var(--good)" font-weight="600">after</text>
+    <text x="205" y="128" font-size="13" fill="var(--bad)" text-anchor="end">slides 56px down</text>
+  </svg>
+  </div>
+</section>
+
+<section>
+  <h2>Why it happened</h2>
+  <p class="sub">The same trap as the captions on 2026-11-20: something in the recording changed height after the page was measured.</p>
+  <div class="card">
+  <svg viewBox="0 0 380 330" role="img" aria-label="Four steps from cause to jitter.">
+    <g font-size="13.5">
+      <rect x="10" y="8" width="360" height="62" rx="10" fill="var(--tint)" stroke="var(--ember)"/>
+      <text x="24" y="32" font-weight="600">The play button under the recording</text>
+      <text x="24" y="54" class="muted">was hidden until its script ran, then appeared</text>
+      <path d="M190 72 v14" stroke="var(--fg2)" stroke-width="2" marker-end="url(#a)"/>
+      <rect x="10" y="90" width="360" height="62" rx="10" fill="var(--surface)" stroke="var(--line)"/>
+      <text x="24" y="114" font-weight="600">The page grew 56px</text>
+      <text x="24" y="136" class="muted">after the engine had already measured it once</text>
+      <path d="M190 154 v14" stroke="var(--fg2)" stroke-width="2" marker-end="url(#a)"/>
+      <rect x="10" y="172" width="360" height="62" rx="10" fill="var(--surface)" stroke="var(--line)"/>
+      <text x="24" y="196" font-weight="600">The release point moved 8245 → 8301</text>
+      <text x="24" y="218" class="muted">and the engine wrote the new one</text>
+      <path d="M190 236 v14" stroke="var(--fg2)" stroke-width="2" marker-end="url(#a)"/>
+      <rect x="10" y="254" width="360" height="62" rx="10" fill="var(--surface)" stroke="var(--bad)"/>
+      <text x="24" y="278" font-weight="600">Chrome kept the first one</text>
+      <text x="24" y="300" class="muted">so the words started "holding" 56px too early</text>
+    </g>
+    <defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--fg2)"/></marker></defs>
+  </svg>
+  </div>
+  <p class="sub" style="margin-top:1rem">The fix keeps the button's space from the first paint, invisible until the video's state is known. Nothing in that section changes height any more.</p>
+</section>
+
+<section>
+  <h2>Checked in production</h2>
+  <div class="res">
+    <div><span class="h">Check</span><span class="h">Before</span><span class="h">After</span></div>
+    <div><span>Heading's head start at the release, 1440×820</span><b class="bad">56px</b><b class="good">0px</b></div>
+    <div><span>Same check at 1440×900 and on your phone size (364×610)</span><b class="bad">early</b><b class="good">0px</b></div>
+    <div><span>Shots rig stand failures on this page</span><b class="bad">9</b><b class="good">0</b></div>
+    <div><span>Downward slide filmed in Comet (before: 1 of 2 scrolls showed it; after: 3 scrolls)</span><b class="bad">57px</b><b class="good">0px</b></div>
+    <div><span>Unit tests</span><b>215</b><b class="good">216 pass</b></div>
+  </div>
+  <p class="sub" style="margin-top:.9rem">The shots rig missed this before because it only compared two points inside the hold, and both were off by the same amount. It now also checks 24px before the release, and passes on every page. Merged as <a href="https://github.com/elliothimmelfarb/chama-website/pull/234">elliothimmelfarb/chama-website#234</a>.</p>
+</section>
+
+<section class="open">
+  <h2>Left open, outside this fix</h2>
+  <ul>
+    <li><b>Chrome can still keep a stale release point</b> if anything else changes height while the page loads (a late font swap could do it). Restarting the animation whenever the engine re-measures would close it for every page. I've offered it as a separate session.</li>
+    <li><b>The shots rig flags 4 caption lines as hidden text</b> in the 610×364 one-column view. They are transparent on purpose so they take turns, and production shows the same 4, so it's a rig rule to adjust rather than a page bug.</li>
+  </ul>
+</section>
+
+</div>
+</body>
+</html>
