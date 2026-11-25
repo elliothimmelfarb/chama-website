@@ -367,10 +367,12 @@ async function holdPoints(page) {
 }
 
 // A word that stands as its pin leaves (data-stand, held on the scroll's
-// own timeline) is in the same place at the start and the middle of its
-// stretch. Run after the page has been scrolled around, so a measure taken
-// past a stretch is held to it too (2026-11-17: one measured every stand
-// from where it stood and gave 3px instead of 284).
+// own timeline) is in the same place just before its pin lets go, at the
+// start and at the middle of its stretch (2026-11-25: a stand Chrome kept
+// from an earlier measure started 56px early, and both points inside the
+// stretch moved together). Run after the page has been scrolled around,
+// so a measure taken past a stretch is held to it too (2026-11-17: one
+// measured every stand from where it stood and gave 3px instead of 284).
 async function checkStands(pg, state, page, dir, stem) {
   // A world whose parts are stacked in one column leaves as one: every part
   // stands the same distance (2026-11-17: on a phone the figure under home's
@@ -391,8 +393,13 @@ async function checkStands(pg, state, page, dir, stem) {
       const e = document.querySelector(`[data-stand-probe="${i}"]`), m = getComputedStyle(e).transform;
       return e.getBoundingClientRect().top - (m && m !== "none" ? new DOMMatrix(m).m42 : 0);
     }, s.i); };
-    const a = await at(s.rel), b = await at(s.rel + s.stand / 2);
-    if (Math.abs(a - b) > 1.5) {
+    const before = await at(s.rel - 24), a = await at(s.rel), b = await at(s.rel + s.stand / 2);
+    if (Math.abs(before - a) > 1.5) {
+      const shot = path.join(dir, `${stem}-stand-${s.i}.png`);
+      await at(s.rel);
+      await page.screenshot({ path: shot });
+      fail(pg, state, "stand", `"${s.text}" moved ${Math.round(a - before)}px in the last 24px before its pin let go: its stand starts early`, shot);
+    } else if (Math.abs(a - b) > 1.5) {
       const shot = path.join(dir, `${stem}-stand-${s.i}.png`);
       await page.screenshot({ path: shot });
       fail(pg, state, "stand", `"${s.text}" moved ${Math.round(b - a)}px in the first half of its ${s.stand}px stand`, shot);

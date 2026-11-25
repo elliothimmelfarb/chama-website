@@ -190,7 +190,10 @@
 .ed-rec-btn { justify-self: start; background: var(--surface); box-shadow: inset 0 0 0 1px var(--fg-2); }
 .ed-rec-btn > span { display: inline-flex; align-items: center; gap: 8px; }
 .ed-rec-btn svg { width: 14px; height: 14px; }
-[data-rec]:not([data-state]) .ed-rec-btn,
+[data-rec]:not([data-state]) .ed-rec-btn { visibility: hidden; }
+@media (scripting: none) {
+.ed-rec-btn { display: none; }
+}
 [data-rec][data-state="playing"] .ed-rec-play,
 [data-rec]:not([data-state="playing"]) .ed-rec-pause { display: none; }
 .ed-rec-lines { margin: 0; padding-left: 1.4em; display: grid; gap: var(--s2); max-width: 60ch; color: var(--fg-2); }
