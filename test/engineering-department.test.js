@@ -208,3 +208,21 @@ test("the recording's caption box is one height whatever line is being said", ()
   assert.ok(/li:not\(\[data-now\]\)\s*\{[^}]*opacity:\s*0/.test(block), "the lines not being said are transparent");
   assert.match(MAIN, /<ol class="ed-rec-lines"[^>]*>\s*<li data-now/, "the first line is the one shown before the script runs");
 });
+
+// The recording's play button was display: none until the script gave the
+// figure a data-state, so the box grew by the button's row (56px at
+// 1440x820) after the engine had first measured the page. In Chrome the
+// last pinned world ("You own the IP") then kept the stand from that first
+// measure: its words slid down 56px as their pin let go, near the end of
+// the page (Elliot, 2026-11-25: "scroll jittering up and down towards the
+// end"). Wherever a script runs, the button has its room from the first
+// paint, and only its label changes with the state.
+test("the recording's play button has its room before the script runs", () => {
+  const css = [...HTML.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n").replace(/\/\*[\s\S]*?\*\//g, "");
+  const noScript = /@media \(scripting: none\) \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+  const outside = css.replace(/@media \(scripting: none\) \{[\s\S]*?\n\}/, "");
+  const rules = [...outside.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sels: m[1].trim().split(/\s*,\s*/), body: m[2] }));
+  const hidesButton = rules.filter((r) => /display:\s*none/.test(r.body) && r.sels.some((s) => /\.ed-rec-btn$/.test(s)));
+  assert.deepEqual(hidesButton.map((r) => r.sels.join(", ")), [], "no rule takes the button out of the layout where its script will bring it back");
+  assert.match(noScript, /\.ed-rec-btn\s*\{[^}]*display:\s*none/, "without scripts, where it could never play, it takes no room");
+});
