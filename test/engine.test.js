@@ -320,9 +320,12 @@ test("where the scroll can drive it, a leaving word is held still by the scroll 
   assert.match(sup, /\.r\[data-stand\][^{]*\{[^}]*animation:\s*stand linear both;[^}]*animation-timeline:\s*scroll\(root\);[^}]*animation-range:\s*var\(--rel\) calc\(var\(--rel\) \+ var\(--stand\)\)/, "a standing .r runs `stand` over its stretch of the root's scroll");
   assert.match(CSS, /@keyframes stand \{\s*from \{ translate: 0 0; \}\s*to \{ translate: 0 var\(--stand\); \}\s*\}/, "and gives back exactly the pin's travel over it");
   const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
-  for (const v of ["--stand", "--rel"]) assert.match(measure, new RegExp(`setVar\\(el, "${v}"`), `measure() writes ${v} once per layout`);
-  assert.match(measure, /setVar\(el, "--rel", x \? Math\.round\(tops\[k\] \+ hs\[k\] - pins\[k\]\)/, "the stretch starts where the sticky pin lets go");
-  assert.match(measure, /toggleAttribute\("data-stand", !!x\)/, "a word that stands is marked, or the animation never applies");
+  const setStand = /function setStand\([^)]*\) \{([\s\S]*?)\n  \}\n/.exec(JS)?.[1] ?? "";
+  for (const v of ["--stand", "--rel"]) assert.match(setStand, new RegExp(`setVar\\(el, "${v}"`), `measure() writes ${v} once per layout`);
+  assert.match(measure, /setStand\(el, x, tops\[k\] \+ hs\[k\] - pins\[k\], pins\[k\], moved\)/, "the stretch starts where the sticky pin lets go");
+  assert.match(setStand, /toggleAttribute\("data-stand", !!x\)/, "a word that stands is marked, or the animation never applies");
+  // test/shots' "grows 56px in its first frame" holds this in a browser
+  assert.match(measure, /moved\.forEach\(function \(el\) \{\s*el\.getAnimations\(\)\.forEach\(function \(a\) \{ if \(a\.animationName === "stand"\) a\.play\(\); \}\);/, "a stand that moved makes Chrome read its range again");
   for (const v of ["--rel", "--stand"]) assert.match(CSS, new RegExp(`@property ${v} \\{[^}]*inherits: false`), `${v} is registered not to inherit, or a figure box restyles its subtree`);
   // the router's rise must not replace the stand (Back can land in its stretch)
   assert.ok(RULES.some((x) => x.selectors.some((t) => t.startsWith("html.nav-enter") && t.includes("[data-stand]")) && /animation-composition:\s*replace, add/.test(x.body) && /scroll\(root\)/.test(x.body)), "a standing word keeps its stand while it rises in");
@@ -344,9 +347,7 @@ test("where the scroll can drive it, /build's devices stand on the scroll itself
   const stand = /([^{}]+)\{[^}]*animation:\s*stand linear both;[^}]*animation-timeline:\s*scroll\(root\);[^}]*\}/.exec(sup)?.[1] ?? "";
   assert.ok(stand.split(",").map((s) => s.trim()).includes(".made-stage[data-stand]"), "the devices' stage runs `stand` over its stretch of the root's scroll");
   const measure = /function measure\(\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
-  assert.match(measure, /setVar\(D\.stage, "--rel"/, "measure() writes where the devices' pin lets go");
-  assert.match(measure, /ds = held\[k\] \? devStay\[k\][\s\S]*setVar\(D\.stage, "--stand", ds \?/, "and how far the stage stands past it, from the devices' own stay");
-  assert.match(measure, /D\.stage\.toggleAttribute\("data-stand"/, "and marks the stage, or the animation never applies");
+  assert.match(measure, /ds = held\[k\] \? devStay\[k\][\s\S]*setStand\(D\.stage, ds, tops\[k\] \+ hs\[k\] - pins\[k\], pins\[k\], moved\)/, "measure() writes where the devices' pin lets go and how far the stage stands past it, from the devices' own stay, and marks it");
   const frame = /function frame\(now\) \{([\s\S]*?)\n  \}\n/.exec(JS)[1];
   const call = /drawDevices\(sections\[i\], l, ts, [^;]*\);/.exec(frame)?.[0] ?? "";
   assert.match(call, /SCROLL_DRIVEN \? 0 :/, "the frame passes the stand only where the scroll cannot drive it");

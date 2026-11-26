@@ -734,9 +734,18 @@
   // nothing leaves the layout it read clean for its second round of reads
   function setVar(el, name, v) {
     var k = el._vars || (el._vars = {});
-    if (k[name] === v) return;
+    if (k[name] === v) return false;
     k[name] = v;
     if (v === "") el.style.removeProperty(name); else el.style.setProperty(name, v);
+    return true;
+  }
+  // Write where el stands on the root's scroll (worlds.css runs it) and
+  // remember an element that already stood whose stand moved.
+  function setStand(el, x, rel, len, moved) {
+    var was = el.hasAttribute("data-stand");
+    var a = setVar(el, "--rel", x ? Math.round(rel) + "px" : ""), b = setVar(el, "--stand", x ? Math.round(x * len) + "px" : "");
+    if (!!x !== was) el.toggleAttribute("data-stand", !!x);
+    if (x && was && (a || b)) moved.push(el);
   }
   function measure() {
     // every read, then every write, so the page is laid out once
@@ -775,15 +784,14 @@
       return reach(k, g.world);
     });
     // then the writes: how long each .r stands still as its pin leaves
+    var moved = [];
     sections.forEach(function (s, k) {
       (readers[k] || []).forEach(function (el, j) {
         var x = held[k] && stays[k] ? stays[k][j] || 0 : 0;
         if (SCROLL_DRIVEN) {
           // the scroll offset where the pin lets go, and how far the word
           // stands still past it (worlds.css runs it on the root's scroll)
-          setVar(el, "--rel", x ? Math.round(tops[k] + hs[k] - pins[k]) + "px" : "");
-          setVar(el, "--stand", x ? Math.round(x * pins[k]) + "px" : "");
-          if (!!x !== el.hasAttribute("data-stand")) el.toggleAttribute("data-stand", !!x);
+          setStand(el, x, tops[k] + hs[k] - pins[k], pins[k], moved);
         } else {
           setVar(el, "--sx", x ? String(round3(x)) : "");
           setVar(el, "--pl", x ? Math.round(pins[k]) + "px" : "");
@@ -792,11 +800,7 @@
       // /build's devices stand as a word does: on the root's scroll
       if (SCROLL_DRIVEN && isDevices(k)) {
         var D = devicesOf(s), ds = held[k] ? devStay[k] || 0 : 0;
-        if (D.stage) {
-          setVar(D.stage, "--rel", ds ? Math.round(tops[k] + hs[k] - pins[k]) + "px" : "");
-          setVar(D.stage, "--stand", ds ? Math.round(ds * pins[k]) + "px" : "");
-          if (!!ds !== D.stage.hasAttribute("data-stand")) D.stage.toggleAttribute("data-stand", !!ds);
-        }
+        if (D.stage) setStand(D.stage, ds, tops[k] + hs[k] - pins[k], pins[k], moved);
       }
       // Where a world had to be gone early (a phone, /build's devices under
       // the header), the next pinned world's words start as its last part
@@ -835,6 +839,13 @@
       });
     });
     if (nav) placeRail();
+    // Chrome can keep a stand's first range when --rel changes in the frame
+    // its animation started (a ResizeObserver measure while the page loads),
+    // though computed style shows the new one; play() makes it read the
+    // range again, and keeps showing the old one until it has.
+    moved.forEach(function (el) {
+      el.getAnimations().forEach(function (a) { if (a.animationName === "stand") a.play(); });
+    });
     // the exits may have moved: the next frame writes every --u, --e and --p again
     lastU = [];
     lastV = [];
