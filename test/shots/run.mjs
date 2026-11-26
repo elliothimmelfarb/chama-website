@@ -383,10 +383,25 @@ async function checkStands(pg, state, page, dir, stem) {
     return stacked && new Set(parts.map((p) => p.stand)).size > 1 ? [`${pin.parentElement.dataset.label}: ${parts.map((p) => `"${p.text}" ${p.stand}`).join(", ")}`] : [];
   }));
   for (const s of split) fail(pg, state, "stacked world split", s, null);
-  const stands = await page.evaluate(() => [...document.querySelectorAll("[data-stand]")].map((e, i) => {
-    e.dataset.standProbe = i;
-    return { i, rel: parseFloat(e.style.getPropertyValue("--rel")), stand: parseFloat(e.style.getPropertyValue("--stand")), text: e.textContent.trim().slice(0, 40) };
-  }));
+  const stands = await page.evaluate(async () => {
+    const els = [...document.querySelectorAll("[data-stand]")];
+    // a stand whose range just changed has no startTime until it is ready
+    await Promise.all(els.flatMap((e) => e.getAnimations().map((a) => a.ready)));
+    const max = document.documentElement.scrollHeight - innerHeight;
+    return els.map((e, i) => {
+      e.dataset.standProbe = i;
+      // where Chrome resolved the stand animation to start, in px of scroll
+      // (its startTime is a percentage of the root's scroll range)
+      const a = e.getAnimations().find((a) => a.animationName === "stand");
+      const from = a && a.startTime !== null ? a.startTime.value * max / 100 : null;
+      return { i, rel: parseFloat(e.style.getPropertyValue("--rel")), stand: parseFloat(e.style.getPropertyValue("--stand")), from, text: e.textContent.trim().slice(0, 40) };
+    });
+  });
+  // 2026-11-25: computed style showed the new --rel while the animation
+  // kept the old one, which a position check misses whenever the page
+  // happens to load slowly enough
+  const stale = stands.filter((s) => s.from === null || Math.abs(s.from - s.rel) > 1.5);
+  if (stale.length) fail(pg, state, "stale stand", `${stale.length} of ${stands.length} stands start away from their --rel, e.g. "${stale[0].text}" at ${stale[0].from === null ? "no animation" : Math.round(stale[0].from) + "px"} for ${stale[0].rel}px`, null);
   for (const s of stands) {
     const at = async (y) => { await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y); await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))); return page.evaluate((i) => {
       // its place without the exit's lift (transform), which is meant to move
@@ -799,11 +814,42 @@ async function thanks(motion) {
   } catch (e) { fail("home", state, "rig error", e.message.split("\n")[0]); } finally { await context.close(); }
 }
 
+// The page grows in the frame its words first stand, after the engine's
+// first measure and before its ResizeObserver measures again, as a late
+// picture, font or control would (2026-11-25: a play button that appeared
+// 7ms into loading left every stand on /engineering-department 56px
+// early). Every stand must follow the second measure. Growing it on
+// DOMContentLoaded instead missed that frame on some loads.
+async function lateGrowth(pg, vp) {
+  const state = `grows 56px in its first frame, light full ${vp.name} ${vp.width}x${vp.height}`;
+  const dir = dirFor(EXTRA), stem = `grow-${pg.id}-${vp.name}`;
+  const { context, page, log } = await open(vp, { theme: "light", motion: "full" });
+  await context.addInitScript(() => {
+    const seen = new MutationObserver(() => {
+      if (!document.querySelector("[data-stand]")) return;
+      seen.disconnect();
+      requestAnimationFrame(() => {
+        const d = document.createElement("div");
+        d.style.height = "56px";
+        (document.querySelector(".world") || document.body.firstElementChild).before(d);
+      });
+    });
+    seen.observe(document, { subtree: true, attributes: true, attributeFilter: ["data-stand"] });
+  });
+  try {
+    await page.goto(BASE + pg.path, { waitUntil: "load" });
+    await page.waitForTimeout(SETTLE);
+    await checkStands(pg.id, state, page, dir, stem);
+    reportLog(pg.id, state, log, null);
+  } catch (e) { fail(pg.id, state, "rig error", e.message.split("\n")[0]); } finally { await context.close(); }
+}
+
 // ---- run ------------------------------------------------------------------------
 const jobs = [];
 for (const pg of pages) for (const theme of ["light", "dark"]) for (const motion of ["full", "low"]) for (const vp of [PHONE, DESK]) jobs.push(() => runState(pg, theme, motion, vp));
 for (const pg of pages) jobs.push(() => oneColumn(pg));
 for (const pg of pages) for (const vp of FILL_SIZES) jobs.push(() => fillCheck(pg, vp));
+for (const pg of pages) for (const vp of [PHONE, DESK]) jobs.push(() => lateGrowth(pg, vp));
 for (const pg of pages.filter((p) => ["/", "/engineering-department"].includes(p.path))) for (const vp of [PHONE, DESK]) for (const sys of ["light", "dark"]) jobs.push(() => noJs(pg, vp, sys));
 if (pages.some((p) => p.path === "/")) {
   jobs.push(() => routerTrip(DESK), () => routerTrip(PHONE), () => thanks("full"), () => thanks("low"));
