@@ -383,14 +383,20 @@ async function checkStands(pg, state, page, dir, stem) {
     return stacked && new Set(parts.map((p) => p.stand)).size > 1 ? [`${pin.parentElement.dataset.label}: ${parts.map((p) => `"${p.text}" ${p.stand}`).join(", ")}`] : [];
   }));
   for (const s of split) fail(pg, state, "stacked world split", s, null);
-  const stands = await page.evaluate(() => [...document.querySelectorAll("[data-stand]")].map((e, i) => {
-    e.dataset.standProbe = i;
-    // where Chrome resolved the stand animation to start, in px of scroll
-    // (its startTime is a percentage of the root's scroll range)
-    const a = e.getAnimations().find((a) => a.animationName === "stand"), max = document.documentElement.scrollHeight - innerHeight;
-    const from = a && a.startTime !== null ? parseFloat(String(a.startTime)) * max / 100 : null;
-    return { i, rel: parseFloat(e.style.getPropertyValue("--rel")), stand: parseFloat(e.style.getPropertyValue("--stand")), from, text: e.textContent.trim().slice(0, 40) };
-  }));
+  const stands = await page.evaluate(async () => {
+    const els = [...document.querySelectorAll("[data-stand]")];
+    // a stand whose range just changed has no startTime until it is ready
+    await Promise.all(els.flatMap((e) => e.getAnimations().map((a) => a.ready)));
+    const max = document.documentElement.scrollHeight - innerHeight;
+    return els.map((e, i) => {
+      e.dataset.standProbe = i;
+      // where Chrome resolved the stand animation to start, in px of scroll
+      // (its startTime is a percentage of the root's scroll range)
+      const a = e.getAnimations().find((a) => a.animationName === "stand");
+      const from = a && a.startTime !== null ? a.startTime.value * max / 100 : null;
+      return { i, rel: parseFloat(e.style.getPropertyValue("--rel")), stand: parseFloat(e.style.getPropertyValue("--stand")), from, text: e.textContent.trim().slice(0, 40) };
+    });
+  });
   // 2026-11-25: computed style showed the new --rel while the animation
   // kept the old one, which a position check misses whenever the page
   // happens to load slowly enough
@@ -808,20 +814,28 @@ async function thanks(motion) {
   } catch (e) { fail("home", state, "rig error", e.message.split("\n")[0]); } finally { await context.close(); }
 }
 
-// The page grows in its first frame, after the engine's first measure and
-// before its ResizeObserver measures again, as a late picture, font or
-// control would (2026-11-25: a play button that appeared 7ms into loading
-// left every stand on /engineering-department 56px early). Every stand
-// must follow the second measure.
+// The page grows in the frame its words first stand, after the engine's
+// first measure and before its ResizeObserver measures again, as a late
+// picture, font or control would (2026-11-25: a play button that appeared
+// 7ms into loading left every stand on /engineering-department 56px
+// early). Every stand must follow the second measure. Growing it on
+// DOMContentLoaded instead missed that frame on some loads.
 async function lateGrowth(pg, vp) {
   const state = `grows 56px in its first frame, light full ${vp.name} ${vp.width}x${vp.height}`;
   const dir = dirFor(EXTRA), stem = `grow-${pg.id}-${vp.name}`;
   const { context, page, log } = await open(vp, { theme: "light", motion: "full" });
-  await context.addInitScript(() => document.addEventListener("DOMContentLoaded", () => requestAnimationFrame(() => {
-    const d = document.createElement("div");
-    d.style.height = "56px";
-    (document.querySelector(".world") || document.body.firstElementChild).before(d);
-  })));
+  await context.addInitScript(() => {
+    const seen = new MutationObserver(() => {
+      if (!document.querySelector("[data-stand]")) return;
+      seen.disconnect();
+      requestAnimationFrame(() => {
+        const d = document.createElement("div");
+        d.style.height = "56px";
+        (document.querySelector(".world") || document.body.firstElementChild).before(d);
+      });
+    });
+    seen.observe(document, { subtree: true, attributes: true, attributeFilter: ["data-stand"] });
+  });
   try {
     await page.goto(BASE + pg.path, { waitUntil: "load" });
     await page.waitForTimeout(SETTLE);

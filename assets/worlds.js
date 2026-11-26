@@ -739,13 +739,11 @@
     if (v === "") el.style.removeProperty(name); else el.style.setProperty(name, v);
     return true;
   }
-  // Write where el stands on the root's scroll (worlds.css runs it) and
-  // remember an element that already stood whose stand moved.
   function setStand(el, x, rel, len, moved) {
     var was = el.hasAttribute("data-stand");
-    var a = setVar(el, "--rel", x ? Math.round(rel) + "px" : ""), b = setVar(el, "--stand", x ? Math.round(x * len) + "px" : "");
+    var relMoved = setVar(el, "--rel", x ? Math.round(rel) + "px" : ""), standMoved = setVar(el, "--stand", x ? Math.round(x * len) + "px" : "");
     if (!!x !== was) el.toggleAttribute("data-stand", !!x);
-    if (x && was && (a || b)) moved.push(el);
+    if (x && was && (relMoved || standMoved)) moved.push(el);
   }
   function measure() {
     // every read, then every write, so the page is laid out once
@@ -840,9 +838,11 @@
     });
     if (nav) placeRail();
     // Chrome can keep a stand's first range when --rel changes in the frame
-    // its animation started (a ResizeObserver measure while the page loads),
-    // though computed style shows the new one; play() makes it read the
-    // range again, and keeps showing the old one until it has.
+    // its animation started (a ResizeObserver measure while the page loads,
+    // or the frame it comes back from animation: none), though computed
+    // style shows the new one; play() makes it read the range again, and
+    // keeps showing the old one until it has. After play() a CSS
+    // animation-play-state no longer applies to that animation.
     moved.forEach(function (el) {
       el.getAnimations().forEach(function (a) { if (a.animationName === "stand") a.play(); });
     });

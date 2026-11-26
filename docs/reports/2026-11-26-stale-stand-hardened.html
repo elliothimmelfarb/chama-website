@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stale Stands Fixed</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@500;600&family=Funnel+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f3f0e8; --surface:#fbf9f4; --fg:#141412; --fg2:#57544d; --line:rgb(20 20 18 / .14);
+  --ember:#f4581f; --ember-text:#b33d0b; --good:#2f6b4f; --bad:#a3271b; --tint:rgb(244 88 31 / .1);
+  --display:"Funnel Display","Helvetica Neue",Arial,sans-serif; --text:"Funnel Sans","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember-text:#ff7a45; --good:#7fc9a3; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#161513; --surface:#22201c; --fg:#f3f0e8; --fg2:#aaa498; --line:rgb(243 240 232 / .16);
+  --ember-text:#ff7a45; --good:#7fc9a3; --bad:#ff8a7a; --tint:rgb(244 88 31 / .16); color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 1rem/1.5 var(--text);padding:2rem 16px 4rem}
+.wrap{max-width:1000px;margin:0 auto;display:grid;gap:2.75rem}
+.wrap > *{min-width:0}
+h1{font:600 clamp(1.8rem,1.2rem + 3vw,3rem)/1.05 var(--display);letter-spacing:-.025em;margin:0;text-wrap:balance}
+h2{font:600 clamp(1.25rem,1.05rem + 1vw,1.7rem)/1.15 var(--display);letter-spacing:-.02em;margin:0 0 .4rem;text-wrap:balance}
+p{margin:0;max-width:62ch}
+.lead{font-size:1.1rem;color:var(--fg2);margin-top:.8rem}
+.date{font-size:.8rem;color:var(--fg2);margin-bottom:.5rem}
+.sub{color:var(--fg2);font-size:.95rem;margin-bottom:1rem}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+.pair > *{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem}
+.card h3{font:600 1rem/1.2 var(--display);margin:0 0 .5rem}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--text);fill:var(--fg)}
+.muted{fill:var(--fg2)}
+.ax{stroke:var(--line);stroke-width:1.5}
+.scope{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.scope li{display:grid;grid-template-columns:1.6rem minmax(0,1fr);gap:.5rem;padding:.6rem 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.scope .ok{color:var(--good);font-weight:700}
+.scope .no{color:var(--bad);font-weight:700}
+.open{border:1.5px dashed var(--line);border-radius:14px;padding:1rem;background:transparent}
+.open ul{margin:.4rem 0 0;padding-left:1.1rem;color:var(--fg2);font-size:.93rem;display:grid;gap:.5rem}
+.open li b{color:var(--fg)}
+a{color:var(--ember-text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="date">2026-11-26 · the worlds engine, every page · PROD_STATUS</div>
+  <h1>A page that grows while loading can no longer make the words slide</h1>
+  <p class="lead">Yesterday's jitter came from Chrome keeping an old release point. I found exactly when Chrome does that, made the engine correct it, and added a check that grows every page on purpose to prove it.</p>
+</header>
+
+<section>
+  <h2>When Chrome keeps the old release point</h2>
+  <p class="sub">It only happens when the release point changes in the same frame the word started standing. One frame later, Chrome reads the change fine.</p>
+  <div class="card">
+  <svg viewBox="0 0 380 300" role="img" aria-label="Timeline of the first frame: the engine measures, the page grows, the engine measures again inside the same frame, and Chrome keeps the first value. The fix calls play so Chrome reads the new value.">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--fg2)"/></marker></defs>
+    <rect x="10" y="10" width="360" height="200" rx="12" fill="var(--tint)" stroke="var(--ember)" stroke-dasharray="5 4"/>
+    <text x="24" y="32" font-size="13" class="muted">the page's first frame</text>
+    <g font-size="13.5">
+      <circle cx="34" cy="60" r="6" fill="var(--fg2)"/>
+      <text x="50" y="65"><tspan font-weight="600">Engine measures:</tspan> release at 1000px</text>
+      <circle cx="34" cy="98" r="6" fill="var(--fg2)"/>
+      <text x="50" y="103"><tspan font-weight="600">Page grows 56px</tspan> (a late button or font)</text>
+      <circle cx="34" cy="136" r="6" fill="var(--fg2)"/>
+      <text x="50" y="141"><tspan font-weight="600">Engine measures again:</tspan> 1056px</text>
+      <circle cx="34" cy="180" r="7" fill="var(--bad)"/>
+      <text x="50" y="178" fill="var(--bad)" font-weight="600">Chrome still uses 1000px</text>
+      <text x="50" y="197" class="muted" font-size="12.5">though its own style says 1056px</text>
+      <path d="M34 66 V92 M34 104 V130 M34 142 V172" stroke="var(--fg2)" stroke-width="1.5"/>
+    </g>
+    <path d="M190 214 v22" stroke="var(--fg2)" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="10" y="242" width="360" height="50" rx="12" fill="var(--surface)" stroke="var(--good)"/>
+    <text x="24" y="264" font-size="13.5" font-weight="600" fill="var(--good)">Now the engine tells Chrome to look again</text>
+    <text x="24" y="283" font-size="12.5" class="muted">whenever a measure moves a word that already stands</text>
+  </svg>
+  </div>
+</section>
+
+<section>
+  <h2>The new check, before and after the fix</h2>
+  <p class="sub">The shots rig now loads every page, grows it 56px in its first frame, and compares where Chrome starts each stand with where the engine asked. Shown here for /engineering-department at 1440×900. Without the fix this size failed on /engineering-department, /coaching and /build in 3 runs out of 3, and your phone size failed in some runs.</p>
+  <div class="card">
+  <svg viewBox="0 0 380 170" role="img" aria-label="Without the fix, 14 of 14 stands start 56px early. With it, 0 of 14.">
+    <text x="10" y="22" font-size="13.5" font-weight="600">Without the fix</text>
+    <g fill="var(--bad)">
+      <rect x="10" y="34" width="22" height="22" rx="4"/><rect x="36" y="34" width="22" height="22" rx="4"/><rect x="62" y="34" width="22" height="22" rx="4"/><rect x="88" y="34" width="22" height="22" rx="4"/><rect x="114" y="34" width="22" height="22" rx="4"/><rect x="140" y="34" width="22" height="22" rx="4"/><rect x="166" y="34" width="22" height="22" rx="4"/><rect x="192" y="34" width="22" height="22" rx="4"/><rect x="218" y="34" width="22" height="22" rx="4"/><rect x="244" y="34" width="22" height="22" rx="4"/><rect x="270" y="34" width="22" height="22" rx="4"/><rect x="296" y="34" width="22" height="22" rx="4"/><rect x="322" y="34" width="22" height="22" rx="4"/><rect x="348" y="34" width="22" height="22" rx="4"/>
+    </g>
+    <text x="10" y="76" font-size="13" fill="var(--bad)">all 14 stands start 56px early</text>
+    <text x="10" y="112" font-size="13.5" font-weight="600">With it</text>
+    <g fill="var(--good)">
+      <rect x="10" y="124" width="22" height="22" rx="4"/><rect x="36" y="124" width="22" height="22" rx="4"/><rect x="62" y="124" width="22" height="22" rx="4"/><rect x="88" y="124" width="22" height="22" rx="4"/><rect x="114" y="124" width="22" height="22" rx="4"/><rect x="140" y="124" width="22" height="22" rx="4"/><rect x="166" y="124" width="22" height="22" rx="4"/><rect x="192" y="124" width="22" height="22" rx="4"/><rect x="218" y="124" width="22" height="22" rx="4"/><rect x="244" y="124" width="22" height="22" rx="4"/><rect x="270" y="124" width="22" height="22" rx="4"/><rect x="296" y="124" width="22" height="22" rx="4"/><rect x="322" y="124" width="22" height="22" rx="4"/><rect x="348" y="124" width="22" height="22" rx="4"/>
+    </g>
+    <text x="10" y="166" font-size="13" fill="var(--good)">every stand starts exactly at its release</text>
+  </svg>
+  </div>
+</section>
+
+<section>
+  <h2>Scrolling costs the same</h2>
+  <p class="sub">The correction runs only when a measure moves a word, which never happens during a normal scroll (it ran 0 times in a full scroll). Style work per frame on /engineering-department, a 4000px touch scroll at 4× slower CPU, average of four runs:</p>
+  <div class="card">
+  <svg viewBox="0 0 380 150" role="img" aria-label="Phone size: 40.9 elements a frame before, 41.6 after. Desktop: 65.3 before, 64.1 after.">
+    <g font-size="13">
+      <text x="10" y="22" font-weight="600">Your phone size, 364×610</text>
+      <rect x="10" y="30" width="170" height="14" rx="3" fill="var(--fg2)" opacity=".55"/><text x="188" y="42" class="muted">before 40.9</text>
+      <rect x="10" y="48" width="173" height="14" rx="3" fill="var(--ember)"/><text x="191" y="60">after 41.6</text>
+      <text x="10" y="94" font-weight="600">Desktop, 1440×900</text>
+      <rect x="10" y="102" width="271" height="14" rx="3" fill="var(--fg2)" opacity=".55"/><text x="289" y="114" class="muted">before 65.3</text>
+      <rect x="10" y="120" width="266" height="14" rx="3" fill="var(--ember)"/><text x="284" y="132">after 64.1</text>
+    </g>
+  </svg>
+  </div>
+  <p class="sub" style="margin-top:.9rem">Single runs on the phone swung between 38 and 42 on both builds, so these are the same. A still page did no style work on either.</p>
+</section>
+
+<section>
+  <h2>What I set out to make true</h2>
+  <ul class="scope">
+    <li><span class="ok">✓</span><span>When the engine moves a word that already stands, Chrome follows the new release point</span></li>
+    <li><span class="ok">✓</span><span>A test reproduces the stale stand and fails without the fix (the rig's new "grows 56px" check: 14 failures before, 0 after)</span></li>
+    <li><span class="ok">✓</span><span>No new cost on a still or scrolling page</span></li>
+    <li><span class="ok">✓</span><span>Shots rig green apart from the 4 known caption lines (166 states)</span></li>
+    <li><span class="ok">✓</span><span>Reviewed by a scroll-animation specialist subagent. It found a second way to trigger the bug, which the fix also covers, and made the new check fail every run instead of some</span></li>
+    <li><span class="PROD_MARK">PROD_SYM</span><span>Merged and checked in production: PROD_LINE</span></li>
+    <li><span class="ok">✓</span><span>The lesson is in the site skill's pages.md</span></li>
+  </ul>
+</section>
+
+<section class="open">
+  <h2>Left open</h2>
+  <ul>
+    <li><b>The 4 caption lines the rig calls hidden</b> in the 610×364 view are still there. They are transparent on purpose so they take turns, so it's the rig's rule that needs adjusting.</li>
+  </ul>
+</section>
+
+</div>
+</body>
+</html>
