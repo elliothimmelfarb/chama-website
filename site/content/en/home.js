@@ -57,9 +57,6 @@ export const home = {
   clients: {
     label: "Who we have worked with",
     ask: "Who have you built for?",
-    h2Mark: { ring: "88-person" },
-    line: "An 88-person metal stamping plant in Toronto runs on software we built.",
-    lineNamed: "LA Metal Stamping in Toronto runs on software we built.",
     logosLabel: "Some of the businesses we have worked with",
   },
 

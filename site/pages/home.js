@@ -1,5 +1,5 @@
 import { html, raw } from "../html.js";
-import { SITE, pageById } from "../site.js";
+import { pageById } from "../site.js";
 import { page, talkField, talkClose, ARROW } from "../parts/chrome.js";
 import { home as t } from "../content/en/home.js";
 import { common } from "../content/en/common.js";
@@ -33,10 +33,6 @@ const marked = (half, marks = t.h1Marks) => {
   }
   return half;
 };
-
-const plant = SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line;
-// the line's last word keeps its arrow on the same line
-const plantHead = plant.slice(0, plant.lastIndexOf(" ") + 1), plantEnd = plant.slice(plant.lastIndexOf(" ") + 1);
 
 // Home's own section styles. Every pinned world is a .frame (worlds.css);
 // what is here sizes home's words and figures inside it.
@@ -111,13 +107,11 @@ const STYLE = `
 .home-q-in { display: grid; gap: var(--s4) 24px; padding-top: var(--s5); border-top: 1px solid var(--line); }
 .ask { font: 500 var(--t-h3)/1.25 var(--display); letter-spacing: -0.01em; color: var(--accent-text); max-width: 22ch; text-wrap: balance; }
 .home-q h2 { max-width: 20ch; }
-/* the proof and the people are the page's two big claims, set larger */
-:is(.home-clients, .home-people) .home-q h2 { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.04; letter-spacing: -0.03em; }
+/* the people are the page's big claim, set larger */
+.home-people .home-q h2 { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.04; letter-spacing: -0.03em; }
 /* the pen marks one phrase in each answer as it comes into view, once
    (the first view's pen, carried down); whole where scroll timelines are
    missing, and in low or reduced motion */
-.home-q .pen-ring { margin-inline: 0.08em 0.04em; }
-.home-q .pen-ring svg { left: -6%; width: 112%; }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     :root:not([data-motion="low"]) .home-q .pen path { animation: pen linear both; animation-timeline: view(); animation-range: entry 100% cover 55%; }
@@ -139,13 +133,7 @@ const STYLE = `
   .goals { grid-template-columns: repeat(5, 1fr); }
   .goal { border-top-width: 2px; padding-top: var(--s4); }
 }
-/* who we have worked with: the answer is the plant line, a link */
-.home-plant { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: transparent; text-underline-offset: 0.14em; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
-.home-plant .end { white-space: nowrap; }
-.home-plant .arr { display: inline-block; width: 0.7em; height: 0.7em; margin-left: 0.15em; vertical-align: -0.02em; color: var(--accent-text); }
-.home-plant:focus-visible { text-decoration-color: var(--accent-text); }
-@media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
-.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s5) var(--s7); }
+.home-clients .logos { padding: var(--s2) 0 0; gap: var(--s5) var(--s7); }
 .home-clients .logo { width: calc(var(--lw) * 1.6px); height: calc(var(--lh) * 1.6px); background: color-mix(in srgb, var(--fg) 82%, transparent); }
 /* real people you can reach: a small round portrait beside the answer */
 .people { display: flex; align-items: center; gap: var(--s5); }
@@ -194,7 +182,6 @@ export function render(p) {
   <div class="wrap home-q"><div class="home-q-in">
     <p class="ask">${t.clients.ask}</p>
     <div class="answer">
-      <h2><a class="home-plant" href="/engineering-department">${marked(plantHead, t.clients.h2Mark)}<span class="end">${plantEnd}${ARROW}</span></a></h2>
       <div aria-label="${t.clients.logosLabel}" role="group">${logoStrip(CLIENTS)}</div>
       <a class="more" href="/work">${common.workLink}${ARROW}</a>
     </div>
@@ -246,7 +233,6 @@ export function text() {
     `## ${t.belief.h2}`,
     ...t.belief.reasons.map((r) => `- ${r}`),
     t.clients.ask,
-    `## ${plant}`,
     t.approach.ask,
     `## ${t.approach.h2}`,
     t.approach.line,
