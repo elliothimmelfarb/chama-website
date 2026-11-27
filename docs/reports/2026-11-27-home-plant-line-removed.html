@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plant line removed</title>
+<style>
+:root{--bg:#f7f3ee;--fg:#1f1a16;--muted:#6f655c;--line:#d9d0c6;--card:#fffdf9;--ember:#d4541f;--gone:#b23b2b;--ok:#2f7a4a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1916;--fg:#f1ebe4;--muted:#a69b90;--line:#3a332d;--card:#25211d;--ember:#ef7a45;--gone:#e2705f;--ok:#5fbf83}}
+:root[data-theme="dark"]{--bg:#1c1916;--fg:#f1ebe4;--muted:#a69b90;--line:#3a332d;--card:#25211d;--ember:#ef7a45;--gone:#e2705f;--ok:#5fbf83}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 16px 56px}
+h1{font-size:clamp(1.6rem,1.2rem + 2vw,2.3rem);line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 28px}
+.pair{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:700px){.pair{grid-template-columns:1fr 1fr}}
+figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+figcaption{font-weight:600;margin-bottom:8px}
+svg{display:block;width:100%;height:auto}
+.t{fill:var(--fg)}.m{fill:var(--muted)}.e{fill:var(--ember)}.g{fill:var(--gone)}
+.where{margin-top:28px}
+.where svg text{font-size:13px}
+ul.checks{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:8px}
+ul.checks li{display:flex;gap:10px;align-items:baseline}
+ul.checks li::before{content:"✓";color:var(--ok);font-weight:700}
+.links{margin-top:24px;color:var(--muted);font-size:.95rem}
+a{color:var(--ember)}
+</style>
+</head>
+<body>
+<main>
+<h1>The 88-person plant line is off the home page</h1>
+<p class="sub">Live on chamainteligente.com since 2026-11-27. Nothing needed from you.</p>
+
+<div class="pair">
+<figure>
+<figcaption>Before</figcaption>
+<svg viewBox="0 0 360 250" role="img" aria-label="Before: the question, a large line about an 88-person metal stamping plant, then the logos">
+<text x="14" y="30" class="e" font-size="15" font-weight="600">Who have you built for?</text>
+<rect x="10" y="48" width="340" height="96" rx="8" fill="none" stroke="var(--gone)" stroke-width="2"/>
+<text x="22" y="80" class="t" font-size="19" font-weight="700">An 88-person metal stamping</text>
+<text x="22" y="106" class="t" font-size="19" font-weight="700">plant in Toronto runs on</text>
+<text x="22" y="132" class="t" font-size="19" font-weight="700">software we built. →</text>
+<g stroke="var(--gone)" stroke-width="2.5"><line x1="20" y1="74" x2="300" y2="74"/><line x1="20" y1="100" x2="262" y2="100"/><line x1="20" y1="126" x2="210" y2="126"/></g>
+<rect x="14" y="166" width="70" height="36" rx="6" fill="var(--line)"/><rect x="96" y="166" width="90" height="36" rx="6" fill="var(--line)"/><rect x="198" y="166" width="100" height="36" rx="6" fill="var(--line)"/>
+<text x="14" y="232" class="e" font-size="14">Everything we've built →</text>
+</svg>
+</figure>
+<figure>
+<figcaption>Now</figcaption>
+<svg viewBox="0 0 360 250" role="img" aria-label="Now: the question, then the logos and the link to all our work">
+<text x="14" y="30" class="e" font-size="15" font-weight="600">Who have you built for?</text>
+<rect x="14" y="54" width="70" height="36" rx="6" fill="var(--line)"/><rect x="96" y="54" width="90" height="36" rx="6" fill="var(--line)"/><rect x="198" y="54" width="100" height="36" rx="6" fill="var(--line)"/>
+<text x="14" y="122" class="e" font-size="14">Everything we've built →</text>
+<text x="14" y="176" class="m" font-size="13">Toraya, Alves Limited and Springlar</text>
+<text x="14" y="196" class="m" font-size="13">answer the question on their own.</text>
+</svg>
+</figure>
+</div>
+
+<figure class="where">
+<figcaption>Where the plant still appears</figcaption>
+<svg viewBox="0 0 360 150" role="img" aria-label="Home no longer mentions the plant; the engineering department page and the work page still do">
+<rect x="10" y="14" width="104" height="58" rx="8" fill="none" stroke="var(--gone)" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="62" y="40" text-anchor="middle" class="t" font-weight="600">Home</text>
+<text x="62" y="60" text-anchor="middle" class="g">removed</text>
+<rect x="128" y="14" width="104" height="58" rx="8" fill="none" stroke="var(--ok)" stroke-width="2"/>
+<text x="180" y="40" text-anchor="middle" class="t" font-weight="600">Engineering</text>
+<text x="180" y="60" text-anchor="middle" class="m">unchanged</text>
+<rect x="246" y="14" width="104" height="58" rx="8" fill="none" stroke="var(--ok)" stroke-width="2"/>
+<text x="298" y="40" text-anchor="middle" class="t" font-weight="600">Work</text>
+<text x="298" y="60" text-anchor="middle" class="m">unchanged</text>
+<text x="10" y="106" class="m">The plant's numbers and case study still live</text>
+<text x="10" y="126" class="m">on those two pages. Say if they should go too.</text>
+</svg>
+</figure>
+
+<ul class="checks">
+<li>Home's tests now fail if the line, or "stamping", comes back on the page or in its text for AI search.</li>
+<li>Checked at desktop and phone width with no sideways scroll, and reviewed by a second agent.</li>
+<li>Production home page and llms-full.txt no longer mention it.</li>
+</ul>
+<p class="links">Merged in <a href="https://github.com/elliothimmelfarb/chama-website/pull/238">PR 238</a>.</p>
+</main>
+</body>
+</html>
