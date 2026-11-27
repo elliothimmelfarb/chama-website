@@ -58,7 +58,7 @@ Copy is written in `site/content/en/`, in the approved brand language (the brain
 - The only email address is `info@chamainteligente.com`, in the footer's legal line (and the JSON-LD), on `/privacy`, and in the chat as its last resort when even the plain form fails. The chat agent itself gives out none.
 - These retired lines never come back: "Your process, your words, your rules", "Your business, your rules", "whenever you ask", "intelligent flame is", "shrink-wrapped", "almost any".
 - "Shama" and Rozalie are named only on `/about`.
-- LA Metal is never named while `SITE.laMetalNamed` in `site/site.js` is `false`. Flipping it is Elliot's decision; `/`, `/engineering-department` and `/work` then switch to the name.
+- LA Metal is never named while `SITE.laMetalNamed` in `site/site.js` is `false`. Flipping it is Elliot's decision; `/engineering-department` and `/work` then switch to the name.
 
 ## Work, logos and /build
 

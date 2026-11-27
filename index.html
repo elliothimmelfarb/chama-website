@@ -168,13 +168,11 @@
 .home-q-in { display: grid; gap: var(--s4) 24px; padding-top: var(--s5); border-top: 1px solid var(--line); }
 .ask { font: 500 var(--t-h3)/1.25 var(--display); letter-spacing: -0.01em; color: var(--accent-text); max-width: 22ch; text-wrap: balance; }
 .home-q h2 { max-width: 20ch; }
-/* the proof and the people are the page's two big claims, set larger */
-:is(.home-clients, .home-people) .home-q h2 { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.04; letter-spacing: -0.03em; }
+/* the people are the page's big claim, set larger */
+.home-people .home-q h2 { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.04; letter-spacing: -0.03em; }
 /* the pen marks one phrase in each answer as it comes into view, once
    (the first view's pen, carried down); whole where scroll timelines are
    missing, and in low or reduced motion */
-.home-q .pen-ring { margin-inline: 0.08em 0.04em; }
-.home-q .pen-ring svg { left: -6%; width: 112%; }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     :root:not([data-motion="low"]) .home-q .pen path { animation: pen linear both; animation-timeline: view(); animation-range: entry 100% cover 55%; }
@@ -196,13 +194,7 @@
   .goals { grid-template-columns: repeat(5, 1fr); }
   .goal { border-top-width: 2px; padding-top: var(--s4); }
 }
-/* who we have worked with: the answer is the plant line, a link */
-.home-plant { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: transparent; text-underline-offset: 0.14em; transition: text-decoration-color var(--dur-quick) var(--ease-out); }
-.home-plant .end { white-space: nowrap; }
-.home-plant .arr { display: inline-block; width: 0.7em; height: 0.7em; margin-left: 0.15em; vertical-align: -0.02em; color: var(--accent-text); }
-.home-plant:focus-visible { text-decoration-color: var(--accent-text); }
-@media (hover: hover) { .home-plant:hover { text-decoration-color: var(--accent-text); } }
-.home-clients .logos { padding: var(--s6) 0 0; gap: var(--s5) var(--s7); }
+.home-clients .logos { padding: var(--s2) 0 0; gap: var(--s5) var(--s7); }
 .home-clients .logo { width: calc(var(--lw) * 1.6px); height: calc(var(--lh) * 1.6px); background: color-mix(in srgb, var(--fg) 82%, transparent); }
 /* real people you can reach: a small round portrait beside the answer */
 .people { display: flex; align-items: center; gap: var(--s5); }
@@ -331,7 +323,6 @@ html[data-motion="low"] .stage[data-state] .stage-step { display: flex; }
   <div class="wrap home-q"><div class="home-q-in">
     <p class="ask">Who have you built for?</p>
     <div class="answer">
-      <h2><a class="home-plant" href="/engineering-department">An <span class="pen pen-ring">88-person<svg viewBox="0 0 480 112" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M70 12C200 3 380 3 436 12C474 19 476 94 434 102C330 112 130 112 42 102C4 94 4 20 44 12C80 7 130 5 190 5"/></svg></span> metal stamping plant in Toronto runs on software we <span class="end">built.<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></h2>
       <div aria-label="Some of the businesses we have worked with" role="group"><ul class="logos"><li><span class="logo" role="img" aria-label="Toraya Lisboa" style="--logo:url('/assets/work/toraya-lisboa-mask.webp');--lw:46;--lh:44"></span></li><li><span class="logo" role="img" aria-label="Alves Limited" style="--logo:url('/assets/work/alves-limited-mask.webp');--lw:78;--lh:31"></span></li><li><span class="logo" role="img" aria-label="Springlar" style="--logo:url('/assets/work/springlar-mask.webp');--lw:119;--lh:20"></span></li></ul></div>
       <a class="more" href="/work">Everything we&#39;ve built<svg class="arr" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>

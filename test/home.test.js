@@ -55,13 +55,13 @@ test("why it matters: the short belief sentence over the five goals, the two hop
   assert.deepEqual(goals, t.belief.reasons.map((r, i) => [r, i >= t.belief.hopesFrom]));
 });
 
-test("who we have worked with: the plant line to the engineering page, the logos and the work page", () => {
+// Elliot, 2026-11-27, on the 88-person plant line: "I don't like that
+// being there." The logos answer the question on their own.
+test("who we have worked with: the logos and the work page, with no plant line", () => {
   const w = worlds[2];
-  const plant = SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line;
-  assert.equal(w.h2, plant, "the answer is the heading");
-  const link = /<a [^>]*href="\/engineering-department"[^>]*>([\s\S]*?)<\/a>/.exec(w.body);
-  assert.ok(link, "the plant line links to the engineering page");
-  assert.equal(words(link[1]), plant);
+  assert.equal(w.h2, "", "no heading of its own");
+  assert.doesNotMatch(words(w.body), /88-person|stamping|LA Metal/i);
+  assert.doesNotMatch(text(), /88-person|stamping|LA Metal/i);
   assert.match(w.body, /<ul class="logos"/);
   assert.match(w.body, /<a [^>]*href="\/work"[^>]*>Everything we(&#39;|')ve built/);
 });
@@ -115,18 +115,17 @@ test("home's machine-readable text follows the page", () => {
   const lines = text().split("\n\n");
   const at = (s) => { const i = lines.findIndex((l) => l.includes(s)); assert.ok(i >= 0, `text() is missing "${s}"`); return i; };
   const order = [t.descriptor, t.h1[0], t.sub, t.stageLabel, t.doors[0].title, t.also,
-    t.belief.ask, `## ${t.belief.h2}`, t.belief.reasons[4], t.clients.ask, SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line,
+    t.belief.ask, `## ${t.belief.h2}`, t.belief.reasons[4], t.clients.ask,
     t.approach.ask, `## ${t.approach.h2}`, t.approach.line, t.people.ask, `## ${t.people.h2}`].map(at);
   assert.deepEqual(order, [...order].sort((a, b) => a - b), "in the page's order");
 });
 
 // The 2026-11-19 review: the first view's pen carried down, one phrase
 // marked in each answer, so the questions belong to the same page.
-test("the pen marks one phrase in each answer", () => {
-  const want = [t.belief.h2Mark, t.clients.h2Mark, t.approach.h2Mark, t.people.h2Mark].map((m) => Object.entries(m)[0]);
-  const plantHasIt = (SITE.laMetalNamed ? t.clients.lineNamed : t.clients.line).includes(want[1][1]);
+test("the pen marks one phrase in each answer that has a heading", () => {
+  const want = [t.belief.h2Mark, null, t.approach.h2Mark, t.people.h2Mark].map((m) => (m ? [Object.entries(m)[0]] : []));
   worlds.slice(1, 5).forEach((w, i) => {
     const marks = [...w.body.matchAll(/<span class="pen pen-(\w+)">([^<]*)<svg [^>]*aria-hidden="true"/g)].map((m) => [m[1], m[2]]);
-    assert.deepEqual(marks, i === 1 && !plantHasIt ? [] : [want[i]], w.label);
+    assert.deepEqual(marks, want[i], w.label);
   });
 });
